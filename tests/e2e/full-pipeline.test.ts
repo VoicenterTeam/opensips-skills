@@ -132,6 +132,20 @@ describe("full pipeline E2E", () => {
       );
       expect(typeof parsed).toBe("object");
       expect(parsed).not.toBeNull();
+
+      const modulesIndexPath = join(
+        tmpRoot,
+        "opensips-config",
+        "references",
+        "3.6",
+        "modules-index.md",
+      );
+      expect(existsSync(modulesIndexPath)).toBe(true);
+      // Sanity-check that the file is non-trivial: the catalog table plus
+      // the lookup-discipline prose should easily exceed 1KB.
+      const modulesIndexContent = readFileSync(modulesIndexPath, "utf8");
+      expect(modulesIndexContent.length).toBeGreaterThan(1000);
+      expect(modulesIndexContent).toContain("# OpenSIPs module index");
     },
     { timeout: 60_000 },
   );
