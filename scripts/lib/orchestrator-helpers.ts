@@ -8,15 +8,37 @@
  * processing.
  */
 
+import path from "node:path";
+
 import { discoverVersions, DiscoverError } from "./discover.js";
 import { IOError } from "./errors.js";
-import { emitProgress, emitWarning, type OutputContext } from "./output.js";
+import { atomicWriteFile, ensureDirectory, posixPath } from "./fs-helpers.js";
+import {
+  emitProgress,
+  emitWarning,
+  type OutputContext,
+} from "./output.js";
+import { assertUniqueSlugs, slugify, SlugCollisionError } from "./slug.js";
+import { validateRenderedMarkdown } from "./validate-markdown.js";
 import { validateVersion, type ValidationIssue } from "./validate.js";
+import { renderModule } from "../render-module/index.js";
+import type { ModuleDocument } from "../schemas/modules.schema.js";
 import type {
   BuildSummary,
   CliOptions,
   VersionResult,
 } from "../types/cli.js";
+
+/**
+ * Generator-version stamp embedded in every rendered file's provenance
+ * comment. Kept in sync with the `GENERATOR_VERSION` constant in
+ * `scripts/build-references.ts`. Duplicated here (rather than imported)
+ * because importing from the entry-point module would create a circular
+ * import: the entry point imports `processVersion` from this file. The
+ * cost of duplication is one constant in two places; the tests hold both
+ * call sites honest by asserting the version string in rendered output.
+ */
+const GENERATOR_VERSION = "0.1.0";
 
 /**
  * Resolve which versions to process from the parsed CLI options.
@@ -109,23 +131,35 @@ function toErrorEntries(
 }
 
 /**
- * Process one version through the M2 pipeline.
+ * Process one version through the pipeline.
  *
  * Runs validation, surfaces every issue on stderr in the
- * problem-matcher-friendly `ERROR: <file>: <kind>: <msg>` form, and emits
- * "would render" progress lines in dry-run mode (verbose-gated). M3-M5
- * will plug renderers and the index builder into this function without
- * touching the orchestrator.
+ * problem-matcher-friendly `ERROR: <file>: <kind>: <msg>` form, then —
+ * when validation succeeded and `--validate-only` is not set — drives the
+ * per-module renderer:
  *
- * Returns a Promise so future renderer plumbing (atomic file writes are
- * async) can slot in without changing the call site.
+ *   1. Asserts slug uniqueness across every module in the version.
+ *      A collision halts rendering for the version (no partial output).
+ *   2. Sorts modules alphabetically by slug for deterministic iteration.
+ *   3. Renders each module, validates the rendered Markdown, and (in
+ *      normal mode) atomically writes the result under
+ *      `<outputRoot>/opensips-modules/references/<version>/modules/<slug>.md`.
+ *      In `--dry-run` mode the file is rendered and validated but not
+ *      written; the count of "would-write" files is reported.
+ *
+ * The function is fail-slow within a version (one bad module does not
+ * abort the rest) unless `--fail-fast` is set, in which case the loop
+ * stops at the first per-module validation failure. Slug collisions are
+ * always fatal for the version because filesystem-name uniqueness is a
+ * pre-condition for ANY write.
  * @param version - OpenSIPs version (e.g. `"3.6"`).
  * @param opts - Parsed CLI options.
  * @param ctx - Output context for progress/warning emission.
  * @returns A {@link VersionResult} aggregating validation outcome and
- *   counts. Never throws on validation failures.
+ *   counts. Never throws on per-module validation failures; slug-collision
+ *   and IO errors are caught and surfaced as entries on `result.errors`.
  */
-export function processVersion(
+export async function processVersion(
   version: string,
   opts: CliOptions,
   ctx: OutputContext,
@@ -147,31 +181,172 @@ export function processVersion(
     );
   }
 
-  if (validation.ok) {
-    const moduleCount = validation.documents.modules.length;
-    const coreCount = validation.documents.core.length;
-    if (opts.dryRun) {
-      if (ctx.verbose) {
+  const errors: VersionResult["errors"] = toErrorEntries(validation.issues);
+  let filesRendered = 0;
+  let renderOk = true;
+
+  if (validation.ok && !opts.validateOnly) {
+    // Schema validation already coerced these into ModuleDocument shape;
+    // the `unknown[]` typing on `validation.documents.modules` is the
+    // erasure boundary between the validate stage and us.
+    const modules = validation.documents.modules as ModuleDocument[];
+    const renderResult = await renderModulesForVersion(
+      version,
+      modules,
+      opts,
+      ctx,
+    );
+    filesRendered = renderResult.filesRendered;
+    if (renderResult.errors.length > 0) {
+      errors.push(...renderResult.errors);
+      renderOk = false;
+    }
+    if (ctx.verbose) {
+      const verb = opts.dryRun ? "Would render" : "Rendered";
+      emitProgress(
+        `  ${verb} ${renderResult.filesRendered} module files${
+          opts.dryRun ? " (dry-run)" : ""
+        }`,
+        ctx,
+      );
+      if (opts.dryRun) {
         emitProgress(
-          `  Would render ${moduleCount} module files (dry-run)`,
+          `  Would render ${validation.documents.core.length} core files (dry-run)`,
           ctx,
         );
-        emitProgress(`  Would render ${coreCount} core files (dry-run)`, ctx);
         emitProgress(`  Would build consolidated index (dry-run)`, ctx);
       }
-    } else if (!opts.validateOnly && ctx.verbose) {
+    }
+  } else if (validation.ok && opts.validateOnly && ctx.verbose) {
+    // validate-only mode: no rendering, but the user asked for that.
+    // No "renderers not yet implemented" warning — they are now.
+  }
+
+  return {
+    version,
+    ok: validation.ok && renderOk,
+    filesValidated: validation.fileCount,
+    filesRendered,
+    errors,
+  };
+}
+
+/** Internal aggregate returned by {@link renderModulesForVersion}. */
+interface RenderForVersionResult {
+  /** Count of files written (or would-be written in dry-run). */
+  filesRendered: number;
+  /** Per-module errors collected during rendering / output validation. */
+  errors: VersionResult["errors"];
+}
+
+/**
+ * Render every module in one version.
+ *
+ * Side effects (in non-dry-run mode): atomic writes to
+ * `<outputRoot>/opensips-modules/references/<version>/modules/<slug>.md`.
+ * The function is itself side-effect-free in dry-run mode.
+ *
+ * Determinism is enforced via two devices: alphabetical sort by slug
+ * (deterministic iteration order) and {@link atomicWriteFile} (each file's
+ * content is fully determined by `renderModule`, which is documented to be
+ * byte-deterministic on equal input). The "build twice, diff is empty"
+ * acceptance test in M3 Task 3.8 hinges on this.
+ * @param version - OpenSIPs version label.
+ * @param modules - Modules already validated against the Zod schema.
+ * @param opts - Parsed CLI options (controls dry-run, output root, fail-fast).
+ * @param ctx - Output context for progress/warning emission.
+ * @returns Render outcome counts and per-module errors.
+ */
+async function renderModulesForVersion(
+  version: string,
+  modules: ModuleDocument[],
+  opts: CliOptions,
+  ctx: OutputContext,
+): Promise<RenderForVersionResult> {
+  // Slug-uniqueness gate: filesystem name collisions cannot be recovered
+  // from at write time, so we fail BEFORE any write happens.
+  try {
+    assertUniqueSlugs(modules.map((m) => ({ name: m.module_name })));
+  } catch (err) {
+    if (err instanceof SlugCollisionError) {
+      process.stderr.write(`ERROR: ${err.message}\n`);
+      return {
+        filesRendered: 0,
+        errors: [{ kind: "slug-collision", message: err.message }],
+      };
+    }
+    throw err;
+  }
+
+  // Stable iteration order for byte-deterministic builds.
+  const sorted = [...modules].sort((a, b) =>
+    slugify(a.module_name).localeCompare(slugify(b.module_name)),
+  );
+
+  const errors: VersionResult["errors"] = [];
+  let filesRendered = 0;
+
+  for (const module of sorted) {
+    const slug = slugify(module.module_name);
+    const sourcePath = `data/${version}/modules/${slug}.json`;
+    const content = renderModule(module, version, GENERATOR_VERSION);
+
+    const validation = validateRenderedMarkdown(content, sourcePath);
+    if (!validation.ok) {
+      for (const issue of validation.errors) {
+        const message = `${issue.rule}: ${issue.message} (line ${issue.line})`;
+        process.stderr.write(`ERROR: ${sourcePath}: ${message}\n`);
+        errors.push({
+          kind: "validation",
+          message,
+          file: sourcePath,
+        });
+      }
+      if (opts.failFast) break;
+      continue;
+    }
+    for (const w of validation.warnings) {
       emitWarning(
-        `${version}: renderers not yet implemented; only validation ran`,
+        `${sourcePath}:${w.line}: ${w.rule}: ${w.message}`,
         ctx,
       );
     }
+
+    const outputPath = posixPath(
+      opts.outputRoot,
+      "opensips-modules",
+      "references",
+      version,
+      "modules",
+      `${slug}.md`,
+    );
+
+    if (opts.dryRun) {
+      filesRendered++;
+      if (ctx.verbose) emitProgress(`  would write ${outputPath}`, ctx);
+      continue;
+    }
+
+    try {
+      await ensureDirectory(path.dirname(outputPath));
+      await atomicWriteFile(outputPath, content);
+    } catch (err) {
+      if (err instanceof IOError) {
+        process.stderr.write(
+          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
+        );
+        errors.push({
+          kind: "io",
+          message: err.message,
+          file: err.path,
+        });
+        if (opts.failFast) break;
+        continue;
+      }
+      throw err;
+    }
+    filesRendered++;
   }
 
-  return Promise.resolve({
-    version,
-    ok: validation.ok,
-    filesValidated: validation.fileCount,
-    filesRendered: 0,
-    errors: toErrorEntries(validation.issues),
-  });
+  return { filesRendered, errors };
 }
