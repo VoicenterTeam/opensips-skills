@@ -1,40 +1,14 @@
 /**
- * CLI entry for the module-index rebuild step (M7 task 7.5).
+ * CLI entry for the module-index step.
  *
- * Discovers the highest-numbered version under `./data/` and rebuilds the
- * module catalog table inside
- * `plugins/opensips/skills/opensips-modules/SKILL.md`.
+ * Transitional: per ADR-012, the build-module-index step is being
+ * repurposed to render `references/{version}/modules-index.md` rather than
+ * inject a 200-row catalog into the old `opensips-modules/SKILL.md`. The
+ * inline marker block was removed when the unified `opensips-config`
+ * SKILL.md was authored.
  *
- * Exits with code 1 on any failure (no versions discovered, validation
- * failure, marker block missing, write failure). Output on success is a
- * single confirmation line naming the version used.
- *
- * Run via `npm run build:skills`.
+ * Until the new renderer is wired in (plan Tasks 10 and 11), this CLI is a
+ * no-op so `npm run build:skills` exits cleanly without touching files.
  */
 
-import { rebuildModuleIndex } from "./index.js";
-import { discoverVersions } from "../lib/discover.js";
-
-/**
- * Discover the latest version, rebuild the module index, and report.
- * @returns Promise resolving once the SKILL.md has been written.
- */
-async function main(): Promise<void> {
-  const versions = discoverVersions("./data");
-  if (versions.length === 0) {
-    console.error("No versions in data/");
-    process.exit(1);
-  }
-  const latest = versions[versions.length - 1]!;
-  await rebuildModuleIndex(
-    "plugins/opensips/skills/opensips-modules/SKILL.md",
-    "./data",
-    latest,
-  );
-  console.log(`Module index rebuilt from ${latest}`);
-}
-
-main().catch((err: unknown) => {
-  console.error("FATAL:", err);
-  process.exit(1);
-});
+console.log("build:skills: pending repurposing per ADR-012; no-op for now.");
