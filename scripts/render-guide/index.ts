@@ -4,7 +4,7 @@
  *
  * Per ADR-009 §M4, the build pipeline emits one file per guide document type
  * — `installation.md`, `configuration.md`, `syntax.md` — under
- * `plugins/.../opensips-routing/references/{version}/guides/`. The orchestrator
+ * `plugins/.../opensips-config/references/{version}/guides/`. The orchestrator
  * only invokes this composer when the source `data/{version}/guides/`
  * directory exists (3.4 and 3.6 currently; 3.5 has no guides folder and the
  * orchestrator skips the call). Adding or removing guide doc types requires
@@ -106,7 +106,7 @@ type BestPractice = NonNullable<GuideDocument["best_practices"]>[number];
 /**
  * Map from guide document type to the canonical output filename used by
  * the orchestrator when writing the rendered Markdown into
- * `plugins/.../opensips-routing/references/{version}/guides/`.
+ * `plugins/.../opensips-config/references/{version}/guides/`.
  *
  * Adding a new guide doc type means: extend the schema enum upstream,
  * add a key here, add a lead-paragraph factory in

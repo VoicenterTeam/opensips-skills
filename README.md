@@ -80,7 +80,7 @@ The whole exchange takes one prompt and one response. The skills coordinate auto
 
 ## A second example: a pure reference lookup
 
-Not every prompt needs all three skills. A reference-only question takes a different path:
+Not every prompt needs both skills. A reference-only question takes a different path:
 
 **Prompt:**
 

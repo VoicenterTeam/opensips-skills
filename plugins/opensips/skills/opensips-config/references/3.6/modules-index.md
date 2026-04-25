@@ -199,20 +199,20 @@ Generated reference for OpenSIPs 3.6. This file is the module catalog for the `o
 | `xmpp` | This modules is a gateway between OpenSIPS and a jabber server | `references/{version}/modules/xmpp.md` |
 ## How to use this file
 
-The per-module reference file under `references/{version}/modules/<slug>.md` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
+The per-module reference file under `references/{version}/modules/{slug}.md` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
 
 The path pattern is fixed:
 
-- Per-module reference file: `references/{version}/modules/<slug>.md`. Substitute `{version}` at read time with the active OpenSIPs version (e.g., `3.6`). Substitute `<slug>` with the module name as it appears in the index below.
+- Per-module reference file: `references/{version}/modules/{slug}.md`. Substitute `{version}` at read time with the active OpenSIPs version (e.g., `3.6`). Substitute `{slug}` with the module name as it appears in the index below.
 - Consolidated index: `references/{version}/consolidated.json`. A structured JSON index of every module, function, pseudo-variable, parameter, MI command, and statistic in the version, plus a `relationships.moduleDependencies` graph.
 
 The consolidated index is the fastest path when the user references an identifier without naming a module:
 
-- To find which module exports a function whose home module is unclear, Read `consolidated.json` and look up `indexes.functionsByName[<function>]` to find the source module, then Read that module's per-module reference file for the full signature.
-- To find which module defines a pseudo-variable, look up `indexes.variablesByName[<variable>]`.
-- To find which module exposes an MI command, look up `indexes.miCommandsByName[<command>]`.
-- To list all parameters of a known module, look up `indexes.parametersByModule[<module>]`.
-- To check what other modules a given module depends on, look up `relationships.moduleDependencies[<module>]`.
+- To find which module exports a function whose home module is unclear, Read `consolidated.json` and look up `indexes.functionsByName[{function}]` to find the source module, then Read that module's per-module reference file for the full signature.
+- To find which module defines a pseudo-variable, look up `indexes.variablesByName[{variable}]`.
+- To find which module exposes an MI command, look up `indexes.miCommandsByName[{command}]`.
+- To list all parameters of a known module, look up `indexes.parametersByModule[{module}]`.
+- To check what other modules a given module depends on, look up `relationships.moduleDependencies[{module}]`.
 
 Two-step lookup is the canonical pattern: Read `consolidated.json` to locate the source, then Read the per-module file for full content. Do not skip the second Read — the consolidated index does not contain function descriptions, parameter narratives, or usage examples.
 
@@ -227,7 +227,7 @@ The router-index pattern depends on Claude making the second hop. The most conse
 The same discipline applies when the user asks a follow-up. A second question about the same module is a second Read of the same file (or a re-quote from the previous Read in the same session); it is not an opportunity to fall back on priors because "we just looked at this module."
 ## What the per-module reference file contains
 
-Each `references/{version}/modules/<slug>.md` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
+Each `references/{version}/modules/{slug}.md` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
 
 - **Overview** — what the module does and its role in a configuration.
 - **Dependencies** — other modules that must be loaded for this module to function, plus optional modules that enable additional features when also loaded.
@@ -256,4 +256,4 @@ If a module is not in the index and not in the `consolidated.json`, treat it as 
 
 The same procedure applies to functions, pseudo-variables, MI commands, statistics, and events that the user names without naming a module. If the consolidated index has no record of the identifier across `indexes.functionsByName`, `indexes.variablesByName`, `indexes.miCommandsByName`, and the per-module statistics or events sections, the identifier is unknown to this version's reference set. Ask the user to confirm the identifier and the version; do not improvise.
 
-A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (`pv_<thing>`, `<module>_send`, `<module>_check`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.
+A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (`pv_{thing}`, `{module}_send`, `{module}_check`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.

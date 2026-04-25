@@ -2,10 +2,9 @@
  * Pure-function builder for the per-version consolidated lookup index.
  *
  * The consolidated index is a lightweight JSON document committed under
- * `plugins/opensips/skills/opensips-modules/references/{version}/consolidated.json`.
- * It powers fast name → location lookups for `module_search.py` and is the
- * data interface between the modules skill and the security advisor skill
- * (per ADR-005 and ADR-006).
+ * `plugins/opensips/skills/opensips-config/references/{version}/consolidated.json`.
+ * It is the data interface between the unified `opensips-config` skill and
+ * the security advisor skill (per ADR-006 and ADR-012).
  *
  * Design contract (from `docs/architecture/data-pipeline.md` §7.3 and
  * `docs/plan/05-consolidated-index.md` §5.2):

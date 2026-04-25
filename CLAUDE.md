@@ -65,10 +65,14 @@ opensips-skills/
 │       └── (same structure)
 │
 ├── scripts/                         # Build tooling
-│   ├── build-references.ts          # Main build entry
-│   ├── render-module.ts             # Per-item renderer (modules)
-│   ├── render-core.ts               # Aggregated renderer (core types)
-│   ├── build-consolidated.ts        # Index builder
+│   ├── build-references.ts          # Main build entry (orchestrator)
+│   ├── clean.ts                     # `npm run clean` entry
+│   ├── lib/                         # Orchestrator helpers, validation, IO
+│   ├── render-module/               # Per-item renderer (modules)
+│   ├── render-core/                 # Aggregated renderer (core types)
+│   ├── render-guide/                # Aggregated renderer (guides)
+│   ├── build-consolidated/          # Consolidated index builder
+│   ├── build-module-index/          # modules-index.md renderer
 │   └── schemas/                     # Zod schemas (mirrored from extraction)
 │
 └── plugins/
@@ -105,7 +109,7 @@ Read in order: `docs/vision.md` → `docs/requirements.md` → this file's **Arc
 Browse `docs/architecture/adr/`. Each ADR is dated, numbered, and answers one question: what did we decide, what were the alternatives, why this one. If you disagree with a past decision, write a new ADR superseding it — don't edit the old one.
 
 ### "I need to change how JSON becomes Markdown"
-Read `docs/architecture/rendering-templates.md` first, then edit `scripts/render-module.ts` or `scripts/render-core.ts`. Regenerate with `npm run build`. Golden-file tests will fail if output changes unexpectedly — update them only if the change is intentional.
+Read `docs/architecture/rendering-templates.md` first, then edit `scripts/render-module/`, `scripts/render-core/`, `scripts/render-guide/`, `scripts/build-consolidated/`, or `scripts/build-module-index/`. Regenerate with `npm run build`. Golden-file tests will fail if output changes unexpectedly — update them only if the change is intentional.
 
 ### "I need to update a SKILL.md"
 Read `docs/architecture/skill-authoring-guide.md`. There are two hand-authored SKILL.md files: `opensips-config/SKILL.md` and `opensips-security-advisor/SKILL.md`. The SKILL.md files are the only hand-authored Markdown in the skills themselves (along with `cfg-format.md` and `ser-lineage-notes.md`). Everything else in `references/` is generated.

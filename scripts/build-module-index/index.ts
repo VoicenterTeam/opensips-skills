@@ -1,24 +1,23 @@
 /**
- * Module-index build step (M7 task 7.5).
+ * Module-index renderer.
  *
- * Generates the per-version-agnostic module catalog table for
- * `plugins/opensips/skills/opensips-modules/SKILL.md` and replaces the
- * paired marker block (`<!-- MODULE_INDEX:BEGIN -->` ...
- * `<!-- MODULE_INDEX:END -->`) with the rendered table.
+ * Two related responsibilities:
  *
- * The displayed catalog comes from a single OpenSIPs version's validated
- * `ModuleDocument` set (typically the highest-numbered version, e.g.
- * `3.6`). The reference-path column uses a literal `{version}` placeholder
- * so the SKILL.md remains version-agnostic — Claude resolves the
- * placeholder at runtime per the version-resolution protocol.
+ * 1. **`renderModulesIndexMarkdown`** (current): produces the standalone
+ *    `plugins/opensips/skills/opensips-config/references/{version}/modules-index.md`
+ *    reference file per ADR-012. Combines the module catalog table with
+ *    lookup-discipline prose. Output is version-aware (the version string
+ *    appears in the intro paragraph) but the reference paths in the table
+ *    use the literal `{version}` placeholder for runtime resolution.
  *
- * The paired-marker approach is chosen over a single one-shot placeholder
- * because the markers persist across rebuilds. Without them, the first
- * rebuild would consume the placeholder and subsequent rebuilds would have
- * nothing to anchor on, defeating idempotency. With the BEGIN/END pair,
- * the body between them is the regenerable region; everything outside is
- * hand-authored prose that the build never touches.
- * @see docs/plan/07-skill-authoring.md Task 7.5
+ * 2. **`buildModuleCatalogRows` / `renderModuleCatalogTable` /
+ *    `injectModuleIndex` / `rebuildModuleIndex`** (legacy): the original
+ *    M7 paired-marker injector that updated `opensips-modules/SKILL.md`.
+ *    The merged `opensips-config/SKILL.md` no longer carries an inline
+ *    catalog (per ADR-012), so `rebuildModuleIndex` is unused; the pure
+ *    helpers stay because `renderModulesIndexMarkdown` reuses them.
+ *
+ * @see docs/architecture/adr/012-merge-routing-and-modules-into-opensips-config.md
  */
 
 import { atomicWriteFile } from "../lib/fs-helpers.js";
@@ -178,21 +177,16 @@ export function injectModuleIndex(skillMdContent: string, table: string): string
  *
  * Aborts with a thrown error if validation produces any issues — a stale
  * or partially-valid source set must not silently ship into a SKILL.md.
- * @param skillMdPath - Absolute path to the modules SKILL.md.
+ * @param skillMdPath - Absolute path to a SKILL.md containing the
+ *   BEGIN/END marker block. Retained for tests and any future skills that
+ *   want an inline catalog; the production pipeline no longer uses this
+ *   per ADR-012 — see `renderModulesIndexMarkdown` instead.
  * @param sourceRoot - Source-data root (typically `"./data"` per ADR-009).
  * @param latestVersion - Version whose module set drives the catalog
  *   (typically the highest-numbered, e.g., `"3.6"`).
  * @returns Promise that resolves once the SKILL.md has been rewritten.
  * @throws Error When validation reports any issue or when the SKILL.md
  *   does not contain the BEGIN/END marker block.
- * @example
- * ```ts
- * await rebuildModuleIndex(
- *   "plugins/opensips/skills/opensips-modules/SKILL.md",
- *   "./data",
- *   "3.6",
- * );
- * ```
  */
 export async function rebuildModuleIndex(
   skillMdPath: string,
@@ -228,9 +222,9 @@ export async function rebuildModuleIndex(
  * 1. A top-level `# OpenSIPs module index` heading and intro paragraph.
  * 2. A `## Module index` section with the rendered catalog table (sorted
  *    alphabetically, `{version}` placeholder in reference paths).
- * 3. Verbatim lookup-discipline prose lifted from the deleted
- *    `plugins/opensips/skills/opensips-modules/SKILL.md` (recoverable from
- *    `git show HEAD~1:plugins/opensips/skills/opensips-modules/SKILL.md`).
+ * 3. Lookup-discipline prose carried over from the original
+ *    `opensips-modules/SKILL.md` body (preserved across the merge per
+ *    ADR-012; live in this file's source as inline strings).
  *
  * The output ends with exactly one trailing newline.
  * @param documents - Validated module documents for the version.
@@ -256,20 +250,20 @@ export function renderModulesIndexMarkdown(
 
   sections.push(`## How to use this file
 
-The per-module reference file under \`references/{version}/modules/<slug>.md\` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
+The per-module reference file under \`references/{version}/modules/{slug}.md\` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
 
 The path pattern is fixed:
 
-- Per-module reference file: \`references/{version}/modules/<slug>.md\`. Substitute \`{version}\` at read time with the active OpenSIPs version (e.g., \`3.6\`). Substitute \`<slug>\` with the module name as it appears in the index below.
+- Per-module reference file: \`references/{version}/modules/{slug}.md\`. Substitute \`{version}\` at read time with the active OpenSIPs version (e.g., \`3.6\`). Substitute \`{slug}\` with the module name as it appears in the index below.
 - Consolidated index: \`references/{version}/consolidated.json\`. A structured JSON index of every module, function, pseudo-variable, parameter, MI command, and statistic in the version, plus a \`relationships.moduleDependencies\` graph.
 
 The consolidated index is the fastest path when the user references an identifier without naming a module:
 
-- To find which module exports a function whose home module is unclear, Read \`consolidated.json\` and look up \`indexes.functionsByName[<function>]\` to find the source module, then Read that module's per-module reference file for the full signature.
-- To find which module defines a pseudo-variable, look up \`indexes.variablesByName[<variable>]\`.
-- To find which module exposes an MI command, look up \`indexes.miCommandsByName[<command>]\`.
-- To list all parameters of a known module, look up \`indexes.parametersByModule[<module>]\`.
-- To check what other modules a given module depends on, look up \`relationships.moduleDependencies[<module>]\`.
+- To find which module exports a function whose home module is unclear, Read \`consolidated.json\` and look up \`indexes.functionsByName[{function}]\` to find the source module, then Read that module's per-module reference file for the full signature.
+- To find which module defines a pseudo-variable, look up \`indexes.variablesByName[{variable}]\`.
+- To find which module exposes an MI command, look up \`indexes.miCommandsByName[{command}]\`.
+- To list all parameters of a known module, look up \`indexes.parametersByModule[{module}]\`.
+- To check what other modules a given module depends on, look up \`relationships.moduleDependencies[{module}]\`.
 
 Two-step lookup is the canonical pattern: Read \`consolidated.json\` to locate the source, then Read the per-module file for full content. Do not skip the second Read — the consolidated index does not contain function descriptions, parameter narratives, or usage examples.
 
@@ -286,7 +280,7 @@ The same discipline applies when the user asks a follow-up. A second question ab
 
   sections.push(`\n## What the per-module reference file contains
 
-Each \`references/{version}/modules/<slug>.md\` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
+Each \`references/{version}/modules/{slug}.md\` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
 
 - **Overview** — what the module does and its role in a configuration.
 - **Dependencies** — other modules that must be loaded for this module to function, plus optional modules that enable additional features when also loaded.
@@ -317,7 +311,7 @@ If a module is not in the index and not in the \`consolidated.json\`, treat it a
 
 The same procedure applies to functions, pseudo-variables, MI commands, statistics, and events that the user names without naming a module. If the consolidated index has no record of the identifier across \`indexes.functionsByName\`, \`indexes.variablesByName\`, \`indexes.miCommandsByName\`, and the per-module statistics or events sections, the identifier is unknown to this version's reference set. Ask the user to confirm the identifier and the version; do not improvise.
 
-A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (\`pv_<thing>\`, \`<module>_send\`, \`<module>_check\`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.`);
+A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (\`pv_{thing}\`, \`{module}_send\`, \`{module}_check\`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.`);
 
   return sections.join("") + "\n";
 }
