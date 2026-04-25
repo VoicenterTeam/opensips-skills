@@ -28,6 +28,7 @@ import {
   type CoreDocType,
 } from "../render-core/index.js";
 import { guideFileNames, renderGuide } from "../render-guide/index.js";
+import { renderModulesIndexMarkdown } from "../build-module-index/index.js";
 import {
   buildConsolidatedIndex,
   type IndexWarning,
@@ -311,10 +312,26 @@ export async function processVersion(
       renderOk = false;
     }
 
+    // Modules-index rendering. Produces one `modules-index.md` per version
+    // under `opensips-config/references/<version>/` — the consolidated
+    // module catalog table plus lookup-discipline prose. Runs after the
+    // per-module renders so the output dir is already created.
+    const modulesIndexResult = await renderModulesIndexForVersion(
+      version,
+      modules,
+      opts,
+      ctx,
+    );
+    if (modulesIndexResult.errors.length > 0) {
+      errors.push(...modulesIndexResult.errors);
+      renderOk = false;
+    }
+
     filesRendered =
       moduleResult.filesRendered +
       coreResult.filesRendered +
-      guideResult.filesRendered;
+      guideResult.filesRendered +
+      modulesIndexResult.filesRendered;
 
     if (ctx.verbose) {
       const verb = opts.dryRun ? "Would render" : "Rendered";
@@ -335,6 +352,10 @@ export async function processVersion(
           ctx,
         );
       }
+      emitProgress(
+        `  ${verb} ${modulesIndexResult.filesRendered} modules-index file${dryRunSuffix}`,
+        ctx,
+      );
     }
 
     // M5: consolidated index. Built after the renderers so the index can
@@ -700,6 +721,96 @@ async function renderGuidesForVersion(
   }
 
   return { filesRendered, errors };
+}
+
+/**
+ * Render the modules-index reference file for one version.
+ *
+ * Produces a single `modules-index.md` file under
+ * `<outputRoot>/opensips-config/references/<version>/modules-index.md`.
+ * The file is generated from the validated `ModuleDocument` set via
+ * {@link renderModulesIndexMarkdown} and contains the full module catalog
+ * table plus lookup-discipline prose.
+ *
+ * **Validation:** The generated file uses a table-and-prose hybrid that
+ * does not map cleanly onto module-mode (`topLevelItemHeading: 3`) because
+ * there are no H3 items — the file is structured as H1 → H2 sections with
+ * table/prose bodies.  We run `validateRenderedMarkdown` with
+ * `topLevelItemHeading: 2` (same as core files) which handles the flat
+ * H1 → H2 structure correctly.  The only rules that could legitimately
+ * fail are `single-h1` (guaranteed by the renderer) and `no-empty-h2`
+ * (each H2 has body content).  If validation fails, the error is surfaced
+ * and the file is not written — same behaviour as core and guide renderers.
+ *
+ * **Determinism:** `renderModulesIndexMarkdown` sorts rows alphabetically
+ * and produces a fixed template — calling it twice with the same inputs
+ * yields byte-identical output.  {@link atomicWriteFile} writes via a
+ * temp-file rename so partial writes never land on disk.
+ * @param version - OpenSIPs version label (e.g., `"3.6"`).
+ * @param modules - Validated module documents for this version.
+ * @param opts - Parsed CLI options (controls dry-run, output root, fail-fast).
+ * @param ctx - Output context for progress/warning emission.
+ * @returns Render outcome (1 file or 0 on validation/IO error) and any errors.
+ */
+async function renderModulesIndexForVersion(
+  version: string,
+  modules: ModuleDocument[],
+  opts: CliOptions,
+  ctx: OutputContext,
+): Promise<RenderForVersionResult> {
+  const errors: VersionResult["errors"] = [];
+
+  // Virtual source-path label for error messages; no actual JSON file
+  // backs this generated document.
+  const sourcePath = `data/${version}/modules-index.md`;
+  const content = renderModulesIndexMarkdown(modules, version);
+
+  // Validate with topLevelItemHeading: 2 because modules-index.md uses
+  // H1 → H2 → (table/prose) structure — the same shape as core files,
+  // not the H2 → H3 shape of per-module reference files.
+  const validation = validateRenderedMarkdown(content, sourcePath, {
+    topLevelItemHeading: 2,
+  });
+  if (!validation.ok) {
+    for (const issue of validation.errors) {
+      const message = `${issue.rule}: ${issue.message} (line ${issue.line})`;
+      process.stderr.write(`ERROR: ${sourcePath}: ${message}\n`);
+      errors.push({ kind: "validation", message, file: sourcePath });
+    }
+    return { filesRendered: 0, errors };
+  }
+  for (const w of validation.warnings) {
+    emitWarning(`${sourcePath}:${w.line}: ${w.rule}: ${w.message}`, ctx);
+  }
+
+  const outputPath = posixPath(
+    opts.outputRoot,
+    "opensips-config",
+    "references",
+    version,
+    "modules-index.md",
+  );
+
+  if (opts.dryRun) {
+    if (ctx.verbose) emitProgress(`  would write ${outputPath}`, ctx);
+    return { filesRendered: 1, errors };
+  }
+
+  try {
+    await ensureDirectory(path.dirname(outputPath));
+    await atomicWriteFile(outputPath, content);
+  } catch (err) {
+    if (err instanceof IOError) {
+      process.stderr.write(
+        `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
+      );
+      errors.push({ kind: "io", message: err.message, file: err.path });
+      return { filesRendered: 0, errors };
+    }
+    throw err;
+  }
+
+  return { filesRendered: 1, errors };
 }
 
 /**
