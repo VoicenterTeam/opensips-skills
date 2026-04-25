@@ -139,7 +139,7 @@ describe("orchestrator consolidated-index integration", () => {
 
     const indexPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "consolidated.json",
@@ -168,7 +168,7 @@ describe("orchestrator consolidated-index integration", () => {
 
     const indexPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "consolidated.json",
@@ -187,7 +187,7 @@ describe("orchestrator consolidated-index integration", () => {
     const outRoot = mkTmp("opensips-orch-idx-out-");
     const indexPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "consolidated.json",
@@ -278,7 +278,7 @@ describe("orchestrator consolidated-index integration", () => {
 
     const indexPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "consolidated.json",
@@ -338,7 +338,7 @@ describe("orchestrator consolidated-index integration", () => {
     // The index file must not exist.
     const indexPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "consolidated.json",

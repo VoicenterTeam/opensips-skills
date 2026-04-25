@@ -96,7 +96,7 @@ describe("version isolation E2E", () => {
       expect(code36).toBe(0);
 
       const modules36 = walkFiles(
-        join(tmpRoot, "opensips-modules", "references", "3.6", "modules"),
+        join(tmpRoot, "opensips-config", "references", "3.6", "modules"),
       );
       for (const file of modules36) {
         const content = readFileSync(file, "utf8");
@@ -107,7 +107,7 @@ describe("version isolation E2E", () => {
       }
 
       const modules35 = walkFiles(
-        join(tmpRoot, "opensips-modules", "references", "3.5", "modules"),
+        join(tmpRoot, "opensips-config", "references", "3.5", "modules"),
       );
       for (const file of modules35) {
         const content = readFileSync(file, "utf8");
@@ -143,7 +143,7 @@ describe("version isolation E2E", () => {
       expect(code36).toBe(0);
 
       const core36 = walkFiles(
-        join(tmpRoot, "opensips-routing", "references", "3.6", "core"),
+        join(tmpRoot, "opensips-config", "references", "3.6", "core"),
       );
       for (const file of core36) {
         const content = readFileSync(file, "utf8");
@@ -154,7 +154,7 @@ describe("version isolation E2E", () => {
       }
 
       const core35 = walkFiles(
-        join(tmpRoot, "opensips-routing", "references", "3.5", "core"),
+        join(tmpRoot, "opensips-config", "references", "3.5", "core"),
       );
       for (const file of core35) {
         const content = readFileSync(file, "utf8");
@@ -193,7 +193,7 @@ describe("version isolation E2E", () => {
         readFileSync(
           join(
             tmpRoot,
-            "opensips-modules",
+            "opensips-config",
             "references",
             "3.5",
             "consolidated.json",
@@ -205,7 +205,7 @@ describe("version isolation E2E", () => {
         readFileSync(
           join(
             tmpRoot,
-            "opensips-modules",
+            "opensips-config",
             "references",
             "3.6",
             "consolidated.json",
@@ -268,7 +268,7 @@ describe("version isolation E2E", () => {
         readFileSync(
           join(
             tmpRoot,
-            "opensips-modules",
+            "opensips-config",
             "references",
             "3.5",
             "consolidated.json",
@@ -280,7 +280,7 @@ describe("version isolation E2E", () => {
         readFileSync(
           join(
             tmpRoot,
-            "opensips-modules",
+            "opensips-config",
             "references",
             "3.6",
             "consolidated.json",

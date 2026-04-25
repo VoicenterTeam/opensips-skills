@@ -81,7 +81,7 @@ describe("full pipeline E2E", () => {
 
       const modulesDir = join(
         tmpRoot,
-        "opensips-modules",
+        "opensips-config",
         "references",
         "3.6",
         "modules",
@@ -96,7 +96,7 @@ describe("full pipeline E2E", () => {
 
       const coreDir = join(
         tmpRoot,
-        "opensips-routing",
+        "opensips-config",
         "references",
         "3.6",
         "core",
@@ -106,7 +106,7 @@ describe("full pipeline E2E", () => {
 
       const guidesDir = join(
         tmpRoot,
-        "opensips-routing",
+        "opensips-config",
         "references",
         "3.6",
         "guides",
@@ -119,7 +119,7 @@ describe("full pipeline E2E", () => {
 
       const consolidatedPath = join(
         tmpRoot,
-        "opensips-modules",
+        "opensips-config",
         "references",
         "3.6",
         "consolidated.json",
@@ -151,7 +151,7 @@ describe("full pipeline E2E", () => {
 
       const modulesDir = join(
         tmpRoot,
-        "opensips-modules",
+        "opensips-config",
         "references",
         "3.5",
         "modules",
@@ -163,7 +163,7 @@ describe("full pipeline E2E", () => {
 
       const coreDir = join(
         tmpRoot,
-        "opensips-routing",
+        "opensips-config",
         "references",
         "3.5",
         "core",
@@ -175,7 +175,7 @@ describe("full pipeline E2E", () => {
       // not emit a guides output dir (or if it does, it must be empty).
       const guidesDir = join(
         tmpRoot,
-        "opensips-routing",
+        "opensips-config",
         "references",
         "3.5",
         "guides",
@@ -189,7 +189,7 @@ describe("full pipeline E2E", () => {
 
       const consolidatedPath = join(
         tmpRoot,
-        "opensips-modules",
+        "opensips-config",
         "references",
         "3.5",
         "consolidated.json",
@@ -222,7 +222,7 @@ describe("full pipeline E2E", () => {
     // No files should have been written for the skipped version.
     const modulesDir = join(
       tmpRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.4",
     );

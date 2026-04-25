@@ -23,14 +23,15 @@ import { main } from "../../scripts/build-references.js";
  *
  * The four scenarios:
  *   1. All 12 core types + 3 guides for 3.6: every expected `.md` file is
- *      produced at the correct path under `opensips-routing/`.
+ *      produced at the correct path under `opensips-config/` (ADR-012).
  *   2. No `guides/` directory: build succeeds, no guides directory is
  *      created in the output tree, no error is reported.
  *   3. Build-twice determinism on the integration tmp: byte-identical
  *      output across two consecutive builds (one core file + one guide
  *      file spot-checked).
- *   4. Path placement: core files end up under `opensips-routing/`, NOT
- *      under `opensips-modules/`.
+ *   4. Path placement: core and guide files end up under `opensips-config/`
+ *      (merged skill per ADR-012); the old `opensips-routing/` and
+ *      `opensips-modules/` directories must NOT exist.
  */
 describe("orchestrator core + guides rendering integration", () => {
   let stdoutSpy: ReturnType<typeof vi.spyOn>;
@@ -89,7 +90,7 @@ describe("orchestrator core + guides rendering integration", () => {
   /**
    * The expected output filenames for the core composer (mirrored from
    * `coreFileNames`). These are what should appear under
-   * `<outputRoot>/opensips-routing/references/3.6/core/`.
+   * `<outputRoot>/opensips-config/references/3.6/core/` (ADR-012).
    */
   const EXPECTED_CORE_OUTPUT = [
     "async.md",
@@ -177,7 +178,7 @@ describe("orchestrator core + guides rendering integration", () => {
 
     const coreDir = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "core",
@@ -188,7 +189,7 @@ describe("orchestrator core + guides rendering integration", () => {
 
     const guidesDir = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "guides",
@@ -217,7 +218,7 @@ describe("orchestrator core + guides rendering integration", () => {
     // Core files still produced.
     const coreDir = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "core",
@@ -229,7 +230,7 @@ describe("orchestrator core + guides rendering integration", () => {
     // Guides directory must not exist — the renderer is a no-op.
     const guidesDir = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "guides",
@@ -247,7 +248,7 @@ describe("orchestrator core + guides rendering integration", () => {
 
     const corePath = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "core",
@@ -255,7 +256,7 @@ describe("orchestrator core + guides rendering integration", () => {
     );
     const guidePath = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "guides",
@@ -290,7 +291,12 @@ describe("orchestrator core + guides rendering integration", () => {
     expect(guide2.equals(guide1)).toBe(true);
   });
 
-  it("places core files under opensips-routing/, not opensips-modules/", async () => {
+  it("places core and guide files under opensips-config/ (ADR-012 merged layout)", async () => {
+    // ADR-012 merged opensips-routing and opensips-modules into a single
+    // opensips-config skill. All output — modules, core, and guides — now
+    // lives under opensips-config/references/{version}/. This test verifies
+    // the new layout: core and guide files appear under opensips-config and
+    // the two old separate skill directories do NOT exist.
     const srcRoot = tmpSourceWithCoreAndOptionalGuides({ includeGuides: true });
     const outRoot = mkTmp("opensips-orch-cg-out-");
 
@@ -304,10 +310,10 @@ describe("orchestrator core + guides rendering integration", () => {
     ]);
     expect(code).toBe(0);
 
-    // Positive: core dir under opensips-routing exists with content.
+    // Positive: core dir under opensips-config exists with content.
     const correctCorePath = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "core",
@@ -315,20 +321,10 @@ describe("orchestrator core + guides rendering integration", () => {
     );
     expect(existsSync(correctCorePath)).toBe(true);
 
-    // Negative: core dir under opensips-modules must NOT exist.
-    const wrongCorePath = join(
-      outRoot,
-      "opensips-modules",
-      "references",
-      "3.6",
-      "core",
-    );
-    expect(existsSync(wrongCorePath)).toBe(false);
-
-    // Same check for guides.
+    // Positive: guides dir under opensips-config exists with content.
     const correctGuidePath = join(
       outRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       "3.6",
       "guides",
@@ -336,13 +332,8 @@ describe("orchestrator core + guides rendering integration", () => {
     );
     expect(existsSync(correctGuidePath)).toBe(true);
 
-    const wrongGuidePath = join(
-      outRoot,
-      "opensips-modules",
-      "references",
-      "3.6",
-      "guides",
-    );
-    expect(existsSync(wrongGuidePath)).toBe(false);
+    // Negative: the two old separate skill dirs must NOT exist.
+    expect(existsSync(join(outRoot, "opensips-routing"))).toBe(false);
+    expect(existsSync(join(outRoot, "opensips-modules"))).toBe(false);
   });
 });
