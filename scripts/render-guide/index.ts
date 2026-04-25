@@ -90,6 +90,7 @@ import {
   type TocEntry,
 } from "../lib/markdown-builders.js";
 import { renderProvenance } from "../lib/frontmatter.js";
+import { sanitizeRenderedText } from "../lib/sanitize.js";
 import { getLeadParagraph } from "../render-core/lead-paragraphs.js";
 
 type GuideDocument = z.infer<typeof GuideDocumentSchema>;
@@ -405,5 +406,6 @@ export function renderGuide(doc: GuideDocument, version: string, generatorVersio
   //    final pass) and force exactly one trailing newline.
   const composed = head + toc + overviewBody + typeSpecificBody;
   const collapsed = composed.replace(/(?:\n[ \t]*){3,}/g, "\n\n");
-  return `${collapsed.replace(/\n+$/, "")}\n`;
+  const cleaned = sanitizeRenderedText(collapsed);
+  return `${cleaned.replace(/\n+$/, "")}\n`;
 }

@@ -38,6 +38,7 @@ import type { ModuleDocument } from "../schemas/modules.schema.js";
 import type { ConsolidatedIndex, IndexEntry, IndexStatistics } from "../types/consolidated.js";
 import { CONSOLIDATED_SCHEMA_VERSION } from "../types/consolidated.js";
 import { posixPath } from "../lib/fs-helpers.js";
+import { sanitizeRenderedText } from "../lib/sanitize.js";
 import { slugify } from "../lib/slug.js";
 
 /* ------------------------------------------------------------------ */
@@ -130,9 +131,14 @@ const DESCRIPTION_MAX_LEN = 200;
  */
 function firstSentence(text: string, maxLen: number): string {
   if (text.length === 0) return "";
-  const boundary = text.search(/\.\s/);
+  // Strip upstream extraction artifacts (U+FFFD, U+200B, over-escaped
+  // underscores) before sentence-splitting so the index entries stay
+  // consistent with the rendered .md descriptions.
+  const cleaned = sanitizeRenderedText(text);
+  if (cleaned.length === 0) return "";
+  const boundary = cleaned.search(/\.\s/);
   // `+1` to keep the period itself; the whitespace is the cut point.
-  const sentence = boundary >= 0 ? text.slice(0, boundary + 1) : text;
+  const sentence = boundary >= 0 ? cleaned.slice(0, boundary + 1) : cleaned;
   if (sentence.length <= maxLen) return sentence;
   return sentence.slice(0, maxLen) + "…";
 }

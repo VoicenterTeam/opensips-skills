@@ -22,6 +22,7 @@
  */
 
 import { atomicWriteFile } from "../lib/fs-helpers.js";
+import { sanitizeRenderedText } from "../lib/sanitize.js";
 import { validateVersion } from "../lib/validate.js";
 import type { ModuleDocument } from "../schemas/modules.schema.js";
 import { readFile } from "node:fs/promises";
@@ -88,9 +89,7 @@ const TABLE_SEPARATOR = "|---|---|---|";
  * //   ]
  * ```
  */
-export function buildModuleCatalogRows(
-  documents: ModuleDocument[],
-): ModuleCatalogRow[] {
+export function buildModuleCatalogRows(documents: ModuleDocument[]): ModuleCatalogRow[] {
   const rows: ModuleCatalogRow[] = documents.map((doc) => ({
     name: doc.module_name,
     purpose: extractPurpose(doc.overview),
@@ -151,10 +150,7 @@ export function renderModuleCatalogTable(rows: ModuleCatalogRow[]): string {
  * await atomicWriteFile(skillMdPath, updated);
  * ```
  */
-export function injectModuleIndex(
-  skillMdContent: string,
-  table: string,
-): string {
+export function injectModuleIndex(skillMdContent: string, table: string): string {
   const beginIdx = skillMdContent.indexOf(MARKER_BEGIN);
   const endIdx = skillMdContent.indexOf(MARKER_END);
 
@@ -210,9 +206,7 @@ export async function rebuildModuleIndex(
       .map((i) => `  - ${i.kind}: ${i.message}`)
       .join("\n");
     const moreSuffix =
-      result.issues.length > 5
-        ? `\n  ... and ${result.issues.length - 5} more`
-        : "";
+      result.issues.length > 5 ? `\n  ... and ${result.issues.length - 5} more` : "";
     throw new Error(
       `Cannot build module index: validation of ${latestVersion} produced ${result.issues.length} issue(s):\n${summary}${moreSuffix}`,
     );
@@ -247,9 +241,14 @@ export async function rebuildModuleIndex(
 function extractPurpose(overview: string): string {
   if (!overview || overview.trim() === "") return FALLBACK_PURPOSE;
 
-  // Strip code-fence boundaries before doing anything else; an overview
-  // that begins with ``` would otherwise leak the backticks into the cell.
-  let text = overview.replace(/```/g, " ");
+  // Drop upstream extraction artifacts (U+FFFD, U+200B, over-escaped
+  // underscores) before any other transformation so the table cell matches
+  // the rendered reference files.
+  let text = sanitizeRenderedText(overview);
+
+  // Strip code-fence boundaries; an overview that begins with ``` would
+  // otherwise leak the backticks into the cell.
+  text = text.replace(/```/g, " ");
 
   // First sentence: split on ". " followed by an uppercase letter, which
   // approximates a sentence boundary while tolerating common abbreviations

@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-(Nothing yet — v1.0.0 is the foundation; future entries record changes from here.)
+### Fixed
+- **Rendering-time sanitization for upstream extraction artifacts.** Generated reference files no longer carry three classes of upstream `opensips-docs-collector` damage: `U+FFFD` replacement characters in DocBook-derived section anchors (487 occurrences), over-escaped `\_` underscores in identifiers (~14k occurrences), and `U+200B` zero-width spaces (4 occurrences). A new pure helper (`scripts/lib/sanitize.ts`) is wired into `renderModule`, `renderCoreDocument`, `renderGuide`, the `consolidated.json` description path (`build-consolidated/index.ts#firstSentence`), and the `SKILL.md` module-index `Purpose` column (`build-module-index/index.ts#extractPurpose`), so every place a description leaves the source JSON gets the same cleanup. The committed source under `data/` is untouched — only the *rendered* output is cleaned, preserving the upstream-resync workflow. Per ADR-010, this is a deliberate, narrow exception to CLAUDE.md Rule 3 with three explicit criteria gating any future additions to the rule set; the upstream fix in `opensips-docs-collector` will retire this layer. 12 new unit tests in `tests/unit/lib/sanitize.test.ts`; golden fixtures regenerated.
+
+### Documentation
+- **ADR-010** — Rendering-time output sanitization for upstream extraction artifacts.
 
 ## [1.0.0] - 2026-04-25
 

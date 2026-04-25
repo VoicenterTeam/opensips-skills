@@ -41,6 +41,7 @@ import {
   type TocEntry,
 } from "../lib/markdown-builders.js";
 import { renderProvenance } from "../lib/frontmatter.js";
+import { sanitizeRenderedText } from "../lib/sanitize.js";
 import { slugify } from "../lib/slug.js";
 import { renderParameter } from "./elements/parameter.js";
 import { renderFunction } from "./elements/function.js";
@@ -263,16 +264,10 @@ export function renderModule(
   // captions); we rebase those depths so they nest inside the wrapping H2
   // rather than producing sibling H2s (which would make our wrapper
   // appear empty to the validator and visually merge sections).
-  const overviewBody = renderSection(
-    SECTION_OVERVIEW,
-    rebaseHeadingDepths(module.overview, 2),
-  );
+  const overviewBody = renderSection(SECTION_OVERVIEW, rebaseHeadingDepths(module.overview, 2));
 
   const howItWorksBody = hasContent(module.how_it_works)
-    ? renderSection(
-        SECTION_HOW_IT_WORKS,
-        rebaseHeadingDepths(module.how_it_works, 2),
-      )
+    ? renderSection(SECTION_HOW_IT_WORKS, rebaseHeadingDepths(module.how_it_works, 2))
     : "";
 
   // renderDependencies emits its own H2; do NOT wrap it in renderSection.
@@ -294,10 +289,7 @@ export function renderModule(
   );
   const pseudoVariablesBody = renderSection(
     SECTION_EXPORTED_PSEUDO_VARIABLES,
-    composeAlphabetizedBody<PseudoVariable>(
-      module.exported_pseudo_variables,
-      renderPseudoVariable,
-    ),
+    composeAlphabetizedBody<PseudoVariable>(module.exported_pseudo_variables, renderPseudoVariable),
   );
   const miFunctionsBody = renderSection(
     SECTION_EXPORTED_MI_FUNCTIONS,
@@ -379,5 +371,6 @@ export function renderModule(
   // the file-end contract.
   const composed = head + toc + body;
   const collapsed = composed.replace(/(?:\n[ \t]*){3,}/g, "\n\n");
-  return `${collapsed.replace(/\n+$/, "")}\n`;
+  const cleaned = sanitizeRenderedText(collapsed);
+  return `${cleaned.replace(/\n+$/, "")}\n`;
 }

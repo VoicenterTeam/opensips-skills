@@ -35,6 +35,7 @@ import {
   type TocEntry,
 } from "../lib/markdown-builders.js";
 import { renderProvenance } from "../lib/frontmatter.js";
+import { sanitizeRenderedText } from "../lib/sanitize.js";
 import { getLeadParagraph } from "./lead-paragraphs.js";
 
 import { renderParameter } from "../render-module/elements/parameter.js";
@@ -200,8 +201,7 @@ const DISPATCH = {
   },
   transformation: {
     array: "transformations",
-    render: (item) =>
-      renderTransformation(item as Parameters<typeof renderTransformation>[0], 2),
+    render: (item) => renderTransformation(item as Parameters<typeof renderTransformation>[0], 2),
     sortKey: (item) => (item as { name: string }).name,
     headingText: (item) => renderInlineCode((item as { name: string }).name),
   },
@@ -392,5 +392,6 @@ export function renderCoreDocument(
   // free of bookkeeping.
   const composed = head + toc + body;
   const collapsed = composed.replace(/(?:\n[ \t]*){3,}/g, "\n\n");
-  return `${collapsed.replace(/\n+$/, "")}\n`;
+  const cleaned = sanitizeRenderedText(collapsed);
+  return `${cleaned.replace(/\n+$/, "")}\n`;
 }

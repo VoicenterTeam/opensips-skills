@@ -28,7 +28,7 @@
         "source": "module:acc"
       },
       "acc_new_leg": {
-        "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.�$acc_current_leg (read-only)\") only if multi-leg accounting is used.",
+        "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.$acc_current_leg (read-only)\") only if multi-leg accounting is used.",
         "path": "references/3.6/modules/acc.md",
         "source": "module:acc"
       },

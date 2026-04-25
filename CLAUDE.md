@@ -222,7 +222,7 @@ Any file under `plugins/opensips/skills/*/references/{version}/core/`, `plugins/
 Before changing how skills are structured, how the build works, how versions are resolved, or how the pipeline is laid out — write an ADR under `docs/architecture/adr/`. Use the next number. If you're superseding an existing ADR, link to it and update the old one's status to "Superseded by ADR-NNN."
 
 ### Rule 3: Source of truth is upstream
-This project does not correct OpenSIPs documentation. If a module reference is wrong, the fix belongs in `opensips-docs-collector`. This project's job is faithful transformation, not editing. The only exception is the hand-authored SKILL.md content, which is procedural knowledge not present in upstream docs.
+This project does not correct OpenSIPs documentation. If a module reference is wrong, the fix belongs in `opensips-docs-collector`. This project's job is faithful transformation, not editing. The only exceptions are (a) the hand-authored SKILL.md content, which is procedural knowledge not present in upstream docs, and (b) a narrow, gated rendering-time sanitization layer for upstream **extraction artifacts** (not OpenSIPs content) — see ADR-010. Adding a new sanitize rule requires meeting all three criteria in ADR-010's "Threshold for adding new sanitize rules" section.
 
 ### Rule 4: Version isolation is sacred
 The project supports 3.5 and 3.6 as completely independent worlds. No code path should read from one version's references while operating on another. No "what changed between 3.5 and 3.6" logic. If the user asks, Claude answers from within the active version only.

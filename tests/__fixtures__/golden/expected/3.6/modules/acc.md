@@ -178,7 +178,7 @@ It affects all values related to TO and FROM headers (body, URI, username, domai
 **Example.** 1.
 
 ```opensips
-modparam("acc", "detect\_direction", 1)
+modparam("acc", "detect_direction", 1)
 ```
 ### `early_media` (integer)
 
@@ -189,11 +189,11 @@ Should be early media (any provisional reply with body) accounted too ?
 **Example.** 1.
 
 ```opensips
-modparam("acc", "early\_media", 1)
+modparam("acc", "early_media", 1)
 ```
 ### `extra_fields` (string)
 
-Defines the tag-log\_value set to be used in extra fields accounting. See [Section 1.2, “Extra accounting”](#ACC-extra-id "1.2. Extra accounting") for a detailed description of the Extra accounting.
+Defines the tag-log_value set to be used in extra fields accounting. See [Section 1.2, “Extra accounting”](#ACC-extra-id "1.2. Extra accounting") for a detailed description of the Extra accounting.
 
 If empty, extra accounting support will be disabled.
 
@@ -202,11 +202,11 @@ If empty, extra accounting support will be disabled.
 **Example.** log: a->My_a_Field; b.
 
 ```opensips
-modparam("acc", "extra\_fields", "log: a->My\_a\_Field; b")
+modparam("acc", "extra_fields", "log: a->My_a_Field; b")
 ```
 ### `leg_fields` (string)
 
-Defines the tag-log\_value set to be used in multi-leg accounting. See [Section 1.3, “Multi Call-Legs accounting”](#multi-call-legs "1.3. Multi Call-Legs accounting") for a detailed description of the Multi Call-Legs accounting.
+Defines the tag-log_value set to be used in multi-leg accounting. See [Section 1.3, “Multi Call-Legs accounting”](#multi-call-legs "1.3. Multi Call-Legs accounting") for a detailed description of the Multi Call-Legs accounting.
 
 If empty, multi-leg accounting support will be disabled.
 
@@ -215,7 +215,7 @@ If empty, multi-leg accounting support will be disabled.
 **Example.** log: a->My_a_Field; b.
 
 ```opensips
-modparam("acc", "leg\_fields", "log: a->My\_a\_Field; b")
+modparam("acc", "leg_fields", "log: a->My_a_Field; b")
 ```
 ### `log_facility` (string)
 
@@ -248,7 +248,7 @@ By default, CANCEL reporting is disabled -- most accounting applications wants t
 **Example.** 1.
 
 ```opensips
-modparam("acc", "report\_cancels", 1)
+modparam("acc", "report_cancels", 1)
 ```
 ### `service_type` (integer)
 
@@ -314,7 +314,7 @@ acc_db_request("$T_reply_code $(<reply>rr)", "acc");
 
 ### `acc_evi_request(comment)`
 
-Like `acc_log_request`, `acc_evi_request` reports on a request. The report is packed as an event sent through the OpenSIPS Event Interface as _E_ACC_EVENT_ if the reply code is a positive one (lower than 300), or _E_ACC_MISSED_EVENT_ for negative or no codes. More information on this in [Exported Events](#exported_events "1.9.�Exported Events").
+Like `acc_log_request`, `acc_evi_request` reports on a request. The report is packed as an event sent through the OpenSIPS Event Interface as _E_ACC_EVENT_ if the reply code is a positive one (lower than 300), or _E_ACC_MISSED_EVENT_ for negative or no codes. More information on this in [Exported Events](#exported_events "1.9.Exported Events").
 
 **Parameters:**
 
@@ -385,7 +385,7 @@ acc_log_request("403 Destination not allowed");
 
 ### `acc_new_leg()`
 
-Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg "1.7.3.�$acc_current_leg (read-only)") only if multi-leg accounting is used. All values of the new leg will be initialized to null.
+Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg "1.7.3.$acc_current_leg (read-only)") only if multi-leg accounting is used. All values of the new leg will be initialized to null.
 
 **Usable from:** REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE, LOCAL_ROUTE
 

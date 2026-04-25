@@ -100,7 +100,7 @@ Retransmission T1 period, in milliseconds.
 **Example.** Set the `T1_timer` parameter.
 
 ```opensips
-modparam("tm", "T1\_timer", 700)
+modparam("tm", "T1_timer", 700)
 ```
 ### `T2_timer` (integer)
 
@@ -111,7 +111,7 @@ Maximum retransmission period, in milliseconds.
 **Example.** 8000.
 
 ```opensips
-modparam("tm", "T2\_timer", 8000)
+modparam("tm", "T2_timer", 8000)
 ```
 ### `auto_100trying` (integer)
 
@@ -140,7 +140,7 @@ This parameter should be used in an anycast setup, and specifies whether a CANCE
 ```opensips
 ...
 # disable auto-cancel handling
-modparam("tm", "cluster\_auto\_cancel", no)
+modparam("tm", "cluster_auto_cancel", no)
 ...
 ```
 ### `cluster_param` (string)
@@ -153,7 +153,7 @@ This parameter should be used in an anycast setup, and specifies the name of the
 
 ```opensips
 ...
-modparam("tm", "cluster\_param", "tid")
+modparam("tm", "cluster_param", "tid")
 ...
 ```
 ### `delete_timer` (integer)
@@ -165,7 +165,7 @@ Time after which a to-be-deleted transaction currently ref-ed by a process will 
 **Example.** Set the `delete_timer` parameter.
 
 ```opensips
-modparam("tm", "delete\_timer", 5)
+modparam("tm", "delete_timer", 5)
 ```
 ### `disable_6xx_block` (integer)
 
@@ -203,7 +203,7 @@ Timeout which is triggered if no final reply for an INVITE arrives after a provi
 **Example.** Set the `fr_inv_timeout` parameter.
 
 ```opensips
-modparam("tm", "fr\_inv\_timeout", 200)
+modparam("tm", "fr_inv_timeout", 200)
 ```
 ### `fr_timeout` (integer)
 
@@ -214,7 +214,7 @@ Timeout which is triggered if no final reply for a request or ACK for a negative
 **Example.** Set the `fr_timeout` parameter.
 
 ```opensips
-modparam("tm", "fr\_timeout", 10)
+modparam("tm", "fr_timeout", 10)
 ```
 ### `local_reply_route` (string)
 
@@ -224,13 +224,13 @@ This parameter points to a route, which is executed whenever TM is about to send
 
 ```opensips
 ...
-# Execute the route "tm\_local\_reply" upon sending a request
-modparam("tm", "local\_reply\_route", "tm\_local\_reply")
+# Execute the route "tm_local_reply" upon sending a request
+modparam("tm", "local_reply_route", "tm_local_reply")
 
-route\[tm\_local\_reply\] {
-	if (is\_method("BYE")) {
-		$var(rc) = rest\_get("http://localhost/qos/delete",
-					$var(recv\_body), $var(recv\_ct), $var(rcode));
+route\[tm_local_reply\] {
+	if (is_method("BYE")) {
+		$var(rc) = rest_get("http://localhost/qos/delete",
+					$var(recv_body), $var(recv_ct), $var(rcode));
 	}
 }
 ...
@@ -243,12 +243,12 @@ This parameter points to a route, which is executed whenever TM is about to send
 
 ```opensips
 ...
-# Execute the route "local\_request\_route" upon sending a request
-modparam("tm", "local\_request\_route", "tm\_local\_request")
+# Execute the route "local_request_route" upon sending a request
+modparam("tm", "local_request_route", "tm_local_request")
 
-route\[tm\_local\_request\] {
-	if (is\_method("INVITE") && $rb(application/sdp) && !has\_totag()) {
-		$avp(sdp\_request) := $rb(application/sdp);
+route\[tm_local_request\] {
+	if (is_method("INVITE") && $rb(application/sdp) && !has_totag()) {
+		$avp(sdp_request) := $rb(application/sdp);
 	}
 }
 ...
@@ -305,7 +305,7 @@ If true (non null value), the final response timer will be re-triggered for each
 **Example.** 0.
 
 ```opensips
-modparam("tm", "restart\_fr\_on\_each\_reply", 0)
+modparam("tm", "restart_fr_on_each_reply", 0)
 ```
 ### `ruri_matching` (integer)
 
@@ -316,7 +316,7 @@ Should be request-uri matching used as a part of pre-3261 transaction matching a
 **Example.** 0.
 
 ```opensips
-modparam("tm", "ruri\_matching", 0)
+modparam("tm", "ruri_matching", 0)
 ```
 ### `syn_branch` (integer)
 
@@ -378,14 +378,14 @@ modparam("tm", "tw_append",
 ```
 ### `unix_tx_timeout` (integer)
 
-Send timeout to be used by function which use UNIX sockets (as t\_write\_unix).
+Send timeout to be used by function which use UNIX sockets (as t_write_unix).
 
 *Default value is 2 seconds.*
 
 **Example.** 5.
 
 ```opensips
-modparam("tm", "unix\_tx\_timeout", 5)
+modparam("tm", "unix_tx_timeout", 5)
 ```
 ### `via1_matching` (integer)
 
@@ -396,7 +396,7 @@ Should be top most VIA matching used as a part of pre-3261 transaction matching 
 **Example.** 0.
 
 ```opensips
-modparam("tm", "via1\_matching", 0)
+modparam("tm", "via1_matching", 0)
 ```
 ### `wt_timer` (integer)
 
@@ -407,7 +407,7 @@ Time for which a transaction stays in memory to absorb delayed messages after it
 **Example.** Set the `wt_timer` parameter.
 
 ```opensips
-modparam("tm", "wt\_timer", 10)
+modparam("tm", "wt_timer", 10)
 ```
 
 ## Exported Functions
@@ -660,7 +660,7 @@ This function generates and sends out a new SIP request (in a stateful way). The
 
 ### `t_newtran()`
 
-Creates the SIP transaction for the currently processed SIP request, thus switching to stateful processing. For INVITE requests, a 100 Trying reply will be immediately sent, unless [auto_100trying](#param_auto_100trying "1.3.19.�auto_100trying (integer)") is disabled. Once a SIP transaction is created, calling [t_newtran()](#func_t_newtran "1.4.4.� t_newtran()") for retransmitted requests will end the OpenSIPS script execution, with the lastly sent reply being retransmitted upstream.
+Creates the SIP transaction for the currently processed SIP request, thus switching to stateful processing. For INVITE requests, a 100 Trying reply will be immediately sent, unless [auto_100trying](#param_auto_100trying "1.3.19.auto_100trying (integer)") is disabled. Once a SIP transaction is created, calling [t_newtran()](#func_t_newtran "1.4.4. t_newtran()") for retransmitted requests will end the OpenSIPS script execution, with the lastly sent reply being retransmitted upstream.
 
 **Usable from:** REQUEST_ROUTE
 
@@ -817,7 +817,7 @@ The first parameter is a comma separated list of string flags for controlling th
 
 *   _no-auto-477_ - (old _0x02_ flag) do not internally generate and send a "477 Send failed (477/TM)" SIP reply in case of a global forwarding failure (i.e. forwarding for each branch has failed due to internal errors, bad R-URI, bad message, lack of network reachability, etc.).
     
-    This flag only applies if the transaction was not previously created by [t_newtran()](#func_t_newtran "1.4.4.� t_newtran()"). When a global forwarding failure occurs, no SIP request is relayed and therefore no negative SIP reply or timeout will show up on the failure_route, if one is set.
+    This flag only applies if the transaction was not previously created by [t_newtran()](#func_t_newtran "1.4.4. t_newtran()"). When a global forwarding failure occurs, no SIP request is relayed and therefore no negative SIP reply or timeout will show up on the failure_route, if one is set.
     
     Useful if you want to implement a failover logic for when none of the currently created branches can be forwarded to.
     
@@ -1407,7 +1407,7 @@ Set `fr_timeout` parameter
 
 ```opensips
 ...
-modparam("tm", "fr\_timeout", 10)
+modparam("tm", "fr_timeout", 10)
 ...
 ```
 ### Set `fr_inv_timeout` parameter
@@ -1416,7 +1416,7 @@ Set `fr_inv_timeout` parameter
 
 ```opensips
 ...
-modparam("tm", "fr\_inv\_timeout", 200)
+modparam("tm", "fr_inv_timeout", 200)
 ...
 ```
 ### Set `wt_timer` parameter
@@ -1425,7 +1425,7 @@ Set `wt_timer` parameter
 
 ```opensips
 ...
-modparam("tm", "wt\_timer", 10)
+modparam("tm", "wt_timer", 10)
 ...
 ```
 ### Set `delete_timer` parameter
@@ -1434,7 +1434,7 @@ Set `delete_timer` parameter
 
 ```opensips
 ...
-modparam("tm", "delete\_timer", 5)
+modparam("tm", "delete_timer", 5)
 ...
 ```
 ### Set `T1_timer` parameter
@@ -1443,7 +1443,7 @@ Set `T1_timer` parameter
 
 ```opensips
 ...
-modparam("tm", "T1\_timer", 700)
+modparam("tm", "T1_timer", 700)
 ...
 ```
 ### Set `T2_timer` parameter
@@ -1452,7 +1452,7 @@ Set `T2_timer` parameter
 
 ```opensips
 ...
-modparam("tm", "T2\_timer", 8000)
+modparam("tm", "T2_timer", 8000)
 ...
 ```
 ### Set `ruri_matching` parameter
@@ -1461,7 +1461,7 @@ Set `ruri_matching` parameter
 
 ```opensips
 ...
-modparam("tm", "ruri\_matching", 0)
+modparam("tm", "ruri_matching", 0)
 ...
 ```
 ### Set `via1_matching` parameter
@@ -1470,7 +1470,7 @@ Set `via1_matching` parameter
 
 ```opensips
 ...
-modparam("tm", "via1\_matching", 0)
+modparam("tm", "via1_matching", 0)
 ...
 ```
 ### Set `unix_tx_timeout` parameter
@@ -1479,7 +1479,7 @@ Set `unix_tx_timeout` parameter
 
 ```opensips
 ...
-modparam("tm", "unix\_tx\_timeout", 5)
+modparam("tm", "unix_tx_timeout", 5)
 ...
 ```
 ### Set `restart_fr_on_each_reply` parameter
@@ -1488,7 +1488,7 @@ Set `restart_fr_on_each_reply` parameter
 
 ```opensips
 ...
-modparam("tm", "restart\_fr\_on\_each\_reply", 0)
+modparam("tm", "restart_fr_on_each_reply", 0)
 ...
 ```
 ### Set `tw_append` parameter
@@ -1497,7 +1497,7 @@ Set `tw_append` parameter
 
 ```opensips
 ...
-modparam("tm", "tw\_append",
+modparam("tm", "tw_append",
    "test: ua=$hdr(User-Agent) ;avp=$avp(avp);$rb;time=$Ts")
 ...
 ```
@@ -1507,7 +1507,7 @@ Set `pass_provisional_replies` parameter
 
 ```opensips
 ...
-modparam("tm", "pass\_provisional\_replies", 1)
+modparam("tm", "pass_provisional_replies", 1)
 ...
 ```
 ### Set `syn_branch` parameter
@@ -1516,7 +1516,7 @@ Set `syn_branch` parameter
 
 ```opensips
 ...
-modparam("tm", "syn\_branch", 0)
+modparam("tm", "syn_branch", 0)
 ...
 ```
 ### Set `onreply_avp_mode` parameter
@@ -1525,7 +1525,7 @@ Set `onreply_avp_mode` parameter
 
 ```opensips
 ...
-modparam("tm", "onreply\_avp\_mode", 1)
+modparam("tm", "onreply_avp_mode", 1)
 ...
 ```
 ### Set `disable_6xx_block` parameter
@@ -1534,7 +1534,7 @@ Set `disable_6xx_block` parameter
 
 ```opensips
 ...
-modparam("tm", "disable\_6xx\_block", 1)
+modparam("tm", "disable_6xx_block", 1)
 ...
 ```
 ### Set `enable_stats` parameter
@@ -1543,7 +1543,7 @@ Set `enable_stats` parameter
 
 ```opensips
 ...
-modparam("tm", "enable\_stats", 0)
+modparam("tm", "enable_stats", 0)
 ...
 ```
 ### Set `minor_branch_flag` parameter
@@ -1552,7 +1552,7 @@ Set `minor_branch_flag` parameter
 
 ```opensips
 ...
-modparam("tm", "minor\_branch\_flag", "MINOR\_BFLAG")
+modparam("tm", "minor_branch_flag", "MINOR_BFLAG")
 ...
 ```
 ### Set `timer_partitions` parameter
@@ -1562,7 +1562,7 @@ Set `timer_partitions` parameter
 ```opensips
 ...
 # Enable two timer partitions
-modparam("tm", "timer\_partitions", 2)
+modparam("tm", "timer_partitions", 2)
 ...
 ```
 ### Set `auto_100trying` parameter
@@ -1572,7 +1572,7 @@ Set `auto_100trying` parameter
 ```opensips
 ...
 # Disable automatic 100 Trying
-modparam("tm", "auto\_100trying", 0)
+modparam("tm", "auto_100trying", 0)
 ...
 ```
 ### Set `tm_replication_cluster` parameter
@@ -1582,7 +1582,7 @@ Set `tm_replication_cluster` parameter
 ```opensips
 ...
 # replicate anycast messages in cluster 1
-modparam("tm", "tm\_replication\_cluster", 1)
+modparam("tm", "tm_replication_cluster", 1)
 ...
 ```
 ### Set the `cluster_param` parameter
@@ -1591,7 +1591,7 @@ Set the `cluster_param` parameter
 
 ```opensips
 ...
-modparam("tm", "cluster\_param", "tid")
+modparam("tm", "cluster_param", "tid")
 ...
 ```
 ### Set the `cluster_auto_cancel` parameter
@@ -1601,7 +1601,7 @@ Set the `cluster_auto_cancel` parameter
 ```opensips
 ...
 # disable auto-cancel handling
-modparam("tm", "cluster\_auto\_cancel", no)
+modparam("tm", "cluster_auto_cancel", no)
 ...
 ```
 ### Set the `local_request_route` parameter
@@ -1610,12 +1610,12 @@ Set the `local_request_route` parameter
 
 ```opensips
 ...
-# Execute the route "local\_request\_route" upon sending a request
-modparam("tm", "local\_request\_route", "tm\_local\_request")
+# Execute the route "local_request_route" upon sending a request
+modparam("tm", "local_request_route", "tm_local_request")
 
-route[tm\_local\_request] {
-	if (is\_method("INVITE") && $rb(application/sdp) && !has\_totag()) {
-		$avp(sdp\_request) := $rb(application/sdp);
+route[tm_local_request] {
+	if (is_method("INVITE") && $rb(application/sdp) && !has_totag()) {
+		$avp(sdp_request) := $rb(application/sdp);
 	}
 }
 ...
@@ -1626,13 +1626,13 @@ Set the `local_reply_route` parameter
 
 ```opensips
 ...
-# Execute the route "tm\_local\_reply" upon sending a request
-modparam("tm", "local\_reply\_route", "tm\_local\_reply")
+# Execute the route "tm_local_reply" upon sending a request
+modparam("tm", "local_reply_route", "tm_local_reply")
 
-route[tm\_local\_reply] {
-	if (is\_method("BYE")) {
-		$var(rc) = rest\_get("http://localhost/qos/delete",
-				$var(recv\_body), $var(recv\_ct), $var(rcode));
+route[tm_local_reply] {
+	if (is_method("BYE")) {
+		$var(rc) = rest_get("http://localhost/qos/delete",
+				$var(recv_body), $var(recv_ct), $var(rcode));
 	}
 }
 
@@ -1644,14 +1644,14 @@ route[tm\_local\_reply] {
 
 ```opensips
 ...
-if (!t\_relay()) {
-    sl\_reply\_error();
+if (!t_relay()) {
+    sl_reply_error();
     exit;
 }
 ...
-t\_relay( ,"tcp:192.168.1.10:5060");
+t_relay( ,"tcp:192.168.1.10:5060");
 ...
-t\_relay(0x1, "mydomain.com:5070");
+t_relay(0x1, "mydomain.com:5070");
 ...
 ```
 ### `t_reply` usage
@@ -1660,7 +1660,7 @@ t\_relay(0x1, "mydomain.com:5070");
 
 ```opensips
 ...
-t\_reply(404, "Use $rU not found");
+t_reply(404, "Use $rU not found");
 ...
 ```
 ### `t_reply_with_body` usage
@@ -1669,11 +1669,11 @@ t\_reply(404, "Use $rU not found");
 
 ```opensips
 ...
-	if(is\_method("INVITE"))
+	if(is_method("INVITE"))
 	{
-		append\_to\_reply("Contact: $var(contact)\\r\\n"
+		append_to_reply("Contact: $var(contact)\\r\\n"
 				"Content-Type: application/sdp\\r\\n");
-		t\_reply\_with\_body(200, "Ok", $var(body));
+		t_reply_with_body(200, "Ok", $var(body));
 		exit;
 	}
 ...
@@ -1684,10 +1684,10 @@ t\_reply(404, "Use $rU not found");
 
 ```opensips
 ...
-t\_newtran();  # 100 Trying is fired here
+t_newtran();  # 100 Trying is fired here
 xlog("doing my complicated routing logic\\n");
 ....
-t\_relay(); # send the call further
+t_relay(); # send the call further
 ...
 ```
 ### `t_check_trans` usage
@@ -1696,9 +1696,9 @@ t\_relay(); # send the call further
 
 ```opensips
 ...
-if ( is\_method("CANCEL") ) {
-	if ( t\_check\_trans() )
-		t\_relay();
+if ( is_method("CANCEL") ) {
+	if ( t_check_trans() )
+		t_relay();
 	exit;
 }
 ...
@@ -1709,7 +1709,7 @@ if ( is\_method("CANCEL") ) {
 
 ```opensips
 ...
-if (t\_check\_status("(487)|(408)")) {
+if (t_check_status("(487)|(408)")) {
     log("487 or 408 negative reply\\n");
 }
 ...
@@ -1720,7 +1720,7 @@ if (t\_check\_status("(487)|(408)")) {
 
 ```opensips
 ...
-if (t\_local\_replied("all")) {
+if (t_local_replied("all")) {
 	log ("no reply received\\n");
 }
 ...
@@ -1731,7 +1731,7 @@ if (t\_local\_replied("all")) {
 
 ```opensips
 ...
-if (t\_was\_cancelled()) {
+if (t_was_cancelled()) {
     log("transaction was cancelled by UAC\\n");
 }
 ...
@@ -1742,11 +1742,11 @@ if (t\_was\_cancelled()) {
 
 ```opensips
 ...
-onreply\_route[3] {
+onreply_route[3] {
 ...
-	if (t\_check\_status(183)) {
+	if (t_check_status(183)) {
 		# no support for early media
-		t\_cancel\_branch();
+		t_cancel_branch();
 	}
 ...
 }
@@ -1758,7 +1758,7 @@ onreply\_route[3] {
 ```opensips
 ...
 	# send a MESSAGE request
-	t\_new\_request("MESSAGE","sip:alice@192.168.2.2","BOB sip:userB@mydomain.net","ALICE sip:userA@mydomain.net","text/plain Hello Alice!")) {
+	t_new_request("MESSAGE","sip:alice@192.168.2.2","BOB sip:userB@mydomain.net","ALICE sip:userA@mydomain.net","text/plain Hello Alice!")) {
 ...
 ```
 ### `t_on_failure` usage
@@ -1768,13 +1768,13 @@ onreply\_route[3] {
 ```opensips
 ...
 route { 
-	t\_on\_failure("1"); 
-	t\_relay();
+	t_on_failure("1"); 
+	t_relay();
 } 
 
-failure\_route[1] {
+failure_route[1] {
 	seturi("sip:user@voicemail");
-	t\_relay();
+	t_relay();
 }
 ...
 ```
@@ -1786,30 +1786,30 @@ failure\_route[1] {
 ...
 route {
 	seturi("sip:bob@opensips.org");  # first branch
-	append\_branch("sip:alice@opensips.org"); # second branch
+	append_branch("sip:alice@opensips.org"); # second branch
 
-	t\_on\_reply("global"); # the "global" reply route 
+	t_on_reply("global"); # the "global" reply route 
 	                      # is set the whole transaction
-	t\_on\_branch("1");
+	t_on_branch("1");
 
-	t\_relay();
+	t_relay();
 }
 
-branch\_route[1] {
+branch_route[1] {
 	if ($rU=="alice")
-		t\_on\_reply("alice"); # the "alice" reply route
+		t_on_reply("alice"); # the "alice" reply route
 		                      # is set only for second branch
 }
 
-onreply\_route[alice] {
+onreply_route[alice] {
 	xlog("received reply from alice\\n");
 }
 
-onreply\_route[global] {
-	if (t\_check\_status("1\[0-9\]\[0-9\]")) {
-		setflag(LOG\_FLAG);
+onreply_route[global] {
+	if (t_check_status("1\[0-9\]\[0-9\]")) {
+		setflag(LOG_FLAG);
 		log("provisional reply received\\n");
-		if (t\_check\_status("183"))
+		if (t_check_status("183"))
 			drop;
 	}
 }
@@ -1822,17 +1822,17 @@ onreply\_route[global] {
 ```opensips
 ...
 route { 
-	t\_on\_branch("1"); 
-	t\_relay();
+	t_on_branch("1"); 
+	t_relay();
 } 
 
-branch\_route[1] {
-	if ($ru=~"bad\_uri") {
+branch_route[1] {
+	if ($ru=~"bad_uri") {
 		xlog("dropping branch $ru \\n");
 		drop;
 	}
-	if ($ru=~"GW\_uri") {
-		append\_rpid();
+	if ($ru=~"GW_uri") {
+		append_rpid();
 	}
 }
 ...
@@ -1843,8 +1843,8 @@ branch\_route[1] {
 
 ```opensips
 ...
-route[event\_notification] {
-	t\_inject\_branches("event");
+route[event_notification] {
+	t_inject_branches("event");
 }
 ...
 ```
@@ -1854,9 +1854,9 @@ route[event\_notification] {
 
 ```opensips
 ...
-t\_newtran();
-t\_wait\_for\_new\_branches();
-t\_relay();
+t_newtran();
+t_wait_for_new_branches();
+t_relay();
 ...
 ```
 ### `t_wait_no_more_branches` usage
@@ -1865,7 +1865,7 @@ t\_relay();
 
 ```opensips
 ...
-t\_wait\_no\_more\_branches();
+t_wait_no_more_branches();
 ...
 ```
 ### `t_add_hdrs` usage
@@ -1874,7 +1874,7 @@ t\_wait\_no\_more\_branches();
 
 ```opensips
 ...
-t\_add\_hdrs("X-origin: 1.1.1.1\\r\\n");
+t_add_hdrs("X-origin: 1.1.1.1\\r\\n");
 ...
 ```
 ### `t_add_cancel_reason` usage
@@ -1883,8 +1883,8 @@ t\_add\_hdrs("X-origin: 1.1.1.1\\r\\n");
 
 ```opensips
 ...
-t\_add\_cancel\_reason("Reason: SIP ;cause=200 ;text=\"Call completed elsewhere\"\\r\\n");
-t\_relay();
+t_add_cancel_reason("Reason: SIP ;cause=200 ;text=\"Call completed elsewhere\"\\r\\n");
+t_relay();
 ...
 ```
 ### `t_replicate` usage
@@ -1893,9 +1893,9 @@ t\_relay();
 
 ```opensips
 ...
-t\_replicate("sip:1.2.3.4:5060");
-t\_replicate("sip:1.2.3.4:5060;transport=tcp");
-t\_replicate("sip:1.2.3.4",0x4);
+t_replicate("sip:1.2.3.4:5060");
+t_replicate("sip:1.2.3.4:5060;transport=tcp");
+t_replicate("sip:1.2.3.4",0x4);
 ...
 ```
 ### `t_write_req/unix` usage
@@ -1904,12 +1904,12 @@ t\_replicate("sip:1.2.3.4",0x4);
 
 ```opensips
 ...
-modparam("tm","tw\_append","append1:Email=$avp(email);UA=$ua")
-modparam("tm","tw\_append","append2:body=$rb")
+modparam("tm","tw_append","append1:Email=$avp(email);UA=$ua")
+modparam("tm","tw_append","append2:body=$rb")
 ...
-t\_write\_req("voicemail/append1","/tmp/appx\_fifo");
+t_write_req("voicemail/append1","/tmp/appx_fifo");
 ...
-t\_write\_unix("logger/append2","/var/run/logger.sock");
+t_write_unix("logger/append2","/var/run/logger.sock");
 ...
 ```
 ### `t_flush_flags` usage
@@ -1918,7 +1918,7 @@ t\_write\_unix("logger/append2","/var/run/logger.sock");
 
 ```opensips
 ...
-t\_flush\_flags();
+t_flush_flags();
 ...
 ```
 ### `t_anycast_replicate` usage
@@ -1927,8 +1927,8 @@ t\_flush\_flags();
 
 ```opensips
 ...
-if (is\_method("ACK|CANCEL") && !t\_check\_trans()) {
-	t\_anycast\_replicate();
+if (is_method("ACK|CANCEL") && !t_check_trans()) {
+	t_anycast_replicate();
 	exit;
 }
 ...
@@ -1940,28 +1940,28 @@ if (is\_method("ACK|CANCEL") && !t\_check\_trans()) {
 ```opensips
 ...
 route{
-	if($rU == "LOCAL\_PARK") {
-		if(is\_method("INVITE")) {
-			$T\_fr\_timeout = 10;
-			$T\_fr\_inv\_timeout = 10;
-			append\_to\_reply("Contact: sip:LOCAL\_PARK@$socket\_in(ip):$socket\_in(port)\\r\\n");
-			t\_reply(180, "Ringing");
-			t\_wait\_for\_new\_branches();
-		} else if(is\_method("CANCEL")) {
-			if(!t\_reply\_by\_callid(487, "Request Terminated")) {
-				sl\_send\_reply(481, "Call Leg/Transaction Does Not Exist");
+	if($rU == "LOCAL_PARK") {
+		if(is_method("INVITE")) {
+			$T_fr_timeout = 10;
+			$T_fr_inv_timeout = 10;
+			append_to_reply("Contact: sip:LOCAL_PARK@$socket_in(ip):$socket_in(port)\\r\\n");
+			t_reply(180, "Ringing");
+			t_wait_for_new_branches();
+		} else if(is_method("CANCEL")) {
+			if(!t_reply_by_callid(487, "Request Terminated")) {
+				sl_send_reply(481, "Call Leg/Transaction Does Not Exist");
 			} else {
-				sl\_send\_reply(200, "OK");
+				sl_send_reply(200, "OK");
 			}
-		} else if(is\_method("BYE")) {
-			$var(prev\_cseq) = ($(cs{s.int}) - 1);
-			if(!t\_reply\_by\_callid(487, "Request Terminated", , $var(prev\_cseq))) {
-				sl\_send\_reply(481, "Call Leg/Transaction Does Not Exist");
+		} else if(is_method("BYE")) {
+			$var(prev_cseq) = ($(cs{s.int}) - 1);
+			if(!t_reply_by_callid(487, "Request Terminated", , $var(prev_cseq))) {
+				sl_send_reply(481, "Call Leg/Transaction Does Not Exist");
 			} else {
-				sl\_send\_reply(200, "OK");
+				sl_send_reply(200, "OK");
 			}
-		} else if(is\_method("ACK")) {
-			t\_relay();
+		} else if(is_method("ACK")) {
+			t_relay();
 		}
 		exit;
 	}
@@ -1976,7 +1976,7 @@ route{
 ...
 	# search for a branch which has the "name" attribute
 	# with string value "pstn"
-	if (t\_get\_branch\_idx\_by\_attr("name", "pstn", , $var(idx))) {
+	if (t_get_branch_idx_by_attr("name", "pstn", , $var(idx))) {
 		xlog("found branch has index $var(idx)\\n");
 	}
 ...
