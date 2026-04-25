@@ -66,8 +66,18 @@ export interface VersionResult {
   ok: boolean;
   /** Count of source files that passed schema validation. */
   filesValidated: number;
-  /** Count of output files rendered (0 in dry-run / validate-only modes). */
+  /** Count of output Markdown files rendered (0 in dry-run / validate-only modes). */
   filesRendered: number;
+  /**
+   * Whether the consolidated index was built for this version. True in normal
+   * and dry-run modes when rendering succeeded; false in validate-only mode
+   * or when the index build was aborted by an error.
+   *
+   * The index is a structurally distinct artifact (one JSON file per version)
+   * from `filesRendered` (Markdown files), so it is reported on its own
+   * counter rather than conflated with the Markdown count.
+   */
+  indexBuilt: boolean;
   /** Errors collected during validation or rendering for this version. */
   errors: Array<{ kind: string; message: string; file?: string }>;
 }

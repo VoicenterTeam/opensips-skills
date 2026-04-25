@@ -11,7 +11,7 @@
 import path from "node:path";
 
 import { discoverVersions, DiscoverError } from "./discover.js";
-import { IOError } from "./errors.js";
+import { BuildError, IOError } from "./errors.js";
 import { atomicWriteFile, ensureDirectory, posixPath } from "./fs-helpers.js";
 import {
   emitProgress,
@@ -28,9 +28,24 @@ import {
   type CoreDocType,
 } from "../render-core/index.js";
 import { guideFileNames, renderGuide } from "../render-guide/index.js";
+import {
+  buildConsolidatedIndex,
+  type IndexWarning,
+  type ValidatedDocumentsForIndex,
+} from "../build-consolidated/index.js";
+import { serializeIndex } from "../build-consolidated/serialize.js";
+import {
+  checkStatisticsCanary,
+  type CanaryWarning,
+} from "../build-consolidated/canary.js";
 import type { ModuleDocument } from "../schemas/modules.schema.js";
 import type { z } from "zod";
 import type { GuideDocumentSchema } from "../schemas/guides.schema.js";
+import {
+  ConsolidatedIndexSchema,
+  type ConsolidatedIndex,
+  type IndexStatistics,
+} from "../types/consolidated.js";
 import type {
   BuildSummary,
   CliOptions,
@@ -220,6 +235,7 @@ export async function processVersion(
   const errors: VersionResult["errors"] = toErrorEntries(validation.issues);
   let filesRendered = 0;
   let renderOk = true;
+  let indexBuilt = false;
 
   if (validation.ok && !opts.validateOnly) {
     // Schema validation already coerced these into ModuleDocument shape;
@@ -293,13 +309,39 @@ export async function processVersion(
           ctx,
         );
       }
-      if (opts.dryRun) {
-        emitProgress(`  Would build consolidated index (dry-run)`, ctx);
+    }
+
+    // M5: consolidated index. Built after the renderers so the index can
+    // (in future revisions) cite generated paths confidently. The build is
+    // pure-function and cheap; we always run it when validation succeeded
+    // — even in dry-run, since the statistics line is informative — but
+    // only write to disk in non-dry-run mode.
+    try {
+      const indexResult = await buildAndWriteConsolidatedIndex(
+        version,
+        validation.documents.modules as ModuleDocument[],
+        validation.documents.core,
+        validation.documents.guides as GuideDocument[],
+        opts,
+        ctx,
+      );
+      indexBuilt = indexResult.built;
+      if (indexResult.errors.length > 0) {
+        errors.push(...indexResult.errors);
+        renderOk = false;
+      }
+    } catch (err) {
+      if (err instanceof BuildError) {
+        process.stderr.write(`ERROR: ${err.message}\n`);
+        errors.push({ kind: err.kind, message: err.message });
+        renderOk = false;
+      } else {
+        throw err;
       }
     }
   } else if (validation.ok && opts.validateOnly && ctx.verbose) {
-    // validate-only mode: no rendering, but the user asked for that.
-    // No "renderers not yet implemented" warning — they are now.
+    // validate-only mode: no rendering, no index. The user asked for the
+    // validation stage only; the index is a derived artifact.
   }
 
   return {
@@ -307,6 +349,7 @@ export async function processVersion(
     ok: validation.ok && renderOk,
     filesValidated: validation.fileCount,
     filesRendered,
+    indexBuilt,
     errors,
   };
 }
@@ -632,4 +675,220 @@ async function renderGuidesForVersion(
   }
 
   return { filesRendered, errors };
+}
+
+/**
+ * Project-root-relative path of the committed canary baseline file.
+ *
+ * Resolved via {@link posixPath} so the same string is produced on every host
+ * OS. The path is relative to the process's current working directory; tests
+ * spinning up tmp source/output trees still consult the *committed* baseline
+ * at the project root, which is the intended behaviour — the baseline file is
+ * a project-wide constant, not per-build.
+ */
+const BASELINE_PATH = posixPath(
+  "scripts",
+  "build-consolidated",
+  ".statistics-baseline.json",
+);
+
+/**
+ * Internal aggregate returned by {@link buildAndWriteConsolidatedIndex}.
+ */
+interface ConsolidatedBuildResult {
+  /** Whether the index was successfully constructed (always true outside error paths). */
+  built: boolean;
+  /** Any errors surfaced during build / schema-validation / write. */
+  errors: VersionResult["errors"];
+}
+
+/**
+ * Format a one-line stats summary for the verbose progress line.
+ *
+ * Mirrors the format used by `scripts/baseline-update.ts` so a developer
+ * comparing the canary log to a freshly-seeded baseline sees the same
+ * numbers in the same order.
+ * @param s - Statistics record from the just-built index.
+ * @returns Comma-separated `count label` summary.
+ */
+function formatStats(s: IndexStatistics): string {
+  return [
+    `${s.totalModules} modules`,
+    `${s.totalFunctions} fns`,
+    `${s.totalParameters} params`,
+    `${s.totalPseudoVariables} pvars`,
+    `${s.totalMICommands} mi`,
+    `${s.totalEvents} evts`,
+    `${s.totalStatistics} stats`,
+    `${s.totalGuides} guides`,
+  ].join(", ");
+}
+
+/**
+ * Format a friendly one-liner naming a function/variable/MI collision.
+ * @param w - Builder warning to render.
+ * @returns Pre-prefixed warning body suitable for {@link emitWarning}.
+ */
+function formatIndexWarning(w: IndexWarning): string {
+  const sources = w.conflictingSources.join(", ");
+  return `${w.kind}: '${w.name}' in ${sources} — kept first`;
+}
+
+/**
+ * Format a canary statistic-drop warning into a single human line.
+ * @param w - Canary warning record.
+ * @returns Pre-prefixed warning body suitable for {@link emitWarning}.
+ */
+function formatCanaryWarning(w: CanaryWarning): string {
+  return `canary: ${w.version} ${w.statistic} dropped to ${(w.ratio * 100).toFixed(1)}% (${w.previous} → ${w.current})`;
+}
+
+/**
+ * Build the consolidated index for one version, run the canary check, and
+ * (in non-dry-run mode) serialize and atomically write `consolidated.json`.
+ *
+ * Pipeline:
+ *
+ *   1. Construct {@link ValidatedDocumentsForIndex} from the orchestrator's
+ *      already-validated documents and call {@link buildConsolidatedIndex}.
+ *   2. Surface every {@link IndexWarning} (function/variable/MI collisions)
+ *      via {@link emitWarning}.
+ *   3. Defence-in-depth: re-parse the produced index against
+ *      {@link ConsolidatedIndexSchema}. A failure here is a builder
+ *      regression — surface as a structured error so the orchestrator's
+ *      error path is uniform.
+ *   4. Run {@link checkStatisticsCanary} against the committed baseline.
+ *      First-run case (no baseline yet OR no entry for this version) is
+ *      reported once via verbose stderr with a pointer to
+ *      `npm run baseline:update`. Drops below the threshold surface as
+ *      {@link emitWarning} lines, one per affected statistic.
+ *   5. Serialize via {@link serializeIndex} (deterministic, alphabetised
+ *      keys, trailing newline).
+ *   6. Output path: `{outputRoot}/opensips-modules/references/{version}/
+ *      consolidated.json` per ADR-005 (the index is the modules-skill's
+ *      lookup aid). In `--dry-run`, the file is NOT written; the verbose
+ *      stats line still emits with a `(dry-run)` suffix so the developer
+ *      sees the would-be counts. Otherwise the parent directory is ensured
+ *      and the file is written through {@link atomicWriteFile}.
+ * @param version - OpenSIPs version label (e.g., `"3.6"`).
+ * @param modules - Validated module documents for this version.
+ * @param coreDocuments - Validated core documents (heterogeneous; type guard
+ *   inside the builder discriminates by `document_type`).
+ * @param guideDocuments - Validated guide documents (may be empty for
+ *   versions without a `guides/` directory per ADR-009).
+ * @param opts - Parsed CLI options (controls dry-run, output root).
+ * @param ctx - Output context for progress/warning emission.
+ * @returns Outcome record carrying `built` (true on success) and any errors.
+ */
+async function buildAndWriteConsolidatedIndex(
+  version: string,
+  modules: ModuleDocument[],
+  coreDocuments: readonly unknown[],
+  guideDocuments: readonly GuideDocument[],
+  opts: CliOptions,
+  ctx: OutputContext,
+): Promise<ConsolidatedBuildResult> {
+  const errors: VersionResult["errors"] = [];
+
+  const indexInput: ValidatedDocumentsForIndex = {
+    modules,
+    core: [...coreDocuments],
+    guides: [...guideDocuments],
+  };
+
+  const { index, warnings } = buildConsolidatedIndex(
+    version,
+    indexInput,
+    GENERATOR_VERSION,
+  );
+
+  // Surface each builder collision warning on stderr (no-op under
+  // quiet/json modes per emitWarning's contract).
+  for (const w of warnings) {
+    emitWarning(formatIndexWarning(w), ctx);
+  }
+
+  // Defence in depth — if the builder ever produced an index that does not
+  // satisfy the public schema, surface a structured error and refuse to
+  // write a malformed consolidated.json.
+  const parsed = ConsolidatedIndexSchema.safeParse(index);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    const message = `consolidated index for ${version} failed schema validation: ${issue?.message ?? "unknown"}`;
+    process.stderr.write(`ERROR: ${message}\n`);
+    errors.push({ kind: "validation", message });
+    return { built: false, errors };
+  }
+  const validIndex: ConsolidatedIndex = parsed.data;
+
+  // Canary check — advisory only; never causes the build to fail.
+  try {
+    const canary = await checkStatisticsCanary(
+      validIndex.statistics,
+      version,
+      BASELINE_PATH,
+    );
+    if (canary.firstRun) {
+      // First run for this version. Tell the user once how to seed the
+      // baseline; no warnings are emitted because there's nothing to
+      // compare against.
+      if (ctx.verbose) {
+        emitProgress(
+          `  First build for ${version} — baseline not yet established. Run \`npm run baseline:update\` to seed.`,
+          ctx,
+        );
+      }
+    } else if (!canary.ok) {
+      for (const w of canary.warnings) {
+        emitWarning(formatCanaryWarning(w), ctx);
+      }
+    }
+  } catch (err) {
+    // A malformed baseline file is surprising but not fatal — log it and
+    // proceed. The build can still produce a valid index.
+    const msg = err instanceof Error ? err.message : String(err);
+    emitWarning(`canary check skipped: ${msg}`, ctx);
+  }
+
+  const json = serializeIndex(validIndex);
+  const outputPath = posixPath(
+    opts.outputRoot,
+    "opensips-modules",
+    "references",
+    version,
+    "consolidated.json",
+  );
+
+  if (opts.dryRun) {
+    if (ctx.verbose) {
+      emitProgress(
+        `  Built consolidated index (${formatStats(validIndex.statistics)}) (dry-run, would write ${outputPath})`,
+        ctx,
+      );
+    }
+    return { built: true, errors };
+  }
+
+  try {
+    await ensureDirectory(path.dirname(outputPath));
+    await atomicWriteFile(outputPath, json);
+  } catch (err) {
+    if (err instanceof IOError) {
+      process.stderr.write(
+        `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
+      );
+      errors.push({ kind: "io", message: err.message, file: err.path });
+      return { built: false, errors };
+    }
+    throw err;
+  }
+
+  if (ctx.verbose) {
+    emitProgress(
+      `  Built consolidated index (${formatStats(validIndex.statistics)})`,
+      ctx,
+    );
+  }
+
+  return { built: true, errors };
 }

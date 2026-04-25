@@ -21,7 +21,7 @@
     "format": "prettier --write \"scripts/**/*.{ts,js,json}\" \"*.{json,md}\"",
     "format:check": "prettier --check \"scripts/**/*.{ts,js,json}\" \"*.{json,md}\"",
     "schemas:hash": "tsx scripts/schemas/regenerate-hash.ts",
-    "baseline:update": "node -e \"console.error('Not yet implemented'); process.exit(1)\""
+    "baseline:update": "tsx scripts/baseline-update.ts"
   },
   "devDependencies": {
     "@tsconfig/node20": "^20.1.9",

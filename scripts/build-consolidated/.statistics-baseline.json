@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "baselines": {
+    "3.5": {
+      "totalModules": 137,
+      "totalFunctions": 455,
+      "totalParameters": 1058,
+      "totalPseudoVariables": 145,
+      "totalMICommands": 196,
+      "totalEvents": 29,
+      "totalStatistics": 79,
+      "totalGuides": 0
+    },
+    "3.6": {
+      "totalModules": 194,
+      "totalFunctions": 580,
+      "totalParameters": 1530,
+      "totalPseudoVariables": 228,
+      "totalMICommands": 258,
+      "totalEvents": 47,
+      "totalStatistics": 126,
+      "totalGuides": 3
+    }
+  }
+}
