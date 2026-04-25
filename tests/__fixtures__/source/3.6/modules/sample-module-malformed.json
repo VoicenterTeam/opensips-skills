@@ -1,0 +1,11 @@
+{
+  "id": "module-sl-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "sl Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/sl.html",
+  "content_markdown": "The SL module allows OpenSIPS to act as a stateless UA server.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:09:46.614Z",
+  "module_name": "sl",
+  "overview": "The SL module allows OpenSIPS to act as a stateless UA server and generate replies to SIP

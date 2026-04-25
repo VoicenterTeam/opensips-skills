@@ -1,0 +1,45 @@
+{
+  "id": "core_variable-Script-CoreVar-3-6",
+  "document_type": "core_variable",
+  "version": "3.6",
+  "title": "Core Variables v3.6 (invalid fixture)",
+  "url": "https://www.opensips.org/Documentation/Script-CoreVar-3-6",
+  "content_markdown": "Identical shape to the valid fixture, but one field intentionally violates the schema.",
+  "category": "Core",
+  "section": "Scripting Variables",
+  "synopsis": "Fixture used to assert schema-level rejection.",
+  "keywords": ["variables", "fixture", "invalid"],
+  "extracted_at": "2026-03-06T10:09:46.614Z",
+  "variables": [
+    {
+      "name": "$var(name)",
+      "description": "Script variables are bound to script routes and visible only in routing blocks executed by the same OpenSIPS process.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "script",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 2;",
+          "description": "Sets the value of variable 'a' to integer 2."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ai",
+      "description": "Reference to URI in request's P-Asserted-Identity header (RFC 3325).",
+      "type": "string",
+      "readable": "yes",
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    }
+  ]
+}

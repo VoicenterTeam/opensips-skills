@@ -1,0 +1,63 @@
+{
+  "id": "module-sl-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "sl Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/sl.html",
+  "content_markdown": "The SL module allows OpenSIPS to act as a stateless UA server.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:09:46.614Z",
+  "module_name": "sl",
+  "overview": "The SL module allows OpenSIPS to act as a stateless UA server and generate replies to SIP requests without keeping state.",
+  "how_it_works": "The SL module filters ACKs sent after a local stateless reply by inserting a signature into the to-tag.",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "enable_stats",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If the module should generate and export statistics. Zero means disabled.",
+      "example_value": "0",
+      "example_code": "modparam(\"sl\", \"enable_stats\", 0)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sl_send_reply",
+      "signature": "sl_send_reply(code, reason)",
+      "parameters": [
+        {
+          "name": "code",
+          "type": "int",
+          "required": true,
+          "description": "Return code."
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "Reason phrase."
+        }
+      ],
+      "return_type": "",
+      "description": "Sends a stateless reply with the given code and reason for the current request.",
+      "usage_context": ["REQUEST_ROUTE", "ERROR_ROUTE"],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sl_send_reply(404, \"Not found\");",
+          "description": "Reply with 404 Not Found."
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_statistics": [
+    {
+      "name": "sent_replies",
+      "type": "counter",
+      "description": "The number of replies sent."
+    }
+  ]
+}

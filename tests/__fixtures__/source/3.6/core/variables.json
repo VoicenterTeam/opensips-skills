@@ -1,0 +1,63 @@
+{
+  "id": "core_variable-Script-CoreVar-3-6",
+  "document_type": "core_variable",
+  "version": "3.6",
+  "title": "Core Variables v3.6",
+  "url": "https://www.opensips.org/Documentation/Script-CoreVar-3-6",
+  "content_markdown": "OpenSIPS provides multiple types of variables for use in routing scripts.",
+  "category": "Core",
+  "section": "Scripting Variables",
+  "synopsis": "Fixture-trimmed subset of core variables for tests.",
+  "keywords": ["variables", "fixture"],
+  "extracted_at": "2026-03-06T10:09:46.614Z",
+  "variables": [
+    {
+      "name": "$var(name)",
+      "description": "Script variables are bound to script routes and visible only in routing blocks executed by the same OpenSIPS process.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "script",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 2;",
+          "description": "Sets the value of variable 'a' to integer 2."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ai",
+      "description": "Reference to URI in request's P-Asserted-Identity header (RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ru",
+      "description": "Reference to the request's URI. Read-write from routing logic.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ru = \"sip:alice@example.org\";",
+          "description": "Rewrite the Request-URI."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    }
+  ]
+}
