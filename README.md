@@ -1,6 +1,6 @@
 # opensips-skills
 
-> Claude Code plugin providing three coordinated Agent Skills for working with OpenSIPs.
+> Claude Code plugin providing two coordinated Agent Skills for working with OpenSIPs.
 
 [![CI](https://github.com/OpenSIPS/opensips-skills/workflows/CI/badge.svg)](https://github.com/OpenSIPS/opensips-skills/actions)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
@@ -11,7 +11,7 @@ OpenSIPs is twenty years old and runs some of the world's most demanding real-ti
 
 This is a knowledge problem, not a model problem. Training data conflates OpenSIPs with other projects descending from the SIP Express Router (SER) lineage and conflates syntax across versions that have drifted over two decades. Without a grounded reference, the model has no way to tell the difference. `opensips-skills` solves this by grounding Claude in version-specific, OpenSIPs-authoritative documentation. Every function signature, parameter, pseudo-variable, MI command, and module dependency is mirrored from upstream extraction and rendered as Markdown reference files Claude reads on demand.
 
-The plugin ships three coordinated skills that load together. `opensips-routing` authors and edits `opensips.cfg` route scripts. `opensips-modules` is the authoritative per-module reference library, indexed for fast lookup. `opensips-security-advisor` reviews configs for security issues; it ships in v1 as a scaffold with a stable trigger surface, and substantive review patterns are authored by a separate agent post-v1.
+The plugin ships two coordinated skills that load together. `opensips-config` is the single entry point for OpenSIPs configuration work — authoring and editing `opensips.cfg` route scripts, looking up module exports, and answering questions about cfg syntax. It owns the loadmodule-scan workflow: read `cfg-format.md`, scan `consolidated.json`, then read each loaded module's per-module reference before answering. `opensips-security-advisor` reviews configs for security issues; it ships in v1 as a scaffold with a stable trigger surface, and substantive review patterns are authored by a separate agent post-v1.
 
 Version coverage is dynamic. As of this release the plugin covers OpenSIPs 3.5 and 3.6, with 3.4 source data committed but blocked by a known upstream defect. New versions arrive by dropping a folder under `data/` — no code change required.
 
@@ -30,7 +30,7 @@ The plugin runs inside Claude Code. The two install paths:
 claude --plugin-dir /path/to/opensips-skills/plugins/opensips
 ```
 
-After installation, run `/skills` inside Claude Code to confirm `opensips-routing`, `opensips-modules`, and `opensips-security-advisor` are all listed. The skills do not need to be invoked by name — they activate automatically when prompts mention OpenSIPs concerns. There is no per-version install step; the plugin ships every supported version's reference tree in one package and resolves the active version from the prompt at trigger time.
+After installation, run `/skills` inside Claude Code to confirm `opensips-config` and `opensips-security-advisor` are both listed. The skills do not need to be invoked by name — they activate automatically when prompts mention OpenSIPs concerns. There is no per-version install step; the plugin ships every supported version's reference tree in one package and resolves the active version from the prompt at trigger time.
 
 ## Quick example
 
@@ -40,8 +40,7 @@ After installation, run `/skills` inside Claude Code to confirm `opensips-routin
 
 **What happens behind the scenes:**
 
-- `opensips-routing` activates because the prompt names `opensips.cfg` concerns and a route block. It reads `references/3.6/modules/tm.md`, `references/3.6/modules/registrar.md`, and `references/3.6/modules/auth_db.md` to ground the function signatures, plus `references/3.6/core/variables.md` for the pseudo-variable list.
-- `opensips-modules` is consulted via the consolidated index whenever a function or parameter needs disambiguation — for example, confirming that `www_authorize` (not `www_authenticate` from a sibling project) is the OpenSIPs name, and that `auth_db.calculate_ha1` takes an integer (`1`), not the boolean keyword some sibling projects accept.
+- `opensips-config` activates because the prompt names `opensips.cfg` concerns and a route block. It follows the loadmodule-scan workflow: reads `references/3.6/cfg-format.md` to ground in the cfg structure, reads `references/3.6/consolidated.json` for the module index, then reads `references/3.6/modules/tm.md`, `references/3.6/modules/registrar.md`, and `references/3.6/modules/auth_db.md` to ground the function signatures, plus `references/3.6/core/variables.md` for the pseudo-variable list. For example, the skill confirms that `www_authorize` (not `www_authenticate` from a sibling project) is the OpenSIPs name, and that `auth_db.calculate_ha1` takes an integer (`1`), not the boolean keyword some sibling projects accept.
 - `opensips-security-advisor` activates on the "audit" cue, flags the missing flood-protection module, and points to `references/3.6/modules/pike.md` and `references/3.6/modules/ratelimit.md` for the remediation.
 
 **The response includes a config like:**
@@ -89,7 +88,7 @@ Not every prompt needs all three skills. A reference-only question takes a diffe
 
 **What happens:**
 
-- `opensips-modules` activates because the prompt names a specific module (`dispatcher`) and asks about an exported function. `opensips-routing` does not activate — there is no authoring intent. `opensips-security-advisor` does not activate — there is no review or audit cue.
+- `opensips-config` activates because the prompt names a specific module (`dispatcher`) and asks about an exported function. `opensips-security-advisor` does not activate — there is no review or audit cue.
 - The skill consults `references/3.5/consolidated.json` to confirm `ds_select_dst` is exported by `dispatcher` and to find the per-module reference path. It then reads `references/3.5/modules/dispatcher.md` for the full signature, the algorithm-code list, the route-block availability, and the relevant `modparam(...)` entries (`ds_probing_mode`, `ds_ping_method`, partition setup).
 - The answer quotes signatures verbatim from the reference, lists each algorithm code with its distribution semantics, and notes the route blocks where the function is callable. The answer is grounded in 3.5 specifically — if the user later switches to 3.6, the same prompt re-runs the lookup against `references/3.6/`.
 
@@ -117,16 +116,21 @@ opensips-docs-collector  ──────►   data/{version}/
                                          │ npm run build (deterministic)
                                          ▼
                                    plugins/opensips/skills/
-                                     opensips-routing/      (authoring)
-                                     opensips-modules/      (router-index)
+                                     opensips-config/       (authoring + reference)
+                                       references/{version}/
+                                         cfg-format.md      (hand-authored)
+                                         ser-lineage-notes.md (hand-authored)
+                                         modules-index.md   (generated)
+                                         core/*.md          (generated)
+                                         modules/*.md       (generated)
+                                         guides/*.md        (generated, 3.6+)
+                                         consolidated.json  (lookup)
                                      opensips-security-advisor/  (scaffold)
-                                     references/{version}/  (generated .md)
-                                     consolidated.json      (lookup)
 ```
 
 Data flows in one direction. The upstream `opensips-docs-collector` project extracts OpenSIPs documentation per version and emits validated JSON. This project mirrors that JSON under `data/`, validates it against locally mirrored Zod schemas (with a SHA-256 hash check that fails fast on contract drift), and renders two Markdown families: per-item files for modules (one Markdown per module) and aggregated files for core types (variables, operators, statements, transformations, flags, parameters, async, events, MI commands, statistics, functions, route blocks). Where the upstream extraction provides them, installation/configuration/syntax guides are rendered alongside. A consolidated JSON index per version provides fast lookup keyed by function name, pseudo-variable, MI command, parameter-by-module, and a `moduleDependencies` graph.
 
-The three skills coordinate through their `description` fields and the reference files they share. `opensips-routing` is the authoring hub: it owns route-block decisions, NAT and authentication patterns, dispatcher and dialog setup, and the procedural shape of an `opensips.cfg`. It consults the per-module files for signatures and defers to `opensips-modules` for catalog scans. `opensips-modules` is the router-index — its SKILL.md is a 194-row module catalog (for 3.6) that routes Claude to the right per-module reference rather than answering from training-data priors. The two-step lookup pattern — read `consolidated.json` to find the source, then read the per-module file for full content — grounds every signature, parameter, and pseudo-variable in version-correct content. `opensips-security-advisor` reads both skills' references and contributes review judgment; in v1 it ships as a scaffold with the trigger surface defined and substantive review patterns landing through a separate authoring agent post-release.
+The two skills coordinate through their `description` fields and the reference files they share. `opensips-config` is the single authoring and reference skill: it owns route-block decisions, NAT and authentication patterns, dispatcher and dialog setup, the procedural shape of an `opensips.cfg`, and all per-module reference data. The loadmodule-scan workflow — read `cfg-format.md`, read `consolidated.json` for the module index, then read each loaded module's per-module reference file — grounds every signature, parameter, and pseudo-variable in version-correct content. `opensips-security-advisor` reads `opensips-config`'s references and contributes review judgment; in v1 it ships as a scaffold with the trigger surface defined and substantive review patterns landing through a separate authoring agent post-release.
 
 The cross-project guardrail runs through every skill. OpenSIPs is one of several projects descending from the SIP Express Router (SER), and identifiers from sibling projects look familiar enough to corrupt training-data priors. Every SKILL.md instructs Claude to treat the active version's reference set as the only source of truth for valid identifiers. A function name, parameter, or pseudo-variable that is not in `references/{version}/` is flagged rather than fabricated. A `ser-lineage-notes.md` in each version's tree carries the operational rule with concrete confusion patterns drawn from real cases.
 
@@ -171,7 +175,7 @@ Contributions are welcome. The kinds of contributions that fit here:
 Some contributions belong elsewhere:
 
 - Module reference content goes upstream to `opensips-docs-collector`. This project is a faithful transformer of upstream JSON; if a module reference is wrong, the fix is upstream so every consumer benefits. The hand-authored `SKILL.md` files and `ser-lineage-notes.md` are the only authored Markdown in the skill trees — everything else is generated.
-- Substantive `opensips-security-advisor` review patterns are owned by a separate authoring agent per ADR-005. The scaffold here defines the trigger surface; the body content lands later through that agent's PRs.
+- Substantive `opensips-security-advisor` review patterns are owned by a separate authoring agent per ADR-012. The scaffold here defines the trigger surface; the body content lands later through that agent's PRs.
 - Architectural changes — how skills are structured, how the build works, how versions are resolved — need an ADR before code. See `docs/architecture/adr/000-template.md`.
 
 The local development loop is `npm install`, `npm run validate`, `npm run build`, `npm test`. The build is deterministic; every PR runs the build twice in CI and fails if the output differs. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide, including the local development loop, pull request expectations, and the schema mirroring contract.

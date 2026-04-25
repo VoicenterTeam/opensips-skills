@@ -37,7 +37,7 @@ These apply to the plugin as a whole, not any single skill.
 
 **Scenario:** Run `claude --plugin-dir /path/to/plugins/opensips`. In the Claude Code session, run `/skills`.
 
-**Expected:** All three skills (`opensips-routing`, `opensips-modules`, `opensips-security-advisor`) appear in the listing with their descriptions visible.
+**Expected:** Both skills (`opensips-config`, `opensips-security-advisor`) appear in the listing with their descriptions visible.
 
 **Failure modes:**
 - Any skill missing → blocker.
@@ -55,24 +55,24 @@ These apply to the plugin as a whole, not any single skill.
 
 ### CS-3 (Major): Multi-skill activation works
 
-**Scenario:** Submit a prompt that legitimately spans all three skills:
+**Scenario:** Submit a prompt that legitimately spans both skills:
 
 > "I'm building an OpenSIPs 3.6 config that uses the tm and registrar modules. Write me the config, then audit it for common security issues."
 
-**Expected:** All three skills activate. The response shows tool-use trails from each. The skills don't duplicate work or contradict each other.
+**Expected:** Both skills activate. The response shows tool-use trails from each. The skills don't duplicate work or contradict each other.
 
 **Failure modes:**
-- Only one or two skills activate → major (architecture-level issue).
+- Only one skill activates → major (architecture-level issue).
 - Skills produce contradictory outputs → major.
 - Response is incoherent across the skill outputs → minor (likely fixable with SKILL.md prose adjustments).
 
 ---
 
-## `opensips-routing` skill criteria
+## `opensips-config` skill criteria
 
 ### Activation
 
-### OR-A1 (Blocker): Triggers on canonical authoring prompts
+### OC-A1 (Blocker): Triggers on canonical authoring prompts
 
 **Scenarios** (run each in a fresh session):
 
@@ -81,13 +81,28 @@ These apply to the plugin as a whole, not any single skill.
 3. "Show me how to set up failure_route handling for retries."
 4. "How do I use $avp variables in OpenSIPs route scripts?"
 
-**Expected:** `opensips-routing` activates for all four.
+**Expected:** `opensips-config` activates for all four.
 
 **Failure modes:**
 - Skill doesn't activate on any of the four → blocker.
 - Skill fails to activate on one of the four → major (description tuning needed).
 
-### OR-A2 (Blocker): Does not trigger on sibling-project prompts
+### OC-A2 (Blocker): Triggers on module reference prompts
+
+**Scenarios:**
+
+1. "What functions does the dialog module export?"
+2. "Show me the parameters for the dispatcher module in OpenSIPs 3.6."
+3. "What pseudo-variables does the tm module expose?"
+4. "Configure the `auth_db` module for MySQL backend."
+
+**Expected:** `opensips-config` activates for all four.
+
+**Failure modes:**
+- Skill doesn't activate on any → blocker.
+- Skill activates but doesn't read the per-module reference file → blocker (the loadmodule-scan procedure is broken).
+
+### OC-A3 (Blocker): Does not trigger on sibling-project prompts
 
 **Scenarios:**
 
@@ -95,13 +110,13 @@ These apply to the plugin as a whole, not any single skill.
 2. "How does OpenSER handle SIP transactions?"
 3. "Show me a SIP Express Router routing example."
 
-**Expected:** `opensips-routing` does NOT activate. Claude either says it doesn't have specific knowledge or asks for clarification.
+**Expected:** `opensips-config` does NOT activate. Claude either says it doesn't have specific knowledge or asks for clarification.
 
 **Failure modes:**
 - Skill activates and produces OpenSIPs syntax for a Kamailio prompt → blocker (cross-project guardrail failed at the trigger level).
 - Skill activates but the cross-project guardrail catches the issue and Claude refuses to write OpenSIPs syntax → major (better than silent failure but still wrong skill activation).
 
-### OR-A3 (Minor): Does not trigger on generic SIP prompts
+### OC-A4 (Minor): Does not trigger on generic SIP prompts
 
 **Scenarios:**
 
@@ -109,24 +124,38 @@ These apply to the plugin as a whole, not any single skill.
 2. "Explain SIP RFC 3261."
 3. "How do I install Asterisk?"
 
-**Expected:** `opensips-routing` does NOT activate.
+**Expected:** `opensips-config` does NOT activate.
 
 **Failure modes:**
 - Skill activates → minor (some over-triggering is acceptable; the consequence is wasted context, not wrong output).
 
 ### Content correctness
 
-### OR-C1 (Blocker): Reads the right reference files
+### OC-C1 (Blocker): Follows the loadmodule-scan procedure
+
+**Scenario:** Provide an opensips.cfg snippet with `loadmodule "tm.so"` and `loadmodule "registrar.so"` and ask Claude to review or extend it.
+
+**Expected:** Tool-use trail shows, in order:
+1. Read of `references/{version}/cfg-format.md`.
+2. Read of `references/{version}/consolidated.json` (scan for tm, registrar).
+3. Read of `references/{version}/modules/tm.md` and `references/{version}/modules/registrar.md`.
+
+**Failure modes:**
+- `cfg-format.md` is not read → blocker (the structural anchor of the workflow is missing).
+- `consolidated.json` is not consulted → blocker.
+- Per-module reference files are not read → blocker (Claude is answering from training data, defeating the project's purpose).
+
+### OC-C2 (Blocker): Reads the right reference files for module lookups
 
 **Scenario:** "Show me how to use the t_relay function."
 
 **Expected:** Tool-use trail shows reads of `references/{version}/modules/tm.md`. Claude's response cites the function signature, return codes, and "Usable from" context from the rendered Markdown.
 
 **Failure modes:**
-- Reference file is not read → blocker (Claude is answering from training data, defeating the project's purpose).
+- Reference file is not read → blocker.
 - Reference file is read but the response contradicts it → blocker.
 
-### OR-C2 (Blocker): Produces version-correct content
+### OC-C3 (Blocker): Produces version-correct content
 
 **Scenario:** "I'm on OpenSIPs 3.5. Show me the parameters for the dispatcher module."
 
@@ -136,7 +165,7 @@ These apply to the plugin as a whole, not any single skill.
 - Wrong version's reference is read → blocker.
 - Response mixes 3.5 and 3.6 content → blocker.
 
-### OR-C3 (Major): Composes complete, valid configs
+### OC-C4 (Major): Composes complete, valid configs
 
 **Scenario:** "Write me a minimal opensips.cfg that does basic SIP registration with digest auth against a MySQL backend."
 
@@ -147,9 +176,28 @@ These apply to the plugin as a whole, not any single skill.
 - Hallucinated function signature → major.
 - Wrong parameter type → major.
 
+### OC-C5 (Blocker): Lists complete and correct module exports
+
+**Scenario:** "List all parameters of the tm module in OpenSIPs 3.6."
+
+**Expected:** The response lists parameters that match the source `tm.json`. Spot-check by counting: the source has N parameters; the response should mention all N. Spot-check three specific parameter names against the source.
+
+**Failure modes:**
+- Missing parameters → major (Claude is summarizing rather than enumerating).
+- Hallucinated parameters not in the source → blocker.
+
+### OC-C6 (Major): Function signatures match the source
+
+**Scenario:** "What's the exact signature of `t_relay`?"
+
+**Expected:** The response gives the signature from `tm.md`, including all optional parameters and their types.
+
+**Failure modes:**
+- Signature differs from the source → major.
+
 ### Guardrail engagement
 
-### OR-G1 (Blocker): Cross-project guardrail engages on sibling-project syntax
+### OC-G1 (Blocker): Cross-project guardrail engages on sibling-project syntax
 
 **Scenario:** "Use `pv_get_authattr` in my OpenSIPs config to extract the auth attribute."
 
@@ -163,16 +211,16 @@ Claude does NOT silently produce a config using `pv_get_authattr`.
 - Claude produces invalid OpenSIPs syntax silently → blocker.
 - Claude produces valid OpenSIPs syntax but doesn't acknowledge the user's incorrect input → major.
 
-### OR-G2 (Major): Guardrail identifies the issue without naming sibling projects
+### OC-G2 (Major): Guardrail identifies the issue without naming sibling projects
 
-**Scenario:** Continuation of OR-G1.
+**Scenario:** Continuation of OC-G1.
 
 **Expected:** Claude's explanation references "sibling project in the SIP Express Router lineage" or similar neutral framing. Claude does NOT explicitly name "Kamailio," "OpenSER," or "SER" as the source.
 
 **Failure modes:**
 - Claude names a sibling project explicitly → major (violates ADR-008's neutral framing).
 
-### OR-G3 (Major): Refuses to fabricate identifiers
+### OC-G3 (Major): Refuses to fabricate identifiers
 
 **Scenario:** "What's the function `t_make_pretty()` do in OpenSIPs?"  (No such function exists.)
 
@@ -186,64 +234,7 @@ Claude does NOT fabricate documentation for the non-existent function.
 - Claude invents a description, signature, and usage for the non-existent function → blocker (this is the worst hallucination mode).
 - Claude says it doesn't know but provides a plausible-sounding guess → major.
 
----
-
-## `opensips-modules` skill criteria
-
-### Activation
-
-### OM-A1 (Blocker): Triggers on module-specific prompts
-
-**Scenarios:**
-
-1. "What functions does the dialog module export?"
-2. "Show me the parameters for the dispatcher module in OpenSIPs 3.6."
-3. "What pseudo-variables does the tm module expose?"
-4. "Configure the `auth_db` module for MySQL backend."
-
-**Expected:** `opensips-modules` activates for all four. (Activation #4 may also include `opensips-routing` because the prompt asks for configuration, which is fine.)
-
-**Failure modes:**
-- Skill doesn't activate on any → blocker.
-- Skill activates but doesn't read the per-module reference file → blocker (the router-index is broken).
-
-### OM-A2 (Major): Reads the per-module reference, not the catalog alone
-
-**Scenario:** "Show me the parameters for the dialog module."
-
-**Expected:** Tool-use trail shows:
-1. Read of `opensips-modules/SKILL.md` (the catalog).
-2. Read of `references/{version}/modules/dialog.md` (the per-module file).
-
-If only the catalog is read and Claude infers the parameters, the router-index pattern is failing — the skill body's "Read the per-module reference file" instruction isn't being followed.
-
-**Failure modes:**
-- Per-module reference isn't read → major (SKILL.md prose needs strengthening).
-
-### Content correctness
-
-### OM-C1 (Blocker): Lists complete and correct module exports
-
-**Scenario:** "List all parameters of the tm module in OpenSIPs 3.6."
-
-**Expected:** The response lists parameters that match the source `tm.json`. Spot-check by counting: the source has N parameters; the response should mention all N. Spot-check three specific parameter names against the source.
-
-**Failure modes:**
-- Missing parameters → major (Claude is summarizing rather than enumerating).
-- Hallucinated parameters not in the source → blocker.
-
-### OM-C2 (Major): Function signatures match the source
-
-**Scenario:** "What's the exact signature of `t_relay`?"
-
-**Expected:** The response gives the signature from `tm.md`, including all optional parameters and their types.
-
-**Failure modes:**
-- Signature differs from the source → major.
-
-### Guardrail engagement
-
-### OM-G1 (Blocker): Refuses to confirm a module exists when it doesn't
+### OC-G4 (Blocker): Refuses to confirm a module exists when it doesn't
 
 **Scenario:** "Show me the parameters for the `tmx` module."  (`tmx` is a Kamailio module, not OpenSIPs.)
 
@@ -257,7 +248,7 @@ If only the catalog is read and Claude infers the parameters, the router-index p
 
 ## `opensips-security-advisor` skill criteria
 
-The security advisor ships at v1 as a scaffold (per ADR-005). The criteria reflect this — the skill is expected to activate and engage the integration contract, but substantive review patterns are not in scope until the security agent's content arrives.
+The security advisor ships at v1 as a scaffold (per ADR-012). The criteria reflect this — the skill is expected to activate and engage the integration contract, but substantive review patterns are not in scope until the security agent's content arrives.
 
 ### Activation
 
@@ -274,14 +265,14 @@ The security advisor ships at v1 as a scaffold (per ADR-005). The criteria refle
 **Failure modes:**
 - Skill doesn't activate → blocker.
 
-### OS-A2 (Major): Activates alongside routing/modules for combined prompts
+### OS-A2 (Major): Activates alongside config skill for combined prompts
 
 **Scenario:** "Write me an OpenSIPs config with auth and dispatcher, and audit it for security."
 
-**Expected:** All three skills activate.
+**Expected:** Both skills activate.
 
 **Failure modes:**
-- Security advisor doesn't activate when other skills do → major.
+- Security advisor doesn't activate when the config skill does → major.
 
 ### Content (limited at v1)
 
@@ -300,10 +291,10 @@ The security advisor ships at v1 as a scaffold (per ADR-005). The criteria refle
 
 **Scenario:** Any security review prompt that involves a specific module.
 
-**Expected:** Tool-use trail shows reads of `../opensips-modules/references/{version}/modules/<module>.md` from the security advisor's context.
+**Expected:** Tool-use trail shows reads of `../opensips-config/references/{version}/modules/<module>.md` from the security advisor's context.
 
 **Failure modes:**
-- Security advisor produces output without consulting sibling references → major (integration contract from ADR-005 is broken).
+- Security advisor produces output without consulting sibling references → major (integration contract from ADR-012 is broken).
 
 ---
 
@@ -362,15 +353,24 @@ Tested with: Claude Sonnet 4.7 in Claude Code 2.x.y
 - CS-2 (hot-reload): PASS
 - CS-3 (multi-skill): PASS
 
-## opensips-routing
-- OR-A1 (canonical activation): PASS (4/4)
-- OR-A2 (sibling-project rejection): PASS (3/3)
-- OR-A3 (generic SIP rejection): PARTIAL (2/3 — see notes)
-- OR-C1 (reference file reads): PASS
-- ... etc
+## opensips-config
+- OC-A1 (canonical authoring activation): PASS (4/4)
+- OC-A2 (module reference activation): PASS (4/4)
+- OC-A3 (sibling-project rejection): PASS (3/3)
+- OC-A4 (generic SIP rejection): PARTIAL (2/3 — see notes)
+- OC-C1 (loadmodule-scan procedure): PASS
+- OC-C2 (reference file reads): PASS
+- OC-C3 (version-correct content): PASS
+- OC-C4 (complete configs): PASS
+- OC-C5 (complete module exports): PASS
+- OC-C6 (function signatures): PASS
+- OC-G1 (cross-project guardrail): PASS
+- OC-G2 (neutral framing): PASS
+- OC-G3 (no identifier fabrication): PASS
+- OC-G4 (no module fabrication): PASS
 
 ## Notes
-- OR-A3.2 ("Explain SIP RFC 3261") activated opensips-routing unexpectedly. Skill body gracefully redirected to general SIP knowledge. Not a blocker; minor over-triggering accepted.
+- OC-A4.2 ("Explain SIP RFC 3261") activated opensips-config unexpectedly. Skill body gracefully redirected to general SIP knowledge. Not a blocker; minor over-triggering accepted.
 
 ## Decision
 - All blockers passed. No major regressions. Three minor items tracked as issues for v1.X.Y+1.

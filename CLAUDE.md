@@ -7,11 +7,10 @@
 
 ## What this project is
 
-`opensips-skills` is a [Claude Code plugin](https://docs.claude.com/en/docs/claude-code/plugins) that makes Claude fluent in OpenSIPs configuration. It ships three coordinated Agent Skills:
+`opensips-skills` is a [Claude Code plugin](https://docs.claude.com/en/docs/claude-code/plugins) that makes Claude fluent in OpenSIPs configuration. It ships two coordinated Agent Skills:
 
-1. **`opensips-routing`** — authors and reviews `opensips.cfg` route scripts.
-2. **`opensips-modules`** — version-aware reference library for OpenSIPs modules.
-3. **`opensips-security-advisor`** — scaffold for a security-review skill authored by a separate agent.
+1. **`opensips-config`** — authors and edits `opensips.cfg` files; provides version-aware module reference data; teaches the cfg file structure and the loadmodule-scan workflow.
+2. **`opensips-security-advisor`** — scaffold for a security-review skill authored by a separate agent.
 
 The project exists because off-the-shelf LLMs hallucinate when writing OpenSIPs configs — mixing identifiers across versions and across projects in the SIP Express Router lineage. This plugin grounds Claude in version-specific, OpenSIPs-authoritative documentation.
 
@@ -78,20 +77,19 @@ opensips-skills/
         │   └── plugin.json
         ├── README.md
         └── skills/
-            ├── opensips-routing/
+            ├── opensips-config/
             │   ├── SKILL.md         # Hand-authored
             │   ├── references/
-            │   │   ├── {3.5,3.6}/
-            │   │   │   ├── core/*.md            # Generated
-            │   │   │   └── ser-lineage-notes.md # Hand-authored
+            │   │   └── {3.5,3.6}/
+            │   │       ├── cfg-format.md        # Hand-authored
+            │   │       ├── ser-lineage-notes.md # Hand-authored
+            │   │       ├── modules-index.md     # Generated
+            │   │       ├── core/*.md            # Generated
+            │   │       ├── modules/*.md         # Generated
+            │   │       ├── guides/*.md          # Generated (3.6 only)
+            │   │       └── consolidated.json    # Generated
             │   └── scripts/
             │       └── module_search.py
-            ├── opensips-modules/
-            │   ├── SKILL.md         # Hand-authored
-            │   └── references/
-            │       └── {3.5,3.6}/
-            │           ├── modules/*.md         # Generated
-            │           └── consolidated.json    # Generated
             └── opensips-security-advisor/
                 └── SKILL.md         # Scaffold (separate agent populates)
 ```
@@ -110,7 +108,7 @@ Browse `docs/architecture/adr/`. Each ADR is dated, numbered, and answers one qu
 Read `docs/architecture/rendering-templates.md` first, then edit `scripts/render-module.ts` or `scripts/render-core.ts`. Regenerate with `npm run build`. Golden-file tests will fail if output changes unexpectedly — update them only if the change is intentional.
 
 ### "I need to update a SKILL.md"
-Read `docs/architecture/skill-authoring-guide.md`. The SKILL.md files are the only hand-authored Markdown in the skills themselves. Everything in `references/` is generated.
+Read `docs/architecture/skill-authoring-guide.md`. There are two hand-authored SKILL.md files: `opensips-config/SKILL.md` and `opensips-security-advisor/SKILL.md`. The SKILL.md files are the only hand-authored Markdown in the skills themselves (along with `cfg-format.md` and `ser-lineage-notes.md`). Everything else in `references/` is generated.
 
 ### "I need to know what to build next"
 `docs/plan/implementation-plan.md` is the milestone-by-milestone plan. Active work tracks as GitHub issues; the plan document tracks dependencies and sequencing.
@@ -141,10 +139,11 @@ data/processed/{version}/  ──►   source/{version}/
   modules/*.json                   ├─ rendered by build script
                                    ▼
                                  plugins/opensips/skills/
-                                   opensips-routing/references/
-                                   opensips-modules/references/
+                                   opensips-config/references/
                                       ├─ modules/*.md (per-item)
                                       ├─ core/*.md (aggregated)
+                                      ├─ guides/*.md (aggregated, 3.6+)
+                                      ├─ modules-index.md (generated)
                                       └─ consolidated.json (index)
 ```
 
@@ -153,8 +152,8 @@ data/processed/{version}/  ──►   source/{version}/
 - **Aggregated** for core types. All variables from `variables.json` become one `variables.md`; same for operators, statements, etc.
 
 **Hand-authored vs. generated:**
-- Hand-authored: three `SKILL.md` files, `ser-lineage-notes.md`, all documentation under `docs/`.
-- Generated: everything under `references/{version}/core/` and `references/{version}/modules/`, plus `consolidated.json`.
+- Hand-authored: two `SKILL.md` files, `cfg-format.md` (new), `ser-lineage-notes.md`, all documentation under `docs/`.
+- Generated: everything under `references/{version}/core/`, `references/{version}/modules/`, `references/{version}/guides/`, plus `modules-index.md` (new) and `consolidated.json`.
 
 For the full pipeline specification, see `docs/architecture/data-pipeline.md`.
 
@@ -197,7 +196,7 @@ claude --plugin-dir ./plugins/opensips
 ```
 Then in the Claude Code session:
 ```
-/plugin list          # Confirm all three skills loaded
+/plugin list          # Confirm both skills loaded
 /reload-plugins       # Pick up mid-session edits without restart
 ```
 
@@ -214,9 +213,11 @@ Replays the prompts in `docs/testing/golden-path-demos.md` and diffs against exp
 These rules exist to keep the project maintainable as it grows from solo development to open-source contributions. Claude Code should enforce them; human reviewers should too.
 
 ### Rule 1: Never hand-edit generated files
-Any file under `plugins/opensips/skills/*/references/{version}/core/`, `plugins/opensips/skills/*/references/{version}/modules/`, or `consolidated.json` is generated. Hand edits will be overwritten on the next build. If the output is wrong, the fix goes in:
+Any file under `plugins/opensips/skills/opensips-config/references/{version}/core/`, `plugins/opensips/skills/opensips-config/references/{version}/modules/`, `plugins/opensips/skills/opensips-config/references/{version}/guides/`, `modules-index.md`, or `consolidated.json` is generated. Hand edits will be overwritten on the next build. If the output is wrong, the fix goes in:
 - the source JSON (if the upstream extraction captured it wrong), or
 - the rendering script (if the transformation logic is wrong).
+
+The hand-authored files in the `opensips-config` skill tree are: `SKILL.md`, `cfg-format.md`, and `ser-lineage-notes.md`. These are never regenerated by the build and must be edited by hand.
 
 ### Rule 2: Every architectural change needs an ADR
 Before changing how skills are structured, how the build works, how versions are resolved, or how the pipeline is laid out — write an ADR under `docs/architecture/adr/`. Use the next number. If you're superseding an existing ADR, link to it and update the old one's status to "Superseded by ADR-NNN."
@@ -236,8 +237,8 @@ They carry the anti-hallucination load. Changes to SKILL.md require reading `doc
 ### Rule 7: Neutral framing on SER-lineage topics
 OpenSIPs is one of several projects descending from the SIP Express Router. When writing any documentation — including SKILL.md, `ser-lineage-notes.md`, ADRs, and error messages — stay strictly within OpenSIPs territory. Do not compare against other projects by name beyond the single lineage acknowledgment in `ser-lineage-notes.md`. Rationale in ADR-008.
 
-### Rule 8: The three skills do not write to each other's directories
-Each skill reads files (including from sibling skills' reference folders, which is allowed and expected). None writes to another skill's directory at build or runtime. This keeps the integration contract between `opensips-security-advisor` and the other two explicit and testable.
+### Rule 8: The two skills do not write to each other's directories
+Each skill reads files (including from sibling skills' reference folders, which is allowed and expected). None writes to another skill's directory at build or runtime. This keeps the integration contract between `opensips-security-advisor` and `opensips-config` explicit and testable. The security advisor reads `opensips-config`'s reference files; it does not write to them.
 
 ---
 
@@ -249,7 +250,7 @@ When a user opens this repository in Claude Code, the behavior should be:
 2. **When the user asks about the project,** point them to `docs/vision.md` and `docs/requirements.md`.
 3. **When the user wants to add a module,** they do not. Modules come from the upstream extraction project. The task is to refresh `source/`, rerun `npm run build`, and commit the result.
 4. **When the user wants to change how things render,** edit `scripts/render-*.ts`, run `npm run build`, and verify golden-path tests still pass (or update them intentionally).
-5. **When the user wants to change a SKILL.md,** read `docs/architecture/skill-authoring-guide.md` first, then edit, then verify golden-path demos.
+5. **When the user wants to change a SKILL.md,** read `docs/architecture/skill-authoring-guide.md` first, then edit the appropriate file (`opensips-config/SKILL.md` or `opensips-security-advisor/SKILL.md`), then verify golden-path demos.
 6. **When asked to make a decision that feels architectural,** propose an ADR before implementing.
 7. **When asked to add a feature not in the requirements doc,** check `docs/plan/implementation-plan.md` to see if it's planned for a later phase. If not, flag the scope expansion explicitly rather than silently implementing it.
 
@@ -276,9 +277,9 @@ Claude Code should treat the "Rules for changing things" section above as hard c
 
 ## Project status
 
-**Current phase:** Pre-implementation. Documentation being finalized; build scripts not yet written.
-**Active target:** Initial public release.
-**Repository state:** Documentation in progress. See `docs/plan/implementation-plan.md` for milestone status.
+**Current phase:** Post-v1.0.0 public release. Two-skill architecture live (ADR-012).
+**Active target:** Ongoing maintenance, expanded version coverage, security advisor content.
+**Repository state:** Fully functional. See `docs/plan/implementation-plan.md` for milestone history.
 
 ---
 
@@ -292,4 +293,4 @@ Claude Code should treat the "Rules for changing things" section above as hard c
 
 ---
 
-*Last updated: 2026-04-24. This file is hand-authored and should be kept current as the project evolves.*
+*Last updated: 2026-04-25. This file is hand-authored and should be kept current as the project evolves.*

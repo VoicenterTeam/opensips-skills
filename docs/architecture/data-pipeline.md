@@ -16,22 +16,22 @@ The pipeline transforms per-version JSON documentation into three kinds of artif
 INPUT                                OUTPUT
 ─────────────────────────           ───────────────────────────────────
 source/                             plugins/opensips/skills/
-├── 3.5/                              ├── opensips-routing/references/
-│   ├── core/                         │   ├── 3.5/core/*.md
-│   │   ├── async.json                │   ├── 3.5/ser-lineage-notes.md
-│   │   ├── events.json               │   ├── 3.6/core/*.md
-│   │   ├── flags.json                │   └── 3.6/ser-lineage-notes.md
-│   │   ├── functions.json            │
-│   │   ├── mi_commands.json          └── opensips-modules/references/
-│   │   ├── operators.json                ├── 3.5/
-│   │   ├── parameters.json               │   ├── modules/*.md
-│   │   ├── routes.json                   │   └── consolidated.json
-│   │   ├── statements.json               └── 3.6/
-│   │   ├── statistics.json                   ├── modules/*.md
-│   │   ├── transformations.json              └── consolidated.json
-│   │   └── variables.json
-│   └── modules/
-│       ├── tm.json
+├── 3.5/                              └── opensips-config/references/
+│   ├── core/                             ├── 3.5/
+│   │   ├── async.json                    │   ├── cfg-format.md    (hand-authored)
+│   │   ├── events.json                   │   ├── ser-lineage-notes.md (hand-authored)
+│   │   ├── flags.json                    │   ├── modules-index.md (generated)
+│   │   ├── functions.json                │   ├── consolidated.json (generated)
+│   │   ├── mi_commands.json              │   ├── core/*.md        (generated)
+│   │   ├── operators.json                │   └── modules/*.md     (generated)
+│   │   ├── parameters.json               └── 3.6/
+│   │   ├── routes.json                       ├── cfg-format.md    (hand-authored)
+│   │   ├── statements.json                   ├── ser-lineage-notes.md (hand-authored)
+│   │   ├── statistics.json                   ├── modules-index.md (generated)
+│   │   ├── transformations.json              ├── consolidated.json (generated)
+│   │   └── variables.json                    ├── core/*.md        (generated)
+│   └── modules/                              ├── modules/*.md     (generated)
+│       ├── tm.json                           └── guides/*.md      (generated)
 │       ├── dispatcher.json
 │       └── ... (one per module)
 └── 3.6/
@@ -100,7 +100,7 @@ Before any source file is validated, the build compares a hash of the compiled Z
 
 **Input:** Validated `ModuleDocument[]` for a single version.
 
-**Output:** One Markdown file per module, written to `plugins/opensips/skills/opensips-modules/references/{version}/modules/{slug}.md`.
+**Output:** One Markdown file per module, written to `plugins/opensips/skills/opensips-config/references/{version}/modules/{slug}.md`.
 
 **Behavior:**
 - Slug generation: lowercase the `module_name` field, replace any non-alphanumeric character (other than `_` and `-`) with `-`, collapse consecutive dashes. Example: `uac_auth` → `uac_auth`, `Mi-HTTP` → `mi-http`. Slugs must be unique within a version; collisions are fatal (exit code 3). Rationale: case-insensitive filesystems (macOS default, Windows) cannot distinguish `WebSocket.md` from `websocket.md`, so lowercase normalization is mandatory for cross-platform correctness.
@@ -124,7 +124,7 @@ Before any source file is validated, the build compares a hash of the compiled Z
 
 **Input:** Validated `CoreVariableDocument`, `OperatorDocument`, `RouteDocument`, etc. for a single version.
 
-**Output:** Twelve Markdown files, one per core document type, written to `plugins/opensips/skills/opensips-routing/references/{version}/core/{name}.md`.
+**Output:** Twelve Markdown files, one per core document type, written to `plugins/opensips/skills/opensips-config/references/{version}/core/{name}.md`.
 
 **Behavior:**
 - This is the "aggregated" rendering mode. A single `CoreVariableDocument` contains many variables; the entire document renders to one `variables.md` file with each variable as an H2 section.
@@ -132,9 +132,10 @@ Before any source file is validated, the build compares a hash of the compiled Z
 - Each aggregated file begins with YAML frontmatter (`name`, `description`, `version`, `doc_type`) and an H1 title. Within the body, items are rendered as H2 sections in alphabetical order by name.
 - Atomic writes, empty-section omission, and alphabetical ordering all apply, identical to Stage 3.
 
-**The `ser-lineage-notes.md` file:**
-- Not generated. Hand-authored. Lives at `plugins/opensips/skills/opensips-routing/references/{version}/ser-lineage-notes.md`.
-- The build pipeline does not touch this file. It is included in the skill tree but falls outside the pipeline's generation contract.
+**Hand-authored files in the references tree:**
+- `cfg-format.md` — Not generated. Hand-authored. Lives at `plugins/opensips/skills/opensips-config/references/{version}/cfg-format.md`. Teaches the opensips.cfg file structure, section ordering, route block taxonomy, and authoring workflow.
+- `ser-lineage-notes.md` — Not generated. Hand-authored. Lives at `plugins/opensips/skills/opensips-config/references/{version}/ser-lineage-notes.md`.
+- The build pipeline does not touch either file. Both are included in the skill tree but fall outside the pipeline's generation contract.
 
 **Error conditions:**
 - Same as Stage 3.
@@ -143,7 +144,7 @@ Before any source file is validated, the build compares a hash of the compiled Z
 
 **Input:** All validated documents for a single version, plus the paths of files written in Stages 3 and 4.
 
-**Output:** `plugins/opensips/skills/opensips-modules/references/{version}/consolidated.json`.
+**Output:** `plugins/opensips/skills/opensips-config/references/{version}/consolidated.json`.
 
 **Behavior:**
 - Construct the four runtime-lookup indexes specified in ADR-006: `functionsByName`, `parametersByModule`, `variablesByName`, `miCommandsByName`.
@@ -157,6 +158,20 @@ Before any source file is validated, the build compares a hash of the compiled Z
 **Error conditions:**
 - I/O failure → exit code 4.
 - Index invariant violation (e.g., a function references a module path that wasn't generated) → exit code 3.
+
+### 2.6 Stage 6: Render modules-index
+
+**Input:** All validated `ModuleDocument[]` for a single version, plus the consolidated index from Stage 5.
+
+**Output:** `plugins/opensips/skills/opensips-config/references/{version}/modules-index.md`.
+
+**Behavior:**
+- Generates a standalone Markdown file containing the full module catalog table (module name, one-line purpose, reference file path) and lookup-discipline prose ("When a module is not in the index", "Lookup discipline", etc.).
+- Replaces the former inline module-index table that lived in `opensips-modules/SKILL.md` (prior to ADR-012). Moving this content out of SKILL.md keeps the SKILL.md body focused on workflow procedures rather than a large static catalog.
+- Atomic write. Same determinism guarantees as Stages 3–5.
+
+**Error conditions:**
+- I/O failure → exit code 4.
 
 ---
 
@@ -261,7 +276,7 @@ Concretely, the extraction project commits to:
 The pipeline commits to the consumers of its output (Claude skills reading the Markdown, the security advisor reading the index):
 
 1. **Byte-stable output given byte-stable input.** Same source JSON → same Markdown and index, across runs, platforms, and timezones. Enforced by the build-twice-and-diff CI job.
-2. **Consistent file layout.** Output paths are predictable: modules at `opensips-modules/references/{version}/modules/{slug}.md`, core at `opensips-routing/references/{version}/core/{name}.md`, index at `opensips-modules/references/{version}/consolidated.json`. The skill's SKILL.md files can hardcode these paths with confidence.
+2. **Consistent file layout.** Output paths are predictable: modules at `opensips-config/references/{version}/modules/{slug}.md`, core at `opensips-config/references/{version}/core/{name}.md`, index at `opensips-config/references/{version}/consolidated.json`. The skill's SKILL.md files can hardcode these paths with confidence.
 3. **Schema-validated Markdown structure.** Every generated Markdown file conforms to the template specified in `docs/architecture/rendering-templates.md`. Consumers can rely on section order and heading hierarchy.
 4. **Complete-or-absent.** If a build succeeds (exit 0), every input document became at least one output artifact. If a build fails, the previous successful output is not touched — consumers either see the last known-good tree or nothing, never a mixture.
 5. **Atomic file writes.** A build interrupted partway through leaves each individual file either fully written or untouched. Readers never see half-written files.
