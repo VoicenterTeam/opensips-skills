@@ -1,0 +1,313 @@
+{
+  "id": "operator-script-operators-3.6",
+  "document_type": "operator",
+  "version": "3.6",
+  "title": "Script Operators v3.6",
+  "url": "https://www.opensips.org/Documentation/Script-Operators-3-6",
+  "content_markdown": "Assignments, string and arithmetic operations can be done directly in the configuration file.\n\n#### 1. Assignment\n\nAssignments can be done like in C, via '=' (equal) operator. Not that not all variables (from script) can be written, some are read-only. Check with listing of variables to see which ones can be written too.\n\n$var(a) = 123;\n$ru = \"sip:user@domain\";\n\nThere is a special assign operator ':=' (colon equal) that can be used with AVPs. If the right value is null, all AVPs with that name are deleted. If different, the new value will overwrite any existing values for the AVPs with than name (on other words, delete existing AVPs with same name, add a new one with the right side value).\n\n$avp(val) := 123;\n\n#### 2. String operations\n\nFor strings, '+' is available to concatenate.\n\n$var(a) = \"test\";\n$var(b) = \"sip:\" + $var(a) + \"@\" + $fd;\n\n#### 3. Arithmetic and bitwise operations\n\nFor numbers, one can use:\n\n* + : plus\n* - : minus\n* / : divide\n* * : multiply\n* % : modulo\n* | : bitwise OR\n* & : bitwise AND\n* ^ : bitwise XOR\n* ~ : bitwise NOT\n* << : bitwise left shift\n* >> : bitwise right shift\n\nExample:\n\n$var(a) = 4 + ( 7 & ( ~2 ) );\n\nNOTE: to ensure the priority of operands in expression evaluations do use __parenthesis__.\n\nArithmetic expressions can be used in condition expressions via test operator ' [ ... ] '.\n\nif( [ $var(a) & 4 ] )\n    log(\"var a has third bit set\\n\");",
+  "category": "Core",
+  "synopsis": "OpenSIPS script operators provide C-like syntax for variable assignments, string concatenation, and complex arithmetic or bitwise logic. They include specialized handling for AVPs and a test operator for evaluating math within conditional statements.",
+  "keywords": [
+    "assignment",
+    "concatenation",
+    "arithmetic",
+    "bitwise",
+    "AVP",
+    "variables",
+    "test operator"
+  ],
+  "extracted_at": "2025-02-22T21:45:00Z",
+  "operators": [
+    {
+      "symbol": " =",
+      "name": "Assignment",
+      "category": "Assignment",
+      "operand_type": "binary",
+      "description": "Standard assignment operator. Not all variables are writable.",
+      "applicable_to": [
+        "variable",
+        "pseudo-variable"
+      ],
+      "precedence": 14,
+      "associativity": "right",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 123;\n$ru = \"sip:user@domain\";",
+          "description": "Assigning an integer to a script variable and a string to the Request-URI."
+        }
+      ]
+    },
+    {
+      "symbol": ":=",
+      "name": "AVP Assignment",
+      "category": "Assignment",
+      "operand_type": "binary",
+      "description": "Special assignment for AVPs. If the right value is null, all AVPs with that name are deleted. Otherwise, it overwrites all existing values with the new value.",
+      "applicable_to": [
+        "AVP"
+      ],
+      "precedence": 14,
+      "associativity": "right",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$avp(val) := 123;",
+          "description": "Overwriting existing AVPs named 'val' with the integer 123."
+        }
+      ]
+    },
+    {
+      "symbol": "+",
+      "name": "String Concatenation",
+      "category": "String operations",
+      "operand_type": "binary",
+      "description": "Concatenates two string values.",
+      "applicable_to": [
+        "string"
+      ],
+      "precedence": 4,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = \"test\";\n$var(b) = \"sip:\" + $var(a) + \"@\" + $fd;",
+          "description": "Building a SIP URI string using concatenation."
+        }
+      ]
+    },
+    {
+      "symbol": "+",
+      "name": "Plus",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Arithmetic addition.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 4,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 4 + 5;",
+          "description": "Adding two integers."
+        }
+      ]
+    },
+    {
+      "symbol": "-",
+      "name": "Minus",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Arithmetic subtraction.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 4,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 10 - 5;",
+          "description": "Subtracting integers."
+        }
+      ]
+    },
+    {
+      "symbol": "*",
+      "name": "Multiply",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Arithmetic multiplication.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 3,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 2 * 3;",
+          "description": "Multiplying integers."
+        }
+      ]
+    },
+    {
+      "symbol": " /",
+      "name": "Divide",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Arithmetic division.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 3,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 10 / 2;",
+          "description": "Dividing integers."
+        }
+      ]
+    },
+    {
+      "symbol": "%",
+      "name": "Modulo",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Arithmetic modulo (remainder).",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 3,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 10 % 3;",
+          "description": "Calculating the remainder of a division."
+        }
+      ]
+    },
+    {
+      "symbol": "|",
+      "name": "Bitwise OR",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Performs a bitwise OR operation.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 10,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 1 | 2;",
+          "description": "Bitwise OR of 1 and 2."
+        }
+      ]
+    },
+    {
+      "symbol": "&",
+      "name": "Bitwise AND",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Performs a bitwise AND operation.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 8,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 7 & 4;",
+          "description": "Bitwise AND of 7 and 4."
+        }
+      ]
+    },
+    {
+      "symbol": "^",
+      "name": "Bitwise XOR",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Performs a bitwise XOR operation.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 9,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 7 ^ 2;",
+          "description": "Bitwise XOR of 7 and 2."
+        }
+      ]
+    },
+    {
+      "symbol": "~",
+      "name": "Bitwise NOT",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "unary",
+      "description": "Performs a bitwise NOT (inversion) operation.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 2,
+      "associativity": "right",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = ~2;",
+          "description": "Bitwise NOT of 2."
+        }
+      ]
+    },
+    {
+      "symbol": "<<",
+      "name": "Bitwise left shift",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Shifts bits to the left.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 5,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 1 << 2;",
+          "description": "Shifting 1 left by 2 bits."
+        }
+      ]
+    },
+    {
+      "symbol": ">>",
+      "name": "Bitwise right shift",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "binary",
+      "description": "Shifts bits to the right.",
+      "applicable_to": [
+        "integer"
+      ],
+      "precedence": 5,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 8 >> 2;",
+          "description": "Shifting 8 right by 2 bits."
+        }
+      ]
+    },
+    {
+      "symbol": "[ ]",
+      "name": "Test operator",
+      "category": "Arithmetic and bitwise operations",
+      "operand_type": "unary",
+      "description": "Allows arithmetic expressions to be evaluated within condition expressions (like 'if' statements).",
+      "applicable_to": [
+        "expression"
+      ],
+      "precedence": 1,
+      "associativity": "left",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if( [ $var(a) & 4 ] )\n    log(\"var a has third bit set\\n\");",
+          "description": "Using the test operator to evaluate a bitwise AND inside an if-condition."
+        }
+      ]
+    }
+  ],
+  "operator_categories": [
+    "Assignment",
+    "String operations",
+    "Arithmetic and bitwise operations"
+  ]
+}

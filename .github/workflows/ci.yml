@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  LANG: C
+  LC_ALL: C
+  TZ: UTC
+
+jobs:
+  validate:
+    name: Validate source against schemas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - run: npm run validate
+
+  build:
+    name: Build + verify generated output committed
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - run: npm run build
+      - name: Verify generated output is committed
+        run: git diff --exit-code
+
+  test:
+    name: Run all tests with coverage
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - run: npm run test:coverage
+
+  determinism:
+    name: Build twice, diff must be empty
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - name: First build
+        run: npm run build
+      - name: Hash all generated files
+        run: find plugins/opensips/skills -type f \( -name '*.md' -o -name '*.json' \) | sort | xargs sha256sum > /tmp/build1.hashes
+      - name: Clean
+        run: npm run clean
+      - name: Second build
+        run: npm run build
+      - name: Hash again
+        run: find plugins/opensips/skills -type f \( -name '*.md' -o -name '*.json' \) | sort | xargs sha256sum > /tmp/build2.hashes
+      - name: Diff
+        run: diff /tmp/build1.hashes /tmp/build2.hashes
+
+  lint:
+    name: ESLint + Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run format:check
+
+  skill-md-check:
+    name: SKILL.md content guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for unreplaced module-index placeholder
+        run: |
+          if grep -rn "MODULE_INDEX_PLACEHOLDER" plugins/opensips/skills/; then
+            echo "ERROR: SKILL.md contains an unreplaced placeholder."
+            echo "Run: npm run build:skills && commit the updated SKILL.md"
+            exit 1
+          fi
+      - name: Check for sibling SER-lineage project name leaks
+        run: |
+          if grep -irnE "(kamailio|openser|sip-router)" plugins/opensips/skills/*/SKILL.md plugins/opensips/skills/*/references/*/ser-lineage-notes.md; then
+            echo "ERROR: forbidden sibling-project name found in SKILL.md or ser-lineage-notes.md."
+            echo "Per ADR-008, only the lineage acknowledgment 'SIP Express Router (SER)' is permitted."
+            exit 1
+          fi

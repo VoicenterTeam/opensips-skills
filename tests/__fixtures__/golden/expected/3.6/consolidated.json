@@ -1,0 +1,1010 @@
+{
+  "generator": "0.1.0",
+  "indexes": {
+    "functionsByName": {
+      "acc_aaa_request": {
+        "description": "Like `acc_log_request`, `acc_aaa_request` reports on a request.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_db_request": {
+        "description": "Like `acc_log_request`, `acc_db_request` reports on a request.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_evi_request": {
+        "description": "Like `acc_log_request`, `acc_evi_request` reports on a request.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_load_ctx_from_dlg": {
+        "description": "The function loads and exposes the accounting context of the currently in-use dialog.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_log_request": {
+        "description": "reports on a request, for example, it can be used to report on missed calls to off-line users who are replied 404 - Not Found.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_new_leg": {
+        "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.�$acc_current_leg (read-only)\") only if multi-leg accounting is used.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "acc_unload_ctx_from_dlg": {
+        "description": "The function off-loads a previosuly loaded accounting context, exposing whatever accounting context was present before doing the load.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "do_accounting": {
+        "description": "replaces all the *_flag and, *_missed_flag, cdr_flag, failed transaction_flag and the db_table_avp modparams.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "drop_accounting": {
+        "description": "resets flags and types of accounting set with do_accounting().",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "sl_reply_error": {
+        "description": "Sends back an error reply describing the nature of the last internal error.",
+        "path": "references/3.6/modules/sl.md",
+        "source": "module:sl"
+      },
+      "sl_send_reply": {
+        "description": "For the current request, a reply is sent back having the given code and text reason.",
+        "path": "references/3.6/modules/sl.md",
+        "source": "module:sl"
+      },
+      "t_add_cancel_reason": {
+        "description": "This function is used to enforce from the script level a custom \"Reason\" header into a CANCEL request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_add_hdrs": {
+        "description": "Attach a set of headers to the existing transaction - these headers will be appended to all requests related to the transaction (outgoing branches, local ACKS, CANCELs).",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_anycast_replicate": {
+        "description": "This function is used in an anycast setup to replicate a _CANCEL_ or _ACK_ method for whom there are no local transactions found.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_cancel_branch": {
+        "description": "This function is to be call when a reply is received for cancelling a set of branches (see flags) of the current call.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_check_status": {
+        "description": "Returns true if the regualr expression “re” match the reply code of the response message as follows: * in routing block - the code of the last sent reply.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_check_trans": {
+        "description": "Returns true if the current request is associated to a transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_flush_flags": {
+        "description": "Flush the flags from current request into the already created transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_get_branch_idx_by_attr": {
+        "description": "This function may be used to search for the index of another branch of the current transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_inject_branches": {
+        "description": "The function adds new SIP branches (destinations) to an existing transaction and fires them (sends them out).",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_local_replied": {
+        "description": "Returns true if all or last (depending of the parameter) reply(es) were local generated (and not received).",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_new_request": {
+        "description": "This function generates and sends out a new SIP request (in a stateful way).",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_newtran": {
+        "description": "Creates the SIP transaction for the currently processed SIP request, thus switching to stateful processing.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_on_branch": {
+        "description": "Sets a branch route to be execute separately for each branch of the transaction before being sent out - changes in that route should reflect only on that branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_on_failure": {
+        "description": "Sets reply routing block, to which control is passed after a transaction completed with a negative result but before sending a final reply.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_on_reply": {
+        "description": "Sets reply routing block, to which control is passed each time a reply (provisional or final) for the transaction is received.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_relay": {
+        "description": "Relay a message statefully to destination indicated in current URI.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_replicate": {
+        "description": "Replicates a request to another destination.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_reply": {
+        "description": "Sends a stateful SIP reply to the currently processed requests.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_reply_by_callid": {
+        "description": "This function is used to send a reply to an existing INVITE transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_reply_with_body": {
+        "description": "Sends a stateful SIP reply with a body to the currently processed requests.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_wait_for_new_branches": {
+        "description": "This function instructs the existing SIP transaction to wait for new branches to be injected even after the completion of the existing branches.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_wait_no_more_branches": {
+        "description": "This function instructs the existing SIP transaction to stop wait for new any new branches to be injected.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_was_cancelled": {
+        "description": "Retuns true if called for an INVITE transaction that was explicitly cancelled by UAC side via a CANCEL request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_write_req": {
+        "description": "Write via FIFO file or UNIX socket a lot of information regarding the request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_write_unix": {
+        "description": "Write via FIFO file or UNIX socket a lot of information regarding the request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      }
+    },
+    "miCommandsByName": {
+      "t_hash": {
+        "description": "Gets information about the load of TM internal hash table.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_reply": {
+        "description": "Generates and sends a reply for an existing inbound SIP transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_uac_cancel": {
+        "description": "Generates and sends a CANCEL for an existing SIP request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "t_uac_dlg": {
+        "description": "Generates and sends a local SIP request.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      }
+    },
+    "parametersByModule": {
+      "acc": [
+        "aaa_url",
+        "acc_callid_column",
+        "acc_from_tag_column",
+        "acc_method_column",
+        "acc_sip_code_column",
+        "acc_sip_reason_column",
+        "acc_time_column",
+        "acc_to_tag_column",
+        "db_table_acc",
+        "db_table_missed_calls",
+        "db_url",
+        "detect_direction",
+        "early_media",
+        "extra_fields",
+        "leg_fields",
+        "log_facility",
+        "log_level",
+        "report_cancels",
+        "service_type"
+      ],
+      "sl": [
+        "enable_stats"
+      ],
+      "tm": [
+        "T1_timer",
+        "T2_timer",
+        "auto_100trying",
+        "cluster_auto_cancel",
+        "cluster_param",
+        "delete_timer",
+        "disable_6xx_block",
+        "enable_stats",
+        "fr_inv_timeout",
+        "fr_timeout",
+        "local_reply_route",
+        "local_request_route",
+        "minor_branch_flag",
+        "onreply_avp_mode",
+        "pass_provisional_replies",
+        "restart_fr_on_each_reply",
+        "ruri_matching",
+        "syn_branch",
+        "timer_partitions",
+        "tm_replication_cluster",
+        "tw_append",
+        "unix_tx_timeout",
+        "via1_matching",
+        "wt_timer"
+      ]
+    },
+    "variablesByName": {
+      "$(acc_leg(tag_name)[leg_index])": {
+        "description": "This variable can be addressed with the tag names defined using leg_fields and a valid leg index (<= $acc_current_leg).",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "$Au": {
+        "description": "Username for accounting purposes.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$TS": {
+        "description": "Reference to startup unix time stamp.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$T_branch_idx": {
+        "description": "the index (starting with 0 for the first branch) of the currently proccessed branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_branch_last_reply_code": {
+        "description": "returns the last reply code received for a branch specified as parameter.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_fr_inv_timeout": {
+        "description": "the timeout for the final reply to an INVITE request, after a 1XX reply was received.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_fr_timeout": {
+        "description": "the timeout for the final reply to the current transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_id": {
+        "description": "returns the ID of the current transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_reply_code": {
+        "description": "the code of the reply, as follows: in request_route will be the last stateful sent reply; in reply_route will be the current processed reply; in failure_route will be the negative winning reply.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$T_ruri": {
+        "description": "the ruri of the current branch; this information is taken from the transaction structure, so you can access this information for any sip message (request/reply) that has a transaction.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$Tf": {
+        "description": "Reference string formatted time.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$Ts": {
+        "description": "Reference to current unix time stamp in seconds.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$Tsm": {
+        "description": "Reference to current microseconds of the current second.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$aU": {
+        "description": "Whole username from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$acc_current_leg": {
+        "description": "Holds the index of the current leg, starting from 0.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "$acc_extra(tag_name)": {
+        "description": "This variable can addresed with the tag names defined using extra_fields.",
+        "path": "references/3.6/modules/acc.md",
+        "source": "module:acc"
+      },
+      "$ad": {
+        "description": "Domain part of username from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$adu": {
+        "description": "URI from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ai": {
+        "description": "Reference to URI in request's P-Asserted-Identity header (see RFC 3325).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$an": {
+        "description": "The nonce from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ar": {
+        "description": "Realm from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$argv": {
+        "description": "Provides access to command line arguments specified with '-o' option.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$au": {
+        "description": "User part of username from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.alg": {
+        "description": "The algorithm string from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.nc": {
+        "description": "The value of nonce count parameter from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.nonce": {
+        "description": "The nonce string from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.opaque": {
+        "description": "The opaque string from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.qop": {
+        "description": "The value of qop parameter from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$auth.resp": {
+        "description": "The authentication response from Authorization or Proxy-Authorization header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$avp(name)": {
+        "description": "Attribute Value Pairs are dynamic variables linked to a singular message or transaction.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$bavp(name)": {
+        "description": "a particular type of avp that can have different values for each branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$bf": {
+        "description": "Displays a list with the branch flags set for the current SIP request.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$branch": {
+        "description": "This variable is used for creating new branches by writing into it the value of a SIP URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$branch.fields": {
+        "description": "Provides read/write access to all fields/attributes of an already existing branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$branch.flag": {
+        "description": "Provides read/write access to the value of a single certain branch flag (identified by name).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$cT": {
+        "description": "Reference to body of Content-Type header and also the content-type headers inside a multi-part body.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$cfg_file": {
+        "description": "Holds the current name of the cfg file being executed, useful when using multiple scripts via the include statement.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$cfg_line": {
+        "description": "Holds the current line from the script of the action being executed, useful for logging purposes.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.algorithm": {
+        "description": "The algorithm value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.ck": {
+        "description": "The ck value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.ik": {
+        "description": "The ik value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.nonce": {
+        "description": "The nonce value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.opaque": {
+        "description": "The opaque value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.qop": {
+        "description": "The qop value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$challenge.realm": {
+        "description": "The realm value taken from the WWW-Authorize or Proxy-Authorize header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ci": {
+        "description": "Reference to body of call-id header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$cl": {
+        "description": "Reference to body of content-length header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$cs": {
+        "description": "Reference to cseq number from cseq header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ct": {
+        "description": "Reference to contact instance/body from the contact header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ct.fields": {
+        "description": "Reference to the fields of a contact instance/body.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$dP": {
+        "description": "Reference to transport protocol of destination uri.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$dd": {
+        "description": "Reference to domain of destination uri.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$di": {
+        "description": "Reference to Diversion header URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$dip": {
+        "description": "Reference to Diversion header 'privacy' parameter value.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$dir": {
+        "description": "Reference to Diversion header 'reason' parameter value.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$dp": {
+        "description": "Reference to port of destination uri.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ds": {
+        "description": "Reference to destination set.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$du": {
+        "description": "Reference to destination uri (outbound proxy to be used for sending the request).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$err.class": {
+        "description": "The class of error (now is '1' for parsing errors).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$err.info": {
+        "description": "Text describing the error.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$err.level": {
+        "description": "Severity level for the error.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$err.rcode": {
+        "description": "Recommended reply code.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$err.rreason": {
+        "description": "Recommended reply reason phrase.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$fU": {
+        "description": "Reference to username in URI of 'From' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$fd": {
+        "description": "Reference to domain in URI of 'From' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$fn": {
+        "description": "Reference to display name of 'From' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ft": {
+        "description": "Reference to tag parameter of 'From' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$fu": {
+        "description": "Reference to URI of 'From' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$hdr": {
+        "description": "Represents the body of the N-th header identified by 'name'.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$hdrcnt": {
+        "description": "Returns number of headers of type given by 'name'.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$log_level": {
+        "description": "Changes the log level for the current process; the log level can be set to a new value or it can be reset back to the global log level.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$mb": {
+        "description": "Reference to SIP message buffer.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$mf": {
+        "description": "Displays a list with the message/transaction flags set for the current SIP request.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$mi": {
+        "description": "Reference to SIP message id.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ml": {
+        "description": "Reference to SIP message length.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch": {
+        "description": "Used for creating new message branches by writing into it the value of a SIP URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.attr": {
+        "description": "Similar to $msg.branch.uri, but operating over a single branch attribute (attached to the current branch).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.duri": {
+        "description": "100% similar to $msg.branch.uri, but operating with the Detination-URI value of the message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.flag": {
+        "description": "Similar to $msg.branch.uri, but operating over a single branch flag (for the current branch).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.flags": {
+        "description": "100% similar to $msg.branch.uri, but operating with list (comma separated) of per-branch flags (which are set for the branch).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.last_idx": {
+        "description": "Returns the index of the last message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.path": {
+        "description": "100% similar to $msg.branch.uri, but operating with the PATH value of the message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.q": {
+        "description": "100% similar to $msg.branch.uri, but operating with the Q value of the message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.socket": {
+        "description": "100% similar to $msg.branch.uri, but operating with the (forced) socket value of the message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.branch.uri": {
+        "description": "Gives read / write access over the SIP URI (as string) of an existing message branch.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.flag": {
+        "description": "Provides read/write access to the value of a single certain message flag (identified by name).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.is_request": {
+        "description": "Tells if the current SIP message is a request or not.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$msg.type": {
+        "description": "Returns the type of the current message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$oP": {
+        "description": "Reference to transport protocol of original R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$oU": {
+        "description": "Reference to username in request's original URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$od": {
+        "description": "Reference to domain in request's original R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$op": {
+        "description": "Reference to port of original R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ou": {
+        "description": "Reference to request's original URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$pU": {
+        "description": "Reference to user in request's P-Preferred-Identity header URI (see RFC 3325).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$param": {
+        "description": "Retrieves the parameters of the route.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$pd": {
+        "description": "Reference to domain in request's P-Preferred-Identity header URI (see RFC 3325).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$pn": {
+        "description": "Reference to Display Name in request's P-Preferred-Identity header (see RFC 3325).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$pp": {
+        "description": "Reference to process id (pid).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$pu": {
+        "description": "Reference to URI in request's P-Preferred-Identity header (see RFC 3325).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rP": {
+        "description": "Reference to transport protocol of R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rU": {
+        "description": "Reference to username in request's URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rb": {
+        "description": "Reference to the body or a body part of the SIP message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rc": {
+        "description": "Reference to returned code by last invoked function.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rd": {
+        "description": "Reference to domain in request's URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$re": {
+        "description": "Reference to Remote-Party-ID header URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$return": {
+        "description": "Returns the value of the previously executed route.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rm": {
+        "description": "Reference to request's method.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$route": {
+        "description": "Access route names of the current route call stack.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$route.name": {
+        "description": "Access the name of the current route.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$route.type": {
+        "description": "Access the type of the current route.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rp": {
+        "description": "Reference to port of R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rr": {
+        "description": "Reference to reply's reason.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rs": {
+        "description": "Reference to reply's status.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$rt": {
+        "description": "Reference to URI of refer-to header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ru": {
+        "description": "Reference to request's URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ru_q": {
+        "description": "Reference to q value of the R-URI.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sdp": {
+        "description": "Read/Write reference to the SDP body of the current SIP message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sdp.line": {
+        "description": "Read/Write reference to SDP body lines, with filtering support.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sdp.session": {
+        "description": "Read/Write reference to the SDP body session, with filtering support.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sdp.stream": {
+        "description": "Read/Write reference to SDP body streams, with filtering support.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sdp.stream.idx": {
+        "description": "Read-Only reference to the index of the matched SDP stream.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$si": {
+        "description": "Reference to IP source address of the message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$socket_in": {
+        "description": "Read-only variable to get the description (proto:ip:port format) of the inbound socket (used for receiving the message).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$socket_out": {
+        "description": "Read-write variable for reading or changing the outbound socket of the message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$sp": {
+        "description": "Reference to the source port of the message.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$tU": {
+        "description": "Reference to username in URI of 'To' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$td": {
+        "description": "Reference to domain in URI of 'To' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$time": {
+        "description": "Returns the string formatted time according to UNIX date (see: man date).",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$tm.branch.attr": {
+        "description": "similar to $tm.branch.uri, but gives read/write access to the attributed attached to the branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.duri": {
+        "description": "100% similar to $tm.branch.uri, but returning the Detination-URI value of the branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.flag": {
+        "description": "similar to $tm.branch.uri, but gives read/write access to a single branch flag (by its name).",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.flags": {
+        "description": "100% similar to $tm.branch.uri, but returning the list (comma separated) of per-branch flags which are set for the branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.last_received": {
+        "description": "100% similar to $tm.branch.uri, but returning the reply code of the last received reply (from the network) on this branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.path": {
+        "description": "100% similar to $tm.branch.uri, but returning the PATH value of the branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.q": {
+        "description": "100% similar to $tm.branch.uri, but returning the Q value of the branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.socket": {
+        "description": "100% similar to $tm.branch.uri, but returning the socket description (proto:ip:port) used for sending the branch out.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.type": {
+        "description": "100% similar to $tm.branch.uri, but returning the type of the current branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tm.branch.uri": {
+        "description": "gives read-only access over the Request URI (as string) of a TM existing branch.",
+        "path": "references/3.6/modules/tm.md",
+        "source": "module:tm"
+      },
+      "$tn": {
+        "description": "Reference to display name of 'To' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$tt": {
+        "description": "Reference to tag parameter of 'To' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$tu": {
+        "description": "Reference to URI of 'To' header.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$ua": {
+        "description": "Reference to user agent header field.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$var(name)": {
+        "description": "Script variables are strictly bound to the script routes.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      },
+      "$xlog_level": {
+        "description": "Allows to set /reset the xlog() logging level on per-process bases.",
+        "path": "references/3.6/core/variables.md",
+        "source": "core"
+      }
+    }
+  },
+  "relationships": {
+    "moduleDependencies": {
+      "acc": [
+        "a database module",
+        "an aaa module",
+        "dialog",
+        "rr",
+        "tm"
+      ],
+      "sl": [
+      ],
+      "tm": [
+      ]
+    }
+  },
+  "schema_version": 1,
+  "statistics": {
+    "totalEvents": 3,
+    "totalFunctions": 36,
+    "totalGuides": 0,
+    "totalMICommands": 4,
+    "totalModules": 3,
+    "totalParameters": 44,
+    "totalPseudoVariables": 144,
+    "totalStatistics": 27
+  },
+  "version": "3.6"
+}

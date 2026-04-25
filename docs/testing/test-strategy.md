@@ -8,172 +8,112 @@
 
 ---
 
-## 1. The testing philosophy
+## 1. Overview: what is tested at each level
 
-The project tests at five levels, each catching a distinct class of failure:
+The project tests at five levels. Each level catches a distinct class of failure; together they form the regression net that protects the build pipeline and the shipped plugin.
 
-1. **Unit tests** — verify foundation libraries and small functions in isolation. Fast (milliseconds), isolated, catch logic bugs.
-2. **Renderer tests** — verify each per-element renderer produces correct Markdown for known inputs. Snapshot-based, catch formatting drift.
-3. **Golden-file tests** — verify the full renderer pipeline against committed reference fixtures. Slower than unit tests but still fast (under a minute), catch regressions in end-to-end output.
-4. **End-to-end pipeline tests** — verify the orchestrator runs the full pipeline against fixture data. Catch integration bugs and configuration errors.
-5. **Determinism tests** — verify byte-stable output across builds. Catch the most subtle class of bug — non-deterministic output that breaks reproducibility.
+### 1.1 Unit tests — foundation libraries
 
-Plus one form of testing that is **not automated**: the canonical prompt suite, run manually before each release. This catches runtime triggering and behavior issues that can only be observed in a real Claude Code session.
+Location: `tests/unit/lib/`.
 
-The project does not chase 100% coverage as a goal. The goal is **regression protection for the documented behavior** — every behavior specified in the architecture documents has a corresponding test. Behavior that emerges in code without being specified does not get tested; if it matters, it should be specified first.
+Scope: every module under `scripts/lib/` (markdown builders, frontmatter, slug, fs-helpers, errors, discover, validate). Tests are small, fast, and isolated; they use `memfs` for filesystem operations so they never touch the real disk.
 
----
+Failure means: a foundation primitive produces wrong output for a known input. Because the renderers compose through these primitives, foundation bugs cascade — these tests are the first line of defense.
 
-## 2. What is tested at each level
+### 1.2 Integration tests — orchestrator + element renderers
 
-### 2.1 Unit tests (`tests/unit/`)
+Location: `tests/unit/render-module/`, `tests/unit/render-core/`, `tests/unit/build-consolidated/`.
 
-Cover the foundation libraries under `scripts/lib/`:
+Scope: each per-element renderer in isolation, plus the per-version orchestrator stages. Tests construct typed inputs that match the schema, call the renderer, and assert against inline snapshots.
 
-| Module | What's tested | Why it matters |
-|---|---|---|
-| `markdown-builders.ts` | Each helper produces correct heading/list/code-fence syntax with proper trailing whitespace | The whole renderer composes through these — bugs cascade |
-| `frontmatter.ts` | Provenance comment format byte-for-byte; rejection of malformed inputs | Provenance is invisible but parsed by tooling; format drift breaks consumers silently |
-| `slug.ts` | Slug normalization rules; collision detection | Slug bugs produce wrong filenames; collisions silently overwrite files |
-| `fs-helpers.ts` | Atomic writes; directory cleanup; POSIX path joining; JSON read with error distinction | Filesystem operations are the project's main I/O surface |
-| `errors.ts` | Each error type's human and JSON serialization; correct error codes | Errors are how problems are reported; format drift breaks CI integrations |
-| `discover.ts` | Version-name regex; sorted output; error handling for unreadable paths | Discovery determines which versions are processed |
-| `validate.ts` | Schema validation; error formatting; fail-slow aggregation | Validation is the gate that protects everything downstream |
+Each renderer has at least three cases: minimal input (only required fields), maximal input (all optional fields populated), and empty-handling (verifies optional sections are omitted, not emitted as empty).
 
-Coverage target: **>80% line coverage** on this layer.
+Failure means: a renderer changed its output shape, or a stage in the orchestrator stopped composing the right elements in the right order.
 
-Test framework: Vitest with `memfs` for filesystem operations.
+### 1.3 End-to-end tests — full pipeline against tmp output
 
-Test file naming: `tests/unit/lib/<module-name>.test.ts`.
+Location: `tests/e2e/`.
 
-### 2.2 Renderer tests (`tests/unit/render-*/`)
+Scope: the orchestrator running the full pipeline against fixture data. Each test creates a fresh tmp directory with `mkdtemp`, runs `runBuild` against `tests/__fixtures__/source/`, and asserts on the output tree. Teardown via `afterEach` removes the tmp directory.
 
-Cover each per-element renderer in isolation. Each test:
+Covered scenarios:
 
-1. Constructs a typed input matching the schema.
-2. Calls the renderer with controlled inputs (heading level, version, etc.).
-3. Asserts the output matches a small inline snapshot.
-
-The pattern from `tests/unit/render-module/elements.test.ts`:
-
-```typescript
-it('renders a parameter with all optional fields', () => {
-  const param = { /* fixture */ };
-  expect(renderParameter(param, 3)).toMatchInlineSnapshot(/* ... */);
-});
-
-it('omits the default-value line when no default is specified', () => {
-  const param = { /* without default */ };
-  const output = renderParameter(param, 3);
-  expect(output).not.toContain('*Default value');
-});
-```
-
-Each renderer has at least three tests:
-- Minimal input (only required fields).
-- Maximal input (all optional fields populated).
-- Empty-handling (verifies optional sections are omitted, not emitted as empty).
-
-Coverage target: **>85% line coverage** on rendering code.
-
-### 2.3 Golden-file tests (`tests/golden/`)
-
-Cover the full renderer pipeline against committed reference fixtures. Three or four module fixtures, three or four core fixtures, one consolidated index fixture.
-
-Each test:
-1. Reads source JSON from `tests/__fixtures__/source/`.
-2. Validates against the schema.
-3. Renders via the production renderer.
-4. Compares against the committed expected output in `tests/__fixtures__/expected/`.
-
-When the renderer's output legitimately changes (e.g., a deliberate template improvement):
-1. Run `npm run test:golden -- -u` to regenerate.
-2. Review the diff in the PR carefully — every changed line must be intentional.
-3. Commit the updated fixtures alongside the renderer change.
-
-Golden-file rot is a real risk: tests pass as long as output matches fixtures, but if fixtures get regenerated without scrutiny, the tests no longer verify anything. Discipline: PRs that update fixtures must explain why output changed; large unreviewable diffs are a red flag.
-
-### 2.4 End-to-end pipeline tests (`tests/e2e/`)
-
-Cover the orchestrator running the full pipeline against fixture data. Tests:
-
-- Full build against `tests/__fixtures__/source/` produces expected output structure.
-- Build with `--dry-run` reports counts without writing.
-- Build with `--only` flag processes only the specified version.
+- Full build produces the expected output structure.
+- `--dry-run` reports counts without writing.
+- `--only` builds only the specified version.
 - Build aborts with exit code 3 on validation failure.
-- Build aborts with exit code 5 on schema hash drift (test by temporarily modifying a schema in a tmpdir).
+- Build aborts with exit code 5 on schema hash drift.
 - Version isolation: building both versions does not produce cross-version paths in either output tree.
 
-Each test runs in a temp directory created with `mkdtemp` and torn down with `afterEach`. No test touches `plugins/opensips/skills/` directly — the production tree is sacred.
+No E2E test writes to `plugins/opensips/skills/` directly. The production tree is sacred.
 
-### 2.5 Determinism tests (`tests/e2e/determinism.test.ts`)
+Failure means: a stage integration regressed (validation no longer feeds rendering correctly, or the orchestrator's exit-code policy diverged from `data-pipeline.md` §4).
 
-The most important test in the suite. Builds the fixture corpus twice, hashes both output trees, asserts equality.
+### 1.4 Determinism tests — build twice, diff
 
-```typescript
-it('produces byte-identical output across two builds', async () => {
-  await runBuild({ outputRoot: tmpA, sourceRoot: 'tests/__fixtures__/source' });
-  await runBuild({ outputRoot: tmpB, sourceRoot: 'tests/__fixtures__/source' });
-  expect(hashTree(tmpA)).toBe(hashTree(tmpB));
-});
-```
+Location: `tests/e2e/determinism.test.ts`.
 
-If this fails, something in the pipeline is non-deterministic. Common causes: unsorted iteration, embedded timestamps, locale-dependent string comparison, hash-based naming. The test failure is loud; the fix is in the renderer or pipeline code, not the test itself.
+Scope: the load-bearing property of the entire pipeline (`data-pipeline.md` §3). Builds the fixture corpus into two separate tmp directories, hashes both output trees with SHA-256 over sorted file content, asserts the hashes are equal.
 
-CI runs this test on every commit. Local development can skip it (it's slower) but should run it before pushing significant changes.
+Failure means: the pipeline introduced non-determinism somewhere. Common causes are unsorted iteration, embedded timestamps, locale-dependent string comparison, hash-introducing changes. Fix is in the renderer or pipeline code, never in the test.
+
+### 1.5 Runtime behavior — golden-path demos run manually
+
+Location: `docs/testing/golden-path-demos.md`.
+
+Scope: Claude's actual triggering behavior, reference-loading behavior, cross-project guardrail engagement, and version-aware reasoning. Run by a human against a real Claude Code session before each release. Outcomes are recorded as a date-stamped pass/partial/fail per demo.
+
+Failure means: the plugin's runtime behavior regressed. Investigation is qualitative (responses are non-deterministic) and feeds back into description tuning, body edits, or reference content.
 
 ---
 
-## 3. What is NOT in CI (and why)
+## 2. What is NOT tested in CI (and why)
 
-### 3.1 Claude's runtime triggering behavior
+### 2.1 Claude's actual triggering behavior
 
-The plugin's most consequential behavior — does the right skill activate for the right prompt? does Claude actually read the reference files? does the cross-project guardrail engage? — is not automated.
+The plugin's most consequential behavior — does the right skill activate for the right prompt, does Claude actually read the reference files, does the cross-project guardrail engage on Kamailio prompts — is not run in CI.
 
 Reasons:
-- Triggering is probabilistic; assertions need to tolerate variance.
-- Each test invocation costs API tokens.
-- Claude's behavior changes across model versions, which would create flaky tests.
 
-The mitigation: the canonical prompt suite (`docs/testing/golden-path-demos.md`) is run manually by the maintainer before each release. The release process document explicitly requires this step. It's not automated, but it's not optional either.
+- Each test invocation costs API tokens. CI runs on every push and pull request; the cost compounds.
+- Claude's behavior varies across model versions and across runs of the same model. Assertions would need to tolerate variance, which dilutes their signal.
+- Triggering is probabilistic. A test that asserts "this prompt triggers `opensips-routing`" can pass 95% of the time and fail on the unlucky run, producing flaky CI.
 
-If the project later grows to justify the cost (more contributors, more frequent releases), automating runtime testing against the Claude API is a valid future enhancement. For v1, manual verification is sufficient and proportional.
+The mitigation: the canonical prompt suite (`docs/testing/golden-path-demos.md`) is run manually by the maintainer before each release. This is required, not optional. The release process document specifies it explicitly.
 
-### 3.2 Cross-platform testing
+If the project later grows to justify the cost (more contributors, more frequent releases), automating runtime testing is a valid v2 enhancement. For v1, manual verification is sufficient and proportional.
 
-CI runs on Ubuntu Linux only. The build script is designed to be cross-platform (POSIX paths in output content, atomic writes that work everywhere), but Windows and macOS behavior is not actively verified.
+### 2.2 Plugin install in real Claude Code
 
-If a contributor reports cross-platform issues, the project will add CI matrix builds at that point. Until then, the cost-benefit doesn't justify the matrix.
+The end-to-end install flow — `claude --plugin-dir ./plugins/opensips`, `/plugin list` showing all three skills, `/reload-plugins` picking up edits — is verified manually as part of the per-release smoke check, not in CI.
 
-### 3.3 Performance tests
+Reason: real Claude Code is a closed product without a CI-friendly headless mode. A surrogate that runs the manifest validation can confirm the manifest is well-formed but cannot confirm the install actually works.
 
-The pipeline is fast enough (sub-minute full build) that performance regressions don't matter at v1 scale. If the build ever exceeds 30 seconds, performance becomes worth measuring.
+### 2.3 Production OpenSIPs runtime correctness
 
----
-
-## 4. The CI gates
-
-GitHub Actions runs five jobs on every push and pull request:
-
-| Job | What it runs | Failing means |
-|---|---|---|
-| `validate` | `npm run validate` | Source JSON has structural problems; the upstream extraction project may have schema drift |
-| `build` | `npm run build` then `git diff --exit-code` | Either the build is broken, or generated output wasn't committed (the "forgot to rebuild" PR) |
-| `test` | `npm run test:coverage` | A unit, renderer, golden-file, or E2E test failed |
-| `determinism` | Build twice, compare hashes | The pipeline introduced non-deterministic output somewhere |
-| `lint` | `npm run lint` | Code style, JSDoc rules, or TypeScript strict-mode violations |
-
-Plus one additional check:
-
-| Job | What it runs | Failing means |
-|---|---|---|
-| `skill-md-check` | Greps for placeholder markers in committed SKILL.md files | The build script's placeholder-replacement step failed silently |
-
-Validate is the fastest job; the others run in parallel after it succeeds. Total CI time should stay under 5 minutes for v1; if it exceeds 10 minutes, the iteration loop suffers and the test suite needs review.
+The pipeline does not verify that the configurations Claude produces are actually accepted by an OpenSIPs binary at runtime. That is upstream's responsibility. The project trusts the extraction project's documentation and commits to faithful transformation, not to runtime validation (Rule 3 in `CLAUDE.md`).
 
 ---
 
-## 5. Local development workflow
+## 3. CI gates
+
+GitHub Actions runs the following jobs on every push to `main` and every pull request. The workflow file is `.github/workflows/ci.yml`.
+
+| Job | What it runs | Failing means |
+|---|---|---|
+| `validate` | `npm run validate` | Source JSON has structural problems. Likely causes: schema drift in upstream, malformed source after a manual edit, or a bug in the validation pipeline. |
+| `build` | `npm run build` then `git diff --exit-code` | Either the build is broken, or the regenerated output was not committed (the "forgot to rebuild" PR). Per `data-pipeline.md` §8.1 the generated output is committed alongside source. |
+| `test` | `npm test` (unit + golden + e2e + determinism) | A unit, renderer, golden-file, E2E, or determinism test failed. The job log identifies the specific test. |
+| `lint` | ESLint + Prettier | Code style, JSDoc rules, or TypeScript strict-mode violations. |
+| `skill-md-check` | Greps committed SKILL.md files for unreplaced `<!-- MODULE_INDEX_PLACEHOLDER -->` markers and for forbidden sibling-project names (Kamailio, OpenSER, SER) outside `ser-lineage-notes.md`. | Either the build script's placeholder-replacement step failed silently, or a recent SKILL.md edit leaked a sibling-project name into prose where Rule 7 in `CLAUDE.md` forbids it. |
+
+`validate` is the fastest job and gates the others — if validation fails, downstream jobs do not run. The remaining jobs run in parallel.
+
+Total CI time should stay under five minutes for v1. If it exceeds ten minutes, the iteration loop suffers and the test suite needs review.
+
+---
+
+## 4. Local development workflow
 
 ### Day-to-day iteration
 
@@ -181,186 +121,220 @@ Validate is the fastest job; the others run in parallel after it succeeds. Total
 npm run test:watch
 ```
 
-Vitest in watch mode reruns affected tests on every save. Fast feedback for unit and renderer changes. Don't run the full test suite on every save — the watch mode handles incremental.
+Vitest in watch mode reruns affected tests on every save. Fast feedback for unit and renderer changes.
 
 ### Before pushing
 
 ```bash
-npm run validate    # Schema check
-npm run lint        # Style check
-npm test            # Full test suite
+npm test                # Full suite (unit + golden + e2e + determinism)
+npm run test:coverage   # Coverage report; verify the layer floors below
 ```
 
-These three together take under a minute. Run them before pushing to catch issues that CI would catch anyway, but faster.
+These together take under a minute on the v1 fixture corpus.
 
-### Before significant changes (renderer changes, schema updates, ADR-driven changes)
+### For thorough checks before significant changes
 
 ```bash
-npm run test:coverage  # Verify coverage hasn't dropped
-npm run test:e2e       # Run the slower E2E tests
-npm run build          # Full build, verify against committed output
+npm run test:e2e        # Slower E2E tests in isolation
+npm run validate        # Schema check across all source
+npm run build           # Full build, verify output matches committed
 ```
 
-These take a few minutes total. Worth running for changes that touch the rendering pipeline or the build orchestrator.
+Worth running before changes that touch the rendering pipeline, schemas, or the orchestrator.
 
-### When updating golden files intentionally
+### After SKILL.md or module-source changes
 
 ```bash
-npm run test:golden -- -u
-git diff tests/__fixtures__/expected/  # Review the diff
-git add tests/__fixtures__/expected/
-git commit -m "test: update golden fixtures for {reason}"
+npm run build:skills
 ```
 
-The `-u` flag regenerates fixtures. Always review the diff before committing — that's the discipline that prevents golden-file rot.
+Regenerates the module-index injection and the SKILL.md placeholder replacement. Required before committing if you touched a SKILL.md template or added/removed a module from source.
+
+### After a deliberate statistics shift
+
+```bash
+npm run baseline:update
+```
+
+Run this only when new modules are added to source (or removed) and the consolidated.json statistics legitimately change. The baseline is the canary — refreshing it without a real reason defeats its purpose.
 
 ### Before a release
 
-Manual run-through of `docs/testing/golden-path-demos.md` against a freshly installed plugin. Document outcomes. Investigate any regressions before tagging.
+Manual run-through of `docs/testing/golden-path-demos.md` against a freshly installed plugin. See §6.
 
 ---
 
-## 6. Adding a new test
+## 5. Golden-file update workflow
 
-### Adding a unit test
+Golden-file fixtures live in `tests/__fixtures__/expected/`. They are committed and reviewed. They pass as long as the renderer's output matches them — which is exactly what makes them valuable, and exactly what makes regenerating them without scrutiny dangerous.
+
+When a renderer change legitimately changes output:
+
+1. Run the regeneration helper:
+   ```bash
+   tsx tests/__fixtures__/golden/regenerate.ts
+   ```
+2. Review the diff carefully:
+   ```bash
+   git diff tests/__fixtures__/expected/
+   ```
+   Every changed line must be intentional. If the diff includes unexpected changes (other modules' output shifted, unexplained whitespace differences), stop and investigate — the renderer change had broader effects than intended.
+3. Commit the regenerated fixtures alongside the code change in the same PR.
+4. The PR description must explain **why** the output changed. A PR that updates golden fixtures without explaining the rendering change is a red flag for reviewers.
+
+Discipline rule (per `CLAUDE.md`): a PR that updates golden fixtures must explain why. Large unreviewable diffs (e.g., regenerating all 100 module fixtures) are blocked unless the rendering change genuinely affects every module.
+
+Golden-file rot — fixtures that drift from meaningful checks into rubber-stamps — is the failure mode this discipline prevents.
+
+---
+
+## 6. Release-time workflow
+
+Before tagging a release:
+
+1. Install the plugin into a freshly initialized Claude Code session:
+   ```bash
+   claude --plugin-dir ./plugins/opensips
+   ```
+2. Confirm all three skills load:
+   ```
+   /plugin list
+   ```
+3. Run the prompts in `docs/testing/golden-path-demos.md` end-to-end. For each demo, record the outcome with date, model identifier, and pass / partial / fail.
+4. Compute the pass rate. The release proceeds only if both conditions hold:
+   - At least 80% of demos pass.
+   - No demo with a Fail outcome is blocking — that is, no demo that exercises the cross-project guardrail or the version-isolation contract has regressed.
+5. If both conditions hold, tag the release. Otherwise, fix the regression first; runtime regressions in skill behavior are the strongest signal that something shipped wrong.
+
+Document the run in the release notes (date + model + per-demo outcome). The historical record is what lets future releases compare against earlier behavior.
+
+---
+
+## 7. What to do when CI fails
+
+### `validate` failed
+
+Read the error to classify the failure:
+
+- **Schema drift** — upstream's schema changed and the mirrored copy in `scripts/schemas/` was not updated. Fix: re-mirror the schema from `opensips-docs-collector`, run `npm run schemas:hash`, commit. See `data-pipeline.md` §5.3.
+- **Upstream defect** — the source JSON is malformed in a way that suggests an upstream extraction bug. Fix: file an issue on `opensips-docs-collector` with the failing JSON path. Do not edit the source file in this repo (Rule 3 in `CLAUDE.md`).
+- **Local bug** — the validation pipeline itself has a bug. Fix: identify the bad code path, write a failing test, fix the code, confirm CI green.
+
+### `build` failed (specifically the `git diff --exit-code` step)
+
+The regenerated output is out of sync with the committed output. Fix:
 
 ```bash
-# Create the test file mirroring the source file's location
-touch tests/unit/lib/<module-name>.test.ts
+npm run build
+git status
+git add plugins/
+git commit -m "chore: regenerate output"
 ```
 
-Structure:
+If the diff is unexpectedly large, that is itself a determinism failure — investigate before committing.
 
-```typescript
-import { describe, it, expect } from 'vitest';
-import { thingUnderTest } from '../../../scripts/lib/<module-name>';
+### A `test` job failed
 
-describe('thingUnderTest', () => {
-  it('does X correctly when given Y', () => {
-    expect(thingUnderTest(input)).toBe(expected);
-  });
+Read the test name and assertion. Never use `--no-verify` to bypass the hook. Never re-run CI hoping the failure was transient.
 
-  // ... more cases
-});
+- Unit test: the change broke documented behavior or the test was wrong. Decide which is correct, then fix the right one.
+- Renderer test: the output shape changed. If intentional, update inline snapshots. If not, the renderer regressed.
+- Golden test: see §5 for the update workflow. Do not regenerate without scrutiny.
+- E2E test: the orchestrator's integration broke. Read the assertion to identify which stage.
+
+### Determinism test failed
+
+**Stop.** Do not regenerate fixtures. Do not retry CI. A determinism failure means the production system has a non-determinism bug; the test caught what it was designed to catch.
+
+Use systematic debugging. Likely causes:
+
+- Iteration over an unsorted source (Set, Map without explicit ordering, unsorted `readdir`).
+- A mutated input — a renderer modifying the validated document in place rather than producing a new value.
+- A hash-introducing change — a new dependency that emits a build hash, or a code path that reads from `Date.now()` or `process.hrtime`.
+- Locale-dependent string comparison — `String.prototype.localeCompare` instead of explicit ordering.
+
+Bisect: revert recent changes one at a time until the test passes again, then narrow down which specific change introduced the non-determinism. Fix the bug; do not loosen the test.
+
+### `lint` failed
+
+Run locally:
+
+```bash
+npm run lint
 ```
 
-Run `npm run test:watch tests/unit/lib/<module-name>` to iterate.
+Most failures are formatting (run Prettier) or missing JSDoc. Never disable a rule without a written justification in the PR description; lint rules exist because they catch real classes of bug.
 
-### Adding a renderer test
+### `skill-md-check` failed
 
-Same shape as unit tests but in `tests/unit/render-module/` or `tests/unit/render-core/`. Use `toMatchInlineSnapshot()` rather than `toBe(...)` for output comparison — the snapshots are more readable when they fail.
+Two cases:
 
-### Adding a golden-file fixture
-
-Three steps:
-
-1. Add a representative source file to `tests/__fixtures__/source/3.6/{core,modules}/<name>.json`.
-2. Run the renderer manually to produce the expected output: `npm run build:fixture -- <name>` (a development helper script, if implemented).
-3. Commit both the source and expected files; the existing golden-file test infrastructure picks them up automatically.
-
-When choosing fixtures, prefer:
-- Modules with diverse content (parameters AND functions AND PVs, not just one of each).
-- Edge cases the unit tests don't naturally cover (e.g., a module with empty `exported_events` to verify section omission).
-- Real upstream content, not synthetic.
-
-### Adding an E2E test
-
-In `tests/e2e/`, create a test that orchestrates the full pipeline against fixture data:
-
-```typescript
-describe('new behavior', () => {
-  let tmpDir: string;
-  beforeEach(() => { tmpDir = mkdtempSync(/* ... */); });
-  afterEach(() => { rmSync(tmpDir, { recursive: true, force: true }); });
-
-  it('does Z when fixtures are X', async () => {
-    const result = await runBuild({ sourceRoot: 'tests/__fixtures__/source', outputRoot: tmpDir });
-    // assertions
-  });
-});
-```
-
-E2E tests are slower, so use them only for behavior that genuinely requires the full pipeline. Prefer unit tests where possible.
+- **Unreplaced placeholder** — `<!-- MODULE_INDEX_PLACEHOLDER -->` appears in a committed SKILL.md. Fix:
+  ```bash
+  npm run build:skills
+  git diff plugins/opensips/skills/
+  git add plugins/opensips/skills/
+  ```
+- **Leaked sibling-project name** — a sibling-project name (Kamailio, OpenSER, SER) appears in prose where Rule 7 in `CLAUDE.md` forbids it. Fix: remove the leaked name. The only file allowed to mention sibling projects in any depth is `ser-lineage-notes.md`.
 
 ---
 
-## 7. When tests fail
+## 8. Coverage targets
 
-### "A unit test fails after my change"
+The project uses coverage as a **floor**, not a goal.
 
-Either the change broke documented behavior (fix the change) or the test was wrong (fix the test). Don't update the test to match the new behavior without thinking about which is correct.
+| Layer | Floor |
+|---|---|
+| Foundation libraries (`scripts/lib/`) | >80% line coverage |
+| Renderers (`scripts/render-module/`, `scripts/render-core/`) and index builder (`scripts/build-consolidated/`) | >85% line coverage |
+| Schemas (`scripts/schemas/`) | excluded |
+| Types (`scripts/types/`) | excluded |
 
-### "A golden-file test fails"
+Coverage is reported by Vitest's V8 coverage provider. The HTML report is generated at `coverage/index.html`; the LCOV report feeds Codecov.
 
-Compare the diff. If the change is intentional, regenerate fixtures with `-u`, review carefully, commit. If the change is unintentional, the renderer has a bug.
+A drop in coverage produces a comment on the PR but does not automatically block merge. Drops are a signal for review.
 
-### "The determinism test fails"
+These are floors, not goals. A test that exists only to satisfy coverage is worse than no test — it inflates the metric without exercising real behavior. Reviewers should look at what each test PROVES, not just whether coverage went up.
 
-Something in the pipeline introduced non-determinism. Common causes:
-- Iteration over an unsorted source (Set, Map without explicit ordering).
-- An embedded timestamp.
-- A locale-dependent operation.
-- A platform-dependent path operation.
+Reasons to accept a coverage drop:
 
-Bisect: revert recent changes one at a time until the test passes again, then narrow down which specific change introduced the non-determinism.
+- The new code is a defensive guard that's hard to exercise without elaborate setup, and the guard's correctness is otherwise verifiable.
+- The drop is in code being deliberately removed.
 
-### "The build job's `git diff --exit-code` fails"
+Reasons NOT to accept a coverage drop:
 
-Generated output isn't in sync with source. Either:
-- A renderer change wasn't accompanied by a regenerated output commit (run `npm run build` and commit the diff).
-- A source change wasn't accompanied by a build (same fix).
-- The build is producing different output now than when output was last committed (which is itself a determinism failure — see above).
-
-### "The lint job fails"
-
-Run `npm run lint` locally to see specifics. Most lint failures are formatting (run Prettier) or missing JSDoc (add the documentation per ADR-004).
-
-### "CI is flaky"
-
-A flaky test — passes 99 times, fails once — must be fixed or removed. Tolerating flakiness conditions everyone to ignore CI failures, which lets real failures slip through. If a test is genuinely intermittent (e.g., relies on filesystem timing), refactor or remove it.
-
----
-
-## 8. Coverage expectations
-
-The project uses coverage as a **floor**, not a target.
-
-| Layer | Target floor | Current |
-|---|---|---|
-| Foundation libraries (`scripts/lib/`) | >80% | (filled in by CI) |
-| Renderers | >85% | (filled in by CI) |
-| Orchestrator and CLI | >70% | (filled in by CI) |
-| Schemas (`scripts/schemas/`) | excluded | n/a |
-| Types (`scripts/types/`) | excluded | n/a |
-
-Coverage is tracked via Codecov on each CI run. A drop in coverage produces a comment on the PR, but doesn't block merge by default — drops are a signal for review, not an automatic failure.
-
-Reasons to ignore a coverage drop:
-- The new code is a defensive guard that's hard to exercise in tests without elaborate setup, and the guard's correctness is otherwise verifiable.
-- The drop is in code being deliberately removed (e.g., deprecated paths).
-
-Reasons NOT to ignore a coverage drop:
 - "I didn't have time to write tests."
 - "The behavior is obvious."
 - "I'll add tests later."
 
-If coverage genuinely doesn't make sense for a particular code path, document the rationale in a comment and lower the target floor in this document accordingly.
+If coverage genuinely doesn't make sense for a code path, document the rationale in a comment and lower the floor in this document accordingly.
 
 ---
 
-## 9. Testing philosophy: the long-run view
+## 9. Test stability rules
 
-The test suite at v1 is calibrated for the project's current scale — a single maintainer, infrequent contributors, infrequent releases. As the project grows, the testing strategy will need to evolve:
+**Zero tolerance for flakiness.** A test that passes 99 times out of 100 is broken. Fix it or delete it. There is no third option.
 
-- **More contributors** → tighter test coverage standards, mandatory test additions for behavior changes.
-- **More frequent releases** → automated runtime testing against the Claude API replaces the manual prompt suite.
-- **Multi-platform contributors** → CI matrix builds on Linux, macOS, Windows.
-- **Larger fixture corpus** → faster CI parallelization, perhaps splitting tests by category.
+**No `--retries`.** No "rerun CI to make it pass." A test that requires retries is not a test, it's a coin flip with extra steps. Tolerating retries conditions everyone to ignore CI failures, which lets real failures slip through.
 
-These are explicitly v2+ concerns, not v1 pre-release work. The test strategy is right-sized for now.
+**Determinism tests in particular must never be flaky.** If the determinism test ever passes intermittently, the production system has a non-determinism bug that just happens to hide in the lucky run. Treat any determinism flake as a release blocker until the underlying bug is identified and fixed.
 
-The risk to monitor: tests that pass perfectly but verify nothing useful. A test suite at 95% coverage with weak assertions is worse than 80% coverage with strong assertions. Code review on test PRs should look at what each test actually proves, not just whether coverage went up.
+**Order-independence.** Tests must not depend on each other or on global state. Each test sets up its own fixtures, uses its own tmp directory, and tears down via `afterEach`. Vitest's parallel execution is on by default; tests that depend on order will fail unpredictably under parallelization.
+
+**Time-independence.** No test reads `Date.now()`, `process.hrtime`, or any other clock. Time-based assertions are non-deterministic by construction. If a test needs a fixed timestamp, inject one.
 
 ---
 
-*End of test strategy. Concrete prompt regression scripts live in `golden-path-demos.md`. Per-skill behavior expectations live in `acceptance-criteria.md`. The CI configuration that implements the gates in §4 lives in `.github/workflows/ci.yml`.*
+## 10. Cross-references
+
+- **Determinism contract:** `docs/architecture/data-pipeline.md` §3 (the six mechanisms guaranteeing byte-stable output) and §8.3 (the `build-twice-and-diff` CI workflow).
+- **Failure policy and exit codes:** `docs/architecture/data-pipeline.md` §4 (fail-slow within stage, fail-fast between stages; exit-code taxonomy 0–5).
+- **Skill testing principles:** `docs/architecture/skill-authoring-guide.md` §2.8 (the description-iteration validation procedure) and §7.1 (every SKILL.md change tested against the golden-path demos).
+- **The manual checklist:** `docs/testing/golden-path-demos.md` (the prompt suite run before each release).
+- **Per-skill behavior bars:** `docs/testing/acceptance-criteria.md` (what each skill must demonstrate to be considered correct).
+- **The CI workflow:** `.github/workflows/ci.yml` (implements the gates described in §3).
+- **Generated-output commit policy:** `docs/architecture/data-pipeline.md` §8.1 (why both source and generated output are committed, and what the `git diff --exit-code` gate enforces).
+
+---
+
+*End of test strategy. Concrete prompt regression scripts live in `golden-path-demos.md`. Per-skill behavior expectations live in `acceptance-criteria.md`. The CI configuration that implements the gates in §3 lives in `.github/workflows/ci.yml`.*
