@@ -267,7 +267,7 @@ Flow per version:
 
 **Rendering mode C — aggregated guides** applies to installation/configuration/syntax guides where present (3.6+). Renders alongside core under `guides/`.
 
-**Consolidated index** is one build output. Not a replacement for the Markdown files — an accompaniment. It gives `module_search.py` O(1) lookups by name across all modules and core items, without having to parse Markdown. Schema matches the `ConsolidatedDocument` type from the extraction project's schemas, built downstream rather than upstream since extraction never produced it.
+**Consolidated index** is one build output. Not a replacement for the Markdown files — an accompaniment. It gives Claude O(1) lookups by name across all modules and core items, without having to parse Markdown — a function name resolves to its source module via `indexes.functionsByName`, a pseudo-variable via `indexes.variablesByName`, and so on. A future helper script (`module_search.py`, planned but not yet shipped) will expose the same lookups from the command line for non-Claude consumers. Schema matches the `ConsolidatedDocument` type from the extraction project's schemas, built downstream rather than upstream since extraction never produced it.
 
 **`modules-index.md`** is a generated standalone reference file replacing the former inline module catalog that lived in `opensips-modules/SKILL.md`. It holds the module catalog table plus lookup-discipline prose for the `opensips-config` skill.
 
@@ -343,8 +343,8 @@ opensips-claude-plugin/
             │   │   │       └── tm.md
             │   │   └── 3.6/
             │   │       └── (same structure + guides/)
-            │   └── scripts/
-            │       └── module_search.py              # Queries consolidated.json
+            │   └── scripts/                          # Planned (not yet shipped)
+            │       └── module_search.py              # Planned: CLI over consolidated.json
             └── opensips-security-advisor/
                 └── SKILL.md              # Scaffold — populated by separate agent
 ```
@@ -511,6 +511,9 @@ Twelve files, all **generated** from the corresponding JSON in `source/{version}
 - **Cadence:** Regenerated on every build.
 
 #### `skills/opensips-config/scripts/module_search.py`
+
+> **Status: planned, not yet implemented.** The script is specified below for a future task; the file does not exist on disk in the current release. Claude consults `consolidated.json` directly for the same lookups today; the CLI is planned for non-Claude consumers (developers, CI tooling).
+
 - **Purpose:** Keyword search over `consolidated.json` (not over Markdown files).
 - **Interface:**
   ```

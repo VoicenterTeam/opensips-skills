@@ -92,8 +92,6 @@ opensips-skills/
             │   │       ├── modules/*.md         # Generated
             │   │       ├── guides/*.md          # Generated (3.6 only)
             │   │       └── consolidated.json    # Generated
-            │   └── scripts/
-            │       └── module_search.py
             └── opensips-security-advisor/
                 └── SKILL.md         # Scaffold (separate agent populates)
 ```
@@ -272,7 +270,7 @@ Claude Code should treat the "Rules for changing things" section above as hard c
 | **Router-index pattern** | An architectural choice where a skill's SKILL.md contains a catalog (name → file path) rather than the content itself. The content lives in reference files loaded on demand. See ADR-001. |
 | **Progressive disclosure** | The three-level loading model: frontmatter always, SKILL.md on trigger, references on demand. |
 | **Source of truth** | The JSON files under `source/` (copied from the extraction project). Everything else is derived. |
-| **Consolidated index** | The `consolidated.json` file generated per version. A fast lookup index used by `module_search.py`. |
+| **Consolidated index** | The `consolidated.json` file generated per version. A fast lookup index Claude consults to resolve a function, pseudo-variable, or MI command back to its source module without reading every per-module file. |
 | **Extraction project** | The upstream `opensips-docs-collector` repository that produces the JSON this project consumes. |
 | **Vibe routing** | The user-facing promise of this project: describe what you want, get a valid `opensips.cfg`. |
 | **SER lineage** | The family of SIP servers descending from the SIP Express Router. We stay neutral on this; see ADR-008. |
