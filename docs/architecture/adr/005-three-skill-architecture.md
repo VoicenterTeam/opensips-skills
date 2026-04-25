@@ -1,6 +1,6 @@
 # ADR-005: Three-skill architecture
 
-**Status:** Accepted
+**Status:** Superseded by ADR-012
 **Date:** 2026-04-24
 **Deciders:** Project founder
 **Technical story:** Skill decomposition for the initial plugin release
