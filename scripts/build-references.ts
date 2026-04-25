@@ -1,162 +1,147 @@
 /**
- * opensips-skills build entry point.
+ * opensips-skills build orchestrator.
  *
- * M1 implementation: schema-hash check + per-version validation. Exits with
- * the structured exit codes from `docs/architecture/data-pipeline.md` §4:
+ * Pure orchestrator: parses the CLI, normalises the environment, runs the
+ * schema-hash drift check, discovers versions, and dispatches to per-version
+ * processing. Renderer and index logic does NOT live here — see
+ * `docs/architecture/data-pipeline.md` §6.1.
+ *
+ * Exit codes (per `docs/architecture/data-pipeline.md` §4):
  *   0 — success
- *   2 — usage error (handled by CLI parser in M2; this stub does basic argv)
+ *   1 — internal error (unhandled exception)
+ *   2 — usage error (bad CLI flags)
  *   3 — validation failure
- *   5 — schema-hash drift
+ *   4 — I/O failure
+ *   5 — schema drift
  *
- * Full orchestrator with Commander CLI, --dry-run, --json, --only, --quiet,
- * --verbose, --fail-fast, and the renderers arrives in M2/M3/M4/M5.
- *
- * See `docs/plan/01-schema-mirroring-and-validation.md` and
- * `docs/plan/02-core-pipeline-foundation.md`.
+ * For M2 the renderers are not yet implemented; per-version processing
+ * runs the validation stage only and reports "would render" counts in
+ * dry-run mode (see `processVersion` in `./lib/orchestrator-helpers.ts`).
+ * M3/M4/M5 plug renderers and the index builder into that helper without
+ * touching this file's orchestration logic.
  */
 
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { discoverVersions } from "./lib/discover.js";
+
+import { parseCli } from "./lib/cli-parser.js";
+import { normalizeEnvironment } from "./lib/environment.js";
+import { BuildError, SchemaDriftError, UsageError } from "./lib/errors.js";
 import {
-  validateVersion,
-  type ValidationIssue,
-  type VersionValidationResult,
-} from "./lib/validate.js";
+  emitError,
+  emitProgress,
+  emitSummary,
+  type OutputContext,
+} from "./lib/output.js";
+import {
+  buildSummary,
+  processVersion,
+  resolveVersions,
+  selectMode,
+} from "./lib/orchestrator-helpers.js";
 import { verifySchemaHash } from "./schemas/hash.js";
+import type { BuildSummary, CliOptions, VersionResult } from "./types/cli.js";
 
-/** CLI options recognised by the M1 stub. M2 replaces this with a full Commander parser. */
-interface StubCliOptions {
-  /** When set, validate only this single version. Otherwise scan every version under data/. */
-  only?: string;
-  /** When true, force-treat the run as validate-only (no rendering — there isn't any yet anyway). */
-  validateOnly: boolean;
-  /** Source root override. Default "./data" per ADR-009. */
-  sourceRoot: string;
-}
+/** Build script version exposed via `-V` / `--version` and the JSON summary. */
+const GENERATOR_VERSION = "0.1.0";
 
 /**
- * Parse the M1 stub's argv. Recognised flags:
- *   --only <X.Y>          single version
- *   --validate-only       no-op for now (renderers don't exist yet)
- *   --source-root <path>  override default ./data
- * Any unrecognised flag triggers a usage error (exit 2).
- *
- * @param argv - process.argv.slice(2) typically.
- * @returns parsed options or throws on usage error.
- */
-function parseArgs(argv: string[]): StubCliOptions {
-  const opts: StubCliOptions = { validateOnly: false, sourceRoot: "./data" };
-  for (let i = 0; i < argv.length; i++) {
-    const arg = argv[i];
-    if (arg === "--only") {
-      const next = argv[++i];
-      if (!next) throw new UsageError(`--only requires a version argument`);
-      opts.only = next;
-    } else if (arg === "--validate-only") {
-      opts.validateOnly = true;
-    } else if (arg === "--source-root") {
-      const next = argv[++i];
-      if (!next) throw new UsageError(`--source-root requires a path argument`);
-      opts.sourceRoot = next;
-    } else {
-      throw new UsageError(`Unknown flag: ${arg}`);
-    }
-  }
-  return opts;
-}
-
-class UsageError extends Error {
-  override readonly name = "UsageError";
-}
-
-/**
- * Format a single ValidationIssue as a one-line stderr message.
- *
- * @param issue - structured validation issue.
- * @returns one-line "ERROR: <file>: <kind>: <message>" string.
- */
-function formatIssue(issue: ValidationIssue): string {
-  return `ERROR: ${issue.file}: ${issue.kind}: ${issue.message}`;
-}
-
-/**
- * Print the per-version validation summary to stderr.
- *
- * @param result - the version's validation outcome.
- */
-function reportVersion(result: VersionValidationResult): void {
-  if (result.ok) {
-    process.stderr.write(`${result.version}: OK (${result.fileCount} files)\n`);
-    return;
-  }
-  process.stderr.write(`${result.version}: FAILED (${result.issues.length} issue(s))\n`);
-  for (const issue of result.issues) {
-    process.stderr.write(`  ${formatIssue(issue)}\n`);
-  }
-}
-
-/**
- * Main entry point. Returns the process exit code (does not call process.exit
- * itself so the function is testable).
- *
- * @param argv - process.argv.slice(2).
- * @returns exit code per data-pipeline.md §4.
+ * Main entry point. Returns the process exit code; does not call
+ * `process.exit` so the function is fully testable.
+ * @param argv - Argument list (typically `process.argv.slice(2)`).
+ * @returns Exit code per `docs/architecture/data-pipeline.md` §4.
  */
 export async function main(argv: string[]): Promise<number> {
-  let opts: StubCliOptions;
+  normalizeEnvironment();
+
+  let opts: CliOptions;
   try {
-    opts = parseArgs(argv);
+    opts = parseCli(argv);
   } catch (err) {
+    const ctx: OutputContext = { json: false, quiet: false, verbose: false };
     if (err instanceof UsageError) {
-      process.stderr.write(`USAGE ERROR: ${err.message}\n`);
-      return 2;
+      emitError(err, ctx);
+      return err.code;
     }
     throw err;
   }
 
+  const ctx: OutputContext = {
+    json: opts.json,
+    quiet: opts.quiet,
+    verbose: opts.verbose,
+  };
+
   // Stage 0: schema hash drift check.
   const hash = verifySchemaHash();
   if (!hash.ok) {
-    process.stderr.write(
-      `ERROR: schema hash mismatch.\n` +
-        `The schemas in scripts/schemas/ have been modified, but the committed hash\n` +
-        `in scripts/schemas/.schema-hash has not been updated.\n\n` +
-        `If this change is intentional, run:\n` +
-        `  npm run schemas:hash\n` +
-        `and commit the updated .schema-hash file alongside your schema changes.\n\n` +
-        `Expected: ${hash.committed ?? "(missing)"}\n` +
-        `Computed: ${hash.computed}\n`,
-    );
-    return 5;
+    const drift = new SchemaDriftError({
+      expected: hash.committed,
+      computed: hash.computed,
+    });
+    emitError(drift, ctx);
+    emitSummary(emptySummary(opts, drift.code), ctx);
+    return drift.code;
   }
 
   // Stage 1: discover versions.
-  const versions = opts.only ? [opts.only] : discoverVersions(opts.sourceRoot);
-
-  if (versions.length === 0) {
-    process.stderr.write(`No versions found under ${opts.sourceRoot}\n`);
-    return 0;
+  let versions: string[];
+  try {
+    versions = resolveVersions(opts);
+  } catch (err) {
+    if (err instanceof BuildError) {
+      emitError(err, ctx);
+      emitSummary(emptySummary(opts, err.code), ctx);
+      return err.code;
+    }
+    throw err;
   }
 
-  // Stage 2: validate each version. Fail-slow across versions: collect all errors.
+  if (ctx.verbose) {
+    emitProgress(
+      `Found ${versions.length} version${versions.length === 1 ? "" : "s"}: ${versions.join(", ")}`,
+      ctx,
+    );
+  }
+
+  // Stages 2-5 per version. M2 stops at validation; M3-M5 extend `processVersion`.
+  const results: VersionResult[] = [];
   let exitCode = 0;
   for (const version of versions) {
-    const result = validateVersion(opts.sourceRoot, version);
-    reportVersion(result);
+    const result = await processVersion(version, opts, ctx);
+    results.push(result);
     if (!result.ok) {
-      exitCode = 3;
+      if (exitCode === 0) exitCode = 3;
+      if (opts.failFast) break;
     }
   }
 
+  emitSummary(buildSummary(opts, GENERATOR_VERSION, results, exitCode), ctx);
   return exitCode;
 }
 
 /**
- * Detect whether this module was invoked directly (vs imported by tests).
+ * Build an empty {@link BuildSummary} for the early-exit paths (schema
+ * drift, discovery failure) where no version was processed.
+ * @param opts - Parsed CLI options (drives the `mode` field).
+ * @param exitCode - Exit code the orchestrator will return.
+ * @returns A summary with no per-version entries and zero counts.
+ */
+function emptySummary(opts: CliOptions, exitCode: number): BuildSummary {
+  return {
+    buildScriptVersion: GENERATOR_VERSION,
+    mode: selectMode(opts),
+    versions: [],
+    versionsSucceeded: 0,
+    versionsFailed: 0,
+    exitCode,
+  };
+}
+
+/**
+ * Detect whether this module was invoked directly (vs. imported by tests).
  * Tolerates symlinks and resolves both sides via realpath.
- *
- * @returns true when this file is the process entry.
+ * @returns True when this file is the process entry.
  */
 function isDirectInvocation(): boolean {
   const argv1 = process.argv[1];

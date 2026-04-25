@@ -9,9 +9,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "build": "tsx scripts/build-references.ts",
     "validate": "tsx scripts/build-references.ts --validate-only",
-    "clean": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "clean": "tsx scripts/clean.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -26,6 +26,7 @@
   "devDependencies": {
     "@tsconfig/node20": "^20.1.9",
     "@types/node": "^20.19.39",
+    "@types/write-file-atomic": "^4.0.3",
     "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.39.4",
     "eslint-plugin-jsdoc": "^50.8.0",
@@ -37,6 +38,9 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
+    "commander": "^12.1.0",
+    "json-stringify-deterministic": "^1.0.13",
+    "write-file-atomic": "^5.0.1",
     "zod": "^3.25.76",
     "zod-validation-error": "^3.5.4"
   }
