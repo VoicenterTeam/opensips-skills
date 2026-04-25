@@ -199,7 +199,7 @@ function toErrorEntries(
  *   2. Sorts modules alphabetically by slug for deterministic iteration.
  *   3. Renders each module, validates the rendered Markdown, and (in
  *      normal mode) atomically writes the result under
- *      `<outputRoot>/opensips-modules/references/<version>/modules/<slug>.md`.
+ *      `<outputRoot>/opensips-config/references/<version>/modules/<slug>.md`.
  *      In `--dry-run` mode the file is rendered and validated but not
  *      written; the count of "would-write" files is reported.
  *
@@ -282,9 +282,8 @@ export async function processVersion(
 
     // Core rendering. Each validated core document carries its own
     // `document_type` discriminator, used to dispatch to the right
-    // template in renderCoreDocument. Per ADR-005, core files belong
-    // to the routing skill — note the `opensips-routing` path component
-    // (not `opensips-modules`).
+    // template in renderCoreDocument. Per ADR-012, core, modules, guides,
+    // and consolidated.json all live under `opensips-config`.
     const coreResult = await renderCoreForVersion(
       version,
       validation.documents.core,
@@ -299,8 +298,8 @@ export async function processVersion(
     // Guides rendering. The guides array is empty when the source tree
     // does not include a `guides/` directory for this version (e.g. 3.5);
     // in that case renderGuidesForVersion is a no-op and contributes no
-    // counters or errors. Per ADR-005 guides also belong to the routing
-    // skill and live alongside core/.
+    // counters or errors. Per ADR-012 guides live alongside core/ under
+    // opensips-config.
     const guideResult = await renderGuidesForVersion(
       version,
       validation.documents.guides as GuideDocument[],
@@ -393,7 +392,7 @@ interface RenderForVersionResult {
  * Render every module in one version.
  *
  * Side effects (in non-dry-run mode): atomic writes to
- * `<outputRoot>/opensips-modules/references/<version>/modules/<slug>.md`.
+ * `<outputRoot>/opensips-config/references/<version>/modules/<slug>.md`.
  * The function is itself side-effect-free in dry-run mode.
  *
  * Determinism is enforced via two devices: alphabetical sort by slug
@@ -464,7 +463,7 @@ async function renderModulesForVersion(
 
     const outputPath = posixPath(
       opts.outputRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       version,
       "modules",
@@ -505,12 +504,12 @@ async function renderModulesForVersion(
  * Render every core document in one version.
  *
  * Side effects (in non-dry-run mode): atomic writes to
- * `<outputRoot>/opensips-routing/references/<version>/core/<filename>.md`.
+ * `<outputRoot>/opensips-config/references/<version>/core/<filename>.md`.
  * The function is itself side-effect-free in dry-run mode.
  *
- * Per ADR-005, core syntax is the routing skill's domain — output goes
- * under `opensips-routing/`, not `opensips-modules/`. A wrong path here
- * would ship generated files where Claude won't look for them at runtime.
+ * Per ADR-012, all generated reference content for OpenSIPs lives under
+ * `opensips-config/`. A wrong path here would ship generated files where
+ * Claude won't look for them at runtime.
  *
  * Iteration order over `coreDocuments` is whatever the validator returned;
  * each document produces a separate output file with a deterministic name
@@ -574,7 +573,7 @@ async function renderCoreForVersion(
 
     const outputPath = posixPath(
       opts.outputRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       version,
       "core",
@@ -611,7 +610,7 @@ async function renderCoreForVersion(
  * Render every guide document in one version.
  *
  * Side effects (in non-dry-run mode): atomic writes to
- * `<outputRoot>/opensips-routing/references/<version>/guides/<filename>.md`.
+ * `<outputRoot>/opensips-config/references/<version>/guides/<filename>.md`.
  * Side-effect-free in dry-run mode.
  *
  * Per ADR-009, guides are conditional per version: when the source tree
@@ -621,8 +620,7 @@ async function renderCoreForVersion(
  * `GuideDocument` produces one Markdown file named per
  * {@link guideFileNames}.
  *
- * Per ADR-005, guides — like core syntax — belong to the routing skill
- * (path component `opensips-routing/`).
+ * Per ADR-012, guides live under `opensips-config/`.
  *
  * Output validation runs with `topLevelItemHeading: 2` because guide files
  * compose top-level sections (Overview, Prerequisites, Installation Steps,
@@ -671,7 +669,7 @@ async function renderGuidesForVersion(
 
     const outputPath = posixPath(
       opts.outputRoot,
-      "opensips-routing",
+      "opensips-config",
       "references",
       version,
       "guides",
@@ -791,9 +789,8 @@ function formatCanaryWarning(w: CanaryWarning): string {
  *      {@link emitWarning} lines, one per affected statistic.
  *   5. Serialize via {@link serializeIndex} (deterministic, alphabetised
  *      keys, trailing newline).
- *   6. Output path: `{outputRoot}/opensips-modules/references/{version}/
- *      consolidated.json` per ADR-005 (the index is the modules-skill's
- *      lookup aid). In `--dry-run`, the file is NOT written; the verbose
+ *   6. Output path: `{outputRoot}/opensips-config/references/{version}/
+ *      consolidated.json` per ADR-012. In `--dry-run`, the file is NOT written; the verbose
  *      stats line still emits with a `(dry-run)` suffix so the developer
  *      sees the would-be counts. Otherwise the parent directory is ensured
  *      and the file is written through {@link atomicWriteFile}.
@@ -880,7 +877,7 @@ async function buildAndWriteConsolidatedIndex(
   const json = serializeIndex(validIndex);
   const outputPath = posixPath(
     opts.outputRoot,
-    "opensips-modules",
+    "opensips-config",
     "references",
     version,
     "consolidated.json",
