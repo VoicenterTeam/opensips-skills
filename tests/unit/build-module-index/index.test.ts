@@ -248,6 +248,34 @@ describe("renderModulesIndexMarkdown", () => {
     expect(md).toContain("references/{version}/modules/acc.md");
     expect(md).toContain("## When a module is not in the index");
   });
+
+  it("includes the version string in the intro paragraph", () => {
+    const docs = [
+      { module_name: "tm", overview: "TM enables stateful processing." } as any,
+    ];
+    const md35 = renderModulesIndexMarkdown(docs, "3.5");
+    const md36 = renderModulesIndexMarkdown(docs, "3.6");
+    expect(md35).toContain("Generated reference for OpenSIPs 3.5.");
+    expect(md36).toContain("Generated reference for OpenSIPs 3.6.");
+  });
+
+  it("renders rows alphabetically regardless of input order", () => {
+    // Input is intentionally unsorted (tm before acc) to verify the renderer
+    // sorts the rows. The buildModuleCatalogRows test already covers ordering
+    // at the row level; this asserts the property at the integration level.
+    const docs = [
+      { module_name: "tm", overview: "TM enables stateful processing." } as any,
+      { module_name: "acc", overview: "Accounts transactions to backends." } as any,
+      { module_name: "dialog", overview: "Dialog awareness for the proxy." } as any,
+    ];
+    const md = renderModulesIndexMarkdown(docs, "3.6");
+    const accIdx = md.indexOf("`acc`");
+    const dialogIdx = md.indexOf("`dialog`");
+    const tmIdx = md.indexOf("`tm`");
+    expect(accIdx).toBeGreaterThan(-1);
+    expect(dialogIdx).toBeGreaterThan(accIdx);
+    expect(tmIdx).toBeGreaterThan(dialogIdx);
+  });
 });
 
 describe("rebuildModuleIndex (end-to-end against real data/3.6)", () => {
