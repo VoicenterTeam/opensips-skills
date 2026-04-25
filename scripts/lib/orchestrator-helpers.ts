@@ -22,12 +22,48 @@ import { assertUniqueSlugs, slugify, SlugCollisionError } from "./slug.js";
 import { validateRenderedMarkdown } from "./validate-markdown.js";
 import { validateVersion, type ValidationIssue } from "./validate.js";
 import { renderModule } from "../render-module/index.js";
+import {
+  coreFileNames,
+  renderCoreDocument,
+  type CoreDocType,
+} from "../render-core/index.js";
+import { guideFileNames, renderGuide } from "../render-guide/index.js";
 import type { ModuleDocument } from "../schemas/modules.schema.js";
+import type { z } from "zod";
+import type { GuideDocumentSchema } from "../schemas/guides.schema.js";
 import type {
   BuildSummary,
   CliOptions,
   VersionResult,
 } from "../types/cli.js";
+
+/** Validated guide document shape inferred from the mirrored Zod schema. */
+type GuideDocument = z.infer<typeof GuideDocumentSchema>;
+
+/**
+ * Set of recognised core document types — used to gate dispatch when the
+ * orchestrator inspects an `unknown`-typed validated core document.
+ *
+ * Sourced from {@link coreFileNames} keys so the gate stays in lock-step
+ * with the renderer's dispatch table; adding a new core doc type upstream
+ * only requires extending `coreFileNames` (and the renderer + schema), not
+ * a separate guard list here.
+ */
+const CORE_DOC_TYPES: ReadonlySet<CoreDocType> = new Set(
+  Object.keys(coreFileNames) as CoreDocType[],
+);
+
+/**
+ * Type guard returning whether `value` is one of the twelve registered core
+ * document-type discriminators. Defensive — schema validation should already
+ * have rejected unknown discriminators upstream of this point, but the guard
+ * keeps the orchestrator non-crashing on schema drift.
+ * @param value - Candidate string read from `doc.document_type`.
+ * @returns Whether `value` is a recognised {@link CoreDocType}.
+ */
+function isCoreDocType(value: unknown): value is CoreDocType {
+  return typeof value === "string" && CORE_DOC_TYPES.has(value as CoreDocType);
+}
 
 /**
  * Generator-version stamp embedded in every rendered file's provenance
@@ -190,30 +226,74 @@ export async function processVersion(
     // the `unknown[]` typing on `validation.documents.modules` is the
     // erasure boundary between the validate stage and us.
     const modules = validation.documents.modules as ModuleDocument[];
-    const renderResult = await renderModulesForVersion(
+    const moduleResult = await renderModulesForVersion(
       version,
       modules,
       opts,
       ctx,
     );
-    filesRendered = renderResult.filesRendered;
-    if (renderResult.errors.length > 0) {
-      errors.push(...renderResult.errors);
+    if (moduleResult.errors.length > 0) {
+      errors.push(...moduleResult.errors);
       renderOk = false;
     }
+
+    // Core rendering. Each validated core document carries its own
+    // `document_type` discriminator, used to dispatch to the right
+    // template in renderCoreDocument. Per ADR-005, core files belong
+    // to the routing skill — note the `opensips-routing` path component
+    // (not `opensips-modules`).
+    const coreResult = await renderCoreForVersion(
+      version,
+      validation.documents.core,
+      opts,
+      ctx,
+    );
+    if (coreResult.errors.length > 0) {
+      errors.push(...coreResult.errors);
+      renderOk = false;
+    }
+
+    // Guides rendering. The guides array is empty when the source tree
+    // does not include a `guides/` directory for this version (e.g. 3.5);
+    // in that case renderGuidesForVersion is a no-op and contributes no
+    // counters or errors. Per ADR-005 guides also belong to the routing
+    // skill and live alongside core/.
+    const guideResult = await renderGuidesForVersion(
+      version,
+      validation.documents.guides as GuideDocument[],
+      opts,
+      ctx,
+    );
+    if (guideResult.errors.length > 0) {
+      errors.push(...guideResult.errors);
+      renderOk = false;
+    }
+
+    filesRendered =
+      moduleResult.filesRendered +
+      coreResult.filesRendered +
+      guideResult.filesRendered;
+
     if (ctx.verbose) {
       const verb = opts.dryRun ? "Would render" : "Rendered";
+      const dryRunSuffix = opts.dryRun ? " (dry-run)" : "";
       emitProgress(
-        `  ${verb} ${renderResult.filesRendered} module files${
-          opts.dryRun ? " (dry-run)" : ""
-        }`,
+        `  ${verb} ${moduleResult.filesRendered} module files${dryRunSuffix}`,
         ctx,
       );
-      if (opts.dryRun) {
+      emitProgress(
+        `  ${verb} ${coreResult.filesRendered} core files${dryRunSuffix}`,
+        ctx,
+      );
+      // Guides line is suppressed entirely when there are no guides — keeps
+      // the verbose output uncluttered for versions without a guides/ dir.
+      if (guideResult.filesRendered > 0) {
         emitProgress(
-          `  Would render ${validation.documents.core.length} core files (dry-run)`,
+          `  ${verb} ${guideResult.filesRendered} guide files${dryRunSuffix}`,
           ctx,
         );
+      }
+      if (opts.dryRun) {
         emitProgress(`  Would build consolidated index (dry-run)`, ctx);
       }
     }
@@ -340,6 +420,209 @@ async function renderModulesForVersion(
           message: err.message,
           file: err.path,
         });
+        if (opts.failFast) break;
+        continue;
+      }
+      throw err;
+    }
+    filesRendered++;
+  }
+
+  return { filesRendered, errors };
+}
+
+/**
+ * Render every core document in one version.
+ *
+ * Side effects (in non-dry-run mode): atomic writes to
+ * `<outputRoot>/opensips-routing/references/<version>/core/<filename>.md`.
+ * The function is itself side-effect-free in dry-run mode.
+ *
+ * Per ADR-005, core syntax is the routing skill's domain — output goes
+ * under `opensips-routing/`, not `opensips-modules/`. A wrong path here
+ * would ship generated files where Claude won't look for them at runtime.
+ *
+ * Iteration order over `coreDocuments` is whatever the validator returned;
+ * each document produces a separate output file with a deterministic name
+ * (the {@link coreFileNames} mapping), so render order does not affect the
+ * on-disk byte-identicality contract. Validation issues are aggregated per
+ * file; in `--fail-fast` mode the loop halts at the first failure.
+ *
+ * Output validation runs with `topLevelItemHeading: 2` because core files
+ * use H2 (not H3) for items — this is the structural difference between
+ * core and module rendering that the shared validator handles via the
+ * `topLevelItemHeading` knob.
+ * @param version - OpenSIPs version label.
+ * @param coreDocuments - Validated core documents (heterogeneous; their
+ *   discriminator `document_type` field drives dispatch).
+ * @param opts - Parsed CLI options.
+ * @param ctx - Output context for progress/warning emission.
+ * @returns Render outcome counts and per-document errors.
+ */
+async function renderCoreForVersion(
+  version: string,
+  coreDocuments: readonly unknown[],
+  opts: CliOptions,
+  ctx: OutputContext,
+): Promise<RenderForVersionResult> {
+  const errors: VersionResult["errors"] = [];
+  let filesRendered = 0;
+
+  for (const doc of coreDocuments) {
+    const docType = (doc as { document_type?: unknown }).document_type;
+    if (!isCoreDocType(docType)) {
+      // Defensive: schema validation should have rejected unknown
+      // discriminators upstream of this point. Surface as a warning and
+      // skip rather than crash, so an extraction-side regression does
+      // not abort the entire build.
+      emitWarning(
+        `core document with unknown document_type ${JSON.stringify(docType)} skipped`,
+        ctx,
+      );
+      continue;
+    }
+
+    const filename = coreFileNames[docType];
+    const sourcePath = `data/${version}/core/${filename.replace(/\.md$/, ".json")}`;
+    const content = renderCoreDocument(doc, docType, version, GENERATOR_VERSION);
+
+    const validation = validateRenderedMarkdown(content, sourcePath, {
+      topLevelItemHeading: 2,
+    });
+    if (!validation.ok) {
+      for (const issue of validation.errors) {
+        const message = `${issue.rule}: ${issue.message} (line ${issue.line})`;
+        process.stderr.write(`ERROR: ${sourcePath}: ${message}\n`);
+        errors.push({ kind: "validation", message, file: sourcePath });
+      }
+      if (opts.failFast) break;
+      continue;
+    }
+    for (const w of validation.warnings) {
+      emitWarning(`${sourcePath}:${w.line}: ${w.rule}: ${w.message}`, ctx);
+    }
+
+    const outputPath = posixPath(
+      opts.outputRoot,
+      "opensips-routing",
+      "references",
+      version,
+      "core",
+      filename,
+    );
+
+    if (opts.dryRun) {
+      filesRendered++;
+      if (ctx.verbose) emitProgress(`  would write ${outputPath}`, ctx);
+      continue;
+    }
+
+    try {
+      await ensureDirectory(path.dirname(outputPath));
+      await atomicWriteFile(outputPath, content);
+    } catch (err) {
+      if (err instanceof IOError) {
+        process.stderr.write(
+          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
+        );
+        errors.push({ kind: "io", message: err.message, file: err.path });
+        if (opts.failFast) break;
+        continue;
+      }
+      throw err;
+    }
+    filesRendered++;
+  }
+
+  return { filesRendered, errors };
+}
+
+/**
+ * Render every guide document in one version.
+ *
+ * Side effects (in non-dry-run mode): atomic writes to
+ * `<outputRoot>/opensips-routing/references/<version>/guides/<filename>.md`.
+ * Side-effect-free in dry-run mode.
+ *
+ * Per ADR-009, guides are conditional per version: when the source tree
+ * has no `guides/` directory the validator's `documents.guides` array is
+ * empty and this function is a no-op (no output dir is created, no errors
+ * are surfaced). For versions with guides (3.4 / 3.6 currently), each
+ * `GuideDocument` produces one Markdown file named per
+ * {@link guideFileNames}.
+ *
+ * Per ADR-005, guides — like core syntax — belong to the routing skill
+ * (path component `opensips-routing/`).
+ *
+ * Output validation runs with `topLevelItemHeading: 2` because guide files
+ * compose top-level sections (Overview, Prerequisites, Installation Steps,
+ * etc.) at H2 directly under the file's H1. The relative skip-level rule
+ * still applies inside multi-step / configuration-section bodies which use
+ * H3 sub-sections.
+ * @param version - OpenSIPs version label.
+ * @param guideDocuments - Validated guide documents (one per
+ *   `installation`/`configuration`/`syntax`).
+ * @param opts - Parsed CLI options.
+ * @param ctx - Output context for progress/warning emission.
+ * @returns Render outcome counts and per-guide errors. Empty when the
+ *   version carries no guides — no error is reported for absence.
+ */
+async function renderGuidesForVersion(
+  version: string,
+  guideDocuments: readonly GuideDocument[],
+  opts: CliOptions,
+  ctx: OutputContext,
+): Promise<RenderForVersionResult> {
+  const errors: VersionResult["errors"] = [];
+  let filesRendered = 0;
+
+  for (const doc of guideDocuments) {
+    const docType = doc.document_type;
+    const filename = guideFileNames[docType];
+    const stem = filename.replace(/\.md$/, "");
+    const sourcePath = `data/${version}/guides/${stem}.json`;
+    const content = renderGuide(doc, version, GENERATOR_VERSION);
+
+    const validation = validateRenderedMarkdown(content, sourcePath, {
+      topLevelItemHeading: 2,
+    });
+    if (!validation.ok) {
+      for (const issue of validation.errors) {
+        const message = `${issue.rule}: ${issue.message} (line ${issue.line})`;
+        process.stderr.write(`ERROR: ${sourcePath}: ${message}\n`);
+        errors.push({ kind: "validation", message, file: sourcePath });
+      }
+      if (opts.failFast) break;
+      continue;
+    }
+    for (const w of validation.warnings) {
+      emitWarning(`${sourcePath}:${w.line}: ${w.rule}: ${w.message}`, ctx);
+    }
+
+    const outputPath = posixPath(
+      opts.outputRoot,
+      "opensips-routing",
+      "references",
+      version,
+      "guides",
+      filename,
+    );
+
+    if (opts.dryRun) {
+      filesRendered++;
+      if (ctx.verbose) emitProgress(`  would write ${outputPath}`, ctx);
+      continue;
+    }
+
+    try {
+      await ensureDirectory(path.dirname(outputPath));
+      await atomicWriteFile(outputPath, content);
+    } catch (err) {
+      if (err instanceof IOError) {
+        process.stderr.write(
+          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
+        );
+        errors.push({ kind: "io", message: err.message, file: err.path });
         if (opts.failFast) break;
         continue;
       }
