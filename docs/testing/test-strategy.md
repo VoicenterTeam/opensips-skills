@@ -77,7 +77,7 @@ Reasons:
 
 - Each test invocation costs API tokens. CI runs on every push and pull request; the cost compounds.
 - Claude's behavior varies across model versions and across runs of the same model. Assertions would need to tolerate variance, which dilutes their signal.
-- Triggering is probabilistic. A test that asserts "this prompt triggers `opensips-routing`" can pass 95% of the time and fail on the unlucky run, producing flaky CI.
+- Triggering is probabilistic. A test that asserts "this prompt triggers `opensips-config`" can pass 95% of the time and fail on the unlucky run, producing flaky CI.
 
 The mitigation: the canonical prompt suite (`docs/testing/golden-path-demos.md`) is run manually by the maintainer before each release. This is required, not optional. The release process document specifies it explicitly.
 
@@ -85,7 +85,7 @@ If the project later grows to justify the cost (more contributors, more frequent
 
 ### 2.2 Plugin install in real Claude Code
 
-The end-to-end install flow — `claude --plugin-dir ./plugins/opensips`, `/plugin list` showing all three skills, `/reload-plugins` picking up edits — is verified manually as part of the per-release smoke check, not in CI.
+The end-to-end install flow — `claude --plugin-dir ./plugins/opensips`, `/plugin list` showing both skills, `/reload-plugins` picking up edits — is verified manually as part of the per-release smoke check, not in CI.
 
 Reason: real Claude Code is a closed product without a CI-friendly headless mode. A surrogate that runs the manifest validation can confirm the manifest is well-formed but cannot confirm the install actually works.
 
@@ -105,7 +105,7 @@ GitHub Actions runs the following jobs on every push to `main` and every pull re
 | `build` | `npm run build` then `git diff --exit-code` | Either the build is broken, or the regenerated output was not committed (the "forgot to rebuild" PR). Per `data-pipeline.md` §8.1 the generated output is committed alongside source. |
 | `test` | `npm test` (unit + golden + e2e + determinism) | A unit, renderer, golden-file, E2E, or determinism test failed. The job log identifies the specific test. |
 | `lint` | ESLint + Prettier | Code style, JSDoc rules, or TypeScript strict-mode violations. |
-| `skill-md-check` | Greps committed SKILL.md files for unreplaced `<!-- MODULE_INDEX_PLACEHOLDER -->` markers and for forbidden sibling-project names (Kamailio, OpenSER, SER) outside `ser-lineage-notes.md`. | Either the build script's placeholder-replacement step failed silently, or a recent SKILL.md edit leaked a sibling-project name into prose where Rule 7 in `CLAUDE.md` forbids it. |
+| `skill-md-check` | Greps committed SKILL.md files for unreplaced `<!-- MODULE_INDEX_PLACEHOLDER -->` and `<!-- CFG_FORMAT_PLACEHOLDER -->` markers and for forbidden sibling-project names (Kamailio, OpenSER, SER) outside `ser-lineage-notes.md`. | Either the build script's placeholder-replacement step failed silently, or a recent SKILL.md edit leaked a sibling-project name into prose where Rule 7 in `CLAUDE.md` forbids it. |
 
 `validate` is the fastest job and gates the others — if validation fails, downstream jobs do not run. The remaining jobs run in parallel.
 
@@ -141,14 +141,6 @@ npm run build           # Full build, verify output matches committed
 ```
 
 Worth running before changes that touch the rendering pipeline, schemas, or the orchestrator.
-
-### After SKILL.md or module-source changes
-
-```bash
-npm run build:skills
-```
-
-Regenerates the module-index injection and the SKILL.md placeholder replacement. Required before committing if you touched a SKILL.md template or added/removed a module from source.
 
 ### After a deliberate statistics shift
 
@@ -196,7 +188,7 @@ Before tagging a release:
    ```bash
    claude --plugin-dir ./plugins/opensips
    ```
-2. Confirm all three skills load:
+2. Confirm both skills load:
    ```
    /plugin list
    ```

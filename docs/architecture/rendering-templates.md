@@ -122,7 +122,7 @@ This section specifies the H2 ordering and per-element rendering for each docume
 
 ### 3.1 Modules (per-item rendering)
 
-A `ModuleDocument` from `source/{version}/modules/{slug}.json` renders to one Markdown file at `plugins/opensips/skills/opensips-modules/references/{version}/modules/{slug}.md`.
+A `ModuleDocument` from `source/{version}/modules/{slug}.json` renders to one Markdown file at `plugins/opensips/skills/opensips-config/references/{version}/modules/{slug}.md`.
 
 Section order:
 
@@ -412,7 +412,7 @@ Rendering rules:
 
 Core document types render in aggregated form: one source JSON file produces one Markdown file containing every item from that source as an H2 section.
 
-Twelve core types map to twelve generated files in `plugins/opensips/skills/opensips-routing/references/{version}/core/`:
+Twelve core types map to twelve generated files in `plugins/opensips/skills/opensips-config/references/{version}/core/`:
 
 | Source file | Generated file | H1 title |
 |---|---|---|
@@ -806,7 +806,7 @@ These additions are emitted when the source JSON has corresponding fields (`quic
 
 ## 9. Worked example: a complete tm module reference
 
-This section shows how all the rules combine to produce a complete generated file. Source: `source/3.6/modules/tm.json`. Output: `plugins/opensips/skills/opensips-modules/references/3.6/modules/tm.md`.
+This section shows how all the rules combine to produce a complete generated file. Source: `source/3.6/modules/tm.json`. Output: `plugins/opensips/skills/opensips-config/references/3.6/modules/tm.md`.
 
 ```markdown
 # tm Module Reference

@@ -1,17 +1,19 @@
 ---
-name: opensips-routing
+name: opensips-config
 description: |-
-  Authors and edits OpenSIPs SIP server configuration scripts (opensips.cfg, route blocks, modules, parameters). Use whenever the user mentions OpenSIPs, opensips.cfg, route{}/branch_route/failure_route, $var/$avp/$pv pseudo-variables, or asks to write/edit SIP routing logic for OpenSIPs. Do NOT use for sibling SIP Express Router (SER)-lineage projects — those use different identifiers despite shared lineage.
+  Authors, edits, reviews, and answers questions about OpenSIPs SIP server configuration files (opensips.cfg, route blocks, modules, parameters, pseudo-variables). Use whenever the user mentions OpenSIPs, opensips.cfg, route{}/branch_route/failure_route, $var/$avp/$pv pseudo-variables, asks to write/edit SIP routing logic for OpenSIPs, names a specific OpenSIPs module (tm, dialog, dispatcher, registrar, drouting, presence, sl, uac, db_mysql, mid_registrar, etc.), or asks what functions/parameters a module exports. Do NOT use for sibling SIP Express Router (SER)-lineage projects — those use different identifiers despite shared lineage. For security review of an OpenSIPs config defer to opensips-security-advisor.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 ## Overview
 
-This skill authors and edits OpenSIPs SIP server configuration scripts — `opensips.cfg`, route blocks, module loading, parameter setup, and the procedural decisions that turn a routing intent into a valid config. It is one of three coordinated skills for working with OpenSIPs in Claude Code. When the user asks about a specific module's functions, parameters, or pseudo-variables, the `opensips-modules` skill is the authoritative source for per-module reference data; consult it before answering. When the user asks for a security review, audit, or hardening check, the `opensips-security-advisor` skill provides the review workflow. The three skills are designed to be loaded together; do not duplicate their work.
+This skill is the single entry point for OpenSIPs configuration work — authoring opensips.cfg files, editing route blocks, looking up module exports, and answering questions about cfg syntax. The substantive content lives in version-scoped reference files; this SKILL.md routes Claude to the right reference for any given task. The companion skill `opensips-security-advisor` handles security review; this skill defers to it for explicit security-review requests.
 
 ## Cross-project guardrail
 
 **CRITICAL: Use only OpenSIPs identifiers.** OpenSIPs descended from the SIP Express Router (SER) and shares a code lineage with sibling SER-lineage projects. Function names, module names, parameter names, and pseudo-variable syntax differ between projects despite surface similarity. Mixing identifiers across projects produces configs that look correct but fail at runtime in subtle ways — the parser may accept the surface form and the failure surfaces only under load.
+
+Module-name confusion is the single highest-risk failure mode for this skill: an identifier that looks correct from training-data priors may belong to a sibling SER-lineage project rather than to OpenSIPs, or may exist in OpenSIPs with a different signature, different parameters, or different semantics than the priors suggest.
 
 Common confusions in routing context:
 
@@ -19,7 +21,25 @@ Common confusions in routing context:
 - Module names that look plausible but are not part of OpenSIPs. Modules in OpenSIPs are loaded with `loadmodule "name.so"` and configured with `modparam("name", "param", value)`. If a module name does not appear in `references/{version}/modules/`, it is either a typo, a sibling-project module, or a module that does not exist in this version.
 - Function signatures that share a name across projects but differ in arity or argument order. Always consult `references/{version}/modules/<module>.md` for the exact signature; do not infer arguments from training-data priors.
 
+The operational rule is positive, not comparative: a module, function, parameter, or pseudo-variable is valid only if it is present in this version's reference set under `references/{version}/modules/`. Identifiers that look familiar but are not in the reference set are either typos, version mismatches, or imports from sibling projects, and must be flagged rather than answered from priors.
+
+Always Read the per-module reference file before answering a question about a module. Do not infer signatures, parameter lists, or pseudo-variables from training data. If an identifier looks familiar but cannot be located in the reference set, ask the user for clarification rather than constructing an answer.
+
 If you recognize an identifier from your training data but cannot find it in this skill's reference set, assume it is from a sibling project and ask the user. Do not construct identifiers from your priors. The positive reference set under `references/{version}/` is the authoritative ground truth for this skill.
+
+## The opensips.cfg workflow
+
+When working on an opensips.cfg — reading, editing, generating, or answering a question that depends on what is in one — follow this procedure:
+
+**Step 1.** Read `references/{version}/cfg-format.md` to ground in the file's section model and ordering rules.
+
+**Step 2.** Read `references/{version}/consolidated.json` once for upfront orientation. The index gives module dependencies, function-to-module reverse lookup, pseudo-variable-to-module reverse lookup, and per-module summaries — enough to answer many questions without reading any per-module file.
+
+**Step 3.** For each `loadmodule "X.so"` directive whose module Claude is about to reference — answering a question about it, editing code that calls into it, or generating new code that calls into it — Read `references/{version}/modules/X.md`. Do not infer a module's exports from training-data priors.
+
+**Step 4.** For pseudo-variables, route blocks, transformations, flags, operators, statements, async statements, events, MI commands, statistics, parameters, or other core constructs, Read the matching `references/{version}/core/<topic>.md`.
+
+The `{version}` literal stays unresolved here; Claude resolves it at read time per the version-resolution protocol against the active version the user is working on.
 
 ## When to use this skill
 
@@ -30,18 +50,19 @@ This skill should be the active one when:
 - The user asks about pseudo-variable usage (`$var`, `$avp`, `$pv`, `$ru`, `$fu`, `$tu`, `$ci`, etc.), transformations, statements, operators, flags, or core script syntax.
 - The user describes a routing concern: registrar handling, stateful proxying, NAT traversal, dispatcher load balancing, digest authentication, dialog tracking, accounting, or header inspection.
 - The user pastes an `opensips.cfg` fragment and asks for review, refactor, or extension.
+- The user names a specific OpenSIPs module (`dialog`, `tm`, `rr`, `registrar`, `dispatcher`, `drouting`, `presence`, `sl`, `uac`, `auth_db`, `nathelper`, `acc`, `db_mysql`, `mid_registrar`, `permissions`, `rtpengine`, `usrloc`, etc.) and asks about its exports, parameters, dependencies, pseudo-variables, MI commands, statistics, or events.
+- The user phrases the question as "what functions does X module export?", "show me the parameters for Y module", "what does function Z return?", "which module provides `t_relay`?", or "what pseudo-variables does the dialog module add?".
+- The user pastes a config snippet that names a module and asks what a particular `modparam(...)` line does, or asks whether a function is available in the module they have loaded.
+- The user wants the dependency graph for a module — which other modules must also be loaded for it to work.
 
-This skill should defer to `opensips-modules` when:
-
-- The user asks "what does function X do?" or "what parameters does module Y export?" or "show me the signature of Z".
-- The user names a specific module and wants its full exported surface (functions, parameters, pseudo-variables, dependencies).
-- The user asks which module provides a given capability, requiring a catalog scan.
+## When to defer to `opensips-security-advisor`
 
 This skill should defer to `opensips-security-advisor` when:
 
 - The user explicitly requests a security review, audit, or hardening check.
 - The user mentions specific risks: INVITE flooding, registration hijacking, toll fraud, SIP scanning, spoofed REGISTER, RTP relay exposure.
 - The user asks "is this config safe?" or "what could go wrong with this?".
+- The user asks whether a module's default settings are safe, whether a particular `modparam(...)` value introduces a vulnerability, or whether a configuration is exposed to a named risk. The advisor owns those judgments; this skill only states what the parameter does and what its default is.
 
 ## Routing decisions
 
@@ -272,31 +293,39 @@ route {
 
 The OpenSIPs form uses the `partition` modparam (the current configuration entry point in OpenSIPs `dispatcher`; the older flat-list parameters are deprecated and may not exist in this version), passes integer literals to `ds_select_dst` rather than string-quoted numbers, and gives the SL reply an integer status code. Read `references/{version}/modules/dispatcher.md` to confirm whether `partition` or another parameter is the correct entry point for this version, and to see the algorithm code list.
 
+## Module lookup
+
+For questions about a specific module's exports, the lookup procedure is:
+
+1. Read `references/{version}/consolidated.json` first. For most questions this is sufficient: `indexes.functionsByName[<fn>]` resolves a function name to its source module; `indexes.variablesByName[<pv>]` resolves a pseudo-variable; `indexes.miCommandsByName[<cmd>]` resolves an MI command; `indexes.parametersByModule[<module>]` lists a module's parameters.
+2. If the question requires the full per-module surface (parameter narratives, function descriptions, usage examples, dependencies), Read `references/{version}/modules/<slug>.md` for that module.
+3. If the user names a module that does not appear in `consolidated.json`'s module list, follow the procedure in `references/{version}/modules-index.md` ("When a module is not in the index"). Do not invent identifiers.
+
+The two-step lookup pattern (consolidated → per-module) is mandatory whenever a question asks for content that is not in the consolidated index — descriptions, narratives, and signatures live only in the per-module file.
+
 ## References
 
-This skill consults the following reference files. Use `{version}` literal — Claude resolves the active version at read time per the version-resolution protocol.
+This skill consults the following files. `{version}` is a literal placeholder Claude resolves at read time:
 
-- Read `references/{version}/core/variables.md` when needing pseudo-variable details (type, R/W, scope, available-in route blocks).
-- Read `references/{version}/core/functions.md` when needing core script function signatures (those not provided by a module).
-- Read `references/{version}/core/routes.md` when needing route block semantics (which blocks exist, when they fire, what is in scope).
-- Read `references/{version}/core/operators.md` and `references/{version}/core/statements.md` for syntax details (comparison, arithmetic, control flow).
-- Read `references/{version}/core/transformations.md` when manipulating string, list, or URI values via the `{transformation}` syntax.
-- Read `references/{version}/core/flags.md` when using `setflag` / `resetflag` / `isflagset` and named flag declarations.
-- Read `references/{version}/core/parameters.md` when setting global core parameters (listen sockets, timer values, log level).
-- Read `references/{version}/core/async.md` when authoring asynchronous logic with `async{...}` or `launch{...}`.
-- Read `references/{version}/core/events.md` when registering for or raising events.
-- Read `references/{version}/core/mi-commands.md` when interacting with the management interface from script.
-- Read `references/{version}/core/statistics.md` when defining or reading statistics.
-- Read `references/{version}/modules/<module>.md` for per-module functions, exported parameters, pseudo-variables, and dependencies. The `opensips-modules` skill is the authoritative source for module-level reference; consult it when the user names a specific module.
-- Read `references/{version}/guides/installation.md`, `references/{version}/guides/configuration.md`, and `references/{version}/guides/syntax.md` when present, for foundational orientation on installation layout, configuration discovery, and config-file syntax basics.
-- Read `references/{version}/ser-lineage-notes.md` whenever any input contains identifiers that look unfamiliar. It is the primary anti-hallucination guardrail for this skill — read it on first use of the skill in any session that involves unfamiliar identifiers.
+- `references/{version}/cfg-format.md` — file structure, section order, ordering rules, route block taxonomy, common gotchas. Read first whenever working on a cfg file.
+- `references/{version}/consolidated.json` — the cross-identifier index. Read upfront when scanning a cfg.
+- `references/{version}/modules/<slug>.md` — per-module reference data (parameters, exported functions, pseudo-variables, MI commands, statistics, events, dependencies). Read on demand, one module per Read.
+- `references/{version}/modules-index.md` — module catalog and the lookup-discipline procedures, including "When a module is not in the index". Read when no module name from a user's prompt matches anything in `consolidated.json`.
+- `references/{version}/core/variables.md` — pseudo-variables (type, R/W, scope, available-in route blocks).
+- `references/{version}/core/functions.md` — core script function signatures.
+- `references/{version}/core/routes.md` — route block semantics.
+- `references/{version}/core/operators.md` — comparison/arithmetic/control-flow operators.
+- `references/{version}/core/statements.md` — language statements.
+- `references/{version}/core/transformations.md` — `{transformation}` syntax.
+- `references/{version}/core/flags.md` — flag declaration and `setflag`/`resetflag`/`isflagset`.
+- `references/{version}/core/parameters.md` — global core parameters.
+- `references/{version}/core/async.md` — async/launch statements.
+- `references/{version}/core/events.md` — event registration/raising.
+- `references/{version}/core/mi-commands.md` — management interface commands callable from script.
+- `references/{version}/core/statistics.md` — statistics defined by the core.
+- `references/{version}/guides/installation.md`, `references/{version}/guides/configuration.md`, `references/{version}/guides/syntax.md` — when present (per ADR-009, some versions ship guides; absence is not an error).
+- `references/{version}/ser-lineage-notes.md` — anti-hallucination guardrails. Read on first use of this skill in any session that involves unfamiliar identifiers.
 
-## Working with sibling skills
+## Working with the sibling skill
 
-This skill is one of three coordinated skills:
-
-- `opensips-routing` — authoring SIP routing logic for OpenSIPs (this skill).
-- `opensips-modules` — authoritative per-module reference data.
-- `opensips-security-advisor` — security review of OpenSIPs configurations.
-
-The skills are designed to load together. When a user prompt spans multiple concerns — for example, "write a registrar that's safe against spoofed REGISTERs" — multiple skills will activate. Each skill stays within its own domain and defers to siblings for theirs. Read `opensips-modules`'s reference files for any per-module question; defer to `opensips-security-advisor` for any explicit security review request. Do not duplicate sibling-skill content here.
+`opensips-security-advisor` reviews OpenSIPs configurations for security issues. When the user asks for a security review, audit, or hardening check, the advisor activates and reads this skill's reference files (read-only, per Rule 8 in CLAUDE.md). This skill does not write to the advisor's directory and the advisor does not write to this skill's directory.

@@ -1,116 +1,6 @@
----
-name: opensips-modules
-description: |-
-  Provides authoritative per-module reference data for OpenSIPs modules (function signatures, exported parameters, dependencies, pseudo-variables, MI commands, statistics, events). Use whenever the user references a specific OpenSIPs module by name (e.g. dialog, tm, rr, registrar, dispatcher, drouting, presence, sl, uac, db_mysql, mid_registrar) or asks what functions/parameters a module exports. Do NOT use for sibling SIP Express Router (SER)-lineage projects' modules even when the names look identical.
-allowed-tools: Read, Glob, Grep
----
-
-## Overview
-
-This skill is a router-index for per-module reference data on OpenSIPs modules. It does not author configuration. Its job is to point at the correct per-module reference file so Claude can answer accurately about a module's exported functions, parameters, pseudo-variables, MI commands, statistics, events, and dependencies. The substantive content lives in the per-module reference files under `references/{version}/modules/`, not in this SKILL.md — this file routes Claude to the right reference, and the reference file carries the answer.
-
-For authoring tasks (writing route blocks, configuring `opensips.cfg`, designing call flows, choosing between modules) defer to `opensips-routing`. For security review of an existing configuration defer to `opensips-security-advisor`. This skill answers "what does module X expose?" — not "should I use module X?" or "is the way I'm using module X safe?".
-
-## Cross-project guardrail
-
-OpenSIPs is one of several projects descending from the SIP Express Router (SER). The projects share an architectural ancestry but have diverged substantially in configuration syntax, function names, parameter names, pseudo-variable conventions, and module exports. Module-name confusion is the single highest-risk failure mode for this skill: an identifier that looks correct from training-data priors may belong to a sibling SER-lineage project rather than to OpenSIPs, or may exist in OpenSIPs with a different signature, different parameters, or different semantics than the priors suggest.
-
-The operational rule is positive, not comparative: a module, function, parameter, or pseudo-variable is valid only if it is present in this version's reference set under `references/{version}/modules/`. Identifiers that look familiar but are not in the reference set are either typos, version mismatches, or imports from sibling projects, and must be flagged rather than answered from priors.
-
-Always Read the per-module reference file before answering a question about a module. Do not infer signatures, parameter lists, or pseudo-variables from training data. If an identifier looks familiar but cannot be located in the reference set, ask the user for clarification rather than constructing an answer.
-
-The reference detour is the deterministic act that grounds answers in version-correct content. Skipping it because "the answer seems obvious" is the most common path to fabrication. The reference files are the source of truth; training-data priors are not.
-
-## When to use this skill
-
-This skill should be the active one when:
-
-- The user names a specific OpenSIPs module (`dialog`, `tm`, `rr`, `registrar`, `dispatcher`, `drouting`, `presence`, `sl`, `uac`, `auth_db`, `nathelper`, `acc`, `db_mysql`, `mid_registrar`, `permissions`, `rtpengine`, `usrloc`, etc.) and asks about its exports, parameters, dependencies, pseudo-variables, MI commands, statistics, or events.
-- The user phrases the question as "what functions does X module export?", "show me the parameters for Y module", "what does function Z return?", "which module exports `t_relay`?", or "what pseudo-variables does the dialog module add?".
-- The user pastes a config snippet that names a module and asks what a particular `modparam(...)` line does, or asks whether a function is available in the module they have loaded.
-- The user wants the dependency graph for a module — which other modules must also be loaded for it to work.
-
-This skill should defer to `opensips-routing` when:
-
-- The user asks how to write a route block, structure an `opensips.cfg`, design a call flow, handle NAT traversal, or apply a transformation. Authoring is the routing skill's domain; this skill provides the reference data the routing skill consumes.
-- The user asks about core script syntax — pseudo-variables defined by the core (not by a module), operators, statements, route types, async statements, transformations. Those live under `../opensips-routing/references/{version}/core/`, not in this skill's reference tree.
-
-This skill should defer to `opensips-security-advisor` when:
-
-- The user asks for a security review, audit, or hardening check on a configuration. The advisor reads this skill's reference files as needed; this skill does not run reviews itself.
-- The user asks whether a module's default settings are safe, whether a particular `modparam(...)` value introduces a vulnerability, or whether a configuration is exposed to a named risk (toll fraud, registration hijacking, INVITE flooding, RTP relay exposure). The advisor owns those judgments; this skill only states what the parameter does and what its default is.
-
-When in doubt about which sibling owns a question, default to providing reference data and naming the sibling skill. A prompt that mixes "what does function X do?" (this skill) with "should I use function X here?" (routing or advisor) is best answered by reading the per-module reference, surfacing the factual answer, and pointing at the sibling for the judgment call.
-
-## How to use this skill
-
-The per-module reference file under `references/{version}/modules/<slug>.md` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
-
-The path pattern is fixed:
-
-- Per-module reference file: `references/{version}/modules/<slug>.md`. Substitute `{version}` at read time with the active OpenSIPs version (e.g., `3.6`). Substitute `<slug>` with the module name as it appears in the index below.
-- Consolidated index: `references/{version}/consolidated.json`. A structured JSON index of every module, function, pseudo-variable, parameter, MI command, and statistic in the version, plus a `relationships.moduleDependencies` graph.
-
-The consolidated index is the fastest path when the user references an identifier without naming a module:
-
-- To find which module exports a function whose home module is unclear, Read `consolidated.json` and look up `indexes.functionsByName[<function>]` to find the source module, then Read that module's per-module reference file for the full signature.
-- To find which module defines a pseudo-variable, look up `indexes.variablesByName[<variable>]`.
-- To find which module exposes an MI command, look up `indexes.miCommandsByName[<command>]`.
-- To list all parameters of a known module, look up `indexes.parametersByModule[<module>]`.
-- To check what other modules a given module depends on, look up `relationships.moduleDependencies[<module>]`.
-
-Two-step lookup is the canonical pattern: Read `consolidated.json` to locate the source, then Read the per-module file for full content. Do not skip the second Read — the consolidated index does not contain function descriptions, parameter narratives, or usage examples.
-
-When a user prompt names multiple modules, Read each per-module reference file in turn rather than answering from a single read. Cross-module behavior (e.g., how `tm` interacts with `dialog`) is described in each module's reference file separately; the consolidated index links them through the dependencies graph but does not narrate the interaction.
-
-### Worked lookup examples
-
-Three concrete shapes the lookup takes in practice. Each ends with a per-module Read; the consolidated index alone is never the final answer.
-
-- **User names a module directly.** Prompt: "What parameters does the dispatcher module expose?" Read `references/{version}/modules/dispatcher.md` and answer from the parameters section. No consolidated lookup needed.
-- **User names a function but not a module.** Prompt: "What does `t_relay()` return?" Read `references/{version}/consolidated.json`, look up `indexes.functionsByName["t_relay"]` to find the source module (`tm`), then Read `references/{version}/modules/tm.md` for the full signature, return value, and side effects.
-- **User names a pseudo-variable that may belong to a module.** Prompt: "Where does `$dlg_val(name)` come from?" Read `consolidated.json`, look up `indexes.variablesByName["$dlg_val"]` to find the owning module (`dialog`), then Read `references/{version}/modules/dialog.md` for the full pseudo-variable description and the functions that read or write it.
-- **User names an MI command without naming a module.** Prompt: "What does the `dlg_list` MI command return?" Read `consolidated.json`, look up `indexes.miCommandsByName["dlg_list"]` to find the owning module, then Read that module's per-module file for the full argument list and return shape. Statistics and events follow the same shape but live under their module's per-file sections rather than in dedicated top-level indexes.
-- **User asks about dependencies.** Prompt: "What does the `mid_registrar` module depend on?" Read `consolidated.json` and look up `relationships.moduleDependencies["mid_registrar"]` for the dependency edges, then Read `references/{version}/modules/mid_registrar.md` for the narrative explanation of why each dependency exists and which features they unlock.
-
-If the consolidated lookup returns no match for an identifier the user clearly believes is real, the identifier is most likely from training-data priors that conflate the SER lineage. Do not construct an answer. Apply the procedure in "When a module is not in the index" below.
-
-### Lookup discipline
-
-The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this skill is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
-
-- **Wrong shape.** User asks for `dialog` module's exported functions. Claude reads the index, sees `dialog` listed, then writes a function list from priors without opening `dialog.md`. The answer may look plausible and may even be partially correct, but version-specific signatures and parameter orderings are not reliably reproducible from priors.
-- **Right shape.** User asks for `dialog` module's exported functions. Claude reads the index to confirm the module slug, Reads `references/{version}/modules/dialog.md`, and answers from the file's exported-functions section, quoting signatures verbatim from the reference.
-
-The same discipline applies when the user asks a follow-up. A second question about the same module is a second Read of the same file (or a re-quote from the previous Read in the same session); it is not an opportunity to fall back on priors because "we just looked at this module."
-
-### What the per-module reference file contains
-
-Each `references/{version}/modules/<slug>.md` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
-
-- **Overview** — what the module does and its role in a configuration.
-- **Dependencies** — other modules that must be loaded for this module to function, plus optional modules that enable additional features when also loaded.
-- **External dependencies** — system-level requirements (libraries, daemons, database schemas).
-- **Parameters** — every `modparam(...)` exposed by the module, with type, default, valid values, and description.
-- **Exported functions** — every script-callable function with full signatures, parameter types, return values, and the route types in which the function is valid.
-- **Exported pseudo-variables** — variables added by the module, read/write semantics, and the contexts in which they are populated.
-- **Exported MI commands** — management interface commands the module registers, with arguments and return shapes.
-- **Exported statistics** — counters and gauges the module publishes.
-- **Exported events** — event names the module raises through `event_route` blocks.
-
-Not every module exposes every category. A module with no MI commands has no MI section. The presence or absence of a section is itself information — if the user asks about an MI command for a module whose reference file has no MI section, the command does not exist in this version and the user is likely confusing modules or versions.
-
-### Version-specific behavior
-
-Module exports change between OpenSIPs versions. A function that exists in the active version may have had a different signature in a prior version, or may not have existed at all. Always Read the per-module reference file under the version directory the user is working in. Do not assume cross-version equivalence. If the user has not specified a version, ask before answering — the answer is genuinely different across versions, and a version-correct answer to the wrong version is still wrong.
-
+# OpenSIPs module index
+Generated reference for OpenSIPs 3.6. This file is the module catalog for the `opensips-config` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.
 ## Module index
-
-The table below maps every OpenSIPs module in the active reference set to its per-module reference file and a one-line statement of purpose. The table is generated from `consolidated.json` at build time and replaces the placeholder marker. Do not hand-edit it — edits will be overwritten on the next build, and the underlying source of truth is the upstream extraction. If a module appears wrong in the table, the fix belongs upstream in the extraction project, not here.
-
-The table covers the modules available in the build's primary version. Module sets differ between versions: a module listed here may not exist in older versions, and a module that existed in older versions may have been removed or renamed. Always confirm the active version with the user when the answer depends on it, and Read `references/{version}/consolidated.json` for the active version's authoritative module list.
-
-<!-- MODULE_INDEX:BEGIN -->
 | Module | Purpose | Reference file |
 |---|---|---|
 | `Script Helper Module` | The purpose of the **Script Helper module** is to simplify the scripting proces… | `references/{version}/modules/Script Helper Module.md` |
@@ -307,8 +197,52 @@ The table covers the modules available in the build's primary version. Module se
 | `xcap_client` | The modules is an XCAP client for OpenSIPS that can be used by other modules | `references/{version}/modules/xcap_client.md` |
 | `xml` | This module exposes a script variable that provides basic parsing and manipulat… | `references/{version}/modules/xml.md` |
 | `xmpp` | This modules is a gateway between OpenSIPS and a jabber server | `references/{version}/modules/xmpp.md` |
-<!-- MODULE_INDEX:END -->
+## How to use this file
 
+The per-module reference file under `references/{version}/modules/{slug}.md` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
+
+The path pattern is fixed:
+
+- Per-module reference file: `references/{version}/modules/{slug}.md`. Substitute `{version}` at read time with the active OpenSIPs version (e.g., `3.6`). Substitute `{slug}` with the module name as it appears in the index below.
+- Consolidated index: `references/{version}/consolidated.json`. A structured JSON index of every module, function, pseudo-variable, parameter, MI command, and statistic in the version, plus a `relationships.moduleDependencies` graph.
+
+The consolidated index is the fastest path when the user references an identifier without naming a module:
+
+- To find which module exports a function whose home module is unclear, Read `consolidated.json` and look up `indexes.functionsByName[{function}]` to find the source module, then Read that module's per-module reference file for the full signature.
+- To find which module defines a pseudo-variable, look up `indexes.variablesByName[{variable}]`.
+- To find which module exposes an MI command, look up `indexes.miCommandsByName[{command}]`.
+- To list all parameters of a known module, look up `indexes.parametersByModule[{module}]`.
+- To check what other modules a given module depends on, look up `relationships.moduleDependencies[{module}]`.
+
+Two-step lookup is the canonical pattern: Read `consolidated.json` to locate the source, then Read the per-module file for full content. Do not skip the second Read — the consolidated index does not contain function descriptions, parameter narratives, or usage examples.
+
+When a user prompt names multiple modules, Read each per-module reference file in turn rather than answering from a single read. Cross-module behavior (e.g., how `tm` interacts with `dialog`) is described in each module's reference file separately; the consolidated index links them through the dependencies graph but does not narrate the interaction.
+## Lookup discipline
+
+The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this reference is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
+
+- **Wrong shape.** User asks for `dialog` module's exported functions. Claude reads the index, sees `dialog` listed, then writes a function list from priors without opening `dialog.md`. The answer may look plausible and may even be partially correct, but version-specific signatures and parameter orderings are not reliably reproducible from priors.
+- **Right shape.** User asks for `dialog` module's exported functions. Claude reads the index to confirm the module slug, Reads `references/{version}/modules/dialog.md`, and answers from the file's exported-functions section, quoting signatures verbatim from the reference.
+
+The same discipline applies when the user asks a follow-up. A second question about the same module is a second Read of the same file (or a re-quote from the previous Read in the same session); it is not an opportunity to fall back on priors because "we just looked at this module."
+## What the per-module reference file contains
+
+Each `references/{version}/modules/{slug}.md` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
+
+- **Overview** — what the module does and its role in a configuration.
+- **Dependencies** — other modules that must be loaded for this module to function, plus optional modules that enable additional features when also loaded.
+- **External dependencies** — system-level requirements (libraries, daemons, database schemas).
+- **Parameters** — every `modparam(...)` exposed by the module, with type, default, valid values, and description.
+- **Exported functions** — every script-callable function with full signatures, parameter types, return values, and the route types in which the function is valid.
+- **Exported pseudo-variables** — variables added by the module, read/write semantics, and the contexts in which they are populated.
+- **Exported MI commands** — management interface commands the module registers, with arguments and return shapes.
+- **Exported statistics** — counters and gauges the module publishes.
+- **Exported events** — event names the module raises through `event_route` blocks.
+
+Not every module exposes every category. A module with no MI commands has no MI section. The presence or absence of a section is itself information — if the user asks about an MI command for a module whose reference file has no MI section, the command does not exist in this version and the user is likely confusing modules or versions.
+## Version-specific behavior
+
+Module exports change between OpenSIPs versions. A function that exists in the active version may have had a different signature in a prior version, or may not have existed at all. Always Read the per-module reference file under the version directory the user is working in. Do not assume cross-version equivalence. If the user has not specified a version, ask before answering — the answer is genuinely different across versions, and a version-correct answer to the wrong version is still wrong.
 ## When a module is not in the index
 
 If a user names a module that does not appear in the index above:
@@ -322,27 +256,4 @@ If a module is not in the index and not in the `consolidated.json`, treat it as 
 
 The same procedure applies to functions, pseudo-variables, MI commands, statistics, and events that the user names without naming a module. If the consolidated index has no record of the identifier across `indexes.functionsByName`, `indexes.variablesByName`, `indexes.miCommandsByName`, and the per-module statistics or events sections, the identifier is unknown to this version's reference set. Ask the user to confirm the identifier and the version; do not improvise.
 
-A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (`pv_<thing>`, `<module>_send`, `<module>_check`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.
-
-## References
-
-This skill consults the following files:
-
-- Read `references/{version}/modules/<module>.md` for a module's full surface area: parameters, exported functions, pseudo-variables, MI commands, statistics, events, dependencies, usage notes, and version history.
-- Read `references/{version}/consolidated.json` for fast cross-module lookup when the source module of an identifier is not yet known.
-- Read `../opensips-routing/references/{version}/ser-lineage-notes.md` whenever an unfamiliar identifier appears that might be from a sibling SER-lineage project. The notes explain the operational rule and the common confusion patterns.
-- Read `../opensips-routing/references/{version}/core/*.md` only as a cross-reference when a question spans both a module's exports and core script syntax. Core syntax is the routing skill's domain; this skill does not own those files but may direct attention to them.
-
-All paths use `{version}` as a placeholder. Substitute it at read time with the active OpenSIPs version (e.g., `3.5`, `3.6`). Do not pre-resolve the placeholder; the SKILL.md body itself is version-agnostic and the same body content services every version the plugin supports.
-
-Reference paths are one hop from this file. The body names a reference; Claude Reads it directly. Reference files do not chain — a per-module file does not point at another reference file expecting Claude to follow further. If a question requires content from multiple reference files, Read each one explicitly rather than relying on the per-module file to surface its dependencies.
-
-## Working with sibling skills
-
-This skill is one of three coordinated skills:
-
-- `opensips-routing` — authors and edits OpenSIPs SIP server configuration scripts. The hub for procedural authoring guidance.
-- `opensips-modules` — provides authoritative per-module reference data (this skill). The reference library.
-- `opensips-security-advisor` — reviews OpenSIPs configurations for security issues. The audit workflow.
-
-The three skills are designed to load together. A prompt that touches multiple concerns ("review the dispatcher config for security issues, and what failure_route hooks does the dispatcher module expose?") will trigger more than one skill, and each contributes its specialty: this skill supplies the module reference data, the routing skill handles authoring, the advisor handles the review. Each skill stays within its own domain and defers to siblings rather than duplicating their work. If a question pushes outside this skill's scope — into authoring, into security review, into core script syntax — Read the relevant sibling's references rather than answering from priors.
+A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (`pv_{thing}`, `{module}_send`, `{module}_check`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.

@@ -16,13 +16,12 @@ Large Language Models hallucinate when asked to write OpenSIPs configuration. Th
 
 ### 1.2 The solution
 
-A **Claude Code plugin** containing three coordinated **Agent Skills** that teach Claude how to author OpenSIPs scripts correctly, using only OpenSIPs-authoritative knowledge, version-pinned to the release the user is targeting. The plugin enables **"vibe routing"**: a developer describes what they want the proxy to do, and Claude produces a valid `opensips.cfg` that references only real OpenSIPs modules, parameters, functions, and pseudo-variables for the requested version.
+A **Claude Code plugin** containing two coordinated **Agent Skills** that teach Claude how to author OpenSIPs scripts correctly, using only OpenSIPs-authoritative knowledge, version-pinned to the release the user is targeting. The plugin enables **"vibe routing"**: a developer describes what they want the proxy to do, and Claude produces a valid `opensips.cfg` that references only real OpenSIPs modules, parameters, functions, and pseudo-variables for the requested version.
 
 ### 1.3 In scope
 
-1. **`opensips-routing`** — primary skill covering route blocks, core syntax, pseudo-variables, transformations, operators, statements, flags, async statements, and guardrails against non-OpenSIPs idioms.
-2. **`opensips-modules`** — router-index module reference library covering all modules in the extraction corpus, each rendered as a per-module reference file.
-3. **`opensips-security-advisor`** — minimal scaffold/integration point for a security-review skill being authored separately. It must plug into the same plugin manifest and share the reference-file conventions.
+1. **`opensips-config`** — unified authoring and reference skill covering route blocks, core syntax, pseudo-variables, transformations, operators, statements, flags, async statements, cfg file structure, loadmodule-scan workflow, and the full per-module reference library. Includes guardrails against non-OpenSIPs idioms.
+2. **`opensips-security-advisor`** — minimal scaffold/integration point for a security-review skill being authored separately. It must plug into the same plugin manifest and share the reference-file conventions.
 4. Version awareness for **OpenSIPs 3.5 and 3.6 LTS** (the versions currently covered by the extraction pipeline).
 5. Claude Code plugin distribution via `.claude-plugin/marketplace.json`.
 
@@ -45,11 +44,11 @@ A **Claude Code plugin** containing three coordinated **Agent Skills** that teac
 
 ### 2.2 Secondary goal
 
-**Comprehensive module reference library, progressively disclosed.** The router-index pattern lets Claude scan a ~50-line catalog in the main SKILL.md and then load exactly one per-module reference file when the user mentions a specific module. This avoids the tool-selection accuracy cliff documented in retrieval-augmented tool-use research (accuracy collapses to ~13% at large catalogs without retrieval), and the ~56% skill non-invocation rate observed in multi-skill evaluations.
+**Comprehensive module reference library, progressively disclosed.** The loadmodule-scan workflow lets Claude read `cfg-format.md` and `consolidated.json` upfront, then load exactly one per-module reference file per `loadmodule` directive that the question touches. This avoids the tool-selection accuracy cliff documented in retrieval-augmented tool-use research (accuracy collapses to ~13% at large catalogs without retrieval), and the ~56% skill non-invocation rate observed in multi-skill evaluations.
 
 ### 2.3 Tertiary goal
 
-**Clean integration point for the security-advisor skill.** A separate agent authors `opensips-security-advisor`. The plugin must reserve its directory, give it a stable way to read the reference files produced by this project, and ensure its frontmatter triggers do not collide with the other two skills.
+**Clean integration point for the security-advisor skill.** A separate agent authors `opensips-security-advisor`. The plugin must reserve its directory, give it a stable way to read the reference files produced by this project, and ensure its frontmatter triggers do not collide with `opensips-config`.
 
 ### 2.4 Non-goals
 
@@ -79,9 +78,9 @@ A SIP/VoIP engineer (carrier, ITSP, contact center, CPaaS) who is fluent in Open
 User prompt: *"I need a request_route that does basic UA registration with digest auth against a MySQL subscriber table, and relays calls through the dispatcher to a pool of gateways."*
 
 Expected flow:
-1. `opensips-routing` frontmatter matches on "request_route", "registration", "route script" → SKILL.md body loads.
-2. Body instructs Claude that this is an OpenSIPs task and directs Claude to consult `references/{version}/core/routes.md`, `functions.md`, and `ser-lineage-notes.md`.
-3. Because the user mentions `dispatcher`, `auth_db`, `registrar`, `usrloc`, and `tm` implicitly, `opensips-modules` triggers on those names and loads the corresponding per-module reference files.
+1. `opensips-config` frontmatter matches on "request_route", "registration", "route script" → SKILL.md body loads.
+2. Body instructs Claude that this is an OpenSIPs task and directs Claude to read `references/{version}/cfg-format.md` for the cfg structure, then `consolidated.json` for the module index, then `references/{version}/core/routes.md`, `functions.md`, and `ser-lineage-notes.md`.
+3. Because the user mentions `dispatcher`, `auth_db`, `registrar`, `usrloc`, and `tm` implicitly, the skill loads the corresponding per-module reference files.
 4. Claude composes a cfg using only items listed in those files, for the user's pinned version (resolution protocol in §4.3).
 
 **Journey B — "How do I configure the Y module?"**
@@ -89,8 +88,8 @@ Expected flow:
 User prompt: *"Configure the dispatcher module for weighted round-robin with health probes."*
 
 Expected flow:
-1. `opensips-modules` frontmatter matches on "dispatcher module" → its SKILL.md (a ~250-line router-index) loads.
-2. The index maps `dispatcher` → `references/{version}/modules/dispatcher.md`; Claude reads that file.
+1. `opensips-config` frontmatter matches on "dispatcher module" → SKILL.md body loads.
+2. The skill reads `consolidated.json` to locate `dispatcher`, then reads `references/{version}/modules/dispatcher.md`.
 3. Claude produces a `modparam("dispatcher", …)` block and `ds_select_dst(…)` call using only the exact parameter names, algorithm values, and function signatures documented for the active version.
 
 **Journey C — "Is this config block correct for version Z?"**
@@ -98,48 +97,54 @@ Expected flow:
 User prompt: *"Here's my opensips.cfg — I'm targeting 3.6. Does it look right?"*
 
 Expected flow:
-1. `opensips-routing` matches on "opensips.cfg".
-2. Skill body instructs Claude to read only `references/3.6/…` files and to flag any identifier in the user's config that is not present in the 3.6 reference set.
+1. `opensips-config` matches on "opensips.cfg".
+2. Skill body instructs Claude to read `cfg-format.md` first, then `consolidated.json`, then only `references/3.6/…` per-module files for each `loadmodule` referenced. Claude flags any identifier in the user's config that is not present in the 3.6 reference set.
 3. Claude returns an annotated review with per-line rationale and citations to the relevant reference files.
 
 ---
 
 ## 4. High-Level Architecture
 
-### 4.1 The three skills and how they interact
+### 4.1 The two skills and how they interact
 
 ```
                     ┌────────────────────────────────┐
                     │   Claude Code (user session)   │
                     └────────────────┬───────────────┘
                                      │ user prompt
-         ┌───────────────────────────┼───────────────────────────┐
-         ▼                           ▼                           ▼
-┌──────────────────┐     ┌──────────────────────┐      ┌──────────────────────┐
-│ opensips-routing │     │   opensips-modules   │      │ opensips-security-   │
-│ (primary entry)  │     │   (router-index)     │      │ advisor (scaffold)   │
-│                  │     │                      │      │                      │
-│ SKILL.md +       │     │ SKILL.md (catalog)   │      │ SKILL.md (frontmatter│
-│ core references  │     │ + per-module files   │      │ placeholder only)    │
-│ + search script  │     │ read on demand       │      │                      │
-└────────┬─────────┘     └──────────┬───────────┘      └──────────┬───────────┘
-         │                          │                             │
-         └──────────────────────────┼─────────────────────────────┘
-                                    │
-                                    ▼
-                     references/{version}/ ← generated from
-                     consolidated.json    ← data/processed/{version}/
-                                            by build script
+                    ┌────────────────┼────────────────┐
+                    ▼                                  ▼
+      ┌──────────────────────────┐      ┌──────────────────────────┐
+      │     opensips-config      │      │  opensips-security-      │
+      │  (authoring + reference) │      │  advisor (scaffold)      │
+      │                          │      │                          │
+      │  SKILL.md +              │      │  SKILL.md (frontmatter   │
+      │  cfg-format.md +         │      │  placeholder only)       │
+      │  core references +       │      │                          │
+      │  per-module files +      │      │  reads opensips-config   │
+      │  consolidated.json +     │      │  references read-only    │
+      │  search script           │      │                          │
+      └────────────┬─────────────┘      └──────────────────────────┘
+                   │
+                   ▼
+    opensips-config/references/{version}/
+      cfg-format.md          ← hand-authored
+      ser-lineage-notes.md   ← hand-authored
+      modules-index.md       ← generated
+      consolidated.json      ← generated from data/processed/{version}/
+      core/*.md              ← generated
+      modules/*.md           ← generated
+      guides/*.md            ← generated (3.6+)
 ```
 
 **Progressive-disclosure contract:**
-- **Turn 0 (metadata load):** Claude Code loads only frontmatter (`name` + `description`) of all three skills. Total ~60 lines, <400 tokens.
+- **Turn 0 (metadata load):** Claude Code loads only frontmatter (`name` + `description`) of both skills. Total ~60 lines, <400 tokens.
 - **Turn 1 (skill trigger):** If user prompt matches a skill's description, Claude invokes it and the SKILL.md body is injected.
-- **Turn 2+ (reference pull):** SKILL.md instructs Claude to Read specific reference files by relative path. Only those enter the context window.
+- **Turn 2+ (reference pull):** SKILL.md instructs Claude to Read specific reference files by relative path. Only those enter the context window. For cfg work: `cfg-format.md` → `consolidated.json` → per-module files.
 
 ### 4.2 Plugin distribution
 
-A single Git repository (`opensips-claude-plugin`) functions as a Claude Code plugin marketplace. The `.claude-plugin/marketplace.json` at the repo root declares one plugin (`opensips`) bundling all three skills.
+A single Git repository (`opensips-claude-plugin`) functions as a Claude Code plugin marketplace. The `.claude-plugin/marketplace.json` at the repo root declares one plugin (`opensips`) bundling both skills.
 
 Install:
 ```
@@ -232,29 +237,39 @@ Flow per version:
 ┌──────────────────────────┐
 │ Two rendering modes      │
 ├──────────────────────────┤
-│ A. Per-item (modules)    │──► skills/opensips-modules/
+│ A. Per-item (modules)    │──► skills/opensips-config/
 │                          │      references/{version}/modules/*.md
-│ B. Aggregated (core)     │──► skills/opensips-routing/
+│ B. Aggregated (core)     │──► skills/opensips-config/
 │                          │      references/{version}/core/*.md
+│ C. Aggregated (guides)   │──► skills/opensips-config/
+│                          │      references/{version}/guides/*.md
 └────────────┬─────────────┘
              │
              ▼
 ┌──────────────────────────┐
 │ Index generation         │
 ├──────────────────────────┤
-│ consolidated.json        │──► skills/opensips-modules/
+│ consolidated.json        │──► skills/opensips-config/
 │ (functionsByName,        │      references/{version}/
 │  parametersByModule,     │        consolidated.json
 │  variablesByName,        │
 │  miCommandsByName)       │
+├──────────────────────────┤
+│ modules-index.md         │──► skills/opensips-config/
+│ (module catalog table +  │      references/{version}/
+│  lookup-discipline prose)│        modules-index.md
 └──────────────────────────┘
 ```
 
-**Rendering mode A — per-item** applies to `ModuleDocument` only. Each module JSON becomes one Markdown file. The skill's module catalog maps module names to these files.
+**Rendering mode A — per-item** applies to `ModuleDocument` only. Each module JSON becomes one Markdown file. The consolidated index and modules-index catalog map module names to these files.
 
 **Rendering mode B — aggregated** applies to all 13 core document types. Each core JSON file contains many items (e.g., `variables.json` contains 60+ variables); the whole file renders to one Markdown file (`variables.md`). Users and Claude consult these as category references, not per-item.
 
-**Consolidated index** is the build's third output. Not a replacement for the Markdown files — an accompaniment. It gives `module_search.py` O(1) lookups by name across all modules and core items, without having to parse Markdown. Schema matches the `ConsolidatedDocument` type from the extraction project's schemas, built downstream rather than upstream since extraction never produced it.
+**Rendering mode C — aggregated guides** applies to installation/configuration/syntax guides where present (3.6+). Renders alongside core under `guides/`.
+
+**Consolidated index** is one build output. Not a replacement for the Markdown files — an accompaniment. It gives `module_search.py` O(1) lookups by name across all modules and core items, without having to parse Markdown. Schema matches the `ConsolidatedDocument` type from the extraction project's schemas, built downstream rather than upstream since extraction never produced it.
+
+**`modules-index.md`** is a generated standalone reference file replacing the former inline module catalog that lived in `opensips-modules/SKILL.md`. It holds the module catalog table plus lookup-discipline prose for the `opensips-config` skill.
 
 ### 5.4 What's committed to git
 
@@ -300,10 +315,14 @@ opensips-claude-plugin/
         │   └── plugin.json
         ├── README.md
         └── skills/
-            ├── opensips-routing/
-            │   ├── SKILL.md              # Hand-authored (procedural knowledge)
+            ├── opensips-config/
+            │   ├── SKILL.md              # Hand-authored (workflow + reference)
             │   ├── references/
             │   │   ├── 3.5/
+            │   │   │   ├── cfg-format.md             # Hand-authored
+            │   │   │   ├── ser-lineage-notes.md      # Hand-authored
+            │   │   │   ├── modules-index.md          # Generated
+            │   │   │   ├── consolidated.json         # Generated index
             │   │   │   ├── core/
             │   │   │   │   ├── async.md              # Generated
             │   │   │   │   ├── events.md
@@ -317,26 +336,15 @@ opensips-claude-plugin/
             │   │   │   │   ├── statistics.md
             │   │   │   │   ├── transformations.md
             │   │   │   │   └── variables.md
-            │   │   │   └── ser-lineage-notes.md      # Hand-authored
+            │   │   │   └── modules/
+            │   │   │       ├── aaa_diameter.md       # Generated
+            │   │   │       ├── acc.md
+            │   │   │       ├── ...
+            │   │   │       └── tm.md
             │   │   └── 3.6/
-            │   │       └── (same structure)
+            │   │       └── (same structure + guides/)
             │   └── scripts/
             │       └── module_search.py              # Queries consolidated.json
-            ├── opensips-modules/
-            │   ├── SKILL.md              # Hand-authored (router-index)
-            │   └── references/
-            │       ├── 3.5/
-            │       │   ├── modules/
-            │       │   │   ├── _TEMPLATE.md          # Rendering template
-            │       │   │   ├── aaa_diameter.md       # Generated
-            │       │   │   ├── aaa_radius.md
-            │       │   │   ├── acc.md
-            │       │   │   ├── ...
-            │       │   │   ├── tm.md
-            │       │   │   └── ...
-            │       │   └── consolidated.json         # Generated index
-            │       └── 3.6/
-            │           └── (same)
             └── opensips-security-advisor/
                 └── SKILL.md              # Scaffold — populated by separate agent
 ```
@@ -419,7 +427,7 @@ For each file: **purpose · contents · format · size · update cadence**.
   - Statistics block at top (totals).
   - Relationships block (moduleDependencies from each module's JSON).
 - **Size:** ~200 lines.
-- **Output:** `plugins/opensips/skills/opensips-modules/references/{version}/consolidated.json`.
+- **Output:** `plugins/opensips/skills/opensips-config/references/{version}/consolidated.json`.
 
 #### `/scripts/schemas/*.ts`
 - **Purpose:** Zod schema definitions mirrored from the extraction project. Copied, not imported, to keep the two projects decoupled.
@@ -427,23 +435,48 @@ For each file: **purpose · contents · format · size · update cadence**.
 - **Size:** ~50–100 lines each.
 - **Cadence:** Updated when the extraction project's schemas change. A CI check ensures the copied schemas match the extraction project's current versions.
 
-### 7.4 The `opensips-routing` skill
+### 7.4 The `opensips-config` skill
 
-#### `skills/opensips-routing/SKILL.md`
-- **Purpose:** Primary trigger for all route-script authoring. Contains procedural knowledge (how to write OpenSIPs, when to delegate) and anti-hallucination guardrails inline.
+#### `skills/opensips-config/SKILL.md`
+- **Purpose:** Single entry point for all OpenSIPs configuration work — authoring, editing, and per-module reference. Contains the loadmodule-scan workflow, procedural knowledge, and anti-hallucination guardrails inline.
 - **Body outline:**
   1. Active version resolution (the protocol from §4.3).
-  2. Hard rules: OpenSIPs only, for the active version only.
-  3. Route block decision catalog (one-line per route type, pointer to `references/{version}/core/routes.md`).
-  4. Canonical workflows (simple proxy, authenticated registrar, dispatcher LB, failure-route retry, B2BUA initiation).
-  5. Reference lookup decision table (keyword → reference file).
-  6. When to delegate to `opensips-modules`.
-  7. Guardrails against hallucination (pointer to `ser-lineage-notes.md`).
-- **Hand-authored:** Yes. Procedural knowledge cannot come from extraction.
+  2. Cross-project guardrail (SER lineage awareness).
+  3. The opensips.cfg workflow (read cfg-format.md → consolidated.json → per-module files).
+  4. When to use this skill / when to defer to `opensips-security-advisor`.
+  5. Route block decision catalog and routing decisions.
+  6. Common tasks (registrar, stateful proxy, NAT, authentication, dispatcher).
+  7. Module lookup procedure.
+  8. References inventory.
+  9. Working with sibling skill.
+- **Hand-authored:** Yes. Procedural knowledge and workflow structure cannot come from extraction.
 - **Size:** 300–450 lines.
 - **Cadence:** Reviewed each OpenSIPs release.
 
-#### `skills/opensips-routing/references/{version}/core/*.md`
+#### `skills/opensips-config/references/{version}/cfg-format.md`
+- **Purpose:** Teaches the opensips.cfg file as an artifact: section order, ordering rules, route block taxonomy, common gotchas, reading-mode and authoring-mode workflows.
+- **Hand-authored:** Yes.
+- **Size:** ~150–200 lines.
+- **Cadence:** Rarely updated (cfg file structure is stable across minor versions).
+
+#### `skills/opensips-config/references/{version}/ser-lineage-notes.md`
+- **Purpose:** The sole file that addresses cross-project hallucination. Kept neutral.
+- **Contents:**
+  - Brief note that OpenSIPs is one of several projects descending from the SIP Express Router lineage.
+  - Explicit rule: when authoring OpenSIPs configs, use only identifiers present in `references/{version}/core/` and `references/{version}/modules/`.
+  - If the user pastes content that references identifiers not in the active version's reference set, flag them and ask for clarification rather than assume.
+  - No itemized comparison, no naming of other projects beyond the single lineage mention.
+- **Hand-authored:** Yes.
+- **Size:** ~80–120 lines.
+- **Cadence:** Rarely updated.
+
+#### `skills/opensips-config/references/{version}/modules-index.md`
+- **Purpose:** Standalone module catalog replacing the former inline table. Contains the full module catalog table plus lookup-discipline prose ("When a module is not in the index", "Lookup discipline", etc.).
+- **Generated:** Yes. Built from `consolidated.json` at build time. Never hand-edited.
+- **Size:** ~250–350 lines.
+- **Cadence:** Regenerated on every build.
+
+#### `skills/opensips-config/references/{version}/core/*.md`
 Twelve files, all **generated** from the corresponding JSON in `source/{version}/core/`:
 
 | File | Source | What it contains |
@@ -465,18 +498,19 @@ Twelve files, all **generated** from the corresponding JSON in `source/{version}
 - **Size:** Varies. Functions and variables are the largest (800–1500 lines). Async is small (100–200 lines).
 - **Cadence:** Regenerated on every build; never hand-edited.
 
-#### `skills/opensips-routing/references/{version}/ser-lineage-notes.md`
-- **Purpose:** The sole file that addresses cross-project hallucination. Kept neutral.
-- **Contents:**
-  - Brief note that OpenSIPs is one of several projects descending from the SIP Express Router lineage.
-  - Explicit rule: when authoring OpenSIPs configs, use only identifiers present in `references/{version}/core/` and `references/{version}/modules/`.
-  - If the user pastes content that references identifiers not in the active version's reference set, flag them and ask for clarification rather than assume.
-  - No itemized comparison, no naming of other projects beyond the single lineage mention.
-- **Hand-authored:** Yes.
-- **Size:** ~80–120 lines.
-- **Cadence:** Rarely updated.
+#### `skills/opensips-config/references/{version}/modules/*.md`
+- **Purpose:** One file per module in the extraction corpus. **All generated** from `source/{version}/modules/*.json` via `render-module.ts`.
+- **Format:** Conforms to the module rendering template (see `docs/architecture/rendering-templates.md §3.1`).
+- **Size:** Varies by module. Simple modules (200–400 lines); large modules like `tm`, `dialog`, `dispatcher` (800–1500 lines).
+- **Cadence:** Regenerated on every build.
 
-#### `skills/opensips-routing/scripts/module_search.py`
+#### `skills/opensips-config/references/{version}/consolidated.json`
+- **Purpose:** Fast-lookup index matching the `ConsolidatedDocument` schema.
+- **Format:** JSON.
+- **Contents:** statistics block, modules array (flattened), core block (one entry per core doc type), indexes block (functionsByName, parametersByModule, variablesByName, miCommandsByName), relationships block (moduleDependencies).
+- **Cadence:** Regenerated on every build.
+
+#### `skills/opensips-config/scripts/module_search.py`
 - **Purpose:** Keyword search over `consolidated.json` (not over Markdown files).
 - **Interface:**
   ```
@@ -487,79 +521,20 @@ Twelve files, all **generated** from the corresponding JSON in `source/{version}
   Exit: 0 on matches, 1 on none, 2 on bad args.
   ```
 - **Behavior:**
-  1. Load `../../opensips-modules/references/{version}/consolidated.json`.
+  1. Load `../references/{version}/consolidated.json`.
   2. If `--field` specified, search only that index section.
   3. Otherwise search all indexes.
   4. Rank: exact-name match → prefix match → substring match.
   5. Return JSON with module/source, section, description, and a path suggestion for follow-up reads.
 - **Size:** ~150 Python lines. Python 3.8+ stdlib only.
 
-### 7.5 The `opensips-modules` skill
-
-#### `skills/opensips-modules/SKILL.md`
-- **Purpose:** Router-index. The entire body is the catalog mapping module names (and common aliases) to reference files.
-- **Body outline:**
-  1. One-sentence role statement.
-  2. Version resolution pointer (delegates to routing skill).
-  3. Module catalog table (columns: module, category, file path template, one-line purpose).
-  4. Category index (routing, registration, auth, dispatching, media, dialog, B2B, NAT, management, events, cachedb, database, integrations).
-  5. Fallback: use `module_search.py` if a module name doesn't appear in the catalog.
-- **Hand-authored:** Yes. The catalog table itself is generated from `consolidated.json` and pasted in at build time, but the surrounding structure is hand-authored.
-- **Size:** ~200–300 lines.
-- **Cadence:** Catalog section regenerated on build; surrounding text reviewed per release.
-
-#### `skills/opensips-modules/references/{version}/modules/_TEMPLATE.md`
-- **Purpose:** Documents the canonical structure every generated module file follows.
-- **Format:** Markdown with frontmatter.
-- **Section structure** (mirrored from `ModuleDocument` schema):
-  ```
-  ---
-  module_name: <name>
-  category: <category>
-  version: <version>
-  doc_type: module
-  generated_at: <ISO date>
-  dependencies_required: [...]
-  dependencies_optional: [...]
-  ---
-
-  # <module_name> Module
-
-  ## 1. Overview
-  ## 2. How It Works             (optional; omitted if null)
-  ## 3. Dependencies
-  ### 3.1 OpenSIPs Modules Required
-  ### 3.2 External Libraries
-  ### 3.3 Optional Dependencies
-  ## 4. Exported Parameters      (one H3 per parameter)
-  ## 5. Exported Functions       (one H3 per function with signature, returns, usage_context, examples)
-  ## 6. Exported Pseudo-Variables
-  ## 7. Exported Statistics
-  ## 8. Exported MI Functions
-  ## 9. Exported Events
-  ## 10. Configuration Examples
-  ```
-- **Cadence:** Stable. Changes only with schema updates.
-
-#### `skills/opensips-modules/references/{version}/modules/*.md`
-- **Purpose:** One file per module in the extraction corpus. **All generated** from `source/{version}/modules/*.json` via `render-module.ts`.
-- **Format:** Conforms to `_TEMPLATE.md`.
-- **Size:** Varies by module. Simple modules (200–400 lines); large modules like `tm`, `dialog`, `dispatcher` (800–1500 lines).
-- **Cadence:** Regenerated on every build.
-
-#### `skills/opensips-modules/references/{version}/consolidated.json`
-- **Purpose:** Fast-lookup index matching the `ConsolidatedDocument` schema.
-- **Format:** JSON.
-- **Contents:** statistics block, modules array (flattened), core block (one entry per core doc type), indexes block (functionsByName, parametersByModule, variablesByName, miCommandsByName), relationships block (moduleDependencies).
-- **Cadence:** Regenerated on every build.
-
-### 7.6 The `opensips-security-advisor` skill (scaffold)
+### 7.5 The `opensips-security-advisor` skill (scaffold)
 
 #### `skills/opensips-security-advisor/SKILL.md`
 - **Purpose:** Reserved integration point. Ships at initial release as a frontmatter placeholder.
 - **Contents at initial release:**
   - Frontmatter (name, description declaring its intent, allowed-tools: Read only).
-  - ~20 lines of body noting this is a scaffold, identifying the expected author (separate agent), and listing the sibling skills' reference paths this skill may consume (read-only): `../opensips-modules/references/{version}/modules/*.md`, `../opensips-modules/references/{version}/consolidated.json`, `../opensips-routing/references/{version}/core/*.md`.
+  - ~20 lines of body noting this is a scaffold, identifying the expected author (separate agent), and listing the sibling skill's reference paths this skill may consume (read-only): `../opensips-config/references/{version}/modules/*.md`, `../opensips-config/references/{version}/consolidated.json`, `../opensips-config/references/{version}/core/*.md`.
 - **Size at initial release:** ~30–50 lines.
 - **Ownership:** Separate agent. This project's maintainer reviews only that the name, description, and file paths stay consistent with the plugin manifest.
 
@@ -567,46 +542,27 @@ Twelve files, all **generated** from the corresponding JSON in `source/{version}
 
 ## 8. SKILL.md Frontmatter Specification
 
-### 8.1 `opensips-routing/SKILL.md` frontmatter
+### 8.1 `opensips-config/SKILL.md` frontmatter
 
 ```yaml
 ---
-name: opensips-routing
-description: >-
-  Authors and reviews OpenSIPs configuration scripts (opensips.cfg) for
-  versions 3.5 and 3.6. Use this skill whenever the user asks to write,
-  review, modify, or debug an OpenSIPs route script, request_route,
-  branch_route, failure_route, onreply_route, local_route, startup_route,
-  timer_route, or event_route; when the user mentions opensips.cfg,
-  opensips.conf, opensips routing, or asks about OpenSIPs pseudo-variables,
-  transformations, operators, statements, flags, or core script syntax.
-allowed-tools: "Read, Write, Edit, Bash(./scripts/module_search.py:*)"
-license: GPL-3.0
-metadata:
-  versions_supported: "3.5,3.6"
-  primary_artifact: "opensips.cfg"
+name: opensips-config
+description: |-
+  Authors, edits, reviews, and answers questions about OpenSIPs SIP server
+  configuration files (opensips.cfg, route blocks, modules, parameters,
+  pseudo-variables). Use whenever the user mentions OpenSIPs, opensips.cfg,
+  route{}/branch_route/failure_route, $var/$avp/$pv pseudo-variables, asks
+  to write/edit SIP routing logic for OpenSIPs, names a specific OpenSIPs
+  module (tm, dialog, dispatcher, registrar, drouting, presence, sl, uac,
+  db_mysql, mid_registrar, etc.), or asks what functions/parameters a module
+  exports. Do NOT use for sibling SIP Express Router (SER)-lineage projects —
+  those use different identifiers despite shared lineage. For security review
+  of an OpenSIPs config defer to opensips-security-advisor.
+allowed-tools: "Read, Write, Edit, Glob, Grep"
 ---
 ```
 
-### 8.2 `opensips-modules/SKILL.md` frontmatter
-
-```yaml
----
-name: opensips-modules
-description: >-
-  Provides version-aware reference data for OpenSIPs modules. Use this
-  skill whenever the user mentions a specific OpenSIPs module by name,
-  asks to configure a module, asks about a module's parameters, exported
-  functions, pseudo-variables, statistics, MI commands, or events, or
-  asks what module provides a given SIP capability. Loads per-module
-  reference files on demand from a catalog of all modules in the
-  extraction corpus.
-allowed-tools: "Read"
-license: GPL-3.0
----
-```
-
-### 8.3 `opensips-security-advisor/SKILL.md` frontmatter (scaffold)
+### 8.2 `opensips-security-advisor/SKILL.md` frontmatter (scaffold)
 
 ```yaml
 ---
@@ -640,9 +596,10 @@ Applied in every frontmatter above to mitigate the ~56% skill non-invocation rat
 ### 9.1 Integration with `opensips-security-advisor`
 
 The security advisor skill, when populated, consumes:
-- `../opensips-modules/references/{version}/consolidated.json` — iterate all modules programmatically.
-- `../opensips-modules/references/{version}/modules/*.md` — read per-module "Configuration Examples" and "Exported Parameters" sections.
-- `../opensips-routing/references/{version}/core/*.md` — cross-reference core identifiers.
+- `../opensips-config/references/{version}/consolidated.json` — iterate all modules programmatically.
+- `../opensips-config/references/{version}/modules/*.md` — read per-module "Configuration Examples" and "Exported Parameters" sections.
+- `../opensips-config/references/{version}/core/*.md` — cross-reference core identifiers.
+- `../opensips-config/references/{version}/cfg-format.md` — understand the cfg file structure.
 
 No cross-skill runtime coupling. Each skill reads files; none writes to another's directory.
 
@@ -722,7 +679,7 @@ The following scripted scenarios serve a dual purpose: they demonstrate what the
 /plugin install opensips
 /plugin list
 ```
-Expected: all three skills (`opensips-routing`, `opensips-modules`, `opensips-security-advisor`) appear as installed.
+Expected: both skills (`opensips-config`, `opensips-security-advisor`) appear as installed.
 
 ### Scenario 2 — Author a route script with registration and dispatcher
 Prompt: *"I'm on OpenSIPs 3.6. Write me a minimal but production-quality opensips.cfg that listens on UDP/5060, does registrar duties with digest auth against MySQL, and relays calls via dispatcher to an upstream gateway."*

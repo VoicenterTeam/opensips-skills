@@ -2,7 +2,7 @@
  * Filename slug normalisation for the per-module renderer.
  *
  * Slugs are used as output filenames under
- * `plugins/opensips/skills/opensips-modules/references/{version}/modules/`.
+ * `plugins/opensips/skills/opensips-config/references/{version}/modules/`.
  * Filesystem behaviour under name collisions is platform-dependent
  * (case-insensitive on macOS default and Windows; case-sensitive on Linux),
  * so this module both produces a canonical lowercase form and exposes a

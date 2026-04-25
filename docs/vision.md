@@ -12,10 +12,9 @@ Every other major development platform has solved this by now. Terraform has Cla
 
 ## What we're building
 
-`opensips-skills` is a Claude Code plugin that makes Claude fluent in OpenSIPs. It ships three coordinated skills:
+`opensips-skills` is a Claude Code plugin that makes Claude fluent in OpenSIPs. It ships two coordinated skills:
 
-- **`opensips-routing`** teaches Claude how to write `opensips.cfg` route scripts — the core syntax, pseudo-variables, transformations, route blocks, and guardrails against hallucinated identifiers.
-- **`opensips-modules`** gives Claude a version-aware reference library for every OpenSIPs module, loaded progressively so only the modules relevant to the current task enter the context window.
+- **`opensips-config`** teaches Claude how to author and review `opensips.cfg` files — the cfg file structure, route blocks, core syntax, pseudo-variables, transformations, and per-module reference data. The loadmodule-scan workflow grounds Claude in version-correct content before answering any question about a config file.
 - **`opensips-security-advisor`** (authored by a separate agent) reviews configs for security issues, plugging into the same plugin and sharing the same reference files.
 
 All three are grounded in version-pinned documentation extracted directly from OpenSIPs upstream, transformed into Claude-readable Markdown, and indexed for fast lookup. The user says "I'm on OpenSIPs 3.6" and every identifier Claude emits is checked against that version's reference set.
@@ -55,4 +54,4 @@ That's why this project exists.
 
 ---
 
-*Last updated: 2026-04-24. This is a narrative document — when it no longer reads like a clear story, rewrite it rather than patching it.*
+*Last updated: 2026-04-25. This is a narrative document — when it no longer reads like a clear story, rewrite it rather than patching it.*

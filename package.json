@@ -1,7 +1,7 @@
 {
   "name": "opensips-skills",
   "version": "1.0.0",
-  "description": "Claude Code plugin: three coordinated Agent Skills for working with OpenSIPs",
+  "description": "Claude Code plugin: two coordinated Agent Skills for working with OpenSIPs (configuration + security review)",
   "type": "module",
   "private": true,
   "license": "GPL-3.0-or-later",
@@ -10,7 +10,6 @@
   },
   "scripts": {
     "build": "tsx scripts/build-references.ts",
-    "build:skills": "tsx scripts/build-module-index/cli.ts",
     "validate": "tsx scripts/build-references.ts --validate-only",
     "clean": "tsx scripts/clean.ts",
     "test": "vitest run",

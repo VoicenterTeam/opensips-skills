@@ -1,18 +1,17 @@
 # Using opensips-skills
 
-This guide shows you how to get the most out of the OpenSIPs Claude Code plugin. The plugin includes three skills; this document covers when each activates and how to phrase prompts well.
+This guide shows you how to get the most out of the OpenSIPs Claude Code plugin. The plugin includes two skills; this document covers when each activates and how to phrase prompts well.
 
 The audience is a working SIP engineer who has just installed the plugin and wants productive results in ten minutes. You do not need to read the architecture documents to follow this guide — those are for contributors. Here, the focus is the prompt-side craft: what triggers the skills, what makes them answer well, and what to do when they don't.
 
 ## Quick verification
 
-Open a Claude Code session in any workspace and type `/skills`. You should see all three skills listed:
+Open a Claude Code session in any workspace and type `/skills`. You should see both skills listed:
 
-- `opensips-routing`
-- `opensips-modules`
+- `opensips-config`
 - `opensips-security-advisor`
 
-If any are missing, the plugin did not install cleanly — re-run `/plugin install opensips@opensips-skills` from the marketplace and check `/plugin list`. If all three appear, the plugin is loaded and ready.
+If either is missing, the plugin did not install cleanly — re-run `/plugin install opensips@opensips-skills` from the marketplace and check `/plugin list`. If both appear, the plugin is loaded and ready.
 
 ## Specifying your OpenSIPs version
 
@@ -43,15 +42,15 @@ This pins the workspace to 3.5 for anyone who runs Claude Code from this directo
 
 If a single prompt mentions multiple versions ("compare 3.5 and 3.6 dispatcher behavior"), Claude may ask which version to anchor the answer to before proceeding. The plugin does not perform cross-version reasoning — each version is its own self-contained world.
 
-## Phrasing prompts for the routing skill
+## Phrasing prompts for the config skill
 
-The `opensips-routing` skill authors and edits OpenSIPs route scripts: `opensips.cfg`, `request_route`, `branch_route`, `failure_route`, `onreply_route`, and the rest of the route-block family. It activates when you mention OpenSIPs and ask for authoring or review work.
+The `opensips-config` skill is the single entry point for OpenSIPs configuration work: authoring and editing `opensips.cfg` files, answering questions about route blocks, looking up module exports, and reviewing configs. It activates when you mention OpenSIPs and ask for authoring, reference, or review work.
 
 **Works well:**
 
 > "I'm on OpenSIPs 3.6, write me a `request_route` that handles incoming `INVITE` with NAT detection and stateful relay."
 
-Why: explicit version anchor, concrete task, named route block, named feature categories (NAT detection, stateful relay). The skill's trigger keywords fire, the right reference files get pulled in (`tm.md`, `nathelper.md`, `core/routes.md`), and the response uses correct OpenSIPs syntax for that version.
+Why: explicit version anchor, concrete task, named route block, named feature categories (NAT detection, stateful relay). The skill's trigger keywords fire, the right reference files get pulled in (starting with `cfg-format.md`, `consolidated.json`, then `tm.md`, `nathelper.md`, `core/routes.md`), and the response uses correct OpenSIPs syntax for that version.
 
 **Works less well:**
 
@@ -63,7 +62,7 @@ Why: ambiguous. SIP servers come in several flavors, and the prompt does not nam
 
 > "Add a `failure_route` to this config that retries on `408` and falls back to a secondary gateway." (with a config snippet pasted)
 
-Why: the pasted snippet establishes context, the route-block name is explicit, the behavior is concrete, and the response code (`408`) gives the skill a hook to write against. The skill reads `tm.md` for the failure-route semantics and `core/routes.md` for the route-block structure.
+Why: the pasted snippet establishes context, the route-block name is explicit, the behavior is concrete, and the response code (`408`) gives the skill a hook to write against. The skill follows the loadmodule-scan workflow: reads `cfg-format.md`, scans `consolidated.json`, then reads `tm.md` for the failure-route semantics and `core/routes.md` for the route-block structure.
 
 **Works less well:**
 
@@ -83,39 +82,17 @@ Why: this is exactly the cross-project guardrail the skill is built to enforce. 
 
 Why: the prompt names a non-OpenSIPs SIP server. The skill's description includes exclusion clauses for non-OpenSIPs work, so it may decline or activate weakly. Reframe as "I have call-routing logic that does X; write me an OpenSIPs config that achieves the same outcome" — describing the behavior rather than asking for translation lets the skill engage on solid ground.
 
-## Phrasing prompts for the modules skill
-
-The `opensips-modules` skill is a router-index over per-module reference data. It does not author configurations — it points Claude at the right per-module reference file so questions about a module's exports get answered from authoritative content rather than from training-data priors.
-
-**Works well:**
+**Works well (module reference):**
 
 > "What parameters does the dispatcher module export in OpenSIPs 3.6?"
 
-Why: explicit module name, explicit "parameters" keyword, version anchor. The skill activates, reads `references/3.6/modules/dispatcher.md`, and lists the parameters with types and defaults.
+Why: explicit module name, explicit "parameters" keyword, version anchor. The skill reads `references/3.6/consolidated.json` to locate `dispatcher`, then reads `references/3.6/modules/dispatcher.md` for the full parameter list with types and defaults.
 
-**Works less well:**
-
-> "What does this module do?" (with no module name in the prompt)
-
-Why: the skill needs the module name to know which reference file to read. That said, pasting code that names a module by name does work — for example, if you paste a `loadmodule "tm.so"` line, the skill picks `tm` out of the snippet and reads `tm.md`.
-
-**Works well:**
+**Works well (function lookup):**
 
 > "Which OpenSIPs module exports `t_relay`?"
 
 Why: the function name is concrete enough to look up in the consolidated index. The skill reads `references/{version}/consolidated.json`, finds the home module, then reads that module's reference file for the full signature.
-
-**Works less well:**
-
-> "What's the function for sending statefully?"
-
-Why: vague. The skill could answer (it would identify `t_relay` from `tm`), but it has to do more guessing. Phrasing the question concretely — "what's the OpenSIPs function for stateful relay?" — gets a more confident answer.
-
-**Works well:**
-
-> "List all parameters of the registrar module along with their default values."
-
-Why: this is exactly what the per-module reference files are structured to answer. The reply is a direct read-and-render of the parameters table.
 
 **Works less well:**
 
@@ -125,7 +102,7 @@ Why: "everything" produces a large dump that can crowd the response. Narrow the 
 
 ## Phrasing prompts for the security advisor
 
-The `opensips-security-advisor` skill ships in v1.0.0 as a scaffold (per [ADR-005](architecture/adr/005-three-skill-architecture.md)). It activates correctly on security-review prompts and provides the integration contract with the other two skills, but the substantive review patterns — the risk catalog, severity tagging, remediation playbooks — are authored by a separate security-focused agent in a follow-on contribution.
+The `opensips-security-advisor` skill ships in v1.0.0 as a scaffold (per [ADR-012](architecture/adr/012-merge-routing-and-modules-into-opensips-config.md)). It activates correctly on security-review prompts and provides the integration contract with `opensips-config`, but the substantive review patterns — the risk catalog, severity tagging, remediation playbooks — are authored by a separate security-focused agent in a follow-on contribution.
 
 **Works well today:**
 
@@ -139,20 +116,20 @@ Result today: the skill activates, acknowledges the trigger, and points at the r
 
 Why: "safe" is unbounded. Even a fully-content version of the skill would ask which risk categories to focus on. Name the concern — toll fraud, RTP relay exposure, registration hijacking — and the answer narrows usefully.
 
-If you need substantive security review against the v1.0.0 scaffold, the practical workaround is to use `opensips-routing` and `opensips-modules` together: paste the config, ask the routing skill to review it for correctness, and ask the modules skill to confirm any unfamiliar identifiers are real OpenSIPs identifiers. That gives you a structural pass while the security advisor's content matures.
+If you need substantive security review against the v1.0.0 scaffold, the practical workaround is to use `opensips-config`: paste the config, ask the skill to review it for correctness, and ask it to confirm any unfamiliar identifiers are real OpenSIPs identifiers. That gives you a structural pass while the security advisor's content matures.
 
-## Working across multiple skills in one prompt
+## Working across both skills in one prompt
 
-A prompt that spans authoring, reference, and security can activate all three skills in a single response. Example:
+A prompt that spans authoring, reference, and security can activate both skills in a single response. Example:
 
 > "Write me a stateful proxy config using the `tm` and `registrar` modules in OpenSIPs 3.6, then audit it for missing rate limits and unauthenticated paths."
 
-The response includes the config (routing skill), per-module reference data showing the function signatures used (modules skill), and a security review note (advisor skill, scaffold posture today). The skills coordinate; they do not duplicate work. The routing skill produces the config, the modules skill grounds the function calls in authoritative signatures, and the advisor reviews the whole thing.
+The response includes the config (config skill, which follows the loadmodule-scan workflow to ground all signatures and parameters in 3.6 references) and a security review note (advisor skill, scaffold posture today). The skills coordinate; they do not duplicate work. The `opensips-config` skill produces the config and per-module reference data, and the advisor reviews the whole thing.
 
 You can also chain prompts. A common workflow:
 
-1. "Write me a registrar config for OpenSIPs 3.6." — routing skill produces a draft.
-2. "What does `save()` do in the registrar module?" — modules skill explains.
+1. "Write me a registrar config for OpenSIPs 3.6." — config skill produces a draft using the loadmodule-scan procedure.
+2. "What does `save()` do in the registrar module?" — config skill explains from the per-module reference.
 3. "Now review that config for security issues." — advisor activates on the running thread.
 
 Each prompt in the chain gets the reference loading appropriate to the skills it triggers; you do not have to restate the version or the context.

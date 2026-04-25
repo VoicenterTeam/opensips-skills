@@ -106,7 +106,7 @@ describe("orchestrator per-module rendering integration", () => {
     // Critically: nothing written to disk.
     const expectedPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "modules",
@@ -131,7 +131,7 @@ describe("orchestrator per-module rendering integration", () => {
 
     const expectedPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "modules",
@@ -151,7 +151,7 @@ describe("orchestrator per-module rendering integration", () => {
     const outRoot = mkTmp("opensips-orch-out-");
     const expectedPath = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "modules",
@@ -215,8 +215,7 @@ describe("orchestrator per-module rendering integration", () => {
     );
 
     // No files written for the skipped version.
-    expect(existsSync(join(outRoot, "opensips-modules"))).toBe(false);
-    expect(existsSync(join(outRoot, "opensips-routing"))).toBe(false);
+    expect(existsSync(join(outRoot, "opensips-config"))).toBe(false);
   });
 
   it("a .broken marker is honoured even with --validate-only and reports filesValidated=0", async () => {
@@ -300,7 +299,7 @@ describe("orchestrator per-module rendering integration", () => {
     // No file should have been written under the collision-failed version.
     const tmDir = join(
       outRoot,
-      "opensips-modules",
+      "opensips-config",
       "references",
       "3.6",
       "modules",

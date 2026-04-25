@@ -1,7 +1,7 @@
 # Golden-path demos
 
 > **Audience:** maintainers running this checklist manually before each release.
-> **Purpose:** verify that the three skills trigger correctly, read the right
+> **Purpose:** verify that the two skills trigger correctly, read the right
 > reference files, and produce useful responses on the canonical prompt set.
 > **Cadence:** before every release tag. Also after any `SKILL.md` change.
 > **How long:** approximately 30 to 45 minutes if responses are quick.
@@ -13,17 +13,17 @@
 1. Build the plugin so all generated artifacts are current: `npm install &&
    npm run build`. The `references/{version}/modules/*.md`,
    `references/{version}/core/*.md`, and `consolidated.json` files must be
-   present under both `plugins/opensips/skills/opensips-routing/` and
-   `plugins/opensips/skills/opensips-modules/`. If any are missing, stop —
-   runtime behavior cannot be verified against missing reference content.
+   present under `plugins/opensips/skills/opensips-config/`. If any are
+   missing, stop — runtime behavior cannot be verified against missing
+   reference content.
 
 2. Install the plugin in Claude Code via the local plugin directory:
    `claude --plugin-dir /absolute/path/to/opensips-skills/plugins/opensips`.
    Use the absolute path; relative paths resolve unpredictably.
 
-3. Verify all three skills loaded by running `/skills`. Expected output: a
-   listing showing `opensips-routing`, `opensips-modules`, and
-   `opensips-security-advisor`. Names matter, not truncation point.
+3. Verify all two skills loaded by running `/skills`. Expected output: a
+   listing showing `opensips-config` and `opensips-security-advisor`. Names
+   matter, not truncation point.
 
 4. Run each demo in a fresh Claude Code session (`/clear` between demos, or
    restart). Cross-demo context contamination is the most common cause of
@@ -79,7 +79,7 @@ maintainers can run them out of order to retest a single behavior.
 
 - **Section A: Should-trigger (positive cases)** — five demos.
 - **Section B: Should-not-trigger (negative cases)** — four demos.
-- **Section C: Reference-file loading verification** — three demos.
+- **Section C: Reference-file loading verification** — four demos (includes loadmodule-scan demo).
 - **Section D: Version-aware behavior** — three demos.
 - **Section E: Multi-skill coordination** — one demo.
 
@@ -94,17 +94,16 @@ maintainers can run them out of order to retest a single behavior.
 **Prompt:**
 > "Help me write an opensips.cfg with a basic registrar."
 
-**Expected skills triggered:** `opensips-routing` (primary). May also trigger
-`opensips-modules` when the response cites identifiers from `registrar`,
-`auth_db`, or `usrloc`.
+**Expected skills triggered:** `opensips-config` (primary).
 
 **Expected reads:**
-- `opensips-routing/SKILL.md` body.
-- `opensips-routing/references/{version}/core/routes.md`.
-- `opensips-routing/references/{version}/ser-lineage-notes.md`.
-- `opensips-modules/references/{version}/modules/registrar.md` for
+- `opensips-config/SKILL.md` body.
+- `opensips-config/references/{version}/cfg-format.md`.
+- `opensips-config/references/{version}/core/routes.md`.
+- `opensips-config/references/{version}/ser-lineage-notes.md`.
+- `opensips-config/references/{version}/modules/registrar.md` for
   `save`/`lookup`/`registered` signatures.
-- `opensips-modules/references/{version}/modules/auth_db.md` for
+- `opensips-config/references/{version}/modules/auth_db.md` for
   `www_authorize` semantics.
 
 The `{version}` placeholder resolves at read time; for an unspecified
@@ -124,9 +123,10 @@ version, 3.6 is the default per the version-resolution protocol.
 - No identifiers absent from the per-module references for the active version.
 
 **Pass criteria:** Output bullets satisfied AND at least one of the
-`opensips-modules` reference files for `registrar` or `auth_db` appears in
-the tool-use trail. If only `opensips-routing` activates and the response is
-correct from priors, that is Partial.
+per-module reference files for `registrar` or `auth_db` appears in
+the tool-use trail. If `opensips-config` activates but no per-module
+reference files are read and the response is correct from priors, that is
+Partial.
 
 **Notes:** If Claude asks the user which version to target, that is
 acceptable — the routing skill's body authorizes asking when the version
@@ -142,11 +142,11 @@ one pseudo-variable) against the source JSON for the assumed version.
 **Prompt:**
 > "What functions does the dialog module export in OpenSIPs 3.6?"
 
-**Expected skills triggered:** `opensips-modules` (primary).
+**Expected skills triggered:** `opensips-config` (primary).
 
 **Expected reads:**
-- `opensips-modules/SKILL.md` body.
-- `opensips-modules/references/3.6/modules/dialog.md` (per-module file is the
+- `opensips-config/SKILL.md` body.
+- `opensips-config/references/3.6/modules/dialog.md` (per-module file is the
   authoritative source per the router-index pattern in ADR-001).
 
 **Expected output properties:**
@@ -177,14 +177,15 @@ JSON for the active version is the only authoritative reference.
 > "Review my OpenSIPs config for INVITE flooding vulnerabilities."
 
 **Expected skills triggered:** `opensips-security-advisor` (primary). May
-co-activate `opensips-routing` if Claude needs to discuss config structure.
+co-activate `opensips-config` if Claude needs to discuss config structure.
 
 **Expected reads:**
 - `opensips-security-advisor/SKILL.md` body.
-- `opensips-modules/references/{version}/modules/pike.md` and/or
-  `references/{version}/modules/ratelimit.md` if the scaffold's prose names
-  rate-limiting modules. Reads beyond `SKILL.md` are not required for Pass —
-  the scaffold's content is intentionally minimal per ADR-005.
+- `opensips-config/references/{version}/modules/pike.md` and/or
+  `opensips-config/references/{version}/modules/ratelimit.md` if the
+  scaffold's prose names rate-limiting modules. Reads beyond `SKILL.md` are
+  not required for Pass — the scaffold's content is intentionally minimal per
+  ADR-005.
 
 **Expected output properties:**
 - The advisor skill activates (visible in the tool-use trail).
@@ -202,7 +203,7 @@ contain. Pass if the response acknowledges the scaffold and provides
 whatever guidance the scaffold's prose allows.
 
 **Notes:** Substantive review content is owned by a separate security-
-focused authoring agent (ADR-005) and arrives post-v1. This demo verifies
+focused authoring agent (ADR-012) and arrives post-v1. This demo verifies
 activation and contract compliance only.
 
 ---
@@ -214,16 +215,16 @@ activation and contract compliance only.
 **Prompt:**
 > "I'm on OpenSIPs 3.6 and need a route_block that authenticates incoming INVITEs."
 
-**Expected skills triggered:** `opensips-routing` (primary). Likely
-co-activates `opensips-modules`.
+**Expected skills triggered:** `opensips-config` (primary).
 
 **Expected reads:**
-- `opensips-routing/SKILL.md` body.
-- `opensips-routing/references/3.6/core/routes.md`.
-- `opensips-modules/references/3.6/modules/auth.md` for `proxy_authorize`
+- `opensips-config/SKILL.md` body.
+- `opensips-config/references/3.6/cfg-format.md`.
+- `opensips-config/references/3.6/core/routes.md`.
+- `opensips-config/references/3.6/modules/auth.md` for `proxy_authorize`
   semantics — `proxy_authorize` is the appropriate function for non-REGISTER
   requests.
-- `opensips-modules/references/3.6/modules/auth_db.md` for `db_url` and
+- `opensips-config/references/3.6/modules/auth_db.md` for `db_url` and
   related modparams.
 
 **Expected output properties:**
@@ -254,11 +255,11 @@ methods.
 **Prompt:**
 > "Show me the parameters for the dispatcher module."
 
-**Expected skills triggered:** `opensips-modules` (primary).
+**Expected skills triggered:** `opensips-config` (primary).
 
 **Expected reads:**
-- `opensips-modules/SKILL.md` body.
-- `opensips-modules/references/{version}/modules/dispatcher.md` (default
+- `opensips-config/SKILL.md` body.
+- `opensips-config/references/{version}/modules/dispatcher.md` (default
   3.6 unless the user specifies otherwise).
 
 **Expected output properties:**
@@ -282,7 +283,7 @@ version was assumed.
 
 ## Section B: Should-not-trigger (negative cases)
 
-These prompts should NOT activate any of the three skills. The descriptions
+These prompts should NOT activate any of the two skills. The descriptions
 in YAML frontmatter contain exclusion clauses that should suppress
 activation. If a skill activates, the description needs adjustment.
 
@@ -295,15 +296,15 @@ activation. If a skill activates, the description needs adjustment.
 
 **Expected skills triggered:** None.
 
-**Expected reads:** None — none of the three OpenSIPs skills should activate.
+**Expected reads:** None — none of the two OpenSIPs skills should activate.
 
 **Expected output properties:**
 - Claude responds from training-data knowledge (or asks the user which SIP
-  server they mean) without engaging any of the three OpenSIPs skills.
+  server they mean) without engaging any of the two OpenSIPs skills.
 - The tool-use trail shows no Read calls into
   `plugins/opensips/skills/*/references/`.
 
-**Pass criteria:** No skill activated. The exclusion clauses in the three
+**Pass criteria:** No skill activated. The exclusion clauses in the two
 descriptions ("Do NOT use for sibling SIP Express Router (SER)-lineage
 projects") suppressed activation despite the prompt mentioning SIP and
 digest authentication.
@@ -401,15 +402,14 @@ right files are read, not just that the right skill activates.
 **Prompt:**
 > "What does the `t_relay` function do in OpenSIPs 3.6, and what return codes does it produce?"
 
-**Expected skills triggered:** `opensips-modules` (primary). May also
-activate `opensips-routing`.
+**Expected skills triggered:** `opensips-config` (primary).
 
 **Expected reads:**
-- `opensips-modules/SKILL.md` body.
-- `opensips-modules/references/3.6/modules/tm.md` — `t_relay` is exported by
+- `opensips-config/SKILL.md` body.
+- `opensips-config/references/3.6/consolidated.json` if Claude does the
+  function-to-module lookup before reading the per-module file.
+- `opensips-config/references/3.6/modules/tm.md` — `t_relay` is exported by
   the `tm` (transaction manager) module.
-- Possibly `opensips-modules/references/3.6/consolidated.json` if Claude
-  does the function-to-module lookup before reading the per-module file.
 
 **Expected output properties:**
 - Identifies `t_relay` as belonging to the `tm` module.
@@ -421,16 +421,16 @@ activate `opensips-routing`.
 - Names the route blocks in which `t_relay` is valid.
 
 **Pass criteria:** The tool-use trail shows a Read of
-`opensips-modules/references/3.6/modules/tm.md`. The return codes match the
+`opensips-config/references/3.6/modules/tm.md`. The return codes match the
 codes documented in `source/3.6/modules/tm.json`.
 
 If `tm.md` is not read but the response is otherwise correct, that is
 Partial — return codes are exactly the kind of identifier-level detail that
 drifts across the SER lineage and across versions.
 
-**Notes:** Most common Partial: Claude reads `opensips-routing/SKILL.md`
+**Notes:** Most common Partial: Claude reads `opensips-config/SKILL.md`
 (because the prompt mentions "OpenSIPs") but does not follow through to the
-modules skill. Verify the modules skill activated and `tm.md` was read.
+per-module file. Verify `tm.md` was read.
 
 ---
 
@@ -441,17 +441,16 @@ modules skill. Verify the modules skill activated and `tm.md` was read.
 **Prompt:**
 > "What does `$T_branch_idx` represent in OpenSIPs 3.6, and where can it be used?"
 
-**Expected skills triggered:** `opensips-routing` (the prompt is about a
-pseudo-variable) and/or `opensips-modules` (the variable is module-exported
-by `tm`).
+**Expected skills triggered:** `opensips-config` (the prompt is about a
+pseudo-variable exported by `tm`).
 
 **Expected reads:**
 - One of:
-  - `opensips-modules/references/3.6/modules/tm.md` — variable as
+  - `opensips-config/references/3.6/modules/tm.md` — variable as
     module-exported.
-  - `opensips-routing/references/3.6/core/variables.md` — variable in the
+  - `opensips-config/references/3.6/core/variables.md` — variable in the
     core file.
-- Possibly `opensips-modules/references/3.6/consolidated.json` for the
+- Possibly `opensips-config/references/3.6/consolidated.json` for the
   variable-to-module lookup via `indexes.variablesByName`.
 
 **Expected output properties:**
@@ -462,9 +461,10 @@ by `tm`).
 - All four metadata items (meaning, type, R/W, available-in) match the
   source JSON for `tm`.
 
-**Pass criteria:** The tool-use trail shows a Read of either `tm.md` or
-`variables.md` (or both). Type, R/W status, and "available in" route blocks
-match the source.
+**Pass criteria:** The tool-use trail shows a Read of either
+`opensips-config/references/3.6/modules/tm.md` or
+`opensips-config/references/3.6/core/variables.md` (or both). Type, R/W
+status, and "available in" route blocks match the source.
 
 **Notes:** Tests two-hop lookup (consolidated index, then per-module file).
 If Claude answers from priors with the wrong type or wrong scope, Fail.
@@ -478,14 +478,14 @@ If Claude answers from priors with the wrong type or wrong scope, Fail.
 **Prompt:**
 > "Use `pv_get_authattr` to extract the auth attribute in OpenSIPs."
 
-**Expected skills triggered:** `opensips-routing`.
+**Expected skills triggered:** `opensips-config`.
 
 **Expected reads:**
-- `opensips-routing/SKILL.md` body — the cross-project guardrail section is
+- `opensips-config/SKILL.md` body — the cross-project guardrail section is
   here.
-- `opensips-routing/references/{version}/ser-lineage-notes.md` — the
+- `opensips-config/references/{version}/ser-lineage-notes.md` — the
   anti-hallucination notes.
-- `opensips-routing/references/{version}/core/variables.md` — to find the
+- `opensips-config/references/{version}/core/variables.md` — to find the
   OpenSIPs equivalent (`$authattr` per the SKILL.md body's Bad/Good examples).
 
 **Expected output properties:**
@@ -516,6 +516,70 @@ here blocks release until the SKILL.md body's guardrail prose is tightened.
 
 ---
 
+### Demo C.4 — Loadmodule-scan workflow
+
+**Last verified:** Pending — target `claude-opus-4-7`, `2026-04-25`.
+
+**Prompt** (provide this cfg fragment along with the question):
+
+```
+loadmodule "tm.so"
+loadmodule "registrar.so"
+loadmodule "auth.so"
+loadmodule "auth_db.so"
+modparam("auth_db", "db_url", "mysql://opensips:pw@localhost/opensips")
+route {
+    if (is_method("REGISTER")) {
+        www_authorize("", "subscriber");
+        save("location");
+    }
+}
+```
+
+> "Is this config correct for OpenSIPs 3.6?"
+
+**Expected skills triggered:** `opensips-config` (primary).
+
+**Expected reads (in order):**
+1. `opensips-config/references/3.6/cfg-format.md` — to understand the cfg
+   file structure and ordering rules.
+2. `opensips-config/references/3.6/consolidated.json` — for upfront
+   orientation and module existence check.
+3. `opensips-config/references/3.6/modules/tm.md` — because the config loads
+   `tm.so` and `t_relay` / transaction semantics are relevant.
+4. `opensips-config/references/3.6/modules/auth.md` or
+   `opensips-config/references/3.6/modules/auth_db.md` — because `www_authorize`
+   is exported by `auth` / configured by `auth_db`.
+
+**Expected output properties:**
+- Claude notes that `www_authorize` needs a corresponding `www_challenge` on
+  failure; the config as written falls through without challenge.
+- Claude notes that `save("location")` is called without first checking
+  `www_authorize`'s return value — the REGISTER can succeed even when auth
+  fails.
+- Any suggested fix uses function signatures and modparam names from the 3.6
+  per-module reference files, not from training-data priors.
+- Claude does not invent modules or functions not present in the 3.6 reference
+  set.
+
+**Pass criteria:** The tool-use trail shows:
+1. A Read of `cfg-format.md` (the loadmodule-scan workflow starts here).
+2. A Read of `consolidated.json`.
+3. At least one Read of a per-module file for a module named by the config's
+   `loadmodule` lines.
+
+This is the canonical loadmodule-scan workflow from ADR-012. A response that
+is correct but did not read `cfg-format.md` and `consolidated.json` is
+Partial — Claude answered from priors rather than following the documented
+workflow.
+
+**Notes:** This demo specifically verifies the ADR-012 loadmodule-scan
+procedure: read cfg-format.md → read consolidated.json → read per-module
+files for each loadmodule referenced by the question. A Partial here is a
+signal that the SKILL.md body's workflow prose needs strengthening.
+
+---
+
 ## Section D: Version-aware behavior
 
 ### Demo D.1 — Explicit version 3.5
@@ -525,10 +589,10 @@ here blocks release until the SKILL.md body's guardrail prose is tightened.
 **Prompt:**
 > "I'm using OpenSIPs 3.5. Show me the parameters for the dispatcher module."
 
-**Expected skills triggered:** `opensips-modules`.
+**Expected skills triggered:** `opensips-config`.
 
 **Expected reads:**
-- `opensips-modules/references/3.5/modules/dispatcher.md` — explicitly the
+- `opensips-config/references/3.5/modules/dispatcher.md` — explicitly the
   3.5 path, NOT 3.6.
 
 **Expected output properties:**
@@ -557,10 +621,10 @@ parameter sets, the version-resolution protocol is broken or the
 **Prompt:**
 > "Show me the parameters for the dispatcher module."
 
-**Expected skills triggered:** `opensips-modules`.
+**Expected skills triggered:** `opensips-config`.
 
 **Expected reads:**
-- `opensips-modules/references/3.6/modules/dispatcher.md` — 3.6 is the
+- `opensips-config/references/3.6/modules/dispatcher.md` — 3.6 is the
   default version per the version-resolution protocol.
 
 **Expected output properties:**
@@ -594,12 +658,11 @@ Turn 1:
 Turn 2 (after the first response):
 > "Now show me how it works in 3.6."
 
-**Expected skills triggered:** `opensips-modules` (and possibly
-`opensips-routing`) on each turn.
+**Expected skills triggered:** `opensips-config` on each turn.
 
 **Expected reads:**
-- Turn 1: `opensips-modules/references/3.5/modules/tm.md`.
-- Turn 2: `opensips-modules/references/3.6/modules/tm.md`.
+- Turn 1: `opensips-config/references/3.5/modules/tm.md`.
+- Turn 2: `opensips-config/references/3.6/modules/tm.md`.
 
 **Expected output properties:**
 - Turn 1's response describes `t_relay`'s 3.5 signature.
@@ -616,69 +679,69 @@ context shifts cleanly at Turn 2.
 
 **Notes:** Common failure: Turn 2 reuses the Turn 1 read of `3.5/modules/tm.md`,
 treating the prior read as sufficient — the "Lookup discipline" failure
-flagged in `opensips-modules/SKILL.md`. That is Fail.
+flagged in `opensips-config/SKILL.md`. That is Fail.
 
 ---
 
 ## Section E: Multi-skill coordination
 
-### Demo E.1 — Author plus audit (all three skills)
+### Demo E.1 — Author plus audit (both skills)
 
 **Last verified:** Pending — target `claude-opus-4-7`, `2026-04-25`.
 
 **Prompt:**
 > "Write me a stateful proxy config using the tm and registrar modules, and audit it for missing rate limits."
 
-**Expected skills triggered:** All three:
-- `opensips-routing` for authoring the config.
-- `opensips-modules` for `tm` and `registrar` module reference data, and for
-  rate-limit module references brought in by the audit.
+**Expected skills triggered:** Both:
+- `opensips-config` for authoring the config and consulting `tm` and
+  `registrar` module reference data, plus rate-limit module references.
 - `opensips-security-advisor` for the audit portion.
 
 **Expected reads:**
-- `opensips-routing/SKILL.md` body and core references for routes.
-- `opensips-modules/references/{version}/modules/tm.md`.
-- `opensips-modules/references/{version}/modules/registrar.md`.
-- Possibly `opensips-modules/references/{version}/modules/pike.md` or
-  `references/{version}/modules/ratelimit.md` if the audit pulls them in.
+- `opensips-config/SKILL.md` body and core references for routes.
+- `opensips-config/references/{version}/cfg-format.md`.
+- `opensips-config/references/{version}/modules/tm.md`.
+- `opensips-config/references/{version}/modules/registrar.md`.
+- Possibly `opensips-config/references/{version}/modules/pike.md` or
+  `opensips-config/references/{version}/modules/ratelimit.md` if the audit
+  pulls them in.
 - `opensips-security-advisor/SKILL.md` body.
 
 **Expected output properties:**
-- A coherent `opensips.cfg` produced by the routing skill — `loadmodule`
-  directives, `request_route`, `t_relay`, registrar handling, all
-  identifier-correct per the per-module references.
-- Module specifics consistent with the modules skill's references
-  (signatures, modparam names, dependencies).
+- A coherent `opensips.cfg` — `loadmodule` directives, `request_route`,
+  `t_relay`, registrar handling, all identifier-correct per the per-module
+  references.
+- Module specifics consistent with the per-module references (signatures,
+  modparam names, dependencies).
 - A security commentary section produced by the advisor skill, acknowledging
   scaffold status (per Demo A.3 expectations).
-- The three skill outputs read as one coherent response, not three
-  disconnected sections.
+- The two skill outputs read as one coherent response, not two disconnected
+  sections.
 - No identifier in the response is absent from the active version's
   reference set.
 
-**Pass criteria:** All three skills activate (visible in the tool-use
-trail). The config produced is identifier-correct against the source. The
-audit acknowledges the scaffold rather than fabricating a comprehensive
-review. The response reads as unified prose.
+**Pass criteria:** Both skills activate (visible in the tool-use trail). The
+config produced is identifier-correct against the source. The audit
+acknowledges the scaffold rather than fabricating a comprehensive review.
+The response reads as unified prose.
 
-**Notes:** Integration test for the hub-and-spoke pattern in
-skill-authoring-guide.md §3.1. If spokes fail to activate, the hub's prose
-pointing at them cannot recover — Fail. Two-of-three is Partial — the
-missing skill's description is not matching. Most common Partial: the
-security advisor does not activate because "missing rate limits" is too
-oblique a security trigger.
+**Notes:** Integration test for the two-skill coordination pattern in
+skill-authoring-guide.md §3.1. If the security advisor fails to activate,
+the `opensips-config` skill's prose pointing at it cannot recover — Fail.
+Most common Partial: the security advisor does not activate because "missing
+rate limits" is too oblique a security trigger.
 
 ---
 
 ## Reporting outcomes
 
-After running all 16 demos, record each as Pass, Partial, or Fail. Release
+After running all 17 demos, record each as Pass, Partial, or Fail. Release
 decision tree:
 
-- **All 16 Pass** — release-approved.
-- **Any Fail in Section C (especially Demo C.3)** — release-blocked. The
-  cross-project guardrail is load-bearing; a failure here cannot be released
-  past with rationale.
+- **All 17 Pass** — release-approved.
+- **Any Fail in Section C (especially Demo C.3 or C.4)** — release-blocked.
+  The cross-project guardrail and the loadmodule-scan workflow are
+  load-bearing; failures here cannot be released past with rationale.
 - **Any Fail in Section A or D** — release-blocked unless reproducible and
   documented as a known issue with mitigation. Investigate the SKILL.md
   description (for trigger failures) or the body's version-resolution prose
@@ -686,8 +749,8 @@ decision tree:
 - **Any Fail in Section B** — release-blocked unless the false-fire is
   benign. The exclusion clauses need tightening.
 - **Any Fail in Section E** — release-blocked unless the failure is on the
-  security advisor's scaffold posture (acceptable per ADR-005) and the
-  routing and modules skills handled their portions correctly.
+  security advisor's scaffold posture (acceptable per ADR-012) and the
+  `opensips-config` skill handled its portion correctly.
 - **Partials** — never release without investigating. A Partial means
   Claude is producing the right answer for the wrong reason (priors instead
   of references), which is structurally fragile.
