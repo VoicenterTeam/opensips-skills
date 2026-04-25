@@ -222,6 +222,107 @@ export async function rebuildModuleIndex(
 }
 
 /**
+ * Render a complete `modules-index.md` reference file for the given version.
+ *
+ * Combines:
+ * 1. A top-level `# OpenSIPs module index` heading and intro paragraph.
+ * 2. A `## Module index` section with the rendered catalog table (sorted
+ *    alphabetically, `{version}` placeholder in reference paths).
+ * 3. Verbatim lookup-discipline prose lifted from the deleted
+ *    `plugins/opensips/skills/opensips-modules/SKILL.md` (recoverable from
+ *    `git show HEAD~1:plugins/opensips/skills/opensips-modules/SKILL.md`).
+ *
+ * The output ends with exactly one trailing newline.
+ * @param documents - Validated module documents for the version.
+ * @param version - Active OpenSIPs version string (e.g., `"3.6"`). Used in
+ *   the intro paragraph. Does NOT substitute `{version}` in reference paths —
+ *   those remain literal placeholders as produced by {@link renderModuleCatalogTable}.
+ * @returns Complete Markdown string for `references/{version}/modules-index.md`.
+ */
+export function renderModulesIndexMarkdown(
+  documents: ModuleDocument[],
+  version: string,
+): string {
+  const rows = buildModuleCatalogRows(documents);
+  const table = renderModuleCatalogTable(rows);
+
+  const sections: string[] = [];
+
+  sections.push(`# OpenSIPs module index`);
+  sections.push(`\nGenerated reference for OpenSIPs ${version}. This file is the module catalog for the \`opensips-modules\` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.`);
+
+  sections.push(`\n## Module index\n`);
+  sections.push(table);
+
+  sections.push(`## How to use this file
+
+The per-module reference file under \`references/{version}/modules/<slug>.md\` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.
+
+The path pattern is fixed:
+
+- Per-module reference file: \`references/{version}/modules/<slug>.md\`. Substitute \`{version}\` at read time with the active OpenSIPs version (e.g., \`3.6\`). Substitute \`<slug>\` with the module name as it appears in the index below.
+- Consolidated index: \`references/{version}/consolidated.json\`. A structured JSON index of every module, function, pseudo-variable, parameter, MI command, and statistic in the version, plus a \`relationships.moduleDependencies\` graph.
+
+The consolidated index is the fastest path when the user references an identifier without naming a module:
+
+- To find which module exports a function whose home module is unclear, Read \`consolidated.json\` and look up \`indexes.functionsByName[<function>]\` to find the source module, then Read that module's per-module reference file for the full signature.
+- To find which module defines a pseudo-variable, look up \`indexes.variablesByName[<variable>]\`.
+- To find which module exposes an MI command, look up \`indexes.miCommandsByName[<command>]\`.
+- To list all parameters of a known module, look up \`indexes.parametersByModule[<module>]\`.
+- To check what other modules a given module depends on, look up \`relationships.moduleDependencies[<module>]\`.
+
+Two-step lookup is the canonical pattern: Read \`consolidated.json\` to locate the source, then Read the per-module file for full content. Do not skip the second Read — the consolidated index does not contain function descriptions, parameter narratives, or usage examples.
+
+When a user prompt names multiple modules, Read each per-module reference file in turn rather than answering from a single read. Cross-module behavior (e.g., how \`tm\` interacts with \`dialog\`) is described in each module's reference file separately; the consolidated index links them through the dependencies graph but does not narrate the interaction.`);
+
+  sections.push(`\n## Lookup discipline
+
+The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this skill is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
+
+- **Wrong shape.** User asks for \`dialog\` module's exported functions. Claude reads the index, sees \`dialog\` listed, then writes a function list from priors without opening \`dialog.md\`. The answer may look plausible and may even be partially correct, but version-specific signatures and parameter orderings are not reliably reproducible from priors.
+- **Right shape.** User asks for \`dialog\` module's exported functions. Claude reads the index to confirm the module slug, Reads \`references/{version}/modules/dialog.md\`, and answers from the file's exported-functions section, quoting signatures verbatim from the reference.
+
+The same discipline applies when the user asks a follow-up. A second question about the same module is a second Read of the same file (or a re-quote from the previous Read in the same session); it is not an opportunity to fall back on priors because "we just looked at this module."`);
+
+  sections.push(`\n## What the per-module reference file contains
+
+Each \`references/{version}/modules/<slug>.md\` is a generated reference covering one module's full surface area. The sections present in every per-module file are:
+
+- **Overview** — what the module does and its role in a configuration.
+- **Dependencies** — other modules that must be loaded for this module to function, plus optional modules that enable additional features when also loaded.
+- **External dependencies** — system-level requirements (libraries, daemons, database schemas).
+- **Parameters** — every \`modparam(...)\` exposed by the module, with type, default, valid values, and description.
+- **Exported functions** — every script-callable function with full signatures, parameter types, return values, and the route types in which the function is valid.
+- **Exported pseudo-variables** — variables added by the module, read/write semantics, and the contexts in which they are populated.
+- **Exported MI commands** — management interface commands the module registers, with arguments and return shapes.
+- **Exported statistics** — counters and gauges the module publishes.
+- **Exported events** — event names the module raises through \`event_route\` blocks.
+
+Not every module exposes every category. A module with no MI commands has no MI section. The presence or absence of a section is itself information — if the user asks about an MI command for a module whose reference file has no MI section, the command does not exist in this version and the user is likely confusing modules or versions.`);
+
+  sections.push(`\n## Version-specific behavior
+
+Module exports change between OpenSIPs versions. A function that exists in the active version may have had a different signature in a prior version, or may not have existed at all. Always Read the per-module reference file under the version directory the user is working in. Do not assume cross-version equivalence. If the user has not specified a version, ask before answering — the answer is genuinely different across versions, and a version-correct answer to the wrong version is still wrong.`);
+
+  sections.push(`\n## When a module is not in the index
+
+If a user names a module that does not appear in the index above:
+
+1. **Check for typos.** Compare the user's spelling against the index. Common slips: hyphen vs. underscore (\`mid-registrar\` vs \`mid_registrar\`), missing or extra \`_db\` / \`_mysql\` / \`_postgres\` suffixes, plural vs. singular (\`registrars\` vs \`registrar\`), pluralized verb forms.
+2. **Check the consolidated index.** Read \`references/{version}/consolidated.json\` and search for the name across \`indexes.functionsByName\`, \`indexes.variablesByName\`, \`indexes.miCommandsByName\`, and \`indexes.parametersByModule\`. A module that has been renamed in a recent version, or that the user is referring to by a function it exports rather than by its module name, may surface here even when the module-name table does not list it.
+3. **Check the other version's index.** If the user is working with a version different from the one in \`{version}\`, the module may exist there. Confirm the version explicitly and switch the lookup.
+4. **Ask the user.** If none of the above resolves the name, ask. Do not invent module names, function signatures, parameters, pseudo-variables, MI commands, or statistics. Do not guess at a "probably correct" answer based on training-data priors — those priors mix identifiers across the SER lineage and across OpenSIPs versions and are unreliable.
+
+If a module is not in the index and not in the \`consolidated.json\`, treat it as unknown and ask for clarification before answering. The cost of one clarifying turn is small; the cost of a fabricated identifier landing in a user's production configuration is large because the failure mode is silent — the config loads, the proxy starts, and a call path silently misbehaves.
+
+The same procedure applies to functions, pseudo-variables, MI commands, statistics, and events that the user names without naming a module. If the consolidated index has no record of the identifier across \`indexes.functionsByName\`, \`indexes.variablesByName\`, \`indexes.miCommandsByName\`, and the per-module statistics or events sections, the identifier is unknown to this version's reference set. Ask the user to confirm the identifier and the version; do not improvise.
+
+A particular failure mode worth naming: an identifier that "feels right" because it follows a familiar naming convention (\`pv_<thing>\`, \`<module>_send\`, \`<module>_check\`) is not evidence that the identifier exists. Naming conventions are widely shared across the SER lineage, and the priors are confidently wrong about which conventions belong to which project's current releases. When the consolidated index disagrees with priors, the index wins.`);
+
+  return sections.join("") + "\n";
+}
+
+/**
  * Extract a clean, table-cell-safe purpose string from a module's
  * `overview` field.
  *

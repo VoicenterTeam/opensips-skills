@@ -14,6 +14,7 @@ import {
   renderModuleCatalogTable,
   injectModuleIndex,
   rebuildModuleIndex,
+  renderModulesIndexMarkdown,
   type ModuleCatalogRow,
 } from "../../../scripts/build-module-index/index.js";
 import type { ModuleDocument } from "../../../scripts/schemas/modules.schema.js";
@@ -230,6 +231,22 @@ describe("injectModuleIndex", () => {
     expect(() => injectModuleIndex(input, TABLE)).toThrow(
       /MODULE_INDEX|placeholder/i,
     );
+  });
+});
+
+describe("renderModulesIndexMarkdown", () => {
+  it("emits a top-level heading, a stable index table, and the lookup-discipline section", () => {
+    const docs = [
+      { module_name: "tm", overview: "TM enables stateful processing." } as any,
+      { module_name: "acc", overview: "Accounts transactions to backends." } as any,
+    ];
+    const md = renderModulesIndexMarkdown(docs, "3.6");
+    expect(md).toContain("# OpenSIPs module index");
+    expect(md).toMatch(/\| Module \| Purpose \| Reference file \|/);
+    expect(md).toContain("`acc`");
+    expect(md).toContain("`tm`");
+    expect(md).toContain("references/{version}/modules/acc.md");
+    expect(md).toContain("## When a module is not in the index");
   });
 });
 
