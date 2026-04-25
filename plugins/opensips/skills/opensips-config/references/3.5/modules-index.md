@@ -1,5 +1,5 @@
 # OpenSIPs module index
-Generated reference for OpenSIPs 3.5. This file is the module catalog for the `opensips-modules` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.
+Generated reference for OpenSIPs 3.5. This file is the module catalog for the `opensips-config` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.
 ## Module index
 | Module | Purpose | Reference file |
 |---|---|---|
@@ -162,7 +162,7 @@ Two-step lookup is the canonical pattern: Read `consolidated.json` to locate the
 When a user prompt names multiple modules, Read each per-module reference file in turn rather than answering from a single read. Cross-module behavior (e.g., how `tm` interacts with `dialog`) is described in each module's reference file separately; the consolidated index links them through the dependencies graph but does not narrate the interaction.
 ## Lookup discipline
 
-The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this skill is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
+The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this reference is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
 
 - **Wrong shape.** User asks for `dialog` module's exported functions. Claude reads the index, sees `dialog` listed, then writes a function list from priors without opening `dialog.md`. The answer may look plausible and may even be partially correct, but version-specific signatures and parameter orderings are not reliably reproducible from priors.
 - **Right shape.** User asks for `dialog` module's exported functions. Claude reads the index to confirm the module slug, Reads `references/{version}/modules/dialog.md`, and answers from the file's exported-functions section, quoting signatures verbatim from the reference.

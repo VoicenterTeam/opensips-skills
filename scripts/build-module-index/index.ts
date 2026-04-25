@@ -249,7 +249,7 @@ export function renderModulesIndexMarkdown(
   const sections: string[] = [];
 
   sections.push(`# OpenSIPs module index`);
-  sections.push(`\nGenerated reference for OpenSIPs ${version}. This file is the module catalog for the \`opensips-modules\` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.`);
+  sections.push(`\nGenerated reference for OpenSIPs ${version}. This file is the module catalog for the \`opensips-config\` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.`);
 
   sections.push(`\n## Module index\n`);
   sections.push(table);
@@ -277,7 +277,7 @@ When a user prompt names multiple modules, Read each per-module reference file i
 
   sections.push(`\n## Lookup discipline
 
-The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this skill is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
+The router-index pattern depends on Claude making the second hop. The most consequential failure mode for this reference is triggering on a module mention, reading the index entry to confirm the module exists, and then answering the user's substantive question from training-data priors instead of the per-module reference. The index entry is a routing signal, not an answer.
 
 - **Wrong shape.** User asks for \`dialog\` module's exported functions. Claude reads the index, sees \`dialog\` listed, then writes a function list from priors without opening \`dialog.md\`. The answer may look plausible and may even be partially correct, but version-specific signatures and parameter orderings are not reliably reproducible from priors.
 - **Right shape.** User asks for \`dialog\` module's exported functions. Claude reads the index to confirm the module slug, Reads \`references/{version}/modules/dialog.md\`, and answers from the file's exported-functions section, quoting signatures verbatim from the reference.
