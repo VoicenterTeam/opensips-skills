@@ -8,18 +8,24 @@
  * file counts per directory, presence of `consolidated.json`, version-
  * isolated guide handling.
  *
- * The five test scenarios cover the four documented exit codes that the
+ * The five test scenarios cover the documented exit codes that the
  * pipeline can produce against the real corpus:
  *
  *   - Exit 0: clean build for 3.5 and 3.6 (the supported versions).
+ *   - Exit 0: graceful skip of 3.4 via its committed `.broken` marker —
+ *     verifies the M9 marker convention surfaces the upstream-defect
+ *     version as a warning, not a failure (per ADR-009 / CLAUDE.md Rule 3).
  *   - Exit 2: usage error (--quiet --verbose mutex).
- *   - Exit 3: validation failure on the 3.4 upstream-defect slice.
  *   - Exit 5: schema-hash drift — covered via a `vi.spyOn` of the hash
  *     module's `verifySchemaHash`. We choose the spy approach over
  *     filesystem mutation because (a) the mutation would race against
  *     parallel test runs sharing the same `scripts/schemas/` tree, and
  *     (b) the orchestrator's drift handling is the unit-under-test, not
- *     the on-disk hash file.
+ *     the on-disk hash file. (Exit 3, validation failure, is exercised by
+ *     `tests/unit/orchestrator-modules.integration.test.ts` via slug
+ *     collision and by the per-module renderer unit tests; the real corpus
+ *     no longer carries a guaranteed validation failure now that 3.4 is
+ *     skipped, so this E2E file does not pin to it.)
  *
  * Each test uses `mkdtempSync` for output isolation and tears the dir down
  * in `afterEach` via `rmSync({recursive,force})`. stdout/stderr are spied
@@ -193,7 +199,13 @@ describe("full pipeline E2E", () => {
     { timeout: 60_000 },
   );
 
-  it("returns exit code 3 on validation failure (--only 3.4)", async () => {
+  it("returns exit code 0 for --only 3.4 (skipped via .broken marker)", async () => {
+    // Per M9, data/3.4/.broken signals the upstream-bug version is
+    // intentionally skipped: the orchestrator emits a "Skipping 3.4"
+    // warning on stderr and exits 0 with no files written. This replaces
+    // the previous "exit 3 on validation failure" expectation; once the
+    // upstream JSON-parse defect is fixed and the marker file deleted,
+    // 3.4 will rejoin the build dynamically (no code change).
     const code = await main([
       "--only",
       "3.4",
@@ -202,12 +214,19 @@ describe("full pipeline E2E", () => {
       "--output-root",
       tmpRoot,
     ]);
-    expect(code).toBe(3);
+    expect(code).toBe(0);
 
-    // At least one validation error must have been surfaced on stderr
-    // in the documented `ERROR: <file>:` problem-matcher form.
     const stderrText = stderrSpy.mock.calls.map((c) => String(c[0])).join("");
-    expect(stderrText).toMatch(/ERROR:/);
+    expect(stderrText).toMatch(/Skipping 3\.4: marked as broken upstream/);
+
+    // No files should have been written for the skipped version.
+    const modulesDir = join(
+      tmpRoot,
+      "opensips-modules",
+      "references",
+      "3.4",
+    );
+    expect(existsSync(modulesDir)).toBe(false);
   });
 
   it("returns exit code 2 on a usage error (--quiet --verbose mutex)", async () => {

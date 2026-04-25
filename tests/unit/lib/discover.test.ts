@@ -12,6 +12,7 @@ import {
   discoverVersions,
   discoverSourceFiles,
   DiscoverError,
+  readBrokenMarker,
 } from "../../../scripts/lib/discover.js";
 
 describe("discoverVersions", () => {
@@ -247,5 +248,66 @@ describe("discoverSourceFiles", () => {
     for (const p of [...result.core, ...result.modules, ...result.guides]) {
       expect(p).not.toContain("\\");
     }
+  });
+});
+
+describe("readBrokenMarker", () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = mkdtempSync(join(tmpdir(), "discover-broken-"));
+  });
+
+  afterEach(() => {
+    if (existsSync(tmp)) {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it("returns null when no .broken marker exists at the version root", () => {
+    mkdirSync(join(tmp, "3.6"));
+    expect(readBrokenMarker(tmp, "3.6")).toBeNull();
+  });
+
+  it("returns null when the version directory does not exist at all", () => {
+    // Absence of the version directory should not throw — readBrokenMarker
+    // is the early gate before discovery, so it tolerates missing parents
+    // and reports `null` (the orchestrator's later validate stage will
+    // surface a structured error if the dir is genuinely missing).
+    expect(readBrokenMarker(tmp, "9.9")).toBeNull();
+  });
+
+  it("returns the trimmed reason text when a .broken marker exists", () => {
+    mkdirSync(join(tmp, "3.4"));
+    writeFileSync(
+      join(tmp, "3.4", ".broken"),
+      "  upstream JSON-parse defect — see CHANGELOG.md\n\n",
+    );
+
+    const info = readBrokenMarker(tmp, "3.4");
+    expect(info).not.toBeNull();
+    expect(info?.reason).toBe(
+      "upstream JSON-parse defect — see CHANGELOG.md",
+    );
+  });
+
+  it("preserves multi-line content (only outer whitespace is trimmed)", () => {
+    mkdirSync(join(tmp, "3.4"));
+    writeFileSync(
+      join(tmp, "3.4", ".broken"),
+      "line one\nline two\nline three\n",
+    );
+
+    const info = readBrokenMarker(tmp, "3.4");
+    expect(info?.reason).toBe("line one\nline two\nline three");
+  });
+
+  it("uses ./data as default when sourceRoot is undefined", () => {
+    // Reality-check against the real repo: 3.4 carries a .broken marker
+    // (committed as part of M9 to keep CI green while the upstream defect
+    // in data/3.4/core/variables.json is unfixed).
+    const info = readBrokenMarker(undefined, "3.4");
+    expect(info).not.toBeNull();
+    expect(info?.reason.length).toBeGreaterThan(0);
   });
 });

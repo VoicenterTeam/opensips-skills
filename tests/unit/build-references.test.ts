@@ -57,9 +57,17 @@ describe("main() orchestrator", () => {
     expect([0, 3]).toContain(code);
   });
 
-  it("returns 3 for --only 3.4 (the upstream-bug version)", async () => {
+  it("returns 0 for --only 3.4 (skipped via .broken marker)", async () => {
+    // Per M9, data/3.4/.broken signals the upstream-bug version is
+    // intentionally skipped; the orchestrator emits a warning on stderr
+    // and exits 0 rather than 3. When the upstream defect is fixed and the
+    // marker file deleted, this test should be updated to expect a clean
+    // 0 again (with no skipped marker on the version result).
     const code = await main(["--only", "3.4"]);
-    expect(code).toBe(3);
+    expect(code).toBe(0);
+
+    const stderrText = stderrSpy.mock.calls.map((c) => String(c[0])).join("");
+    expect(stderrText).toMatch(/Skipping 3\.4: marked as broken upstream/);
   });
 
   it("returns 2 for an unknown flag", async () => {

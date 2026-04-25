@@ -16,7 +16,7 @@
  * output is byte-identical across Windows and POSIX hosts.
  */
 
-import { readdirSync, statSync, type Dirent } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync, type Dirent } from "node:fs";
 import path, { sep } from "node:path";
 
 /** Default source-data root, per ADR-009. */
@@ -30,6 +30,29 @@ const IGNORED_VERSION_SUBDIR = "md";
 
 /** Filename pattern at the version root that the build must ignore (per ADR-009). */
 const COMPLETE_JSON_REGEX = /-complete\.json$/;
+
+/** Marker filename at the version root that flags the version as broken. */
+const BROKEN_MARKER_FILENAME = ".broken";
+
+/**
+ * Information surfaced by {@link readBrokenMarker} when a version directory
+ * contains a `.broken` marker file. The marker is a per-version DATA signal
+ * (not a code-level enumeration) telling the build pipeline to skip the
+ * version with a clear warning rather than fail.
+ *
+ * Per ADR-009, adding or removing the marker is purely a data operation —
+ * no code change is required when a version is fixed upstream and the
+ * marker is deleted, nor when a different version becomes broken and a
+ * marker is added under that version's directory.
+ *
+ * Per CLAUDE.md Rule 3, this mechanism does not edit broken upstream
+ * content; it adds a sibling marker file at the version root that the
+ * build pipeline interprets as "skip with grace".
+ */
+export interface BrokenVersionInfo {
+  /** Free-text explanation read verbatim from the `.broken` file (trimmed). */
+  reason: string;
+}
 
 /**
  * Absolute file paths discovered for one version, grouped by source category.
@@ -148,6 +171,44 @@ export function discoverSourceFiles(
     modules: readJsonChildren(versionDir, "modules"),
     guides: readJsonChildren(versionDir, "guides"),
   };
+}
+
+/**
+ * Detect whether a version is marked as broken via `data/{version}/.broken`.
+ *
+ * The `.broken` marker file is a per-version DATA signal that the build
+ * pipeline must treat the version as "known broken upstream — skip with
+ * a warning rather than fail". This honours ADR-009 (no code-level version
+ * enumeration: the marker IS data) and CLAUDE.md Rule 3 (no upstream content
+ * edits: the marker is a sibling file added at the version root, not a
+ * modification of any extracted JSON).
+ *
+ * The file's textual content is the explanation, returned verbatim (trimmed)
+ * to the caller via {@link BrokenVersionInfo.reason} so the orchestrator can
+ * surface it on stderr alongside the "skipping ${version}" message.
+ *
+ * Absence of the marker is the common case and is reported as `null` (not an
+ * error). Read failures other than ENOENT bubble up — a marker that exists
+ * but cannot be read is genuinely unexpected and worth surfacing.
+ * @param sourceRoot - Filesystem path containing version directories. Defaults
+ *   to `./data` per ADR-009 when undefined.
+ * @param version - Version string (e.g., `"3.4"`).
+ * @returns `BrokenVersionInfo` carrying the marker's text when present;
+ *   `null` when no marker file exists at `<sourceRoot>/<version>/.broken`.
+ * @example
+ * const broken = readBrokenMarker(undefined, "3.4");
+ * if (broken) {
+ *   console.warn(`Skipping 3.4: ${broken.reason}`);
+ * }
+ */
+export function readBrokenMarker(
+  sourceRoot: string | undefined,
+  version: string,
+): BrokenVersionInfo | null {
+  const root = sourceRoot ?? DEFAULT_SOURCE_ROOT;
+  const markerPath = path.join(root, version, BROKEN_MARKER_FILENAME);
+  if (!existsSync(markerPath)) return null;
+  return { reason: readFileSync(markerPath, "utf-8").trim() };
 }
 
 /**

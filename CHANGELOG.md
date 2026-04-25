@@ -24,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Notes
 - Real-data validation surfaced an upstream JSON-parse defect in `data/3.4/core/variables.json` at byte 80262 (line 1474, column 7 — stray `.0` token mid-object). Per CLAUDE.md Rule 3, the fix belongs upstream in `opensips-docs-collector`, not here. The pipeline correctly detected and reported it; 3.4 builds will continue to fail validation until the extraction is corrected upstream and `data/3.4/` re-mirrored. 3.5 and 3.6 validate clean.
+- **`.broken` marker convention added.** A version directory may now contain `data/{version}/.broken` to signal that the version's upstream data has a known defect; the build skips it with a clear warning and exits cleanly rather than failing. Per ADR-009, this is a DATA signal — adding or removing the marker is a data operation, no code change required. `data/3.4/.broken` is committed pointing at the upstream JSON-parse defect documented in the M1 notes; remove the marker once the upstream extraction is corrected.
 
 [Unreleased]: https://github.com/OpenSIPS/opensips-skills/compare/HEAD

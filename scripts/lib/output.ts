@@ -118,10 +118,19 @@ export function emitSummary(summary: BuildSummary, ctx: OutputContext): void {
         ? "validate-only (no rendering)"
         : "build";
 
+  // When at least one version was skipped via a `.broken` marker, surface
+  // the count distinctly so the human reading the summary does not have to
+  // diff against per-version output to understand why succeeded includes
+  // a no-op version.
+  const skipped = summary.versionsSkipped ?? 0;
+  const versionsLine = skipped > 0
+    ? `  Versions: ${summary.versionsSucceeded} succeeded (${skipped} skipped), ${summary.versionsFailed} failed`
+    : `  Versions: ${summary.versionsSucceeded} succeeded, ${summary.versionsFailed} failed`;
+
   const lines = [
     "",
     "Summary:",
-    `  Versions: ${summary.versionsSucceeded} succeeded, ${summary.versionsFailed} failed`,
+    versionsLine,
     `  Total files validated: ${totalValidated}`,
     `  Total files would-render: ${totalRendered}`,
     `  Mode: ${modeNote}`,

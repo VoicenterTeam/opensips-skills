@@ -183,6 +183,97 @@ describe("orchestrator per-module rendering integration", () => {
     expect(second.equals(first)).toBe(true);
   });
 
+  it("a version with .broken marker is skipped (exit 0, no files written, warning emitted)", async () => {
+    // M9: a `.broken` marker at data/<version>/.broken signals the build
+    // pipeline to skip the version with a warning. The version directory
+    // can be otherwise populated or empty — the marker check runs before
+    // discovery, so neither validation nor rendering touches the contents.
+    const srcRoot = mkTmp("opensips-orch-src-");
+    const outRoot = mkTmp("opensips-orch-out-");
+    const versionDir = join(srcRoot, "3.6");
+    mkdirSync(versionDir, { recursive: true });
+    writeFileSync(
+      join(versionDir, ".broken"),
+      "test marker — upstream defect placeholder",
+    );
+
+    const code = await main([
+      "--only",
+      "3.6",
+      "--source-root",
+      srcRoot,
+      "--output-root",
+      outRoot,
+    ]);
+    expect(code).toBe(0);
+
+    // Skipped versions emit a "Skipping <ver>: marked as broken upstream"
+    // warning on stderr that names the reason from the marker file.
+    const stderrText = stderrSpy.mock.calls.map((c) => String(c[0])).join("");
+    expect(stderrText).toMatch(
+      /Skipping 3\.6: marked as broken upstream\. Reason: test marker — upstream defect placeholder/,
+    );
+
+    // No files written for the skipped version.
+    expect(existsSync(join(outRoot, "opensips-modules"))).toBe(false);
+    expect(existsSync(join(outRoot, "opensips-routing"))).toBe(false);
+  });
+
+  it("a .broken marker is honoured even with --validate-only and reports filesValidated=0", async () => {
+    // Validate-only mode must respect the marker the same way the build
+    // mode does — the marker check is the first gate in processVersion,
+    // before validateVersion is even called.
+    const srcRoot = mkTmp("opensips-orch-src-");
+    const outRoot = mkTmp("opensips-orch-out-");
+    const versionDir = join(srcRoot, "3.6");
+    mkdirSync(versionDir, { recursive: true });
+    writeFileSync(join(versionDir, ".broken"), "skip-during-validate");
+
+    const code = await main([
+      "--only",
+      "3.6",
+      "--validate-only",
+      "--json",
+      "--source-root",
+      srcRoot,
+      "--output-root",
+      outRoot,
+    ]);
+    expect(code).toBe(0);
+
+    // The JSON summary should record the version as ok, skipped, with no
+    // validated/rendered files and no index.
+    const stdoutText = stdoutSpy.mock.calls.map((c) => String(c[0])).join("");
+    const parsed = JSON.parse(stdoutText) as {
+      versions: Array<{
+        version: string;
+        ok: boolean;
+        filesValidated: number;
+        filesRendered: number;
+        indexBuilt: boolean;
+        skipped?: boolean;
+        errors: unknown[];
+      }>;
+      versionsSkipped?: number;
+      versionsSucceeded: number;
+      versionsFailed: number;
+      exitCode: number;
+    };
+    expect(parsed.exitCode).toBe(0);
+    expect(parsed.versions).toHaveLength(1);
+    const v = parsed.versions[0]!;
+    expect(v.version).toBe("3.6");
+    expect(v.ok).toBe(true);
+    expect(v.skipped).toBe(true);
+    expect(v.filesValidated).toBe(0);
+    expect(v.filesRendered).toBe(0);
+    expect(v.indexBuilt).toBe(false);
+    expect(v.errors).toEqual([]);
+    expect(parsed.versionsSucceeded).toBe(1);
+    expect(parsed.versionsFailed).toBe(0);
+    expect(parsed.versionsSkipped).toBe(1);
+  });
+
   it("slug collision is detected, exits 3, and writes nothing for the colliding version", async () => {
     const srcRoot = mkTmp("opensips-orch-src-");
     const outRoot = mkTmp("opensips-orch-out-");

@@ -78,6 +78,15 @@ export interface VersionResult {
    * counter rather than conflated with the Markdown count.
    */
   indexBuilt: boolean;
+  /**
+   * True when this version was intentionally skipped via a
+   * `data/{version}/.broken` marker file (per ADR-009 — a DATA signal, not a
+   * code-level enumeration). Skipped versions still report `ok: true` so the
+   * build does not fail; counters (`filesValidated`, `filesRendered`,
+   * `indexBuilt`) all stay at zero / false. Optional so existing callers and
+   * fixtures remain compatible — absence is equivalent to `false`.
+   */
+  skipped?: boolean;
   /** Errors collected during validation or rendering for this version. */
   errors: Array<{ kind: string; message: string; file?: string }>;
 }
@@ -90,10 +99,18 @@ export interface BuildSummary {
   mode: "build" | "dry-run" | "validate-only";
   /** Per-version outcomes in the order they were processed. */
   versions: VersionResult[];
-  /** Number of versions whose `ok` is true. */
+  /** Number of versions whose `ok` is true (includes skipped versions). */
   versionsSucceeded: number;
   /** Number of versions whose `ok` is false. */
   versionsFailed: number;
+  /**
+   * Number of versions intentionally skipped via a `.broken` marker. Optional
+   * to keep the JSON-summary shape backwards-compatible when no version is
+   * skipped. Skipped versions are also counted under `versionsSucceeded`
+   * (because `ok` is true), so consumers reading the legacy fields keep
+   * seeing the same numbers; this field is purely additive.
+   */
+  versionsSkipped?: number;
   /** Process exit code the orchestrator will return. */
   exitCode: number;
 }

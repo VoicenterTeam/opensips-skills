@@ -10,7 +10,7 @@
 
 import path from "node:path";
 
-import { discoverVersions, DiscoverError } from "./discover.js";
+import { discoverVersions, DiscoverError, readBrokenMarker } from "./discover.js";
 import { BuildError, IOError } from "./errors.js";
 import { atomicWriteFile, ensureDirectory, posixPath } from "./fs-helpers.js";
 import {
@@ -152,7 +152,8 @@ export function buildSummary(
   exitCode: number,
 ): BuildSummary {
   const versionsSucceeded = results.filter((r) => r.ok).length;
-  return {
+  const versionsSkipped = results.filter((r) => r.skipped === true).length;
+  const summary: BuildSummary = {
     buildScriptVersion,
     mode: selectMode(opts),
     versions: results,
@@ -160,6 +161,10 @@ export function buildSummary(
     versionsFailed: results.length - versionsSucceeded,
     exitCode,
   };
+  // Only emit `versionsSkipped` when at least one version was skipped, to
+  // keep the JSON shape backwards-compatible for the common (no-skips) case.
+  if (versionsSkipped > 0) summary.versionsSkipped = versionsSkipped;
+  return summary;
 }
 
 /**
@@ -216,6 +221,28 @@ export async function processVersion(
   ctx: OutputContext,
 ): Promise<VersionResult> {
   if (ctx.verbose) emitProgress(`Processing version ${version}...`, ctx);
+
+  // `.broken` marker check — see ADR-009 / CLAUDE.md Rule 3 rationale on
+  // {@link readBrokenMarker}. A version flagged as broken upstream is
+  // skipped with a clear warning and counts as successful (ok: true) so
+  // the orchestrator does not fail the build. No validation, no rendering,
+  // no index build runs for the version.
+  const broken = readBrokenMarker(opts.sourceRoot, version);
+  if (broken) {
+    emitWarning(
+      `Skipping ${version}: marked as broken upstream. Reason: ${broken.reason}`,
+      ctx,
+    );
+    return {
+      version,
+      ok: true,
+      filesValidated: 0,
+      filesRendered: 0,
+      indexBuilt: false,
+      skipped: true,
+      errors: [],
+    };
+  }
 
   const validation = validateVersion(opts.sourceRoot, version);
 
