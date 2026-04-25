@@ -27,13 +27,13 @@ This module is also used along with RTPProxy to record media streams between use
 
 Currently, the rtpproxy module can support multiple rtpproxies for balancing/distribution and control/selection purposes.
 
-The module allows the definition of several sets of rtpproxies - load-balancing will be performed over a set and the user has the ability to choose what set should be used. The set is selected via its id - the id being defined along with the set. Refer to the “rtpproxy\_sock” module parameter definition for syntax description.
+The module allows the definition of several sets of rtpproxies - load-balancing will be performed over a set and the user has the ability to choose what set should be used. The set is selected via its id - the id being defined along with the set. Refer to the “rtpproxy_sock” module parameter definition for syntax description.
 
 The balancing inside a set is done automatically by the module based on the weight of each rtpproxy from the set. Note that if rtpproxy has weight 0, it will be used only when no other rtpproxies (with a different weight value than 0) respond. Default weight is 1.
 
-Starting with OpenSIPS 2.1, engage\_rtp\_proxy(), unforce\_rtp\_proxy() and start\_recording() functions have been fully replaced by rtpproxy\_engage(), rtpproxy\_unforce() and rtpproxy\_start\_recording().
+Starting with OpenSIPS 2.1, engage_rtp_proxy(), unforce_rtp_proxy() and start_recording() functions have been fully replaced by rtpproxy_engage(), rtpproxy_unforce() and rtpproxy_start_recording().
 
-IMPORTANT: if you use multiple sets, make sure you use the same set for both rtpproxy\_offer()/rtpproxy\_answer() and rtpproxy\_unforce()!!
+IMPORTANT: if you use multiple sets, make sure you use the same set for both rtpproxy_offer()/rtpproxy_answer() and rtpproxy_unforce()!!
 
 Nathelper module can also receive timeout notifications from multiple rtpproxies. RTPProxy can be configured to send notifications when a session doesn't receive any media for a configurable interval of time. The rtpproxy modules has implemented a listener for such notifications and when received it terminates the dialog at SIP level (send BYE to both ends), with the help of dialog module.
 
@@ -43,11 +43,11 @@ Note that RTPProxy version [v2.0.0](http://www.rtpproxy.org/post/v2release/) has
 
 To enable timeout notification there are several steps that you must follow:
 
-Start OpenSIPS timeout detection by setting the “rtpp\_notify\_socket” module parameter in your configuration script. This is the socket where further notification will be received from rtpproxies. This socket must be a TCP or UNIX socket. Also, for all the calls that require notification, the rtpproxy\_engage(), rtpproxy\_offer() and rtpproxy\_answer() functions must be called with the “n” flag.
+Start OpenSIPS timeout detection by setting the “rtpp_notify_socket” module parameter in your configuration script. This is the socket where further notification will be received from rtpproxies. This socket must be a TCP or UNIX socket. Also, for all the calls that require notification, the rtpproxy_engage(), rtpproxy_offer() and rtpproxy_answer() functions must be called with the “n” flag.
 
 Configure RTPProxy to use timeout notification by adding the following command line parameters:
 
-*   “ -n timeout\_socket” - specifies where the notifications will be sent. This socket must be the same as “rtpp\_notify\_socket” OpenSIPS module parameter. This parameter is mandatory.
+*   “ -n timeout_socket” - specifies where the notifications will be sent. This socket must be the same as “rtpp_notify_socket” OpenSIPS module parameter. This parameter is mandatory.
     
 *   “ -T ttl” - limits the rtp session timeout to “ttl”. This parameter is optional and the default value is 60 seconds.
     
@@ -59,9 +59,9 @@ To get the patched version from git you must follow theese steps:
 
 *   Get the latest source code: “git clone git://sippy.git.sourceforge.net/gitroot/sippy/rtpproxy”
     
-*   Make a branch from the commit: “git checkout -b branch\_name 600c80493793bafd2d69427bc22fcb43faad98c5”
+*   Make a branch from the commit: “git checkout -b branch_name 600c80493793bafd2d69427bc22fcb43faad98c5”
     
-*   Patch RTPProxy: “patch < path\_to\_rtpproxy\_patch”
+*   Patch RTPProxy: “patch < path_to_rtpproxy_patch”
 
 The patched version can also be found at: https://opensips.org/pub/rtpproxy/
 
@@ -91,7 +91,7 @@ The name of the database table containing definitions of socket(s) used to conne
 **Example.** nh_sockets.
 
 ```opensips
-modparam("rtpproxy", "db\_table", "nh\_sockets")
+modparam("rtpproxy", "db_table", "nh_sockets")
 ```
 ### `db_url` (string)
 
@@ -102,7 +102,7 @@ The database url. This parameter should be set if you want to use a database tab
 **Example.** mysql://opensips:opensipsrw@192.168.2.132/opensips.
 
 ```opensips
-modparam("rtpproxy", "db\_url", 
+modparam("rtpproxy", "db_url", 
 		"mysql://opensips:opensipsrw@192.168.2.132/opensips")
 ```
 ### `default_set` (integer)
@@ -114,7 +114,7 @@ The parameter indicates the default RTPProxy set to be used when provisioning an
 **Example.** 1.
 
 ```opensips
-modparam("rtpproxy", "default\_set", 1)
+modparam("rtpproxy", "default_set", 1)
 ```
 ### `generated_sdp_media_ip` (string)
 
@@ -162,7 +162,7 @@ If empty string, no marker will be added or checked.
 **Example.** a=sdpmangled:yes\r\n.
 
 ```opensips
-modparam("rtpproxy", "nortpproxy\_str", "a=sdpmangled:yes\\r\\n")
+modparam("rtpproxy", "nortpproxy_str", "a=sdpmangled:yes\\r\\n")
 ```
 ### `rtpp_notify_socket` (string)
 
@@ -189,7 +189,7 @@ The name rtpp socket column in the database table.
 **Example.** rtpp_socket.
 
 ```opensips
-modparam("rtpproxy", "rtpp\_socket\_col", "rtpp\_socket")
+modparam("rtpproxy", "rtpp_socket_col", "rtpp_socket")
 ```
 ### `rtpproxy_autobridge` (integer)
 
@@ -200,7 +200,7 @@ Enable auto-bridging feature. Does not properly function when doing serial/paral
 **Example.** 1.
 
 ```opensips
-modparam("rtpproxy", "rtpproxy\_autobridge", 1)
+modparam("rtpproxy", "rtpproxy_autobridge", 1)
 ```
 ### `rtpproxy_disable_tout` (integer)
 
@@ -211,7 +211,7 @@ Once RTPProxy was found unreachable and marked as disable, rtpproxy will not att
 **Example.** 20.
 
 ```opensips
-modparam("rtpproxy", "rtpproxy\_disable\_tout", 20)
+modparam("rtpproxy", "rtpproxy_disable_tout", 20)
 ```
 ### `rtpproxy_retr` (integer)
 
@@ -222,7 +222,7 @@ How many times rtpproxy should retry to send and receive after timeout was gener
 **Example.** 2.
 
 ```opensips
-modparam("rtpproxy", "rtpproxy\_retr", 2)
+modparam("rtpproxy", "rtpproxy_retr", 2)
 ```
 ### `rtpproxy_sock` (string)
 
@@ -236,19 +236,19 @@ The definition also supports to specify a different IP that will be advertised i
 
 ```opensips
 # single rtpproxy with specific weight
-modparam("rtpproxy", "rtpproxy\_sock", "udp:localhost:22222=2")
+modparam("rtpproxy", "rtpproxy_sock", "udp:localhost:22222=2")
 
 # single rtpproxy with advertised address + weight
-modparam("rtpproxy", "rtpproxy\_sock", "udp:localhost:22222|8.8.8.8=2")
+modparam("rtpproxy", "rtpproxy_sock", "udp:localhost:22222|8.8.8.8=2")
 
 # multiple rtproxies for LB
-modparam("rtpproxy", "rtpproxy\_sock",
+modparam("rtpproxy", "rtpproxy_sock",
 	"udp:localhost:22222 udp:localhost:22223 tcp:remote1:33422 tcp6:remote2:32322")
 
 # multiple sets of multiple rtproxies
-modparam("rtpproxy", "rtpproxy\_sock", "1 == udp:localhost:22222 udp:localhost:22223")
-modparam("rtpproxy", "rtpproxy\_sock", "2 == udp:localhost:22223")
-modparam("rtpproxy", "rtpproxy\_sock", "2 == udp:localhost:22223|8.8.8.8")
+modparam("rtpproxy", "rtpproxy_sock", "1 == udp:localhost:22222 udp:localhost:22223")
+modparam("rtpproxy", "rtpproxy_sock", "2 == udp:localhost:22223")
+modparam("rtpproxy", "rtpproxy_sock", "2 == udp:localhost:22223|8.8.8.8")
 ```
 ### `rtpproxy_timeout` (string)
 
@@ -259,7 +259,7 @@ Timeout value in waiting for reply from RTPProxy.
 **Example.** 0.2.
 
 ```opensips
-modparam("rtpproxy", "rtpproxy\_timeout", "0.2")
+modparam("rtpproxy", "rtpproxy_timeout", "0.2")
 ```
 ### `set_id_col` (string)
 
@@ -646,13 +646,13 @@ Enables/Disables a rtp proxy.
 **Example.** disable a RTPProxy by URL only
 
 ```bash
-$ opensips-cli -x mi rtpproxy\_enable udp:192.168.2.133:8081 0
+$ opensips-cli -x mi rtpproxy_enable udp:192.168.2.133:8081 0
 ```
 
 **Example.** disable a RTPProxy by URL and set ID (3)
 
 ```bash
-$ opensips-cli -x mi rtpproxy\_enable udp:192.168.2.133:8081 0 3
+$ opensips-cli -x mi rtpproxy_enable udp:192.168.2.133:8081 0 3
 ```
 
 ### `rtpproxy_reload`
@@ -662,7 +662,7 @@ Reload rtp proxies sets from database. The function will delete all previous rec
 **Example.** rtpproxy_reload usage
 
 ```bash
-$ opensips-cli -x mi rtpproxy\_reload
+$ opensips-cli -x mi rtpproxy_reload
 ```
 
 ### `rtpproxy_show`
@@ -672,7 +672,7 @@ Displays all the rtp proxies and their information: set and status (disabled or 
 **Example.** rtpproxy_show usage
 
 ```bash
-$ opensips-cli -x mi rtpproxy\_show
+$ opensips-cli -x mi rtpproxy_show
 ```
 
 ## Exported Events
@@ -707,19 +707,19 @@ Set `rtpproxy_sock` parameter
 ```opensips
 ...
 # single rtpproxy with specific weight
-modparam("rtpproxy", "rtpproxy\_sock", "udp:localhost:22222=2")
+modparam("rtpproxy", "rtpproxy_sock", "udp:localhost:22222=2")
 
 # single rtpproxy with advertised address + weight
-modparam("rtpproxy", "rtpproxy\_sock", "udp:localhost:22222|8.8.8.8=2")
+modparam("rtpproxy", "rtpproxy_sock", "udp:localhost:22222|8.8.8.8=2")
 
 # multiple rtproxies for LB
-modparam("rtpproxy", "rtpproxy\_sock",
+modparam("rtpproxy", "rtpproxy_sock",
 	"udp:localhost:22222 udp:localhost:22223 tcp:remote1:33422 tcp6:remote2:32322")
 
 # multiple sets of multiple rtproxies
-modparam("rtpproxy", "rtpproxy\_sock", "1 == udp:localhost:22222 udp:localhost:22223")
-modparam("rtpproxy", "rtpproxy\_sock", "2 == udp:localhost:22223")
-modparam("rtpproxy", "rtpproxy\_sock", "2 == udp:localhost:22223|8.8.8.8")
+modparam("rtpproxy", "rtpproxy_sock", "1 == udp:localhost:22222 udp:localhost:22223")
+modparam("rtpproxy", "rtpproxy_sock", "2 == udp:localhost:22223")
+modparam("rtpproxy", "rtpproxy_sock", "2 == udp:localhost:22223|8.8.8.8")
 ...
 ```
 ### Set `rtpproxy_disable_tout` parameter
@@ -728,7 +728,7 @@ Set `rtpproxy_disable_tout` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpproxy\_disable\_tout", 20)
+modparam("rtpproxy", "rtpproxy_disable_tout", 20)
 ...
 ```
 ### Set `rtpproxy_timeout` parameter to 200ms
@@ -737,7 +737,7 @@ Set `rtpproxy_timeout` parameter to 200ms
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpproxy\_timeout", "0.2")
+modparam("rtpproxy", "rtpproxy_timeout", "0.2")
 ...
 ```
 ### Enable auto-bridging feature
@@ -746,7 +746,7 @@ Enable auto-bridging feature
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpproxy\_autobridge", 1)
+modparam("rtpproxy", "rtpproxy_autobridge", 1)
 ...
 ```
 ### Set `rtpproxy_retr` parameter
@@ -755,7 +755,7 @@ Set `rtpproxy_retr` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpproxy\_retr", 2)
+modparam("rtpproxy", "rtpproxy_retr", 2)
 ...
 ```
 ### Set `default_set` parameter
@@ -764,7 +764,7 @@ Set `default_set` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "default\_set", 1)
+modparam("rtpproxy", "default_set", 1)
 ...
 ```
 ### Set `nortpproxy_str` parameter
@@ -773,7 +773,7 @@ Set `nortpproxy_str` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "nortpproxy\_str", "a=sdpmangled:yes\\r\\n")
+modparam("rtpproxy", "nortpproxy_str", "a=sdpmangled:yes\\r\\n")
 ...
 ```
 ### Set `db_url` parameter
@@ -782,7 +782,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "db\_url", 
+modparam("rtpproxy", "db_url", 
 		"mysql://opensips:opensipsrw@192.168.2.132/opensips")
 ...
 ```
@@ -792,7 +792,7 @@ Set `db_table` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "db\_table", "nh\_sockets") 
+modparam("rtpproxy", "db_table", "nh_sockets") 
 ...
 ```
 ### Set `rtpp_socket_col` parameter
@@ -801,7 +801,7 @@ Set `rtpp_socket_col` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpp\_socket\_col", "rtpp\_socket") 
+modparam("rtpproxy", "rtpp_socket_col", "rtpp_socket") 
 ...
 ```
 ### Set `set_id` parameter
@@ -810,7 +810,7 @@ Set `set_id` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "set\_id\_col", "rtpp\_set\_id") 
+modparam("rtpproxy", "set_id_col", "rtpp_set_id") 
 ...
 ```
 ### Set `rtpp_notify_socket` parameter
@@ -819,12 +819,12 @@ Set `rtpp_notify_socket` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "rtpp\_notify\_socket", "tcp:10.10.10.10:9999")
+modparam("rtpproxy", "rtpp_notify_socket", "tcp:10.10.10.10:9999")
 
 # use an UNIX socket
-modparam("rtpproxy", "rtpp\_notify\_socket", "unix:/tmp/rtpproxy.unix")
+modparam("rtpproxy", "rtpp_notify_socket", "unix:/tmp/rtpproxy.unix")
 # or
-modparam("rtpproxy", "rtpp\_notify\_socket", "/tmp/rtpproxy.unix")
+modparam("rtpproxy", "rtpp_notify_socket", "/tmp/rtpproxy.unix")
 ...
 ```
 ### Set `generated_sdp_port_min` parameter
@@ -833,7 +833,7 @@ Set `generated_sdp_port_min` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "generated\_sdp\_port\_min", 10000)
+modparam("rtpproxy", "generated_sdp_port_min", 10000)
 ...
 ```
 ### Set `generated_sdp_port_max` parameter
@@ -842,7 +842,7 @@ Set `generated_sdp_port_max` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "generated\_sdp\_port\_max", 30000)
+modparam("rtpproxy", "generated_sdp_port_max", 30000)
 ...
 ```
 ### Set `generated_sdp_media_ip` parameter
@@ -851,7 +851,7 @@ Set `generated_sdp_media_ip` parameter
 
 ```opensips
 ...
-modparam("rtpproxy", "generated\_sdp\_media\_ip", "10.0.0.1")
+modparam("rtpproxy", "generated_sdp_media_ip", "10.0.0.1")
 ...
 ```
 ### `rtpproxy_engage` usage
@@ -860,12 +860,12 @@ modparam("rtpproxy", "generated\_sdp\_media\_ip", "10.0.0.1")
 
 ```opensips
 ...
-if (is\_method("INVITE") && has\_totag()) {
+if (is_method("INVITE") && has_totag()) {
 	if ($var(setid) != 0) {
-		rtpproxy\_engage(,,$var(setid), $var(proxy));
+		rtpproxy_engage(,,$var(setid), $var(proxy));
 		xlog("SCRIPT: RTPProxy server used is $var(proxy)\\n");
 	} else {
-		rtpproxy\_engage();
+		rtpproxy_engage();
 		xlog("SCRIPT: using default RTPProxy set\\n");
 	}
 }
@@ -878,32 +878,32 @@ if (is\_method("INVITE") && has\_totag()) {
 ```opensips
 route {
 ...
-    if (is\_method("INVITE")) {
-        if (has\_body("application/sdp")) {
-            if (rtpproxy\_offer())
-                t\_on\_reply("1");
+    if (is_method("INVITE")) {
+        if (has_body("application/sdp")) {
+            if (rtpproxy_offer())
+                t_on_reply("1");
         } else {
-            t\_on\_reply("2");
+            t_on_reply("2");
         }
     }
-    if (is\_method("ACK") && has\_body("application/sdp"))
-        rtpproxy\_answer();
+    if (is_method("ACK") && has_body("application/sdp"))
+        rtpproxy_answer();
 ...
 }
 
-onreply\_route\[1\]
+onreply_route\[1\]
 {
 ...
-    if (has\_body("application/sdp"))
-        rtpproxy\_answer();
+    if (has_body("application/sdp"))
+        rtpproxy_answer();
 ...
 }
 
-onreply\_route\[2\]
+onreply_route\[2\]
 {
 ...
-    if (has\_body("application/sdp"))
-        rtpproxy\_offer();
+    if (has_body("application/sdp"))
+        rtpproxy_offer();
 ...
 }
 ```
@@ -913,7 +913,7 @@ onreply\_route\[2\]
 
 ```opensips
 ...
-rtpproxy\_unforce();
+rtpproxy_unforce();
 ...
 ```
 ### `rtpproxy_stream2xxx` usage
@@ -922,12 +922,12 @@ rtpproxy\_unforce();
 
 ```opensips
 ...
-    if (is\_method("INVITE")) {
-        rtpproxy\_offer();
+    if (is_method("INVITE")) {
+        rtpproxy_offer();
         if ($rb=~ "0\\.0\\.0\\.0") {
-            rtpproxy\_stream2uas("/var/rtpproxy/prompts/music\_on\_hold", -1);
+            rtpproxy_stream2uas("/var/rtpproxy/prompts/music_on_hold", -1);
         } else {
-            rtpproxy\_stop\_stream2uas();
+            rtpproxy_stop_stream2uas();
         };
     };
 ...
@@ -938,13 +938,13 @@ rtpproxy\_unforce();
 
 ```opensips
 ...
-rtpproxy\_start\_recording();
+rtpproxy_start_recording();
 
 # copy RTP stream to a different listener
-rtpproxy\_start\_recording(,,,"udp:127.0.0.1:60000");
+rtpproxy_start_recording(,,,"udp:127.0.0.1:60000");
 
 # copy only first RTP stream (audio stream)
-rtpproxy\_start\_recording(,,,"udp:127.0.0.1:60000", 1);
+rtpproxy_start_recording(,,,"udp:127.0.0.1:60000", 1);
 ...
 ```
 ### `rtpproxy_stats` usage
@@ -953,7 +953,7 @@ rtpproxy\_start\_recording(,,,"udp:127.0.0.1:60000", 1);
 
 ```opensips
 ...
-rtpproxy\_stats($var(up),$var(down),$var(sent),$var(fail));
+rtpproxy_stats($var(up),$var(down),$var(sent),$var(fail));
 xlog("RTP statistics for $ci: up=$var(up) down=$var(down) sent=$var(sent) fail=$var(fail)\\n");
 ...
 ```
@@ -963,7 +963,7 @@ xlog("RTP statistics for $ci: up=$var(up) down=$var(down) sent=$var(sent) fail=$
 
 ```opensips
 ...
-rtpproxy\_all\_stats($avp(stats));
+rtpproxy_all_stats($avp(stats));
 xlog("RTP statistics for $ci: dropped=$(avp(stats)\[4\])\\n");
 ...
 ```
@@ -974,9 +974,9 @@ xlog("RTP statistics for $ci: dropped=$(avp(stats)\[4\])\\n");
 ```opensips
 ...
 ## disable a RTPProxy by URL only
-$ opensips-cli -x mi rtpproxy\_enable udp:192.168.2.133:8081 0
+$ opensips-cli -x mi rtpproxy_enable udp:192.168.2.133:8081 0
 ## disable a RTPProxy by URL and set ID (3)
-$ opensips-cli -x mi rtpproxy\_enable udp:192.168.2.133:8081 0 3
+$ opensips-cli -x mi rtpproxy_enable udp:192.168.2.133:8081 0 3
 ...
 ```
 ### `rtpproxy_show` usage
@@ -985,7 +985,7 @@ $ opensips-cli -x mi rtpproxy\_enable udp:192.168.2.133:8081 0 3
 
 ```opensips
 ...
-$ opensips-cli -x mi rtpproxy\_show
+$ opensips-cli -x mi rtpproxy_show
 ...
 ```
 ### `rtpproxy_reload` usage
@@ -994,6 +994,6 @@ $ opensips-cli -x mi rtpproxy\_show
 
 ```opensips
 ...
-$ opensips-cli -x mi rtpproxy\_reload
+$ opensips-cli -x mi rtpproxy_reload
 ...
 ```

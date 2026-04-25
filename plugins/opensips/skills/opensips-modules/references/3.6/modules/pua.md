@@ -62,7 +62,7 @@ The cluster ID where the PUA data should be replicated/shared. This parameter is
 **Example.** 10.
 
 ```opensips
-modparam("pua", "cluster\_id", 10)
+modparam("pua", "cluster_id", 10)
 ```
 ### `cluster_sharing_tag` (string)
 
@@ -73,7 +73,7 @@ The clustering share-tag to be used by the PUA module when creating any new pres
 **Example.** vip.
 
 ```opensips
-modparam("pua", "cluster\_sharing\_tag", "vip")
+modparam("pua", "cluster_sharing_tag", "vip")
 ```
 ### `db_table` (string)
 
@@ -84,7 +84,7 @@ The name of the database table.
 **Example.** pua.
 
 ```opensips
-modparam("pua", "db\_table", "pua")
+modparam("pua", "db_table", "pua")
 ```
 ### `db_url` (string)
 
@@ -95,7 +95,7 @@ Database url.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("pua", "db\_url" "dbdriver://username:password@dbhost/dbname")
+modparam("pua", "db_url" "dbdriver://username:password@dbhost/dbname")
 ```
 ### `default_expires` (integer)
 
@@ -106,7 +106,7 @@ The default expires value used in case this information is not provisioned.
 **Example.** 3600.
 
 ```opensips
-modparam("pua", "default\_expires", 3600)
+modparam("pua", "default_expires", 3600)
 ```
 ### `hash_size` (integer)
 
@@ -117,7 +117,7 @@ The size of the hash table used for storing Subscribe and Publish information. T
 **Example.** 11.
 
 ```opensips
-modparam("pua", "hash\_size", 11)
+modparam("pua", "hash_size", 11)
 ```
 ### `min_expires` (integer)
 
@@ -128,7 +128,7 @@ The inferior expires limit for both Publish and Subscribe.
 **Example.** 0.
 
 ```opensips
-modparam("pua", "min\_expires", 0)
+modparam("pua", "min_expires", 0)
 ```
 ### `update_period` (integer)
 
@@ -141,7 +141,7 @@ The interval at which the information in database and hash table should be updat
 **Example.** 100.
 
 ```opensips
-modparam("pua", "update\_period", 100)
+modparam("pua", "update_period", 100)
 ```
 
 ## Exported Functions
@@ -174,7 +174,7 @@ The size of the hash table used for storing Subscribe and Publish information.
 
 ```opensips
 ...
-modparam("pua", "hash\_size", 11)
+modparam("pua", "hash_size", 11)
 ...
 ```
 ### Set `db_url` parameter
@@ -183,7 +183,7 @@ Database url.
 
 ```opensips
 ...
-modparam("pua", "db\_url" "dbdriver://username:password@dbhost/dbname")
+modparam("pua", "db_url" "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `db_table` parameter
@@ -192,7 +192,7 @@ The name of the database table.
 
 ```opensips
 ...
-modparam("pua", "db\_table", "pua")
+modparam("pua", "db_table", "pua")
 ...
 ```
 ### Set `min_expires` parameter
@@ -201,7 +201,7 @@ The inferior expires limit for both Publish and Subscribe.
 
 ```opensips
 ...
-modparam("pua", "min\_expires", 0)
+modparam("pua", "min_expires", 0)
 ...
 ```
 ### Set `default_expires` parameter
@@ -210,7 +210,7 @@ The default expires value used in case this information is not provisioned.
 
 ```opensips
 ...
-modparam("pua", "default\_expires", 3600)
+modparam("pua", "default_expires", 3600)
 ...
 ```
 ### Set `update_period` parameter
@@ -219,7 +219,7 @@ The interval at which the information in database and hash table should be updat
 
 ```opensips
 ...
-modparam("pua", "update\_period", 100)
+modparam("pua", "update_period", 100)
 ...
 ```
 ### Set `cluster_id` parameter
@@ -228,7 +228,7 @@ The cluster ID where the PUA data should be replicated/shared.
 
 ```opensips
 ...
-modparam("pua", "cluster\_id", 10)
+modparam("pua", "cluster_id", 10)
 ...
 ```
 ### Set `cluster_sharing_tag` parameter
@@ -237,7 +237,7 @@ The clustering share-tag to be used by the PUA module when creating any new pres
 
 ```opensips
 ...
-modparam("pua", "cluster\_sharing\_tag", "vip")
+modparam("pua", "cluster_sharing_tag", "vip")
 ...
 ```
 ### `pua_update_contact` usage
@@ -247,6 +247,6 @@ The remote target can be updated by the Contact of a subsequent in dialog reques
 ```opensips
 ...
 if($rm=="NOTIFY")
-    pua\_update\_contact();
+    pua_update_contact();
 ...
 ```

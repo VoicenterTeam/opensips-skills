@@ -42,25 +42,25 @@ None.
 
 ### `cluster_id` (integer)
 
-The ID of the cluster the module is part of. The clustering support is used by the nat\_traversal module for controlling the pinging process. When part of a cluster of multiple nodes, the nodes can agree upon which node is the one responsible for pinging. The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the [cluster\_sharing\_tag](#param_cluster_sharing_tag "1.4.7.�cluster_sharing_tag (string)") option. For more info on how to define and populate a cluster (with OpenSIPS nodes) see the "clusterer" module.
+The ID of the cluster the module is part of. The clustering support is used by the nat_traversal module for controlling the pinging process. When part of a cluster of multiple nodes, the nodes can agree upon which node is the one responsible for pinging. The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the [cluster_sharing_tag](#param_cluster_sharing_tag "1.4.7.cluster_sharing_tag (string)") option. For more info on how to define and populate a cluster (with OpenSIPS nodes) see the "clusterer" module.
 
 *Default value is 0 (none).*
 
 **Example.** 9.
 
 ```opensips
-modparam("nat\_traversal", "cluster\_id", 9)
+modparam("nat_traversal", "cluster_id", 9)
 ```
 ### `cluster_sharing_tag` (string)
 
-The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform pinging of the contacts. If defined, only the node with active status of this tag will perform the pinging. The [cluster\_id](#param_cluster_id "1.4.6.�cluster_id (integer)") must be defined for this option to work. This is an optional parameter. If not set, all the nodes in the cluster will individually do the pinging.
+The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform pinging of the contacts. If defined, only the node with active status of this tag will perform the pinging. The [cluster_id](#param_cluster_id "1.4.6.cluster_id (integer)") must be defined for this option to work. This is an optional parameter. If not set, all the nodes in the cluster will individually do the pinging.
 
 *Default value is empty (none).*
 
 **Example.** vip.
 
 ```opensips
-modparam("nat\_traversal", "cluster\_sharing\_tag", "vip")
+modparam("nat_traversal", "cluster_sharing_tag", "vip")
 ```
 ### `keepalive_extra_headers` (string)
 
@@ -68,21 +68,21 @@ Specifies extra headers that should be added to the keepalive messages that are 
 
 *Default value is undefined (send no extra headers)..*
 
-**Example.** User-Agent: OpenSIPS\r\nX-MyHeader: some\_value\r\n.
+**Example.** User-Agent: OpenSIPS\r\nX-MyHeader: some_value\r\n.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_extra\_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some\_value\r\n")
+modparam("nat_traversal", "keepalive_extra_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some_value\r\n")
 ```
 ### `keepalive_from` (string)
 
-Indicates what SIP URI to use in the From header of the keepalive requests. If not specified it will use sip:keepalive@proxy\_ip, where proxy\_ip is the IP address of the outgoing interface used to send the keepalive message, which is the same interface on which the request that triggered keepalive functionality arrived.
+Indicates what SIP URI to use in the From header of the keepalive requests. If not specified it will use sip:keepalive@proxy_ip, where proxy_ip is the IP address of the outgoing interface used to send the keepalive message, which is the same interface on which the request that triggered keepalive functionality arrived.
 
-*Default value is sip:keepalive@proxy\_ip with proxy\_ip being the actual IP of the outgoing interface..*
+*Default value is sip:keepalive@proxy_ip with proxy_ip being the actual IP of the outgoing interface..*
 
 **Example.** sip:keepalive@my-domain.com.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_from", "sip:keepalive@my-domain.com")
+modparam("nat_traversal", "keepalive_from", "sip:keepalive@my-domain.com")
 ```
 ### `keepalive_interval` (integer)
 
@@ -93,7 +93,7 @@ The time interval (in seconds) required to send a keepalive message to all the e
 **Example.** 90.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_interval", 90)
+modparam("nat_traversal", "keepalive_interval", 90)
 ```
 ### `keepalive_method` (string)
 
@@ -109,18 +109,18 @@ What SIP method to use to send keepalive messages. Typical methods used for this
 **Example.** OPTIONS.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_method", "OPTIONS")
+modparam("nat_traversal", "keepalive_method", "OPTIONS")
 ```
 ### `keepalive_state_file` (string)
 
 Specifies a filename where information about the NAT endpoints and the conditions for which they are being kept alive is saved when OpenSIPS exits. The information in this file is then used when OpenSIPS starts to restore its internal state and continue to send keepalive messages to the NAT endpoints that have not expired in the meantime. This is useful when restarting OpenSIPS to avoid losing keepalive state information about the NAT endpoints. The internal keepalive state is guaranteed to be saved in this file on exit, even when OpenSIPS crashes. The value of this parameter can be either a relative path, in which case it will store it in the OpenSIPS working directory, or an absolute path.
 
-*Default value is undefined “keepalive\_state”..*
+*Default value is undefined “keepalive_state”..*
 
-**Example.** /run/opensips/keepalive\_state.
+**Example.** /run/opensips/keepalive_state.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_state\_file", "/run/opensips/keepalive\_state")
+modparam("nat_traversal", "keepalive_state_file", "/run/opensips/keepalive_state")
 ```
 
 ## Exported Functions

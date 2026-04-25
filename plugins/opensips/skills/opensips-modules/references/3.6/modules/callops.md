@@ -25,19 +25,19 @@ This module provides a set of functions that allow the user to control ongoing c
 
 The module also triggers a set of events over Event Interface, providing to external applications details about how calls are being transferred, and how they link between them. These events can be used to track down all the legs involved in a call transfer.
 
-One of the biggest challenge when doing Call Transfer scenarios is linking new calls to the old calls being transferred, especially in blind call transfer scenarios. In order to solve this challenge, the module can be configured to refer old legs in two different modes, changeable using the [mode](#param_mode "1.3.1.�mode (string/integer)") parameter:
+One of the biggest challenge when doing Call Transfer scenarios is linking new calls to the old calls being transferred, especially in blind call transfer scenarios. In order to solve this challenge, the module can be configured to refer old legs in two different modes, changeable using the [mode](#param_mode "1.3.1.mode (string/integer)") parameter:
 
 *   Automatically (default mode), by adding a special parameter to the destination URI that is being sent in the REFER. When the new call comes back, the parameter will be present in the Request URI of the new call. The module will find it, link the new call to the old call, and remove the parameter from the URI.
     
-*   Manually, by using custom/external logic (such as a database, or local storage), to match the old call. In this mode, the user has to explicitly call the [call\_blind\_replace()](#func_call_blind_replace "1.4.1.� call_blind_replace(callid[, leg])") function to link the two calls together.
+*   Manually, by using custom/external logic (such as a database, or local storage), to match the old call. In this mode, the user has to explicitly call the [call_blind_replace()](#func_call_blind_replace "1.4.1. call_blind_replace(callid[, leg])") function to link the two calls together.
     
-The module can also be used to catch _Notify refer_ events and reply to them from the OpenSIPS level. However, note that in _auto_ mode even if the NOTIFY is handled when the dialog is matched, the request will still continue its execution of the script, unlike when _manual_ mode is used with the [call\_transfer\_notify()](#func_call_transfer_notify "1.4.2.� call_transfer_notify()") function. In order to avoid sending the NOTIFY to the end-point, you have to drop it, like below:
+The module can also be used to catch _Notify refer_ events and reply to them from the OpenSIPS level. However, note that in _auto_ mode even if the NOTIFY is handled when the dialog is matched, the request will still continue its execution of the script, unlike when _manual_ mode is used with the [call_transfer_notify()](#func_call_transfer_notify "1.4.2. call_transfer_notify()") function. In order to avoid sending the NOTIFY to the end-point, you have to drop it, like below:
 
-**Example�1.1.�Drop automatically handled NOTIFY refer events**
+**Example1.1.Drop automatically handled NOTIFY refer events**
 
 ...
-if (has\_totag() && loose\_route() &&
-		is\_method("NOTIFY") && $hdr(Event) == "refer")
+if (has_totag() && loose_route() &&
+		is_method("NOTIFY") && $hdr(Event) == "refer")
 	drop;
 ...
 
@@ -63,7 +63,7 @@ The parameter used to match the different calls together. This is mainly using i
 **Example.** call.
 
 ```opensips
-modparam("callops", "match\_param", "call")
+modparam("callops", "match_param", "call")
 ```
 ### `mode` (string/integer)
 
@@ -71,7 +71,7 @@ This parameter can be used to change the mode that the module uses to match a tr
 
 *   _param_ / _0_ - when doing a blind transfer, the destination sent in the refer message will contain a parameter used to identify the dialog that is being replaced. this parameter will be automatically removed when the new call is received.
     
-*   _manual_ / _1_ - the user will create its own logic to match the new calls, and will call the [call_blind_replace()](#func_call_blind_replace "1.4.1.� call_blind_replace(callid[, leg])") function to make OpenSIPS aware of the pair. Note that this mode does not handle automatically the _Notify refer_ either, so you also have to use the [call_transfer_notify()](#func_call_transfer_notify "1.4.2.� call_transfer_notify()") function to handle them.
+*   _manual_ / _1_ - the user will create its own logic to match the new calls, and will call the [call_blind_replace()](#func_call_blind_replace "1.4.1. call_blind_replace(callid[, leg])") function to make OpenSIPS aware of the pair. Note that this mode does not handle automatically the _Notify refer_ either, so you also have to use the [call_transfer_notify()](#func_call_transfer_notify "1.4.2. call_transfer_notify()") function to handle them.
     
 *   _callid_ / _2_ - similar to the _param_ value, except that instead of storing in the Request URI the dialog id of the call to be transfered, the actual callid is used as identifier.
 
@@ -207,7 +207,7 @@ opensips-cli -x mi call_hold \
 
 MI command to transfer an ongoing call to a new destination.
 
-Depending on the parameters used, this command can do both blind and attended transfers scenarios. When the _transfer\_callid_ is used, then an attended transfer is performed, other wise a blind transfer is issued.
+Depending on the parameters used, this command can do both blind and attended transfers scenarios. When the _transfer_callid_ is used, then an attended transfer is performed, other wise a blind transfer is issued.
 
 **Parameters:**
 
@@ -216,7 +216,7 @@ Depending on the parameters used, this command can do both blind and attended tr
 - `leg` *(string, required)* — indicates the leg of the _callid_ call that is being transferred/kept in the new transferring call. Possible values are “caller”, “callee” or “both”.
 - `transfer_callid` *(string, optional)* — mandatory in case of an attended transfer, to specify the call of the Bleg in the new call.
 - `transfer_fromtag` *(string, optional)* — these parameters should always be specified together, and are used in call attended transfer scenarios where the dialog of the Bleg that is being transferred is not managed by OpenSIPS. Note that for these scenarios only the A-leg dialog will receive events about the call transfer.
-- `transfer_leg` *(string, optional)* — in case of an attended transfer, it specifies the participant of the _transfer\_callid_ call that will be bridged with the _leg_ of the _callid_. If missing, _transfer\_fromtag_ and _transfer\_totag_ must be used to identify the tag.
+- `transfer_leg` *(string, optional)* — in case of an attended transfer, it specifies the participant of the _transfer_callid_ call that will be bridged with the _leg_ of the _callid_. If missing, _transfer_fromtag_ and _transfer_totag_ must be used to identify the tag.
 - `transfer_totag` *(string, optional)* — these parameters should always be specified together, and are used in call attended transfer scenarios where the dialog of the Bleg that is being transferred is not managed by OpenSIPS. Note that for these scenarios only the A-leg dialog will receive events about the call transfer.
 
 **Example.** blind transfer to sip:agent@127.0.0.1
@@ -242,7 +242,7 @@ opensips-cli -x mi call_transfer \
 
 ### `call_unhold`
 
-MI command to resume a call from an onhold state put by the [call\_hold](#mi_call_hold "1.5.2.� call_hold") call.
+MI command to resume a call from an onhold state put by the [call_hold](#mi_call_hold "1.5.2. call_hold") call.
 
 **Parameters:**
 
@@ -305,8 +305,8 @@ In order to avoid sending the NOTIFY to the end-point, you have to drop it, like
 
 ```opensips
 ...
-if (has\_totag() && loose\_route() &&
-	is\_method("NOTIFY") && $hdr(Event) == "refer")
+if (has_totag() && loose_route() &&
+	is_method("NOTIFY") && $hdr(Event) == "refer")
 	drop;
 ...
 ```
@@ -325,7 +325,7 @@ Sets the match_param parameter.
 
 ```opensips
 ...
-modparam("callops", "match\_param", "call")
+modparam("callops", "match_param", "call")
 ...
 ```
 ### Use `call_blind_replace()` function to match an existing leg.
@@ -334,9 +334,9 @@ Matches an existing leg using the call_blind_replace function.
 
 ```opensips
 ...
-if (!has\_totag() && is\_method("INVITE")) {
-	if (cache\_fetch("local", "callid\_$si", $avp(callid))) {
-		call\_blind\_replace($avp(callid));
+if (!has_totag() && is_method("INVITE")) {
+	if (cache_fetch("local", "callid_$si", $avp(callid))) {
+		call_blind_replace($avp(callid));
 	}
 }
 ...
@@ -347,8 +347,8 @@ Handles NOTIFY refer requests using the call_transfer_notify function.
 
 ```opensips
 ...
-if (has\_totag() && is\_method("NOTIFY") && loose\_route()) {
-	call\_transfer\_notify();
+if (has_totag() && is_method("NOTIFY") && loose_route()) {
+	call_transfer_notify();
 }
 ...
 ```
@@ -358,8 +358,8 @@ Performs a blind transfer of the caller to a new destination.
 
 ```opensips
 ...
-if (has\_totag() && && loose\_route()) {
-	call\_transfer("caller", "sip:announcement@127.0.0.1");
+if (has_totag() && && loose_route()) {
+	call_transfer("caller", "sip:announcement@127.0.0.1");
 }
 ...
 ```
@@ -369,8 +369,8 @@ Performs an attended transfer of the caller to the callee of a different call.
 
 ```opensips
 ...
-if (has\_totag() && && loose\_route()) {
-	call\_transfer("caller", "ba55b1b3-459d-4e84-a6f8-14c40e4f6ace", "callee");
+if (has_totag() && && loose_route()) {
+	call_transfer("caller", "ba55b1b3-459d-4e84-a6f8-14c40e4f6ace", "callee");
 }
 ...
 ```

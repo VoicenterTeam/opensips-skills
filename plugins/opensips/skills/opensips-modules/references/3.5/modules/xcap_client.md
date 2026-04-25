@@ -48,7 +48,7 @@ To disable it set this parameter to 0.
 **Example.** 0.
 
 ```opensips
-modparam("xcap\_client", "periodical\_query", 0)
+modparam("xcap_client", "periodical_query", 0)
 ```
 ### `query_period` (integer)
 
@@ -61,7 +61,7 @@ To disable it set this parameter to 0.
 **Example.** 50.
 
 ```opensips
-modparam("xcap\_client", "query\_period", 50)
+modparam("xcap_client", "query_period", 50)
 ```
 
 ## Exported MI Functions
@@ -89,7 +89,7 @@ A flag to disable periodical query as an update method for the documents the mod
 
 ```opensips
 ...
-modparam("xcap\_client", "periodical\_query", 0)
+modparam("xcap_client", "periodical_query", 0)
 ...
 ```
 ### Set `query_period` parameter
@@ -98,6 +98,6 @@ Should be set if periodical query is not disabled. Represents the time interval 
 
 ```opensips
 ...
-modparam("xcap\_client", "query\_period", 50)
+modparam("xcap_client", "query_period", 50)
 ...
 ```

@@ -36,10 +36,10 @@ The URL of database where the table containing speed dial records.
 
 *Default value is mysql://opensipsro:opensipsro@localhost/opensips.*
 
-**Example.** mysql://user:xxx@localhost/db\_name.
+**Example.** mysql://user:xxx@localhost/db_name.
 
 ```opensips
-modparam("speeddial", "db\_url", "mysql://user:xxx@localhost/db\_name")
+modparam("speeddial", "db_url", "mysql://user:xxx@localhost/db_name")
 ```
 ### `domain_column` (string)
 
@@ -50,7 +50,7 @@ The name of column storing the domain of the owner of the speed dial record.
 **Example.** userdomain.
 
 ```opensips
-modparam("speeddial", "domain\_column", "userdomain")
+modparam("speeddial", "domain_column", "userdomain")
 ```
 ### `domain_prefix` (string)
 
@@ -61,40 +61,40 @@ If the domain of the owner (From URI) starts with the value of this parameter, t
 **Example.** tel..
 
 ```opensips
-modparam("speeddial", "domain\_prefix", "tel.")
+modparam("speeddial", "domain_prefix", "tel.")
 ```
 ### `new_uri_column` (string)
 
 The name of the column containing the URI that will be use to replace the short dial URI.
 
-*Default value is “new\_uri”.*
+*Default value is “new_uri”.*
 
-**Example.** real\_uri.
+**Example.** real_uri.
 
 ```opensips
-modparam("speeddial", "new\_uri\_column", "real\_uri")
+modparam("speeddial", "new_uri_column", "real_uri")
 ```
 ### `sd_domain_column` (string)
 
 The name of the column storing the domain of the short dial address.
 
-*Default value is “sd\_domain”.*
+*Default value is “sd_domain”.*
 
-**Example.** short\_domain.
+**Example.** short_domain.
 
 ```opensips
-modparam("speeddial", "sd\_domain\_column", "short\_domain")
+modparam("speeddial", "sd_domain_column", "short_domain")
 ```
 ### `sd_user_column` (string)
 
 The name of the column storing the user part of the short dial address.
 
-*Default value is “sd\_username”.*
+*Default value is “sd_username”.*
 
-**Example.** short\_user.
+**Example.** short_user.
 
 ```opensips
-modparam("speeddial", "sd\_user\_column", "short\_user")
+modparam("speeddial", "sd_user_column", "short_user")
 ```
 ### `use_domain` (integer)
 
@@ -111,7 +111,7 @@ The parameter specifies wheter or not to use the domain when searching a speed d
 **Example.** 1.
 
 ```opensips
-modparam("speeddial", "use\_domain", 1)
+modparam("speeddial", "use_domain", 1)
 ```
 ### `user_column` (string)
 
@@ -122,7 +122,7 @@ The name of column storing the user name of the owner of the speed dial record.
 **Example.** userid.
 
 ```opensips
-modparam("speeddial", "user\_column", "userid")
+modparam("speeddial", "user_column", "userid")
 ```
 
 ## Exported Functions
@@ -142,12 +142,12 @@ The function lookups the short dial number from R-URI in 'table' and replaces th
 
 ```opensips
 ...
-# 'speed\_dial' is the default table name created by opensips db script
+# 'speed_dial' is the default table name created by opensips db script
 if($ru=~"sip:\[0-9\]{2}@.*")
-	sd\_lookup("speed\_dial");
+	sd_lookup("speed_dial");
 # use auth username
 if($ru=~"sip:\[0-9\]{2}@.*")
-	sd\_lookup("speed\_dial", "sip:$au@$fd");
+	sd_lookup("speed_dial", "sip:$au@$fd");
 ...
 ```
 
@@ -159,7 +159,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("speeddial", "db\_url", "mysql://user:xxx@localhost/db\_name")
+modparam("speeddial", "db_url", "mysql://user:xxx@localhost/db_name")
 ...
 ```
 ### Set `user_column` parameter
@@ -168,7 +168,7 @@ Set `user_column` parameter
 
 ```opensips
 ...
-modparam("speeddial", "user\_column", "userid")
+modparam("speeddial", "user_column", "userid")
 ...
 ```
 ### Set `domain_column` parameter
@@ -177,7 +177,7 @@ Set `domain_column` parameter
 
 ```opensips
 ...
-modparam("speeddial", "domain\_column", "userdomain")
+modparam("speeddial", "domain_column", "userdomain")
 ...
 ```
 ### Set `sd_user_column` parameter
@@ -186,7 +186,7 @@ Set `sd_user_column` parameter
 
 ```opensips
 ...
-modparam("speeddial", "sd\_user\_column", "short\_user")
+modparam("speeddial", "sd_user_column", "short_user")
 ...
 ```
 ### Set `sd_domain_column` parameter
@@ -195,7 +195,7 @@ Set `sd_domain_column` parameter
 
 ```opensips
 ...
-modparam("speeddial", "sd\_domain\_column", "short\_domain")
+modparam("speeddial", "sd_domain_column", "short_domain")
 ...
 ```
 ### Set `new_uri_column` parameter
@@ -204,7 +204,7 @@ Set `new_uri_column` parameter
 
 ```opensips
 ...
-modparam("speeddial", "new\_uri\_column", "real\_uri")
+modparam("speeddial", "new_uri_column", "real_uri")
 ...
 ```
 ### Set `domain_prefix` parameter
@@ -213,7 +213,7 @@ Set `domain_prefix` parameter
 
 ```opensips
 ...
-modparam("speeddial", "domain\_prefix", "tel.")
+modparam("speeddial", "domain_prefix", "tel.")
 ...
 ```
 ### Set `use_domain` parameter
@@ -222,7 +222,7 @@ Set `use_domain` parameter
 
 ```opensips
 ...
-modparam("speeddial", "use\_domain", 1)
+modparam("speeddial", "use_domain", 1)
 ...
 ```
 ### `sd_lookup` usage
@@ -231,12 +231,12 @@ modparam("speeddial", "use\_domain", 1)
 
 ```opensips
 ...
-# 'speed\_dial' is the default table name created by opensips db script
+# 'speed_dial' is the default table name created by opensips db script
 if($ru=~"sip:\[0-9\]{2}@.*")
-	sd\_lookup("speed\_dial");
+	sd_lookup("speed_dial");
 # use auth username
 if($ru=~"sip:\[0-9\]{2}@.*")
-	sd\_lookup("speed\_dial", "sip:$au@$fd");
+	sd_lookup("speed_dial", "sip:$au@$fd");
 ...
 ```
 ### OpenSIPS config script - sample speeddial usage
@@ -250,9 +250,9 @@ Next picture displays a sample usage of speeddial.
 
 # ----------- global configuration parameters ------------------------
 
-check\_via=no	# (cmd. line: -v)
+check_via=no	# (cmd. line: -v)
 dns=no          # (cmd. line: -r)
-rev\_dns=no      # (cmd. line: -R)
+rev_dns=no      # (cmd. line: -R)
 
 # ------------------ module loading ----------------------------------
 
@@ -266,17 +266,17 @@ loadmodule "registrar.so"
 loadmodule "textops.so"
 loadmodule "mysql.so"
 loadmodule "speeddial.so"
-loadmodule "mi\_fifo.so"
+loadmodule "mi_fifo.so"
 
 # ----------------- setting module-specific parameters ---------------
 
-# -- mi\_fifo params --
+# -- mi_fifo params --
 
-modparam("mi\_fifo", "fifo\_name", "/tmp/opensips\_fifo")
+modparam("mi_fifo", "fifo_name", "/tmp/opensips_fifo")
 
 # -- usrloc params --
 
-modparam("usrloc", "db\_mode",   0)
+modparam("usrloc", "db_mode",   0)
 
 # -------------------------  request routing logic -------------------
 
@@ -284,38 +284,38 @@ modparam("usrloc", "db\_mode",   0)
 route{
 
 	# initial sanity checks 
-	if (!mf\_process\_maxfwd\_header("10"))
+	if (!mf_process_maxfwd_header("10"))
 	{
-		sl\_send\_reply(483,"Too Many Hops");
+		sl_send_reply(483,"Too Many Hops");
 		exit;
 	};
 	if ($ml >=  65535 )
 	{
-		sl\_send\_reply(513, "Message too big");
+		sl_send_reply(513, "Message too big");
 		exit;
 	};
 
-	if (!$rm=="REGISTER") record\_route();
+	if (!$rm=="REGISTER") record_route();
 
-	if (loose\_route())
+	if (loose_route())
 	{
-		if (!t\_relay())
+		if (!t_relay())
 		{
-			sl\_reply\_error();
+			sl_reply_error();
 		};
 		exit;
 	};
 
-	if (!is\_myself("$rd"))
+	if (!is_myself("$rd"))
 	{
-		if (!t\_relay())
+		if (!t_relay())
 		{
-			sl\_reply\_error();
+			sl_reply_error();
 		};
 		exit;
 	};
 
-	if (is\_myself("$rd"))
+	if (is_myself("$rd"))
 	{
 		if ($rm=="REGISTER")
 		{
@@ -324,28 +324,28 @@ route{
 		};
 
 		if($ru=~"sip:\[0-9\]{2}@.*")
-			sd\_lookup("speeddial");
+			sd_lookup("speeddial");
 
 		lookup("aliases");
-		if (!is\_myself("$rd"))
+		if (!is_myself("$rd"))
 		{
-			if (!t\_relay())
+			if (!t_relay())
 			{
-				sl\_reply\_error();
+				sl_reply_error();
 			};
 			exit;
 		};
 
 		if (!lookup("location"))
 		{
-			sl\_send\_reply(404, "Not Found");
+			sl_send_reply(404, "Not Found");
 			exit;
 		};
 	};
 
-	if (!t\_relay())
+	if (!t_relay())
 	{
-		sl\_reply\_error();
+		sl_reply_error();
 	};
 }
 

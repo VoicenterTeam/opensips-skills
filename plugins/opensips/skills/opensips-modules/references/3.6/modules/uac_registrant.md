@@ -72,18 +72,18 @@ The column's name in the database storing the URI defining the address of record
 **Example.** to_uri.
 
 ```opensips
-modparam("uac\_registrant", "aor\_column", "to\_uri")
+modparam("uac_registrant", "aor_column", "to_uri")
 ```
 ### `binding_URI_column` (string)
 
 The column's name in the database storing the binding URI in REGISTER (mandatory field). The URI stored here will be used in the Contact URI of the REGISTER. OpenSIPS expects a valid URI.
 
-*Default value is “binding\_URI”.*
+*Default value is “binding_URI”.*
 
 **Example.** contact_uri.
 
 ```opensips
-modparam("uac\_registrant", "binding\_URI\_column", "contact\_uri")
+modparam("uac_registrant", "binding_URI_column", "contact_uri")
 ```
 ### `binding_params_column` (string)
 
@@ -99,23 +99,23 @@ Example of params that will force unique binding:
 
 ;reg-id=1;+sip.instance="<urn:uuid:11111111-AABBCCDDEEFF>"
 
-*Default value is “binding\_params”.*
+*Default value is “binding_params”.*
 
 **Example.** contact_params.
 
 ```opensips
-modparam("uac\_registrant", "binding\_params\_column", "contact\_params")
+modparam("uac_registrant", "binding_params_column", "contact_params")
 ```
 ### `cluster_shtag_column` (string)
 
-The column's name in the database storing the cluster sharing tag in \[tag\_name/cluster\_id\] format (not mandatory). If a cluster sharing tag is provided, the REGISTER requests will be fired out only when the tag is active.
+The column's name in the database storing the cluster sharing tag in \[tag_name/cluster_id\] format (not mandatory). If a cluster sharing tag is provided, the REGISTER requests will be fired out only when the tag is active.
 
 *Default value is cluster_shtag.*
 
 **Example.** sh.
 
 ```opensips
-modparam("uac\_registrant", "cluster\_shtag\_column", "sh")
+modparam("uac_registrant", "cluster_shtag_column", "sh")
 ```
 ### `db_url` (string)
 
@@ -126,7 +126,7 @@ Database where to load the registrants from.
 **Example.** mysql://user:passw@localhost/database.
 
 ```opensips
-modparam("uac\_registrant", "db\_url", "mysql://user:passw@localhost/database")
+modparam("uac_registrant", "db_url", "mysql://user:passw@localhost/database")
 ```
 ### `enable_clustering` (integer)
 
@@ -142,7 +142,7 @@ This parameter enables the clustering support in the module. This is used to sha
 **Example.** 1.
 
 ```opensips
-modparam("uac\_registrant", "enable\_clustering", 1)
+modparam("uac_registrant", "enable_clustering", 1)
 ```
 ### `expiry_column` (string)
 
@@ -153,7 +153,7 @@ The column's name in the database storing the expiration time (not mandatory).
 **Example.** registration_timeout.
 
 ```opensips
-modparam("uac\_registrant", "expiry\_column", "registration\_timeout")
+modparam("uac_registrant", "expiry_column", "registration_timeout")
 ```
 ### `failure_retry_interval` (integer)
 
@@ -164,7 +164,7 @@ Defines a custom interval to retry the registration upon error/failure. Normally
 **Example.** 3600.
 
 ```opensips
-modparam("uac\_registrant", "failure\_retry\_interval", 3600)
+modparam("uac_registrant", "failure_retry_interval", 3600)
 ```
 ### `forced_socket_column` (string)
 
@@ -175,7 +175,7 @@ The column's name in the database storing the socket for sending the REGISTER (n
 **Example.** fs.
 
 ```opensips
-modparam("uac\_registrant", "forced\_socket\_column", "fs")
+modparam("uac_registrant", "forced_socket_column", "fs")
 ```
 ### `hash_size` (integer)
 
@@ -186,7 +186,7 @@ The size of the hash table internally used to keep the registrants. A larger tab
 **Example.** 2.
 
 ```opensips
-modparam("uac\_registrant", "hash\_size", 2)
+modparam("uac_registrant", "hash_size", 2)
 ```
 ### `password_column` (string)
 
@@ -197,7 +197,7 @@ The column's name in the database storing the password for authentication (manda
 **Example.** auth_passowrd.
 
 ```opensips
-modparam("uac\_registrant", "password\_column", "auth\_passowrd")
+modparam("uac_registrant", "password_column", "auth_passowrd")
 ```
 ### `proxy_column` (string)
 
@@ -208,7 +208,7 @@ The column's name in the database storing the URI pointing to the outbond proxy 
 **Example.** proxy_uri.
 
 ```opensips
-modparam("uac\_registrant", "proxy\_column", "proxy\_uri")
+modparam("uac_registrant", "proxy_column", "proxy_uri")
 ```
 ### `registrar_column` (string)
 
@@ -219,7 +219,7 @@ The column's name in the database storing the URI pointing to the remote registr
 **Example.** registrant_uri.
 
 ```opensips
-modparam("uac\_registrant", "registrar\_column", "registrant\_uri")
+modparam("uac_registrant", "registrar_column", "registrant_uri")
 ```
 ### `state_column` (string)
 
@@ -230,7 +230,7 @@ The column's name in the database storing the current state of the registrant. W
 **Example.** status.
 
 ```opensips
-modparam("uac\_registrant", "state\_column", "status")
+modparam("uac_registrant", "state_column", "status")
 ```
 ### `table_name` (string)
 
@@ -241,7 +241,7 @@ The database table that holds the registrant records.
 **Example.** my_registrant.
 
 ```opensips
-modparam("uac\_registrant", "table\_name", "my\_registrant")
+modparam("uac_registrant", "table_name", "my_registrant")
 ```
 ### `third_party_registrant_column` (string)
 
@@ -252,7 +252,7 @@ The column's name in the database storing the URI defining the third party regis
 **Example.** from_uri.
 
 ```opensips
-modparam("uac\_registrant", "third\_party\_registrant\_column", "from\_uri")
+modparam("uac_registrant", "third_party_registrant_column", "from_uri")
 ```
 ### `timer_interval` (integer)
 
@@ -263,7 +263,7 @@ Defines the periodic timer for checking the registrations status.
 **Example.** 120.
 
 ```opensips
-modparam("uac\_registrant", "timer\_interval", 120)
+modparam("uac_registrant", "timer_interval", 120)
 ```
 ### `username_column` (string)
 
@@ -274,7 +274,7 @@ The column's name in the database storing the username for authentication (manda
 **Example.** auth_username.
 
 ```opensips
-modparam("uac\_registrant", "username\_column", "auth\_username")
+modparam("uac_registrant", "username_column", "auth_username")
 ```
 
 ## Exported MI Functions
@@ -379,7 +379,7 @@ The size of the hash table internally used to keep the registrants. A larger tab
 
 ```opensips
 ...
-modparam("uac\_registrant", "hash\_size", 2)
+modparam("uac_registrant", "hash_size", 2)
 ...
 ```
 ### Set `timer_interval` parameter
@@ -388,7 +388,7 @@ Defines the periodic timer for checking the registrations status.
 
 ```opensips
 ...
-modparam("uac\_registrant", "timer\_interval", 120)
+modparam("uac_registrant", "timer_interval", 120)
 ...
 ```
 ### Set `failure_retry_interval` parameter
@@ -397,7 +397,7 @@ Defines a custom interval to retry the registration upon error/failure. Normally
 
 ```opensips
 ...
-modparam("uac\_registrant", "failure\_retry\_interval", 3600)
+modparam("uac_registrant", "failure_retry_interval", 3600)
 ...
 ```
 ### Set `enable_clustering` parameter
@@ -406,91 +406,91 @@ This parameter enables the clustering support in the module. This is used to sha
 
 ```opensips
 ...
-modparam("uac\_registrant", "enable\_clustering", 1)
+modparam("uac_registrant", "enable_clustering", 1)
 ...
 ```
-### Set “db\_url” parameter
+### Set “db_url” parameter
 
 Database where to load the registrants from.
 
 ```opensips
 ...
-modparam("uac\_registrant", "db\_url", "mysql://user:passw@localhost/database")
+modparam("uac_registrant", "db_url", "mysql://user:passw@localhost/database")
 ...
 ```
-### Set “table\_name” parameter
+### Set “table_name” parameter
 
 The database table that holds the registrant records.
 
 ```opensips
 ...
-modparam("uac\_registrant", "table\_name", "my\_registrant")
+modparam("uac_registrant", "table_name", "my_registrant")
 ...
 ```
-### Set “registrar\_column” parameter
+### Set “registrar_column” parameter
 
 The column's name in the database storing the URI pointing to the remote registrar (mandatory field). OpenSIPS expects a valid URI.
 
 ```opensips
 ...
-modparam("uac\_registrant", "registrar\_column", "registrant\_uri")
+modparam("uac_registrant", "registrar_column", "registrant_uri")
 ...
 ```
-### Set “proxy\_column” parameter
+### Set “proxy_column” parameter
 
 The column's name in the database storing the URI pointing to the outbond proxy (not mandatory field). An empty or NULL value means no outbound proxy, otherwise OpenSIPS expects a valid URI.
 
 ```opensips
 ...
-modparam("uac\_registrant", "proxy\_column", "proxy\_uri")
+modparam("uac_registrant", "proxy_column", "proxy_uri")
 ...
 ```
-### Set “aor\_column” parameter
+### Set “aor_column” parameter
 
 The column's name in the database storing the URI defining the address of record (mandatory field). The URI stored here will be used in the To URI of the REGISTER. OpenSIPS expects a valid URI.
 
 ```opensips
 ...
-modparam("uac\_registrant", "aor\_column", "to\_uri")
+modparam("uac_registrant", "aor_column", "to_uri")
 ...
 ```
-### Set “third\_party\_registrant\_column” parameter
+### Set “third_party_registrant_column” parameter
 
 The column's name in the database storing the URI defining the third party registrant (not mandatory field). The URI stored here will be used in the From URI of the REGISTER. An empty or NULL value means no third party registration (the From URI will be identical to To URI), otherwise OpenSIPS expects a valid URI.
 
 ```opensips
 ...
-modparam("uac\_registrant", "third\_party\_registrant\_column", "from\_uri")
+modparam("uac_registrant", "third_party_registrant_column", "from_uri")
 ...
 ```
-### Set “username\_column” parameter
+### Set “username_column” parameter
 
 The column's name in the database storing the username for authentication (mandatory if the registrar requires authentication).
 
 ```opensips
 ...
-modparam("uac\_registrant", "username\_column", "auth\_username")
+modparam("uac_registrant", "username_column", "auth_username")
 ...
 ```
-### Set “password\_column” parameter
+### Set “password_column” parameter
 
 The column's name in the database storing the password for authentication (mandatory if the registrar requires authntication).
 
 ```opensips
 ...
-modparam("uac\_registrant", "password\_column", "auth\_passowrd")
+modparam("uac_registrant", "password_column", "auth_passowrd")
 ...
 ```
-### Set “binding\_URI\_column” parameter
+### Set “binding_URI_column” parameter
 
 The column's name in the database storing the binding URI in REGISTER (mandatory field). The URI stored here will be used in the Contact URI of the REGISTER. OpenSIPS expects a valid URI.
 
 ```opensips
 ...
-modparam("uac\_registrant", "binding\_URI\_column", "contact\_uri")
+modparam("uac_registrant", "binding_URI_column", "contact_uri")
 ...
 ```
-### Set “binding\_params\_column” parameter
+### Set “binding_params_column” parameter
 
 The column's name in the database storing the binding params in REGISTER (not mandatory field). If not NULL or not empty, the string stored here will be added as params to the Contact URI in REGISTER (it MUST start with ";".
 
@@ -502,42 +502,42 @@ If the following two params are present, then the binding will be enforced to be
 
 ```opensips
 ...
-modparam("uac\_registrant", "binding\_params\_column", "contact\_params")
+modparam("uac_registrant", "binding_params_column", "contact_params")
 ...
 ```
-### Set “expiry\_column” parameter
+### Set “expiry_column” parameter
 
 The column's name in the database storing the expiration time (not mandatory).
 
 ```opensips
 ...
-modparam("uac\_registrant", "expiry\_column", "registration\_timeout")
+modparam("uac_registrant", "expiry_column", "registration_timeout")
 ...
 ```
-### Set “forced\_socket\_column” parameter
+### Set “forced_socket_column” parameter
 
 The column's name in the database storing the socket for sending the REGISTER (not mandatory). If a forced socket is provided, the socket MUST be explicitely set as a global listening socket in the config (see "listen" core parameter).
 
 ```opensips
 ...
-modparam("uac\_registrant", "forced\_socket\_column", "fs")
+modparam("uac_registrant", "forced_socket_column", "fs")
 ...
 ```
-### Set “cluster\_shtag\_column” parameter
+### Set “cluster_shtag_column” parameter
 
-The column's name in the database storing the cluster sharing tag in \[tag\_name/cluster\_id\] format (not mandatory). If a cluster sharing tag is provided, the REGISTER requests will be fired out only when the tag is active.
+The column's name in the database storing the cluster sharing tag in \[tag_name/cluster_id\] format (not mandatory). If a cluster sharing tag is provided, the REGISTER requests will be fired out only when the tag is active.
 
 ```opensips
 ...
-modparam("uac\_registrant", "cluster\_shtag\_column", "sh")
+modparam("uac_registrant", "cluster_shtag_column", "sh")
 ...
 ```
-### Set “state\_column” parameter
+### Set “state_column” parameter
 
 The column's name in the database storing the current state of the registrant. When a registrant is disabled, OpenSIPS will no longer send REGISTERs for it. A value of _0_ for this column means enabled and _1_ disabled.
 
 ```opensips
 ...
-modparam("uac\_registrant", "state\_column", "status")
+modparam("uac_registrant", "state_column", "status")
 ...
 ```

@@ -46,7 +46,7 @@ IP used to bind the socket that communicates with the CGRateS engines. This is u
 **Example.** Set the `bind_ip` parameter.
 
 ```opensips
-modparam("cgrates", "bind\_ip", "10.0.0.100")
+modparam("cgrates", "bind_ip", "10.0.0.100")
 ```
 ### `cgrates_engine` (string)
 
@@ -59,19 +59,19 @@ This parameter can have multiple values, for each server used for failover. At l
 **Example.** Set the `cgrates_engine` parameter.
 
 ```opensips
-modparam("cgrates", "cgrates\_engine", "127.0.0.1")
-modparam("cgrates", "cgrates\_engine", "127.0.0.1:2013")
+modparam("cgrates", "cgrates_engine", "127.0.0.1")
+modparam("cgrates", "cgrates_engine", "127.0.0.1:2013")
 ```
 ### `compat_mode` (integer)
 
-Indicates whether OpenSIPS should use the old (compat\_mode) CGRateS version API (pre-rc8).
+Indicates whether OpenSIPS should use the old (compat_mode) CGRateS version API (pre-rc8).
 
 *Default value is false (0).*
 
 **Example.** Set the `compat_mode` parameter.
 
 ```opensips
-modparam("cgrates", "compat\_mode", 1)
+modparam("cgrates", "compat_mode", 1)
 ```
 ### `max_async_connections` (integer)
 
@@ -82,7 +82,7 @@ The maximum number of simultaneous asynchronous connections to a CGRateS engine.
 **Example.** Set the `max_async_connections` parameter.
 
 ```opensips
-modparam("cgrates", "max\_async\_connections", 20)
+modparam("cgrates", "max_async_connections", 20)
 ```
 ### `retry_timeout` (integer)
 
@@ -93,7 +93,7 @@ The number of seconds after which a disabled connection/engine is retried.
 **Example.** Set the `retry_timeout` parameter.
 
 ```opensips
-modparam("cgrates", "retry\_timeout", 120)
+modparam("cgrates", "retry_timeout", 120)
 ```
 
 ## Exported Functions
@@ -129,10 +129,10 @@ The cgrates_acc() function should only be called on initial INVITEs. For more in
 
 ```opensips
 		...
-		if (!has\_totag()) {
+		if (!has_totag()) {
 			...
-			if (cgrates\_auth($fU, $rU))
-				cgrates\_acc("cdr|missed", $fU, $rU);
+			if (cgrates_auth($fU, $rU))
+				cgrates_acc("cdr|missed", $fU, $rU);
 			...
 		}
 		...
@@ -164,10 +164,10 @@ cgrates_auth() does call authorization through using the CGRateS engine.
 
 ```opensips
 		...
-		if (!has\_totag()) {
+		if (!has_totag()) {
 			...
-			if (!cgrates\_auth($fU, $rU)) {
-				sl\_send\_reply(403, "Forbidden");
+			if (!cgrates_auth($fU, $rU)) {
+				sl_send_reply(403, "Forbidden");
 				exit;
 			}
 			...
@@ -180,18 +180,18 @@ cgrates_auth() does call authorization through using the CGRateS engine.
 
 ```opensips
 		...
-		if (!has\_totag()) {
+		if (!has_totag()) {
 			...
-			$cgr\_opt(GetAttributes) = 1;
-			if (!cgrates\_auth($fU, $rU)) {
-				sl\_send\_reply(403, "Forbidden");
+			$cgr_opt(GetAttributes) = 1;
+			if (!cgrates_auth($fU, $rU)) {
+				sl_send_reply(403, "Forbidden");
 				exit;
 			}
 			# move attributes from AttributesDigest variable to plain AVPs
 			$var(idx) = 0;
-			while ($(cgr\_ret(AttributesDigest){s.select,$var(idx),,}) != NULL) {
-				$avp($(cgr\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,0,:}))
-					= $(cgr\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,1,:});
+			while ($(cgr_ret(AttributesDigest){s.select,$var(idx),,}) != NULL) {
+				$avp($(cgr_ret(AttributesDigest){s.select,$var(idx),,}{s.select,0,:}))
+					= $(cgr_ret(AttributesDigest){s.select,$var(idx),,}{s.select,1,:});
 				$var(idx) = $var(idx) + 1;
 			}
 			...
@@ -222,15 +222,15 @@ cgrates_cmd() can send arbitrary commands to the CGRateS engine.
 
 ```opensips
 		...
-		# cgrates\_auth($fU, $rU); simulation
-		$cgr\_opt(Tenant) = $fd;
+		# cgrates_auth($fU, $rU); simulation
+		$cgr_opt(Tenant) = $fd;
 		$cgr(Account) = $fU;
 		$cgr(OriginID) = $ci;
 		$cgr(SetupTime) = "" + $Ts;
 		$cgr(RequestType) = "\*prepaid";
 		$cgr(Destination) = $rU;
-		cgrates\_cmd("SessionSv1.AuthorizeEvent");
-		xlog("Call is allowed to run $cgr\_ret seconds\\n");
+		cgrates_cmd("SessionSv1.AuthorizeEvent");
+		xlog("Call is allowed to run $cgr_ret seconds\\n");
 		...
 ```
 
@@ -242,7 +242,7 @@ Pseudo-variable used to set different parameters for the CGRateS command. Each n
 
 The name-values pairs are stored in the transaction (if tm module is loaded). Therefore the values are accessible in the reply.
 
-When the _cgrates\_acc()_ function is called, all the name-value pairs are moved in the dialog. Therefore the values will be accessible along the dialog's lifetime.
+When the _cgrates_acc()_ function is called, all the name-value pairs are moved in the dialog. Therefore the values will be accessible along the dialog's lifetime.
 
 This variable consists of serveral sets of name-value pairs. Each set corresponds to a session. The variable can be indexed by a _session tag_. The sets are completely indepdendent from one another. if the _session tag_ does not exist, the default (no name) one is used.
 
@@ -251,13 +251,13 @@ When assigned with the _:=_ operator, the value is treated as a JSON, rather tha
 **Example 1.10. $cgr(name) simple usage**
 
 		...
-		if (!has\_totag()) {
+		if (!has_totag()) {
 			...
-			$cgr\_opt(Tenant) = $fd; # set the From domain as a tenant
+			$cgr_opt(Tenant) = $fd; # set the From domain as a tenant
 			$cgr(RequestType) = "\*prepaid"; # do prepaid accounting
 			$cgr(AttributeIDs) := '["+5551234"]'; # treat as array
-			if (!cgrates\_auth("$fU", "$rU")) {
-				sl\_send\_reply(403, "Forbidden");
+			if (!cgrates_auth("$fU", "$rU")) {
+				sl_send_reply(403, "Forbidden");
 				exit;
 			}
 		}
@@ -266,27 +266,27 @@ When assigned with the _:=_ operator, the value is treated as a JSON, rather tha
 **Example 1.11. $cgr(name) multiple sessions usage**
 
 		...
-		if (!has\_totag()) {
+		if (!has_totag()) {
 			...
 			# first session - authorize the user
-			$cgr\_opt(Tenant) = $fd; # set the From domain as a tenant
+			$cgr_opt(Tenant) = $fd; # set the From domain as a tenant
 			$cgr(RequestType) = "\*prepaid"; # do prepaid accounting
-			if (!cgrates\_auth("$fU", "$rU")) {
-				sl\_send\_reply(403, "Forbidden");
+			if (!cgrates_auth("$fU", "$rU")) {
+				sl_send_reply(403, "Forbidden");
 				exit;
 			}
 
 			# second session - authorize the carrier
-			$(cgr\_opt(Tenant)\[carrier\]) = $td;
+			$(cgr_opt(Tenant)\[carrier\]) = $td;
 			$(cgr(RequestType)\[carrier\]) = "\*postpaid";
-			if (!cgrates\_auth("$tU", "$fU", "carrier")) {
+			if (!cgrates_auth("$tU", "$fU", "carrier")) {
 				# use a different carrier
 				return;
 			}
 
 			# if everything is successful start accounting on both
-			cgrates\_acc("cdr", "$fU", "rU");
-			cgrates\_acc("cdr", "$tU", "$fU", "carrier");
+			cgrates_acc("cdr", "$fU", "rU");
+			cgrates_acc("cdr", "$tU", "$fU", "carrier");
 		}
 		...
 
@@ -295,7 +295,7 @@ When assigned with the _:=_ operator, the value is treated as a JSON, rather tha
 - **Scope:** transaction, dialog
 ### `$cgr_opt(name) / $(cgr_opt(name)[session])`
 
-Used to tune the request parameter of a CGRateS request when used in non-_compat\_mode_.
+Used to tune the request parameter of a CGRateS request when used in non-_compat_mode_.
 
 _Note:_ for all request options integer values act as boolean values: _0_ disables the feature and _1_(or different than 0 value) enables it. String variables are passed just as they are set.
 
@@ -309,12 +309,12 @@ Possible values at the time the documentation was written:
     
 *   _GetSuppliers_ - request an array with all the suppliers for that can terminate that call.
     
-**Example 1.12. $cgr\_opt(name) usage**
+**Example 1.12. $cgr_opt(name) usage**
 
 		...
-		$cgr\_opt(Tenant) = "cgrates.org";
-		$cgr\_opt(GetMaxUsage) = 1; # also retrieve the max usage
-		if (!cgrates\_auth("$fU", "$rU")) {
+		$cgr_opt(Tenant) = "cgrates.org";
+		$cgr_opt(GetMaxUsage) = 1; # also retrieve the max usage
+		if (!cgrates_auth("$fU", "$rU")) {
 			# call rejected
 		}
 		...
@@ -333,16 +333,16 @@ Possible values at the time the documentation was written:
 
 Returns the reply message of a CGRateS command in script, or when used in the non-compat mode, one of the objects within the reply.
 
-**Example 1.13. $cgr\_ret(name) usage**
+**Example 1.13. $cgr_ret(name) usage**
 
 		...
-		cgrates\_auth("$fU", "$rU");
+		cgrates_auth("$fU", "$rU");
 
 		# in compat mode
-		xlog("Call is allowed to run $cgr\_ret seconds\\n");
+		xlog("Call is allowed to run $cgr_ret seconds\\n");
 
 		# in non-compat mode
-		xlog("Call is allowed to run $cgr\_ret(MaxUsage) seconds\\n");
+		xlog("Call is allowed to run $cgr_ret(MaxUsage) seconds\\n");
 		...
 
 - **Type:** string

@@ -45,7 +45,7 @@ The interval between full iterations of the sessions table in order to clean up 
 
 ```opensips
 ...
-modparam("msrp\_gateway", "cleanup\_interval", 60)
+modparam("msrp_gateway", "cleanup_interval", 60)
 ...
 ```
 ### `hash_size` (integer)
@@ -58,7 +58,7 @@ The size of the hash table that stores the gateway session information. It is th
 
 ```opensips
 ...
-modparam("msrp\_gateway", "hash\_size", 16)
+modparam("msrp_gateway", "hash_size", 16)
 ...
 ```
 ### `message_timeout` (integer)
@@ -71,7 +71,7 @@ Amount of time (in seconds) since last MESSAGE has been received after which a s
 
 ```opensips
 ...
-modparam("msrp\_gateway", "message\_timeout", 3600)
+modparam("msrp_gateway", "message_timeout", 3600)
 ...
 ```
 ### `session_timeout` (integer)
@@ -84,7 +84,7 @@ Amount of time (in seconds) since last message has been received from either sid
 
 ```opensips
 ...
-modparam("msrp\_gateway", "session\_timeout", 7200)
+modparam("msrp_gateway", "session_timeout", 7200)
 ...
 ```
 

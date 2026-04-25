@@ -39,7 +39,7 @@ This is URL of the database to be used.
 **Example.** Set the `db_url` parameter.
 
 ```opensips
-modparam("domainpolicy", "db\_url", "postgresql://user:pass@db\_host/opensips")
+modparam("domainpolicy", "db_url", "postgresql://user:pass@db_host/opensips")
 ```
 ### `domain_prefix_avp` (string)
 
@@ -77,14 +77,14 @@ modparam("domainpolicy", "domain_suffix_avp", "domainsuffix")
 ```
 ### `dp_col_att` (string)
 
-Name of column containing the AVP's name. If the rule stored in this row triggers, than dp\_can\_connect() will add an AVP with that name.
+Name of column containing the AVP's name. If the rule stored in this row triggers, than dp_can_connect() will add an AVP with that name.
 
 *Default value is “att”.*
 
 **Example.** Set the `dp_col_att` parameter.
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_att", "attribute")
+modparam("domainpolicy", "dp_col_att", "attribute")
 ```
 ### `dp_col_rule` (string)
 
@@ -95,7 +95,7 @@ Name of column containing the domain policy rule name which is equal to the URI 
 **Example.** Set the `dp_col_rule` parameter.
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_rule", "rules")
+modparam("domainpolicy", "dp_col_rule", "rules")
 ```
 ### `dp_col_type` (string)
 
@@ -106,7 +106,7 @@ Name of column containing the domain policy rule type. In the case of federation
 **Example.** Set the `dp_col_type` parameter.
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_type", "type")
+modparam("domainpolicy", "dp_col_type", "type")
 ```
 ### `dp_col_val` (string)
 
@@ -128,7 +128,7 @@ Name of table containing the local support domain policy setup.
 **Example.** Set the `dp_table` parameter.
 
 ```opensips
-modparam("domainpolicy", "dp\_table", "supportedpolicies")
+modparam("domainpolicy", "dp_table", "supportedpolicies")
 ```
 ### `port_override_avp` (string)
 
@@ -143,7 +143,7 @@ modparam("domainpolicy", "port_override_avp", "portoverride")
 ```
 ### `send_socket_avp` (string)
 
-Name of the AVP which contains a send\_socket. The format of the send socket (the payload of this AVP) must be in the format \[proto:\]ip\_address\[:port\]. The function dp\_apply\_policy will look for this AVP and if defined, it will force the send socket to its value (smilar to the force\_send\_socket core function).
+Name of the AVP which contains a send_socket. The format of the send socket (the payload of this AVP) must be in the format \[proto:\]ip_address\[:port\]. The function dp_apply_policy will look for this AVP and if defined, it will force the send socket to its value (smilar to the force_send_socket core function).
 
 *Default value is “sendsocket”.*
 
@@ -273,42 +273,42 @@ switch(retcode) {
 This is URL of the database to be used.
 
 ```opensips
-modparam("domainpolicy", "db\_url", "postgresql://user:pass@db\_host/opensips")
+modparam("domainpolicy", "db_url", "postgresql://user:pass@db_host/opensips")
 ```
 ### Setting dp_table parameter
 
 Name of table containing the local support domain policy setup.
 
 ```opensips
-modparam("domainpolicy", "dp\_table", "supportedpolicies")
+modparam("domainpolicy", "dp_table", "supportedpolicies")
 ```
 ### Setting dp_col_rule parameter
 
 Name of column containing the domain policy rule name which is equal to the URI as published in the domain policy NAPTRs.
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_rule", "rules")
+modparam("domainpolicy", "dp_col_rule", "rules")
 ```
 ### Setting dp_col_rule parameter
 
 Name of column containing the domain policy rule type. In the case of federation names, this is "fed". For standard referrals according to draft-lendl-speermint-technical-policy-00, this is "std". For direct domain lookups, this is "dom".
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_type", "type")
+modparam("domainpolicy", "dp_col_type", "type")
 ```
 ### Setting dp_col_att parameter
 
 Name of column containing the AVP's name. If the rule stored in this row triggers, than dp_can_connect() will add an AVP with that name.
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_att", "attribute")
+modparam("domainpolicy", "dp_col_att", "attribute")
 ```
 ### Setting dp_col_val parameter
 
 Name of column containing the value for AVPs created by dp_can_connect().
 
 ```opensips
-modparam("domainpolicy", "dp\_col\_val", "values")
+modparam("domainpolicy", "dp_col_val", "values")
 ```
 ### Setting port_override_avp parameter
 
@@ -316,7 +316,7 @@ This parameter defines the name of the AVP where dp_apply_policy() will look for
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "port\_override\_avp", "portoverride")
+modparam("domainpolicy", "port_override_avp", "portoverride")
 ```
 ### Setting transport_override_avp parameter
 
@@ -324,7 +324,7 @@ Name of the AVP which contains the override transport setting.
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "transport\_override\_avp", "transportoverride")
+modparam("domainpolicy", "transport_override_avp", "transportoverride")
 ```
 ### Setting domain_replacement_avp parameter
 
@@ -332,7 +332,7 @@ Name of the AVP which contains a domain replacement.
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "domain\_replacement\_avp", "domainreplacement")
+modparam("domainpolicy", "domain_replacement_avp", "domainreplacement")
 ```
 ### Setting domain_prefix_avp parameter
 
@@ -340,7 +340,7 @@ Name of the AVP which contains a domain prefix.
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "domain\_prefix\_avp", "domainprefix")
+modparam("domainpolicy", "domain_prefix_avp", "domainprefix")
 ```
 ### Setting domain_suffix_avp parameter
 
@@ -348,7 +348,7 @@ Name of the AVP which contains a domain suffix.
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "domain\_suffix\_avp", "domainsuffix")
+modparam("domainpolicy", "domain_suffix_avp", "domainsuffix")
 ```
 ### Setting send_socket_avp parameter
 
@@ -356,7 +356,7 @@ Name of the AVP which contains a send_socket. The format of the send socket (the
 
 ```opensips
 # string named AVP
-modparam("domainpolicy", "send\_socket\_avp", "sendsocket")
+modparam("domainpolicy", "send_socket_avp", "sendsocket")
 ```
 ### dp_can_connect usage
 
@@ -364,25 +364,25 @@ Checks the interconnection policy of the caller. It uses the domain in the reque
 
 ```opensips
 ...
-dp\_can\_connect();
+dp_can_connect();
 switch(retcode) {
 	case -2:
-		xlog("L\_INFO","Errors during the DP evaluation\\n");
-		sl\_send\_reply(404, "We can't connect you.");
+		xlog("L_INFO","Errors during the DP evaluation\\n");
+		sl_send_reply(404, "We can't connect you.");
 		break;
 	case -1:
-		xlog("L\_INFO","We can't connect to that domain\\n");
-		sl\_send\_reply(404, "We can't connect you.");
+		xlog("L_INFO","We can't connect to that domain\\n");
+		sl_send_reply(404, "We can't connect you.");
 		break;
 	case 1:
-		xlog("L\_INFO","We found matching policy records\\n");
-		avp\_print();
-		dp\_apply\_policy();
-		t\_relay();
+		xlog("L_INFO","We found matching policy records\\n");
+		avp_print();
+		dp_apply_policy();
+		t_relay();
 		break;
 	case 2:
-		xlog("L\_INFO","No DP records found\\n");
-		t\_relay();
+		xlog("L_INFO","No DP records found\\n");
+		t_relay();
 		break;
 }
 ...
@@ -393,8 +393,8 @@ This function sets the destination URI according to the policy returned from the
 
 ```opensips
 ...
-if (dp\_apply\_policy()) {
-	t\_relay();
+if (dp_apply_policy()) {
+	t_relay();
 }
 ...
 ```

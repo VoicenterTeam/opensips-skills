@@ -32,14 +32,14 @@ This is a module which provides MySQL connectivity for OpenSIPS. It implements t
 
 ### `exec_query_threshold` (integer)
 
-If queries take longer than 'exec\_query\_threshold' microseconds, warning messages will be written to logging facility.
+If queries take longer than 'exec_query_threshold' microseconds, warning messages will be written to logging facility.
 
 *Default value is 0 - disabled.*
 
 **Example.** 60000.
 
 ```opensips
-modparam("db\_mysql", "exec\_query\_threshold", 60000)
+modparam("db_mysql", "exec_query_threshold", 60000)
 ```
 ### `max_db_queries` (integer)
 
@@ -50,7 +50,7 @@ The maximum number of retries to execute a failed query due to connections probl
 **Example.** 2.
 
 ```opensips
-modparam("db\_mysql", "max\_db\_queries", 2)
+modparam("db_mysql", "max_db_queries", 2)
 ```
 ### `max_db_retries` (integer)
 
@@ -61,7 +61,7 @@ The maximum number of database connection retries. If this parameter is set impr
 **Example.** 2.
 
 ```opensips
-modparam("db\_mysql", "max\_db\_retries", 2)
+modparam("db_mysql", "max_db_retries", 2)
 ```
 ### `ps_max_col_size` (integer)
 
@@ -74,7 +74,7 @@ The maximum size of a column's data, when fetched using prepared statements. Par
 **Example.** 4096.
 
 ```opensips
-modparam("db\_mysql", "ps\_max\_col\_size", 4096)
+modparam("db_mysql", "ps_max_col_size", 4096)
 ```
 ### `timeout_interval` (integer)
 
@@ -85,27 +85,27 @@ Time interval after which a connection attempt (read or write request) is aborte
 **Example.** 2.
 
 ```opensips
-modparam("db\_mysql", "timeout\_interval", 2)
+modparam("db_mysql", "timeout_interval", 2)
 ```
 ### `use_tls` (integer)
 
-Setting this parameter will allow you to use TLS for MySQL connections. In order to enable TLS for a specific connection, you can use the "**tls\_domain=**dom\_name" URL parameter in the db\_url of the respective OpenSIPS module. This should be placed at the end of the URL after the **'?'** character. Additionally, the query string may include the "**tls\_opts=** PKEY,CERT,CA,CA\_DIR,CIPHERS" CSV parameter, in order to control/limit the amount of TLS options passed to the TLS library. When using this parameter, you must also ensure that _tls\_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains. Note that if you want to use this feature, the TLS domain must be provisioned in the configuration file, _NOT_ in the database. In case you are loading TLS certificates from the database, you must at least define one domain in the configuration script, to use for the initial connection to the DB. Also, you can _NOT_ enable TLS for the connection to the database of the _tls\_mgm_ module itself.
+Setting this parameter will allow you to use TLS for MySQL connections. In order to enable TLS for a specific connection, you can use the "**tls_domain=**dom_name" URL parameter in the db_url of the respective OpenSIPS module. This should be placed at the end of the URL after the **'?'** character. Additionally, the query string may include the "**tls_opts=** PKEY,CERT,CA,CA_DIR,CIPHERS" CSV parameter, in order to control/limit the amount of TLS options passed to the TLS library. When using this parameter, you must also ensure that _tls_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains. Note that if you want to use this feature, the TLS domain must be provisioned in the configuration file, _NOT_ in the database. In case you are loading TLS certificates from the database, you must at least define one domain in the configuration script, to use for the initial connection to the DB. Also, you can _NOT_ enable TLS for the connection to the database of the _tls_mgm_ module itself.
 
 *Default value is 0 (not enabled).*
 
 **Example.** 1.
 
 ```opensips
-modparam("tls\_mgm", "client\_domain", "dom1")
-modparam("tls\_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
-modparam("tls\_mgm", "private\_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
-modparam("tls\_mgm", "ca\_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
+modparam("tls_mgm", "client_domain", "dom1")
+modparam("tls_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
+modparam("tls_mgm", "private_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
+modparam("tls_mgm", "ca_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
 ...
-modparam("db\_mysql", "use\_tls", 1)
+modparam("db_mysql", "use_tls", 1)
 ...
-modparam("usrloc", "db\_url", "mysql://root:1234@localhost/opensips?tls\_domain=dom1")
+modparam("usrloc", "db_url", "mysql://root:1234@localhost/opensips?tls_domain=dom1")
 ...
-modparam("usrloc", "db\_url", "mysql://root:1234@localhost/opensips?tls\_domain=dom1&tls\_opts=PKEY,CERT,CA,CA\_DIR,CIPHERS")
+modparam("usrloc", "db_url", "mysql://root:1234@localhost/opensips?tls_domain=dom1&tls_opts=PKEY,CERT,CA,CA_DIR,CIPHERS")
 ```
 
 ## Exported Events
@@ -116,7 +116,7 @@ This event is raised when a MySQL connection is lost or recovered.
 
 **Parameters:**
 
-- `url` *(string)* — the URL of the connection as specified by the _db\_url_ parameter.
+- `url` *(string)* — the URL of the connection as specified by the _db_url_ parameter.
 - `status` *(string)* — _connected_ if the connection recovered, or _disconnected_ if the connection was lost.
 
 ## Configuration Examples

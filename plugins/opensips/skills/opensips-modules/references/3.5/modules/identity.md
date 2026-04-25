@@ -93,7 +93,7 @@ modparam("identity", "useCrls", 1)
 ```
 ### `verCert` (string)
 
-Path containing certificates for the verifier. Certificates must be in PEM format. The URI in the Identity-Info header field is used to find the corresponding certificate for the request. For this purpose the verifier replaces every character which is not alphanumeric, no “\_” and no “.” with a “\-”. A “.” at the beginning of the URI is forbidden. If the URI is “http://www.test.com/cert.pem” the verifier will look for the file “http---www.test.com-cert.pem”, for example. It is also possible to store a whole certificate chain in a file. In this case certificates must be in right order, end certificate first.
+Path containing certificates for the verifier. Certificates must be in PEM format. The URI in the Identity-Info header field is used to find the corresponding certificate for the request. For this purpose the verifier replaces every character which is not alphanumeric, no “_” and no “.” with a “\-”. A “.” at the beginning of the URI is forbidden. If the URI is “http://www.test.com/cert.pem” the verifier will look for the file “http---www.test.com-cert.pem”, for example. It is also possible to store a whole certificate chain in a file. In this case certificates must be in right order, end certificate first.
 
 **Example.** /etc/openser/verCert/.
 

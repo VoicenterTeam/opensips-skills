@@ -24,7 +24,7 @@ This is a module that enables media streams to be proxied via an RTP proxy. The 
 
 ## How It Works
 
-The rtpengine module can support multiple RTP proxies for balancing/distribution and control/selection purposes. The module allows definition of several sets of rtpengines. Load-balancing will be performed over a set and the admin has the ability to choose what set should be used. The set is selected via its id - the id being defined with the set. Refer to the “[rtpengine\_sock](#param_rtpengine_sock "1.4.1.�rtpengine_sock (string)")” module parameter definition for syntax description. The balancing inside a set is done automatically by the module based on the weight of each RTP proxy from the set. The selection of the set is done from script prior using rtpengine\_delete(), rtpengine\_offer() or rtpengine\_answer() functions - see the rtpengine\_use\_set() function. Another way to select the set is to define setid\_avp module parameter and assign setid to the defined avp before calling rtpengine\_offer() or rtpengine\_manage() function. If forwarding of the requests fails and there is another branch to try, remember to unset the avp after calling rtpengine\_delete() function. For backward compatibility reasons, a set with no id take by default the id 0. Also if no set is explicitly set before rtpengine\_delete(), rtpengine\_offer() or rtpengine\_answer() the 0 id set will be used. IMPORTANT: if you use multiple sets, take care and use the same set for both rtpengine\_offer()/rtpengine\_answer() and rtpengine\_delete()!! If the set was selected using setid\_avp, the avp needs to be set only once before rtpengine\_offer() or rtpengine\_manage() call. The module is able to failover to a new node within a set, if a chosen one has communication issues. Moreover, it will also failover if the node returns one of the following errors: *   Parallel session limit reached *   Ran out of ports You can use the [extra\_failover\_error](#param_extra_failover_error "1.5.2.1.�extra_failover_error (string)") parameter to extend the above list. Many rtpengine\_\* functions accept a "sock\_var" parameter that will be populated with the socket of the RTPEngine chosen for the particular operation. The format of the data stored in "sock\_var" is: "proto:ip:port". If the "sock\_var" has been specified and it is non-NULL then it will be used to determine the specific RTPEngine to use. Note that the socket specified by "sock\_var" must be a member of the current RTPEngine Set context.
+The rtpengine module can support multiple RTP proxies for balancing/distribution and control/selection purposes. The module allows definition of several sets of rtpengines. Load-balancing will be performed over a set and the admin has the ability to choose what set should be used. The set is selected via its id - the id being defined with the set. Refer to the “[rtpengine_sock](#param_rtpengine_sock "1.4.1.rtpengine_sock (string)")” module parameter definition for syntax description. The balancing inside a set is done automatically by the module based on the weight of each RTP proxy from the set. The selection of the set is done from script prior using rtpengine_delete(), rtpengine_offer() or rtpengine_answer() functions - see the rtpengine_use_set() function. Another way to select the set is to define setid_avp module parameter and assign setid to the defined avp before calling rtpengine_offer() or rtpengine_manage() function. If forwarding of the requests fails and there is another branch to try, remember to unset the avp after calling rtpengine_delete() function. For backward compatibility reasons, a set with no id take by default the id 0. Also if no set is explicitly set before rtpengine_delete(), rtpengine_offer() or rtpengine_answer() the 0 id set will be used. IMPORTANT: if you use multiple sets, take care and use the same set for both rtpengine_offer()/rtpengine_answer() and rtpengine_delete()!! If the set was selected using setid_avp, the avp needs to be set only once before rtpengine_offer() or rtpengine_manage() call. The module is able to failover to a new node within a set, if a chosen one has communication issues. Moreover, it will also failover if the node returns one of the following errors: *   Parallel session limit reached *   Ran out of ports You can use the [extra_failover_error](#param_extra_failover_error "1.5.2.1.extra_failover_error (string)") parameter to extend the above list. Many rtpengine_\* functions accept a "sock_var" parameter that will be populated with the socket of the RTPEngine chosen for the particular operation. The format of the data stored in "sock_var" is: "proto:ip:port". If the "sock_var" has been specified and it is non-NULL then it will be used to determine the specific RTPEngine to use. Note that the socket specified by "sock_var" must be a member of the current RTPEngine Set context.
 
 ## Dependencies
 
@@ -47,18 +47,18 @@ The table where the RTPEngines sockets are stored. Used when Database URL is pro
 **Example.** rtpengine_new.
 
 ```opensips
-modparam("rtpengine", "db\_table", "rtpengine\_new")
+modparam("rtpengine", "db_table", "rtpengine_new")
 ```
 ### `db_url` (string)
 
-Database URL, used to load RTPEngines sockets from db, instead of specifying them in the script ([rtpengine_sock](#param_rtpengine_sock "1.4.1.�rtpengine_sock (string)") module parameter).
+Database URL, used to load RTPEngines sockets from db, instead of specifying them in the script ([rtpengine_sock](#param_rtpengine_sock "1.4.1.rtpengine_sock (string)") module parameter).
 
 *Default value is NULL.*
 
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("rtpengine", "db\_url", 
+modparam("rtpengine", "db_url", 
 		"mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### `error_pv` (string)
@@ -70,7 +70,7 @@ The parameter defines a variable that shall be populated by RTP when one of the 
 **Example.** $var(rtpengine_error).
 
 ```opensips
-modparam("rtpengine", "error\_pv", "$var(rtpengine\_error)")
+modparam("rtpengine", "error_pv", "$var(rtpengine_error)")
 ```
 ### `extra_id_pv` (string)
 
@@ -83,7 +83,7 @@ The parameter sets the PV definition to use when the “via-branch=extra” opti
 **Example.** $avp(extra_id).
 
 ```opensips
-modparam("rtpengine", "extra\_id\_pv", "$avp(extra\_id)")
+modparam("rtpengine", "extra_id_pv", "$avp(extra_id)")
 ```
 ### `notification_sock` (string)
 
@@ -96,20 +96,20 @@ Every notification received from RTPengine will trigger an _E_RTPENGINE_NOTIFICA
 **Example.** 127.0.0.1:9999.
 
 ```opensips
-modparam("rtpengine", "notification\_sock", "127.0.0.1:9999")
+modparam("rtpengine", "notification_sock", "127.0.0.1:9999")
 ```
 ### `ping_enabled` (integer)
 
 This parameter indicates whether probing should be done for enabled nodes as well.
 
-If this parameter is set, each enabled node is pinged every [rtpengine\_timer\_interval](#param_rtpengine_timer_interval "1.4.5.�rtpengine\_timer\_interval (integer)") seconds, unless there was any communication with the node since the previous interval.
+If this parameter is set, each enabled node is pinged every [rtpengine_timer_interval](#param_rtpengine_timer_interval "1.4.5.rtpengine_timer_interval (integer)") seconds, unless there was any communication with the node since the previous interval.
 
 *Default value is 0.*
 
 **Example.** yes.
 
 ```opensips
-modparam("rtpengine", "ping\_enabled", yes)
+modparam("rtpengine", "ping_enabled", yes)
 ```
 ### `rtpengine_disable_tout` (integer)
 
@@ -120,7 +120,7 @@ Once an RTP proxy was found unreachable and marked as disabled, the rtpengine mo
 **Example.** 20.
 
 ```opensips
-modparam("rtpengine", "rtpengine\_disable\_tout", 20)
+modparam("rtpengine", "rtpengine_disable_tout", 20)
 ```
 ### `rtpengine_retr` (integer)
 
@@ -131,7 +131,7 @@ How many times the module should retry to send and receive after timeout was gen
 **Example.** 2.
 
 ```opensips
-modparam("rtpengine", "rtpengine\_retr", 2)
+modparam("rtpengine", "rtpengine_retr", 2)
 ```
 ### `rtpengine_sock` (string)
 
@@ -143,14 +143,14 @@ Definition of socket(s) used to connect to (a set) RTP proxy. It may specify a U
 
 ```opensips
 # single rtproxy
-modparam("rtpengine", "rtpengine\_sock", "udp:localhost:12221")
+modparam("rtpengine", "rtpengine_sock", "udp:localhost:12221")
 # multiple rtproxies for LB
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"udp:localhost:12221 udp:localhost:12222")
 # multiple sets of multiple rtproxies
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"1 == udp:localhost:12221 udp:localhost:12222")
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"2 == udp:localhost:12225")
 ```
 ### `rtpengine_timer_interval` (integer)
@@ -162,7 +162,7 @@ Frequency to scan rtpengine sets for disabled node probing. Probing is done outs
 **Example.** 1.
 
 ```opensips
-modparam("rtpengine", "rtpengine\_timer\_interval", 1)
+modparam("rtpengine", "rtpengine_timer_interval", 1)
 ```
 ### `rtpengine_tout` (integer)
 
@@ -173,18 +173,18 @@ Timeout value in waiting for reply from RTP proxy.
 **Example.** 2.
 
 ```opensips
-modparam("rtpengine", "rtpengine\_tout", 2)
+modparam("rtpengine", "rtpengine_tout", 2)
 ```
 ### `set_column` (string)
 
 The name of the rtpengine set column in the database table.
 
-*Default value is set\_id.*
+*Default value is set_id.*
 
-**Example.** set\_new.
+**Example.** set_new.
 
 ```opensips
-modparam("rtpengine", "set\_column", "set\_new")
+modparam("rtpengine", "set_column", "set_new")
 ```
 ### `setid_avp` (string)
 
@@ -195,7 +195,7 @@ The parameter defines an AVP that, if set, determines which RTP proxy set rtpeng
 **Example.** $avp(setid).
 
 ```opensips
-modparam("rtpengine", "setid\_avp", "$avp(setid)")
+modparam("rtpengine", "setid_avp", "$avp(setid)")
 ```
 ### `socket_column` (string)
 
@@ -206,7 +206,7 @@ The name of the rtpengine socket column in the database table.
 **Example.** sock.
 
 ```opensips
-modparam("rtpengine", "socket\_column", "sock")
+modparam("rtpengine", "socket_column", "sock")
 ```
 
 ## Exported Functions
@@ -805,18 +805,18 @@ NOTE: if a RTP proxy is defined multiple times (in the same or different set), a
 **Example.** disable all rtpengines by URL
 
 ```opensips-cli
-$ opensips-cli -x mi rtpengine\_enable udp:192.168.2.133:8081 0
+$ opensips-cli -x mi rtpengine_enable udp:192.168.2.133:8081 0
 ```
 
 **Example.** enable rtpengine by URL and set ID (3)
 
 ```opensips-cli
-$ opensips-cli -x mi rtpengine\_enable url=udp:192.168.2.133:8081 enable=1 setid=3
+$ opensips-cli -x mi rtpengine_enable url=udp:192.168.2.133:8081 enable=1 setid=3
 ```
 
 ### `rtpengine_reload`
 
-Reloads all rtpengine sets from the database. Used only when the “[db_url](#param_db_url "1.4.10.�db_url (string)")” parameter is set.
+Reloads all rtpengine sets from the database. Used only when the “[db_url](#param_db_url "1.4.10.db_url (string)")” parameter is set.
 
 **Parameters:**
 
@@ -825,13 +825,13 @@ Reloads all rtpengine sets from the database. Used only when the “[db_url](#pa
 **Example.**
 
 ```opensips-cli
-$ opensips-cli -x mi rtpengine\_reload
+$ opensips-cli -x mi rtpengine_reload
 ```
 
 **Example.**
 
 ```opensips-cli
-$ opensips-cli -x mi rtpengine\_reload type=soft
+$ opensips-cli -x mi rtpengine_reload type=soft
 ```
 
 ### `rtpengine_show`
@@ -841,7 +841,7 @@ Displays all the RTP proxies and their information: set and status (disabled or 
 **Example.**
 
 ```opensips-cli
-$ opensips-cli -x mi rtpengine\_show
+$ opensips-cli -x mi rtpengine_show
 ```
 
 ### `teardown`
@@ -895,14 +895,14 @@ Set `rtpengine_sock` parameter
 ```opensips
 ...
 # single rtproxy
-modparam("rtpengine", "rtpengine\_sock", "udp:localhost:12221")
+modparam("rtpengine", "rtpengine_sock", "udp:localhost:12221")
 # multiple rtproxies for LB
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"udp:localhost:12221 udp:localhost:12222")
 # multiple sets of multiple rtproxies
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"1 == udp:localhost:12221 udp:localhost:12222")
-modparam("rtpengine", "rtpengine\_sock",
+modparam("rtpengine", "rtpengine_sock",
 	"2 == udp:localhost:12225")
 ...
 ```
@@ -912,7 +912,7 @@ Set `rtpengine_disable_tout` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "rtpengine\_disable\_tout", 20)
+modparam("rtpengine", "rtpengine_disable_tout", 20)
 ...
 ```
 ### Set `rtpengine_tout` parameter
@@ -921,7 +921,7 @@ Set `rtpengine_tout` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "rtpengine\_tout", 2)
+modparam("rtpengine", "rtpengine_tout", 2)
 ...
 ```
 ### Set `rtpengine_retr` parameter
@@ -930,7 +930,7 @@ Set `rtpengine_retr` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "rtpengine\_retr", 2)
+modparam("rtpengine", "rtpengine_retr", 2)
 ...
 ```
 ### Set `rtpengine_timer_interval` parameter
@@ -939,7 +939,7 @@ Set `rtpengine_timer_interval` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "rtpengine\_timer\_interval", 1)
+modparam("rtpengine", "rtpengine_timer_interval", 1)
 ...
 ```
 ### Set `notification_sock` parameter
@@ -948,7 +948,7 @@ Set `notification_sock` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "notification\_sock", "127.0.0.1:9999")
+modparam("rtpengine", "notification_sock", "127.0.0.1:9999")
 ...
 ```
 ### Set `extra_id_pv` parameter
@@ -957,7 +957,7 @@ Set `extra_id_pv` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "extra\_id\_pv", "$avp(extra\_id)")
+modparam("rtpengine", "extra_id_pv", "$avp(extra_id)")
 ...
 ```
 ### Set `setid_avp` parameter
@@ -966,7 +966,7 @@ Set `setid_avp` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "setid\_avp", "$avp(setid)")
+modparam("rtpengine", "setid_avp", "$avp(setid)")
 ...
 ```
 ### Set `error_pv` parameter
@@ -975,7 +975,7 @@ Set `error_pv` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "error\_pv", "$var(rtpengine\_error)")
+modparam("rtpengine", "error_pv", "$var(rtpengine_error)")
 ...
 ```
 ### Set `db_url` parameter
@@ -984,7 +984,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "db\_url", 
+modparam("rtpengine", "db_url", 
 		"mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
@@ -994,7 +994,7 @@ Set `db_table` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "db\_table", "rtpengine_new")
+modparam("rtpengine", "db_table", "rtpengine_new")
 ...
 ```
 ### Set `socket_column` parameter
@@ -1003,7 +1003,7 @@ Set `socket_column` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "socket\_column", "sock")
+modparam("rtpengine", "socket_column", "sock")
 ...
 ```
 ### Set `set_column` parameter
@@ -1012,7 +1012,7 @@ Set `set_column` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "set\_column", "set\_new")
+modparam("rtpengine", "set_column", "set_new")
 ...
 ```
 ### Set `ping_enabled` parameter
@@ -1021,7 +1021,7 @@ Set `ping_enabled` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "ping\_enabled", yes)
+modparam("rtpengine", "ping_enabled", yes)
 ...
 ```
 ### `rtpengine_use_set` usage
@@ -1030,8 +1030,8 @@ modparam("rtpengine", "ping\_enabled", yes)
 
 ```opensips
 ...
-rtpengine\_use\_set(2);
-rtpengine\_offer();
+rtpengine_use_set(2);
+rtpengine_offer();
 ...
 ```
 ### `rtpengine_offer` usage
@@ -1041,32 +1041,32 @@ rtpengine\_offer();
 ```opensips
 route {
 ...
-    if (is\_method("INVITE")) {
-        if (has\_body("application/sdp")) {
-            if (rtpengine\_offer())
-                t\_on\_reply("1");
+    if (is_method("INVITE")) {
+        if (has_body("application/sdp")) {
+            if (rtpengine_offer())
+                t_on_reply("1");
         } else {
-            t\_on\_reply("2");
+            t_on_reply("2");
         }
     }
-    if (is\_method("ACK") && has\_body("application/sdp"))
-        rtpengine\_answer();
+    if (is_method("ACK") && has_body("application/sdp"))
+        rtpengine_answer();
 ...
 }
 
-onreply\_route\[1\]
+onreply_route\[1\]
 {
 ...
-    if (has\_body("application/sdp"))
-        rtpengine\_answer();
+    if (has_body("application/sdp"))
+        rtpengine_answer();
 ...
 }
 
-onreply\_route\[2\]
+onreply_route\[2\]
 {
 ...
-    if (has\_body("application/sdp"))
-        rtpengine\_offer();
+    if (has_body("application/sdp"))
+        rtpengine_offer();
 ...
 }
 ```
@@ -1076,12 +1076,12 @@ onreply\_route\[2\]
 
 ```opensips
 ...
-if (rtpengine\_offer(, $var(socket), $var(body), $rb)) {
+if (rtpengine_offer(, $var(socket), $var(body), $rb)) {
     xlog("Used rtpengine $var(socket)\\n");
     # make all the changes on the resulted SDP in $var(body)
     ...
-    remove\_body\_part();
-    add\_body\_part($var(body), "application/sdp");
+    remove_body_part();
+    add_body_part($var(body), "application/sdp");
 }
 ...
 ```
@@ -1091,18 +1091,18 @@ if (rtpengine\_offer(, $var(socket), $var(body), $rb)) {
 
 ```opensips
 ...
-$var(rtpengine\_flags) = $var(rtpengine\_flags) + " record-call=yes";
+$var(rtpengine_flags) = $var(rtpengine_flags) + " record-call=yes";
 
-$json(recording\_keys) := "{}";
-$json(recording\_keys/callId) = $ci;
-$json(recording\_keys/fromUser) = $dlg\_val(recording\_from\_user);
-$json(recording\_keys/fromDomain) = $dlg\_val(recording\_from\_domain);
-$json(recording\_keys/fromTag) = $dlg\_val(recording\_from\_tag);
-$json(recording\_keys/toUser) = $dlg\_val(recording\_to\_user);
-$json(recording\_keys/toDomain) = $dlg\_val(recording\_to\_domain);
+$json(recording_keys) := "{}";
+$json(recording_keys/callId) = $ci;
+$json(recording_keys/fromUser) = $dlg_val(recording_from_user);
+$json(recording_keys/fromDomain) = $dlg_val(recording_from_domain);
+$json(recording_keys/fromTag) = $dlg_val(recording_from_tag);
+$json(recording_keys/toUser) = $dlg_val(recording_to_user);
+$json(recording_keys/toDomain) = $dlg_val(recording_to_domain);
 
-$var(rtpengine\_flags) = $var(rtpengine\_flags) + " metadata=" + $(json(recording\_keys){s.encode.hexa});
-rtpengine\_offer($var(rtpengine\_flags));
+$var(rtpengine_flags) = $var(rtpengine_flags) + " metadata=" + $(json(recording_keys){s.encode.hexa});
+rtpengine_offer($var(rtpengine_flags));
 ...
 ```
 ### `rtpengine_offer` usage for transcoding
@@ -1115,7 +1115,7 @@ rtpengine\_offer($var(rtpengine\_flags));
 # \* do not present PCMA to B-side: codec-mask-PCMA, but use it on A-side
 # \* do not use opus for A-side: codec-strip-opus
 # \* offer opus to B-side: transcode-opus
-rtpengine\_offer("... codec-mask-PCMA codec-strip-opus transcode-opus ...");
+rtpengine_offer("... codec-mask-PCMA codec-strip-opus transcode-opus ...");
 ...
 ```
 ### Set `extra_failover_error` parameter
@@ -1124,7 +1124,7 @@ Set `extra_failover_error` parameter
 
 ```opensips
 ...
-modparam("rtpengine", "extra\_failover\_error", "Parallel session limit reached")
+modparam("rtpengine", "extra_failover_error", "Parallel session limit reached")
 ...
 ```
 ### `rtpengine_delete` usage
@@ -1133,7 +1133,7 @@ modparam("rtpengine", "extra\_failover\_error", "Parallel session limit reached"
 
 ```opensips
 ...
-rtpengine\_delete();
+rtpengine_delete();
 ...
 ```
 ### `rtpengine_manage` usage
@@ -1142,7 +1142,7 @@ rtpengine\_delete();
 
 ```opensips
 ...
-rtpengine\_manage();
+rtpengine_manage();
 ...
 ```
 ### `rtpengine_start_recording` usage
@@ -1151,7 +1151,7 @@ rtpengine\_manage();
 
 ```opensips
 ...
-rtpengine\_start\_recording();
+rtpengine_start_recording();
 ...		
 
 ```
@@ -1161,7 +1161,7 @@ rtpengine\_start\_recording();
 
 ```opensips
 ...
-rtpengine\_stop\_recording();
+rtpengine_stop_recording();
 ...		
 
 ```
@@ -1171,7 +1171,7 @@ rtpengine\_stop\_recording();
 
 ```opensips
 ...
-rtpengine\_stop\_recording();
+rtpengine_stop_recording();
 ...		
 
 ```
@@ -1181,8 +1181,8 @@ Ringback tone using `rtpengine_play_media`
 
 ```opensips
 ...
-if (is\_method("INVITE") && !has\_totag())
-	rtpengine\_play\_media("file=/path/to/ringback\_tone\_file.wav");
+if (is_method("INVITE") && !has_totag())
+	rtpengine_play_media("file=/path/to/ringback_tone_file.wav");
 ...		
 
 ```
@@ -1192,13 +1192,13 @@ Manage music on hold using `rtpengine_play_media`
 
 ```opensips
 ...
-if (is\_method("INVITE") && has\_totag()) {
-	if (is\_audio\_on\_hold()) {
-		$dlg\_val(on\_hold) = "1";
-		rtpengine\_play\_media("from-tag=$tt file=/path/to/moh\_file.wav");
-	} else if ($dlg\_val(on\_hold) == "1") {
-		$dlg\_val(on\_hold) = "0";
-		rtpengine\_stop\_media("from-tag=$tt");
+if (is_method("INVITE") && has_totag()) {
+	if (is_audio_on_hold()) {
+		$dlg_val(on_hold) = "1";
+		rtpengine_play_media("from-tag=$tt file=/path/to/moh_file.wav");
+	} else if ($dlg_val(on_hold) == "1") {
+		$dlg_val(on_hold) = "0";
+		rtpengine_stop_media("from-tag=$tt");
 	}
 }
 ...		
@@ -1210,8 +1210,8 @@ Ringback tone stop using `rtpengine_stop_media`
 
 ```opensips
 ...
-if (is\_method("INVITE") && $rs == 200)
-	rtpengine\_stop\_media();
+if (is_method("INVITE") && $rs == 200)
+	rtpengine_stop_media();
 ...		
 
 ```
@@ -1221,16 +1221,16 @@ Example use of the last-frame-pos parameter `rtpengine_stop_media`
 
 ```opensips
 ...
-if (is\_method("INVITE") && has\_totag()) {
-	if (is\_audio\_on\_hold()) {
-		$dlg\_val(on\_hold = "1";
-		rtpengine\_play\_media("from-tag=$tt start-pos=$avp(last\_frame\_pos) file=/path/to/moh\_file.wav");
-	} else if ($dlg\_val(on\_hold) == "1") {
-		rtpengine\_stop\_media("from-tag=$tt", , $avp(last\_frame\_pos));
-		$dlg\_val(on\_hold = "0";
+if (is_method("INVITE") && has_totag()) {
+	if (is_audio_on_hold()) {
+		$dlg_val(on_hold = "1";
+		rtpengine_play_media("from-tag=$tt start-pos=$avp(last_frame_pos) file=/path/to/moh_file.wav");
+	} else if ($dlg_val(on_hold) == "1") {
+		rtpengine_stop_media("from-tag=$tt", , $avp(last_frame_pos));
+		$dlg_val(on_hold = "0";
 	}
 }
-	rtpengine\_stop\_media();
+	rtpengine_stop_media();
 ...		
 
 ```
@@ -1240,7 +1240,7 @@ Example of `rtpengine_block_media` usage
 
 ```opensips
 ...
-rtpengine\_block\_media();
+rtpengine_block_media();
 ...		
 
 ```
@@ -1250,7 +1250,7 @@ Example of `rtpengine_unblock_media` usage
 
 ```opensips
 ...
-rtpengine\_unblock\_media();
+rtpengine_unblock_media();
 ...		
 
 ```
@@ -1260,7 +1260,7 @@ Example of `rtpengine_block_dtmf` usage
 
 ```opensips
 ...
-rtpengine\_block\_dtmf();
+rtpengine_block_dtmf();
 ...		
 
 ```
@@ -1270,7 +1270,7 @@ Example of `rtpengine_unblock_dtmf` usage
 
 ```opensips
 ...
-rtpengine\_unblock\_dtmf();
+rtpengine_unblock_dtmf();
 ...		
 
 ```
@@ -1280,7 +1280,7 @@ Example of `rtpengine_start_forwarding` usage
 
 ```opensips
 ...
-rtpengine\_start\_forwarding();
+rtpengine_start_forwarding();
 ...		
 
 ```
@@ -1290,7 +1290,7 @@ Example of `rtpengine_stop_forwarding` usage
 
 ```opensips
 ...
-rtpengine\_stop\_forwarding();
+rtpengine_stop_forwarding();
 ...		
 
 ```
@@ -1300,51 +1300,51 @@ Example of `rtpengine_play_dtmf` usage
 
 ```opensips
 ...
-rtpengine\_play\_dtmf("0"); # send the 0 code upstream
+rtpengine_play_dtmf("0"); # send the 0 code upstream
 ...		
 
 ```
-### Example of async rtpengine\_offer() usage
+### Example of async rtpengine_offer() usage
 
-Example of async rtpengine\_offer() usage
+Example of async rtpengine_offer() usage
 
 ```opensips
 ...
-if (is\_method("ACK") && has\_totag() && has\_body\_part("application/sdp")) {
-	async(rtpengine\_offer(), resume\_invite);
+if (is_method("ACK") && has_totag() && has_body_part("application/sdp")) {
+	async(rtpengine_offer(), resume_invite);
 }
 ...
-route\[resume\_invite\] {
-	t\_relay();
+route\[resume_invite\] {
+	t_relay();
 }
 ...		
 
 ```
-### Example of async rtpengine\_answer() usage
+### Example of async rtpengine_answer() usage
 
-Example of async rtpengine\_answer() usage
+Example of async rtpengine_answer() usage
 
 ```opensips
 ...
-if (is\_method("ACK") && has\_body\_part("application/sdp")) {
+if (is_method("ACK") && has_body_part("application/sdp")) {
 	# late negotiation
-	async(rtpengine\_answer(), resume\_ack);
+	async(rtpengine_answer(), resume_ack);
 }
 ...
-route\[resume\_ack\] {
-	t\_relay();
+route\[resume_ack\] {
+	t_relay();
 }
 ...		
 
 ```
-### Example of async rtpengine\_delete() usage
+### Example of async rtpengine_delete() usage
 
-Example of async rtpengine\_delete() usage
+Example of async rtpengine_delete() usage
 
 ```opensips
 ...
-if (is\_method("BYE")) {
-	launch(rtpengine\_delete());
+if (is_method("BYE")) {
+	launch(rtpengine_delete());
 }
 ...		
 
@@ -1355,7 +1355,7 @@ $rtpstat Usage
 
 ```opensips
 ...
-    append\_hf("X-RTP-Statistics: $rtpstat\\r\\n");
+    append_hf("X-RTP-Statistics: $rtpstat\\r\\n");
 ...		
 
 ```
@@ -1390,9 +1390,9 @@ $rtpquery Usage
 ```opensips
 ...
 ## disable all rtpengines by URL
-$ opensips-cli -x mi rtpengine\_enable udp:192.168.2.133:8081 0
+$ opensips-cli -x mi rtpengine_enable udp:192.168.2.133:8081 0
 ## enable rtpengine by URL and set ID (3)
-$ opensips-cli -x mi rtpengine\_enable url=udp:192.168.2.133:8081 enable=1 setid=3
+$ opensips-cli -x mi rtpengine_enable url=udp:192.168.2.133:8081 enable=1 setid=3
 ...
 
 ```
@@ -1402,7 +1402,7 @@ $ opensips-cli -x mi rtpengine\_enable url=udp:192.168.2.133:8081 enable=1 setid
 
 ```opensips
 ...
-$ opensips-cli -x mi rtpengine\_show
+$ opensips-cli -x mi rtpengine_show
 ...
 
 ```
@@ -1412,8 +1412,8 @@ $ opensips-cli -x mi rtpengine\_show
 
 ```opensips
 ...
-$ opensips-cli -x mi rtpengine\_reload
-$ opensips-cli -x mi rtpengine\_reload type=soft
+$ opensips-cli -x mi rtpengine_reload
+$ opensips-cli -x mi rtpengine_reload type=soft
 ...
 
 ```

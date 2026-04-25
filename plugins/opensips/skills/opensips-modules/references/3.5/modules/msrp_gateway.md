@@ -44,7 +44,7 @@ The interval between full iterations of the sessions table in order to clean up 
 **Example.** 60.
 
 ```opensips
-modparam("msrp\_gateway", "cleanup\_interval", 60)
+modparam("msrp_gateway", "cleanup_interval", 60)
 ```
 ### `hash_size` (integer)
 
@@ -55,7 +55,7 @@ The size of the hash table that stores the gateway session information. It is th
 **Example.** 16.
 
 ```opensips
-modparam("msrp\_gateway", "hash\_size", 16)
+modparam("msrp_gateway", "hash_size", 16)
 ```
 ### `message_timeout` (integer)
 
@@ -66,7 +66,7 @@ Amount of time (in seconds) since last MESSAGE has been received after which a s
 **Example.** 3600.
 
 ```opensips
-modparam("msrp\_gateway", "message\_timeout", 3600)
+modparam("msrp_gateway", "message_timeout", 3600)
 ```
 ### `session_timeout` (integer)
 
@@ -77,7 +77,7 @@ Amount of time (in seconds) since last message has been received from either sid
 **Example.** 7200.
 
 ```opensips
-modparam("msrp\_gateway", "session\_timeout", 7200)
+modparam("msrp_gateway", "session_timeout", 7200)
 ```
 
 ## Exported Functions
@@ -150,7 +150,7 @@ Terminate an ongoing session.
 **Example.** MI FIFO Command Format
 
 ```opensips-cli
-opensips-cli -x mi msrp\_gw\_end\_session alice@opensips.org-bob@opensips.org
+opensips-cli -x mi msrp_gw_end_session alice@opensips.org-bob@opensips.org
 ```
 
 ### `msrp_gw_list_sessions`
@@ -160,14 +160,14 @@ Lists information about ongoing sessions.
 **Example.** MI FIFO Command Format
 
 ```opensips-cli
-opensips-cli -x mi msrp\_gw\_list\_sessions
+opensips-cli -x mi msrp_gw_list_sessions
 ```
 
 ## Exported Events
 
 ### `E_MSRP_GW_SETUP_FAILED`
 
-This event is triggered when the MSRP side SIP session fails to set up, when using the _msg\_to\_msrp()_ function.
+This event is triggered when the MSRP side SIP session fails to set up, when using the _msg_to_msrp()_ function.
 
 The event can be used to generate a message with the failure description, back on the MESSAGE side.
 
@@ -188,7 +188,7 @@ Set `hash_size` parameter
 
 ```opensips
 ...
-modparam("msrp\_gateway", "hash\_size", 16)
+modparam("msrp_gateway", "hash_size", 16)
 ...
 ```
 ### Set `cleanup_interval` parameter
@@ -197,7 +197,7 @@ Set `cleanup_interval` parameter
 
 ```opensips
 ...
-modparam("msrp\_gateway", "cleanup\_interval", 60)
+modparam("msrp_gateway", "cleanup_interval", 60)
 ...
 ```
 ### Set `session_timeout` parameter
@@ -206,7 +206,7 @@ Set `session_timeout` parameter
 
 ```opensips
 ...
-modparam("msrp\_gateway", "session\_timeout", 7200)
+modparam("msrp_gateway", "session_timeout", 7200)
 ...
 ```
 ### Set `message_timeout` parameter
@@ -215,7 +215,7 @@ Set `message_timeout` parameter
 
 ```opensips
 ...
-modparam("msrp\_gateway", "message\_timeout", 3600)
+modparam("msrp_gateway", "message_timeout", 3600)
 ...
 ```
 ### `msrp_gw_answer()` usage
@@ -224,8 +224,8 @@ modparam("msrp\_gateway", "message\_timeout", 3600)
 
 ```opensips
 ...
-if (!has\_totag() && is\_method("INVITE")) {
-	msrp\_gw\_answer($var(corr\_key), "text/plain", $fu, $tu, $ru);
+if (!has_totag() && is_method("INVITE")) {
+	msrp_gw_answer($var(corr_key), "text/plain", $fu, $tu, $ru);
 	exit;
 }
 ...
@@ -236,8 +236,8 @@ if (!has\_totag() && is\_method("INVITE")) {
 
 ```opensips
 ...
-if (is\_method("MESSAGE")) {
-	msg\_to\_msrp($var(corr\_key), "text/plain");
+if (is_method("MESSAGE")) {
+	msg_to_msrp($var(corr_key), "text/plain");
 	exit;
 }
 ...

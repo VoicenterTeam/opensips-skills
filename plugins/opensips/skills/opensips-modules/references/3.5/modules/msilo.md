@@ -206,7 +206,7 @@ The name of the column storing the message body in silo table.
 **Example.** message_body.
 
 ```opensips
-modparam("msilo", "sc\_body", "message\_body")
+modparam("msilo", "sc_body", "message_body")
 ```
 ### `sc_ctype` (string)
 
@@ -217,7 +217,7 @@ The name of the column in silo table, storing content type.
 **Example.** content_type.
 
 ```opensips
-modparam("msilo", "sc\_ctype", "content\_type")
+modparam("msilo", "sc_ctype", "content_type")
 ```
 ### `sc_exp_time` (string)
 
@@ -283,7 +283,7 @@ The name of the column in silo table, storing the destination address.
 **Example.** destination_address.
 
 ```opensips
-modparam("msilo", "sc\_to", "destination\_address")
+modparam("msilo", "sc_to", "destination_address")
 ```
 ### `sc_uri_host` (string)
 
@@ -294,7 +294,7 @@ The name of the column in silo table, storing the domain.
 **Example.** domain.
 
 ```opensips
-modparam("msilo", "sc\_uri\_host", "domain")
+modparam("msilo", "sc_uri_host", "domain")
 ```
 ### `sc_uri_user` (string)
 
@@ -305,7 +305,7 @@ The name of the column in silo table, storing the user name.
 **Example.** user.
 
 ```opensips
-modparam("msilo", "sc\_uri\_user", "user")
+modparam("msilo", "sc_uri_user", "user")
 ```
 ### `send_time` (integer)
 

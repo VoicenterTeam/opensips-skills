@@ -78,33 +78,33 @@ Indicates the type of ICE candidate that will be added to the SDP. It can take 3
 
 ```opensips
 ...
-modparam("mediaproxy", "ice\_candidate", "low-priority")
+modparam("mediaproxy", "ice_candidate", "low-priority")
 ...
 ```
 ### `ice_candidate_avp` (string)
 
-Specification of the AVP which holds the ICE candidate that will be inserted in the SDP. The value specified in this AVP will override the value in ice\_candidate module parameter. Note that if use\_media\_proxy() and end\_media\_session() functions are being used, the AVP will not be available in the reply route unless you set onreply\_avp\_mode from the tm module to '1', and if the AVP is not set, the default value will be used.
+Specification of the AVP which holds the ICE candidate that will be inserted in the SDP. The value specified in this AVP will override the value in ice_candidate module parameter. Note that if use_media_proxy() and end_media_session() functions are being used, the AVP will not be available in the reply route unless you set onreply_avp_mode from the tm module to '1', and if the AVP is not set, the default value will be used.
 
-*Default value is $avp(ice\_candidate).*
+*Default value is $avp(ice_candidate).*
 
-**Example.** $avp(ice\_candidate).
+**Example.** $avp(ice_candidate).
 
 ```opensips
 ...
-modparam("mediaproxy", "ice\_candidate\_avp", "$avp(ice\_candidate)")
+modparam("mediaproxy", "ice_candidate_avp", "$avp(ice_candidate)")
 ...
 ```
 ### `media_relay_avp` (string)
 
-Specification of the AVP which holds an optional application defined media relay IP address of a particular media relay that is preferred to be used for the current call. If an IP address is written to this AVP before calling use\_media\_proxy(), it will be preferred by the dispatcher over the normal selection algorithm.
+Specification of the AVP which holds an optional application defined media relay IP address of a particular media relay that is preferred to be used for the current call. If an IP address is written to this AVP before calling use_media_proxy(), it will be preferred by the dispatcher over the normal selection algorithm.
 
-*Default value is $avp(media\_relay).*
+*Default value is $avp(media_relay).*
 
-**Example.** $avp(media\_relay).
+**Example.** $avp(media_relay).
 
 ```opensips
 ...
-modparam("mediaproxy", "media\_relay\_avp", "$avp(media\_relay)")
+modparam("mediaproxy", "media_relay_avp", "$avp(media_relay)")
 ...
 ```
 ### `mediaproxy_socket` (string)
@@ -117,7 +117,7 @@ It is the path to the filesystem socket where the mediaproxy dispatcher listens 
 
 ```opensips
 ...
-modparam("mediaproxy", "mediaproxy\_socket", "/run/mediaproxy/dispatcher.sock")
+modparam("mediaproxy", "mediaproxy_socket", "/run/mediaproxy/dispatcher.sock")
 ...
 ```
 ### `mediaproxy_timeout` (integer)
@@ -130,20 +130,20 @@ How much time (in milliseconds) to wait for an answer from the mediaproxy dispat
 
 ```opensips
 ...
-modparam("mediaproxy", "mediaproxy\_timeout", 500)
+modparam("mediaproxy", "mediaproxy_timeout", 500)
 ...
 ```
 ### `signaling_ip_avp` (string)
 
-Specification of the AVP which holds the IP address from where the SIP signaling originated. If this AVP is set it will be used to get the signaling IP address, else the source IP address from where the SIP message was received will be used. This AVP is meant to be used in cases where there are more than one proxy in the call setup path and the proxy that actually starts mediaproxy doesn't receive the SIP messages directly from the UA and it cannot determine the NAT IP address from where the signaling originated. In such a case attaching a SIP header at the first proxy and then copying that header's value into the signaling\_ip\_avp on the proxy that starts mediaproxy will allow it to get the correct NAT IP address from where the SIP signaling originated.
+Specification of the AVP which holds the IP address from where the SIP signaling originated. If this AVP is set it will be used to get the signaling IP address, else the source IP address from where the SIP message was received will be used. This AVP is meant to be used in cases where there are more than one proxy in the call setup path and the proxy that actually starts mediaproxy doesn't receive the SIP messages directly from the UA and it cannot determine the NAT IP address from where the signaling originated. In such a case attaching a SIP header at the first proxy and then copying that header's value into the signaling_ip_avp on the proxy that starts mediaproxy will allow it to get the correct NAT IP address from where the SIP signaling originated.
 
-*Default value is $avp(signaling\_ip).*
+*Default value is $avp(signaling_ip).*
 
-**Example.** $avp(nat\_ip).
+**Example.** $avp(nat_ip).
 
 ```opensips
 ...
-modparam("mediaproxy", "signaling\_ip\_avp", "$avp(nat\_ip)")
+modparam("mediaproxy", "signaling_ip_avp", "$avp(nat_ip)")
 ...
 ```
 
@@ -237,7 +237,7 @@ Setting the `mediaproxy_socket` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "mediaproxy\_socket", "/run/mediaproxy/dispatcher.sock")
+modparam("mediaproxy", "mediaproxy_socket", "/run/mediaproxy/dispatcher.sock")
 ...
 ```
 ### Setting the `mediaproxy_timeout` parameter
@@ -246,7 +246,7 @@ Setting the `mediaproxy_timeout` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "mediaproxy\_timeout", 500)
+modparam("mediaproxy", "mediaproxy_timeout", 500)
 ...
 ```
 ### Setting the `signaling_ip_avp` parameter
@@ -255,7 +255,7 @@ Setting the `signaling_ip_avp` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "signaling\_ip\_avp", "$avp(nat\_ip)")
+modparam("mediaproxy", "signaling_ip_avp", "$avp(nat_ip)")
 ...
 ```
 ### Setting the `media_relay_avp` parameter
@@ -264,7 +264,7 @@ Setting the `media_relay_avp` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "media\_relay\_avp", "$avp(media\_relay)")
+modparam("mediaproxy", "media_relay_avp", "$avp(media_relay)")
 ...
 ```
 ### Setting the `ice_candidate` parameter
@@ -273,7 +273,7 @@ Setting the `ice_candidate` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "ice\_candidate", "low-priority")
+modparam("mediaproxy", "ice_candidate", "low-priority")
 ...
 ```
 ### Setting the `ice_candidate_avp` parameter
@@ -282,7 +282,7 @@ Setting the `ice_candidate_avp` parameter
 
 ```opensips
 ...
-modparam("mediaproxy", "ice\_candidate\_avp", "$avp(ice\_candidate)")
+modparam("mediaproxy", "ice_candidate_avp", "$avp(ice_candidate)")
 ...
 ```
 ### Using the `engage_media_proxy` function
@@ -291,10 +291,10 @@ Using the `engage_media_proxy` function
 
 ```opensips
 ...
-if (is\_method("INVITE") && !has\_totag()) {
+if (is_method("INVITE") && !has_totag()) {
     # We can also use a specific media relay if we need to
-    #$avp(media\_relay) = "1.2.3.4";
-    engage\_media\_proxy();
+    #$avp(media_relay) = "1.2.3.4";
+    engage_media_proxy();
 }
 ...
 ```
@@ -304,10 +304,10 @@ Using the `use_media_proxy` function
 
 ```opensips
 ...
-if (is\_method("INVITE")) {
+if (is_method("INVITE")) {
     # We can also use a specific media relay if we need to
-    #$avp(media\_relay) = "1.2.3.4";
-    use\_media\_proxy();
+    #$avp(media_relay) = "1.2.3.4";
+    use_media_proxy();
 }
 ...
 ```
@@ -317,8 +317,8 @@ Using the `end_media_session` function
 
 ```opensips
 ...
-if (is\_method("BYE")) {
-    end\_media\_session();
+if (is_method("BYE")) {
+    end_media_session();
 }
 ...
 ```

@@ -47,7 +47,7 @@ Specifies whether the TCP/TLS connect and write operations should be done in an 
 **Example.** 0.
 
 ```opensips
-modparam("proto\_bins", "bins\_async", 0)
+modparam("proto_bins", "bins_async", 0)
 ```
 ### `bins_async_handshake_timeout` (integer)
 
@@ -93,7 +93,7 @@ The timeout is invoked during acceptance of a new connection (inbound) and durin
 **Example.** 200.
 
 ```opensips
-param("proto\_tls", "bins\_handshake\_timeout", 200) # number of milliseconds
+param("proto_tls", "bins_handshake_timeout", 200) # number of milliseconds
 ```
 ### `bins_max_msg_chunks` (integer)
 
@@ -104,7 +104,7 @@ The maximum number of chunks in which a BINS message is expected to arrive via T
 **Example.** 8.
 
 ```opensips
-modparam("proto\_bins", "bins\_max\_msg\_chunks", 8)
+modparam("proto_bins", "bins_max_msg_chunks", 8)
 ```
 ### `bins_port` (integer)
 
@@ -115,20 +115,20 @@ The default port to be used by all BINS listeners.
 **Example.** 5557.
 
 ```opensips
-modparam("proto\_bins", "bins\_port", 5557)
+modparam("proto_bins", "bins_port", 5557)
 ```
 ### `bins_send_timeout` (integer)
 
 Sets the timeout (in milliseconds) for blocking send operations to complete.
 
-The send timeout is invoked for all TLS write operations, excluding the handshake process (see: bins\_handshake\_timeout)
+The send timeout is invoked for all TLS write operations, excluding the handshake process (see: bins_handshake_timeout)
 
 *Default value is 100 ms.*
 
 **Example.** 200.
 
 ```opensips
-modparam("proto\_bins", "bins\_send\_timeout", 200)
+modparam("proto_bins", "bins_send_timeout", 200)
 ```
 ### `trace_destination` (string)
 
@@ -146,7 +146,7 @@ modparam("proto_bins", "trace_destination", "hep_dest")
 ```
 ### `trace_on` (int)
 
-This controls whether tracing for tls is on or not. You still need to define [trace_destination](#param_trace_destination "1.3.9.�trace_destination (string)")in order to work, but this value will be controlled using mi function [bins_trace](#mi_bins_trace "1.4.1.� bins_trace").
+This controls whether tracing for tls is on or not. You still need to define [trace_destination](#param_trace_destination "1.3.9.trace_destination (string)")in order to work, but this value will be controlled using mi function [bins_trace](#mi_bins_trace "1.4.1. bins_trace").
 
 *Default value is 0(tracing inactive).*
 

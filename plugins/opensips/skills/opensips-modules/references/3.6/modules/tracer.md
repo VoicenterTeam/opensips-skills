@@ -59,7 +59,7 @@ When file tracing is used, this parameter specifies the permissions to be used t
 **Example.** 0644.
 
 ```opensips
-modparam("tracer", "file\_mode", 0644)
+modparam("tracer", "file_mode", 0644)
 ```
 ### `syslog_default_facility` (string)
 
@@ -70,7 +70,7 @@ When syslog tracing is used, this parameter specifies the log facility to write 
 **Example.** LOG_DAEMON.
 
 ```opensips
-modparam("tracer", "syslog\_default\_facility", "LOG\_DAEMON")
+modparam("tracer", "syslog_default_facility", "LOG_DAEMON")
 ```
 ### `syslog_default_level` (integer)
 
@@ -81,7 +81,7 @@ When syslog tracing is used, this parameter specifies the level to write traces 
 **Example.** 2.
 
 ```opensips
-modparam("tracer", "syslog\_default\_level", 2) # NOTICE
+modparam("tracer", "syslog_default_level", 2) # NOTICE
 ```
 ### `trace_id` (string)
 
@@ -94,7 +94,7 @@ Specify a destination for the trace. This can be a hep id defined in proto_hep, 
 **Example.** [tid]uri=mysql://xxxx:xxxx@10.10.10.10/opensips;table=new_sip_trace;.
 
 ```opensips
-modparam("tracer", "trace\_id", "[tid] uri=mysql://xxxx:xxxx@10.10.10.10/opensips; table=new\_sip\_trace;")
+modparam("tracer", "trace_id", "[tid] uri=mysql://xxxx:xxxx@10.10.10.10/opensips; table=new_sip_trace;")
 ```
 ### `trace_local_ip` (string)
 
@@ -105,7 +105,7 @@ The address to be used in the fields that specify the source address (protocol, 
 **Example.** 10.1.1.1:5064.
 
 ```opensips
-modparam("tracer", "trace\_local\_ip", "10.1.1.1:5064")
+modparam("tracer", "trace_local_ip", "10.1.1.1:5064")
 ```
 ### `trace_on` (integer)
 
@@ -121,7 +121,7 @@ Parameter to enable/disable trace (on(1)/off(0))
 **Example.** 1.
 
 ```opensips
-modparam("tracer", "trace\_on", 1)
+modparam("tracer", "trace_on", 1)
 ```
 
 ## Exported Functions
@@ -215,7 +215,7 @@ Store or replicate current processed SIP message, transaction / dialog or B2B se
 
 ### `trace`
 
-Enable/disable tracing(globally or for a specific trace id) or dump info about trace ids. This command requires named parameters (each parameter is ginven in the format param\_name=param\_value).
+Enable/disable tracing(globally or for a specific trace id) or dump info about trace ids. This command requires named parameters (each parameter is ginven in the format param_name=param_value).
 
 **Parameters:**
 
@@ -270,7 +270,7 @@ opensips-cli -x mi trace_start id=alice_bob uri=hep:10.0.0.1:9060 filter=caller=
 
 ### `trace_stop`
 
-Stops OpenSIPS from sending traffic to a dynamic trace id created using the _trace\_start_ command.
+Stops OpenSIPS from sending traffic to a dynamic trace id created using the _trace_start_ command.
 
 **Parameters:**
 
@@ -292,7 +292,7 @@ Parameter to enable/disable trace (on(1)/off(0))
 
 ```opensips
 ...
-modparam("tracer", "trace\_on", 1)
+modparam("tracer", "trace_on", 1)
 ...
 ```
 ### Set `trace_local_ip` parameter
@@ -302,133 +302,133 @@ The address to be used in the fields that specify the source address (protocol, 
 ```opensips
 ...
 #Resulting address: udp:10.1.1.1:5064
-modparam("tracer", "trace\_local\_ip", "10.1.1.1:5064")
+modparam("tracer", "trace_local_ip", "10.1.1.1:5064")
 ...
 ...
 #Resulting address: tcp:10.1.1.1:5060
-modparam("tracer, "trace\_local\_ip", "tcp:10.1.1.1")
+modparam("tracer, "trace_local_ip", "tcp:10.1.1.1")
 ...
 ...
 #Resulting address: tcp:10.1.1.1:5064
-modparam("tracer", "trace\_local\_ip", "tcp:10.1.1.1:5064")
+modparam("tracer", "trace_local_ip", "tcp:10.1.1.1:5064")
 ...
 ...
 #Resulting address: udp:10.1.1.1:5060
-modparam("tracer", "trace\_local\_ip", "10.1.1.1")
+modparam("tracer", "trace_local_ip", "10.1.1.1")
 ...
 ```
 ### Set `trace_id` parameter
 
-Specify a destination for the trace. This can be a hep id defined in proto\_hep, a sip uri, a file, a syslog facility or a database url and a table. All parameters inside \_trace\_id\_ must be separated by \_;\_, excepting the last one. The parameters are given in key-value format, the possible keys being \_uri\_ for HEP and SIP IDs and \_uri\_ and \_table\_ for databases. The format is \_\[id\_name\]key1=value1;key2=value2;\_. HEP id's **MUST** be defined in proto\_hep in order to be able to use them here.
+Specify a destination for the trace. This can be a hep id defined in proto_hep, a sip uri, a file, a syslog facility or a database url and a table. All parameters inside _trace_id_ must be separated by _;_, excepting the last one. The parameters are given in key-value format, the possible keys being _uri_ for HEP and SIP IDs and _uri_ and _table_ for databases. The format is _\[id_name\]key1=value1;key2=value2;_. HEP id's **MUST** be defined in proto_hep in order to be able to use them here.
 
-When the uri is a \_file\_, the path to the file has to be specified after the colon. The output is always appended if the file exists, or created if it doesn't, using [file\_mode](#param_file_mode "1.3.6.�file_mode (integer)") permissions.
+When the uri is a _file_, the path to the file has to be specified after the colon. The output is always appended if the file exists, or created if it doesn't, using [file_mode](#param_file_mode "1.3.6.file_mode (integer)") permissions.
 
-When the uri is \_syslog\_, it has to follow the following format: \_syslog\[:FACILITY\[:LEVEL\]\]\_. The default facility and levels are the ones used by OpenSIPS (\_syslog\_facility\_ and \_log\_level\_). These can be tuned using [syslog\_default\_facility](#param_syslog_default_facility "1.3.4.�syslog_default_facility (string)") and [syslog\_default\_level](#param_syslog_default_level "1.3.5.�syslog_default_level (integer)") parameters.
+When the uri is _syslog_, it has to follow the following format: _syslog\[:FACILITY\[:LEVEL\]\]_. The default facility and levels are the ones used by OpenSIPS (_syslog_facility_ and _log_level_). These can be tuned using [syslog_default_facility](#param_syslog_default_facility "1.3.4.syslog_default_facility (string)") and [syslog_default_level](#param_syslog_default_level "1.3.5.syslog_default_level (integer)") parameters.
 
 One can declare multiple types of tracing under the same trace id, being identified by their name. So if you define two database url, one hep uri and one sip uri with the same name, when calling trace() with this name tracing shall be done to all the destinations.
 
-All the old parameter such as db\_url, table and duplicate\_uri will form the trace id with the name "default".
+All the old parameter such as db_url, table and duplicate_uri will form the trace id with the name "default".
 
 ```opensips
 ...
 /*DB trace id*/
-modparam("tracer", "trace\_id",
+modparam("tracer", "trace_id",
 "[tid]
 uri=mysql://xxxx:xxxx@10.10.10.10/opensips;
-table=new\_sip\_trace;")
-/* hep trace id with the hep id defined in proto\_hep; check proto\_hep docs
+table=new_sip_trace;")
+/* hep trace id with the hep id defined in proto_hep; check proto_hep docs
  * for more information */
-modparam("proto\_hep", "hep\_id",  "[hid]10.10.10.10")
-modparam("tracer", "trace\_id", "[tid]uri=hep:hid")
+modparam("proto_hep", "hep_id",  "[hid]10.10.10.10")
+modparam("tracer", "trace_id", "[tid]uri=hep:hid")
 /*sip trace id*/
-modparam("tracer", "trace\_id",
+modparam("tracer", "trace_id",
 "[tid]uri=sip:10.10.10.11:5060")
 /* notice that they all have the same name
  * meaning that calling trace("tid",...)
  * will do sql, sip and hep tracing */
 /*file trace id*/
-modparam("tracer", "trace\_id",
+modparam("tracer", "trace_id",
 "[tid]uri=file:/path/to/file")
 /*syslog trace id at error (level -1)*/
-modparam("tracer", "trace\_id",
+modparam("tracer", "trace_id",
 "[tid]uri=syslog:local0:-1")
 ...
 ```
 ### Set `syslog_default_facility` parameter
 
-When \_syslog\_ tracing is used, this parameter specifies the log facility to write traces to.
+When _syslog_ tracing is used, this parameter specifies the log facility to write traces to.
 
 ```opensips
 ...
-modparam("tracer", "syslog\_default\_facility", "LOG\_DAEMON")
+modparam("tracer", "syslog_default_facility", "LOG_DAEMON")
 ...
 ```
 ### Set `syslog_default_level` parameter
 
-When \_syslog\_ tracing is used, this parameter specifies the level to write traces to.
+When _syslog_ tracing is used, this parameter specifies the level to write traces to.
 
 ```opensips
 ...
-modparam("tracer", "syslog\_default\_level", 2) # NOTICE
+modparam("tracer", "syslog_default_level", 2) # NOTICE
 ...
 ```
 ### Set `file_mode` parameter
 
-When \_file\_ tracing is used, this parameter specifies the permissions to be used to create the trace files. It follows the UNIX conventions.
+When _file_ tracing is used, this parameter specifies the permissions to be used to create the trace files. It follows the UNIX conventions.
 
 ```opensips
 ...
-modparam("tracer", "file\_mode", 0644)
+modparam("tracer", "file_mode", 0644)
 ...
 ```
 ### `trace()` usage
 
-Store or replicate current processed SIP message, transaction / dialog or B2B session. It is stored in the form prior applying chages made to it. The traced\_user\_avp parameter is now an argument to trace() function. Since version 2.2, this function also catches internally generated replies in stateless mode(sl\_send\_reply(...)).
+Store or replicate current processed SIP message, transaction / dialog or B2B session. It is stored in the form prior applying chages made to it. The traced_user_avp parameter is now an argument to trace() function. Since version 2.2, this function also catches internally generated replies in stateless mode(sl_send_reply(...)).
 
-This function can be used from REQUEST\_ROUTE, FAILURE\_ROUTE, ONREPLY\_ROUTE, BRANCH\_ROUTE.
+This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, ONREPLY_ROUTE, BRANCH_ROUTE.
 
 ```opensips
 ...
-/* see declaration of tid in trace\_id section */
-	$var(trace\_id) = "tid";
-	$var(user) = "osip\_user@opensips.org";
+/* see declaration of tid in trace_id section */
+	$var(trace_id) = "tid";
+	$var(user) = "osip_user@opensips.org";
 
 ...
 /* Example 1: how to trace a dialog sip and xlog */
-	if (has\_totag()) {
-		match\_dialog();
+	if (has_totag()) {
+		match_dialog();
 	} else {
-		if (is\_method("INVITE") {
-			trace($var(trace\_id), "d", "sip|xlog", $var(user));
+		if (is_method("INVITE") {
+			trace($var(trace_id), "d", "sip|xlog", $var(user));
 		}
 	}
 ...
 /* Example 2: how to trace initial INVITE and BYE, sip and rest */
-	if (has\_totag()) {
-		if (is\_method("BYE")) {
-			trace($var(trace\_id), "m", "sip|rest", $var(user));
+	if (has_totag()) {
+		if (is_method("BYE")) {
+			trace($var(trace_id), "m", "sip|rest", $var(user));
 		}
 	} else {
-		if (is\_method("INVITE")) {
-			trace($var(trace\_id), "m", "sip|rest", $var(user));
+		if (is_method("INVITE")) {
+			trace($var(trace_id), "m", "sip|rest", $var(user));
 		}
 	}
 
 ...
 /* Example 3: trace initial INVITE transaction's only xlog and rest, no sip */
-	if (!has\_totag()) {
-		if (is\_method("INVITE")) {
-			trace($var(trace\_id), "t", "xlog|rest", $var(user));
+	if (!has_totag()) {
+		if (is_method("INVITE")) {
+			trace($var(trace_id), "t", "xlog|rest", $var(user));
 		}
 	}
 ...
 /* Example 4: stateless transaction aware mode!*/
 /* tm module must not be loaded */
-	if (is\_method("REGISTER")) {
-		trace($var(trace\_id), "t", "xlog|rest", $var(user));
-		if (!www\_authorize("", "subscriber")) {
-			/* tracer will also catch the 401 generated by www\_challenge() */
-			www\_challenge("", "auth");
+	if (is_method("REGISTER")) {
+		trace($var(trace_id), "t", "xlog|rest", $var(user));
+		if (!www_authorize("", "subscriber")) {
+			/* tracer will also catch the 401 generated by www_challenge() */
+			www_challenge("", "auth");
 		}
 	}
 ...

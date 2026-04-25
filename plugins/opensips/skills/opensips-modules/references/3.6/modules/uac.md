@@ -47,7 +47,7 @@ Force create dialog if it is not created from the configuration script.
 **Example.** Set the `force_dialog` parameter.
 
 ```opensips
-modparam("uac", "force\_dialog", yes)
+modparam("uac", "force_dialog", yes)
 ```
 ### `restore_mode` (string)
 
@@ -70,7 +70,7 @@ There are 3 mode of restoring the original headers (FROM/TO) URI:
 **Example.** Set the `restore_mode` parameter.
 
 ```opensips
-modparam("uac","restore\_mode","auto")
+modparam("uac","restore_mode","auto")
 ```
 ### `restore_passwd` (string)
 
@@ -81,7 +81,7 @@ String password to be used to encrypt the RR storing parameter (when replacing t
 **Example.** Set the `restore_passwd` parameter.
 
 ```opensips
-modparam("uac","restore\_passwd","my\_secret\_passwd")
+modparam("uac","restore_passwd","my_secret_passwd")
 ```
 ### `rr_from_store_param` (string)
 
@@ -92,7 +92,7 @@ Name of Record-Route header parameter that will be used to store (encoded) the o
 **Example.** Set the `rr_from_store_param` parameter.
 
 ```opensips
-modparam("uac","rr\_from\_store\_param","my\_Fparam")
+modparam("uac","rr_from_store_param","my_Fparam")
 ```
 ### `rr_to_store_param` (string)
 
@@ -103,7 +103,7 @@ Name of Record-Route header parameter that will be used to store (encoded) the o
 **Example.** Set the `rr_to_store_param` parameter.
 
 ```opensips
-modparam("uac","rr\_to\_store\_param","my\_Tparam")
+modparam("uac","rr_to_store_param","my_Tparam")
 ```
 
 ## Exported Functions
@@ -278,7 +278,7 @@ Set `restore_mode` parameter
 
 ```opensips
 ...
-modparam("uac","restore\_mode","auto")
+modparam("uac","restore_mode","auto")
 ...
 ```
 ### Set `restore_passwd` parameter
@@ -287,7 +287,7 @@ Set `restore_passwd` parameter
 
 ```opensips
 ...
-modparam("uac","restore\_passwd","my\_secret\_passwd")
+modparam("uac","restore_passwd","my_secret_passwd")
 ...
 ```
 ### Set `rr_from_store_param` parameter
@@ -296,7 +296,7 @@ Set `rr_from_store_param` parameter
 
 ```opensips
 ...
-modparam("uac","rr\_from\_store\_param","my\_Fparam")
+modparam("uac","rr_from_store_param","my_Fparam")
 ...
 ```
 ### Set `rr_to_store_param` parameter
@@ -305,7 +305,7 @@ Set `rr_to_store_param` parameter
 
 ```opensips
 ...
-modparam("uac","rr\_to\_store\_param","my\_Tparam")
+modparam("uac","rr_to_store_param","my_Tparam")
 ...
 ```
 ### Set `force_dialog` parameter
@@ -314,7 +314,7 @@ Set `force_dialog` parameter
 
 ```opensips
 ...
-modparam("uac", "force\_dialog", yes)
+modparam("uac", "force_dialog", yes)
 ...
 ```
 ### `uac_replace_from`/`uac_replace_to` usage
@@ -324,15 +324,15 @@ modparam("uac", "force\_dialog", yes)
 ```opensips
 ...
 # replace both display and uri
-uac\_replace\_from($avp(display),$avp(uri));
+uac_replace_from($avp(display),$avp(uri));
 # replace only display and do not touch uri
-uac\_replace\_from("batman","");
+uac_replace_from("batman","");
 # remove display and replace uri
-uac\_replace\_from("","sip:robin@gotham.org");
+uac_replace_from("","sip:robin@gotham.org");
 # remove display and do not touch uri
-uac\_replace\_from("","");
+uac_replace_from("","");
 # replace the URI without touching the display
-uac\_replace\_from( , "sip:batman@gotham.org");
+uac_replace_from( , "sip:batman@gotham.org");
 ...
 ```
 ### `uac_restore_from`/`uac_restore_to` usage
@@ -341,7 +341,7 @@ uac\_replace\_from( , "sip:batman@gotham.org");
 
 ```opensips
 ...
-uac\_restore\_from();
+uac_restore_from();
 ...
 ```
 ### `uac_auth` usage
@@ -350,14 +350,14 @@ uac\_restore\_from();
 
 ```opensips
 ...
-uac\_auth();
+uac_auth();
 ...
-failure\_route[check\_auth] {
+failure_route[check_auth] {
     ...
-    if ($T\_reply\_code==407) {
-        if (uac\_auth("MD5,MD5-sess")) {
+    if ($T_reply_code==407) {
+        if (uac_auth("MD5,MD5-sess")) {
             # auth is succesful, just relay
-            t\_relay();
+            t_relay();
             exit;
         }
         # auth failed (no credentials maybe)
@@ -373,6 +373,6 @@ failure\_route[check\_auth] {
 
 ```opensips
 ...
-uac\_inc\_cseq(1);
+uac_inc_cseq(1);
 ...
 ```

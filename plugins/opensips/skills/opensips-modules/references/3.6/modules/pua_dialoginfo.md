@@ -17,11 +17,11 @@ Reference for the OpenSIPs 3.6 pua_dialoginfo module. Read this file when config
 
 ## Overview
 
-The pua\_dialoginfo retrieves dialog state information from the dialog module and PUBLISHes the dialog-information using the pua module. Thus, in combination with the presence\_xml module this can be used to derive dialog-info from the dialog module and NOTIFY the subscribed watchers about dialog-info changes. This can be used for example with SNOM and Linksys phones.
+The pua_dialoginfo retrieves dialog state information from the dialog module and PUBLISHes the dialog-information using the pua module. Thus, in combination with the presence_xml module this can be used to derive dialog-info from the dialog module and NOTIFY the subscribed watchers about dialog-info changes. This can be used for example with SNOM and Linksys phones.
 
 Note: This implements dialog-info according to RFC 4235 and is not compatible with the BLA feature defined in draft-anil-sipping-bla-03.txt. (Actually the BLA draft is really crap as it changes SIP semantics)
 
-The module is based on code (copy/paste) from pua\_usrloc and nat\_traversal module.
+The module is based on code (copy/paste) from pua_usrloc and nat_traversal module.
 
 ## How It Works
 
@@ -43,7 +43,7 @@ Following you will show some examples of an dialog-info XML document taken from 
 
 The root element is the "dialog-info". It contains the namespace, the version (which must be incremented for each new PUBLISH for this certain dialog), the state (this module only supports state=full) and the entity for which we publish the dialog-info.
 
-The "dialog" element must contain an id parameter. The id parameter is usually different to the optional call-id parameter (which is the call-id of the INVITE request) as an INVITE can create multiple dialogs (forked request). But as the dialog module does not support multiple dialogs created by a single transaction, the pua\_dialoginfo module sets the id parameter to the same value as the call-id parameter. The "local-tag" indicates the local tag of the entity. The remote-tag indicates the tag of the remote party. The "direction" indicates if the entity was the initator of the dialog or the recepient (aka if the entity sent or received the first INVITE).
+The "dialog" element must contain an id parameter. The id parameter is usually different to the optional call-id parameter (which is the call-id of the INVITE request) as an INVITE can create multiple dialogs (forked request). But as the dialog module does not support multiple dialogs created by a single transaction, the pua_dialoginfo module sets the id parameter to the same value as the call-id parameter. The "local-tag" indicates the local tag of the entity. The remote-tag indicates the tag of the remote party. The "direction" indicates if the entity was the initator of the dialog or the recepient (aka if the entity sent or received the first INVITE).
 
 The "state" element describes the state of the dialog state machine and must be either: trying, proceeding, early, confirmed or terminated.
 
@@ -90,11 +90,11 @@ A dialog-info XML document may contain multiple "dialog" elements, for example i
     </dialog>
 </dialog-info>
 
-To enable dialoginfo notifications for a certain dialog, you must call dialoginfo\_set() function for that dialog. This function can take one parameter which through which you can tell the module to publish dialoginfo only for one side of the call. This is useful because you want to store dialoginfo only for the local users, and you can decide from the script if the call parties are local users and give the correct parameter to this function to tell it to send generate dialoginfo only for the local users. The possible values are : "A" - corresponding to generate dialoginfo only for the caller and "B" - generate dialoginfo only for the callee. If no parameter is given, the module will generate dialoginfo for both parties. It is possible to specify what URIs should be used for caller and callee by setting the the pseudovariables with the names defined as module parameter "caller\_spec\_param" and "callee\_spec\_param" before calling dialoginfo\_set() function. Please read the description of this parameters in Exported Parameters section. If this parameters are not set, the default sources will be used, From header for the caller and display name in To header + RURI for the callee.
+To enable dialoginfo notifications for a certain dialog, you must call dialoginfo_set() function for that dialog. This function can take one parameter which through which you can tell the module to publish dialoginfo only for one side of the call. This is useful because you want to store dialoginfo only for the local users, and you can decide from the script if the call parties are local users and give the correct parameter to this function to tell it to send generate dialoginfo only for the local users. The possible values are : "A" - corresponding to generate dialoginfo only for the caller and "B" - generate dialoginfo only for the callee. If no parameter is given, the module will generate dialoginfo for both parties. It is possible to specify what URIs should be used for caller and callee by setting the the pseudovariables with the names defined as module parameter "caller_spec_param" and "callee_spec_param" before calling dialoginfo_set() function. Please read the description of this parameters in Exported Parameters section. If this parameters are not set, the default sources will be used, From header for the caller and display name in To header + RURI for the callee.
 
-As the dialog module callbacks only address a certain dialog, the pua\_dialoginfo always PUBLISHes XML documents with a single "dialog" element. If an entity has multiple concurrent dialogs, the pua\_dialoginfo module will send PUBLISH for each dialog. These multiple "presenties" can be aggregated by the presence\_dialoginfo module into a single XML document with multiple "dialog" elements. Please see the description of the presence\_dialoginfo module for details about the aggregation.
+As the dialog module callbacks only address a certain dialog, the pua_dialoginfo always PUBLISHes XML documents with a single "dialog" element. If an entity has multiple concurrent dialogs, the pua_dialoginfo module will send PUBLISH for each dialog. These multiple "presenties" can be aggregated by the presence_dialoginfo module into a single XML document with multiple "dialog" elements. Please see the description of the presence_dialoginfo module for details about the aggregation.
 
-If there are problems with the callbacks from dialog module and you want to debug them you define PUA\_DIALOGINFO\_DEBUG in pua\_dialoginfo.c and recompile.
+If there are problems with the callbacks from dialog module and you want to debug them you define PUA_DIALOGINFO_DEBUG in pua_dialoginfo.c and recompile.
 
 ## Dependencies
 
@@ -111,12 +111,12 @@ If there are problems with the callbacks from dialog module and you want to debu
 
 ### `callee_spec_param` (string)
 
-The name of the pseudovariable that will hold the callee URI. If this variable will not be set, the callee information used will be made of To display uri + RURI. the. The format of the string to set this pseudovariable to is the same as described in caller\_spec\_param section.
+The name of the pseudovariable that will hold the callee URI. If this variable will not be set, the callee information used will be made of To display uri + RURI. the. The format of the string to set this pseudovariable to is the same as described in caller_spec_param section.
 
 **Example.** $avp(11).
 
 ```opensips
-modparam("pua\_dialoginfo", "callee\_spec\_param", "$avp(11)")
+modparam("pua_dialoginfo", "callee_spec_param", "$avp(11)")
 ```
 ### `caller_confirmed` (integer)
 
@@ -127,16 +127,16 @@ Usually the dialog-info of the caller will be "trying -> early -> confirmed" and
 **Example.** 1.
 
 ```opensips
-modparam("pua\_dialoginfo", "caller\_confirmed", 1)
+modparam("pua_dialoginfo", "caller_confirmed", 1)
 ```
 ### `caller_spec_param` (string)
 
-The name of the pseudovariable that will hold a custom caller URI. If this variable is not set, the information in From header is used. If you want to use another caller definition, you have to fill in this pseudovariable before calling dialoginfo_set() function. The format of the string resemples the format of To/From SIP headers: "display\_name<sip\_uri>" or "sip\_uri".
+The name of the pseudovariable that will hold a custom caller URI. If this variable is not set, the information in From header is used. If you want to use another caller definition, you have to fill in this pseudovariable before calling dialoginfo_set() function. The format of the string resemples the format of To/From SIP headers: "display_name<sip_uri>" or "sip_uri".
 
 **Example.** $avp(10).
 
 ```opensips
-modparam("pua\_dialoginfo", "caller\_spec\_param", "$avp(10)")
+modparam("pua_dialoginfo", "caller_spec_param", "$avp(10)")
 ```
 ### `include_callid` (integer)
 
@@ -147,7 +147,7 @@ If this parameter is set, the optional call-id will be put into the dialog eleme
 **Example.** 0.
 
 ```opensips
-modparam("pua\_dialoginfo", "include\_callid", 0)
+modparam("pua_dialoginfo", "include_callid", 0)
 ```
 ### `include_localremote` (integer)
 
@@ -158,7 +158,7 @@ If this parameter is set, the optional local and remote elements will be put int
 **Example.** 0.
 
 ```opensips
-modparam("pua\_dialoginfo", "include\_localremote", 0)
+modparam("pua_dialoginfo", "include_localremote", 0)
 ```
 ### `include_tags` (integer)
 
@@ -169,7 +169,7 @@ If this parameter is set, the local and remote tag will be put into the dialog e
 **Example.** 0.
 
 ```opensips
-modparam("pua\_dialoginfo", "include\_tags", 0)
+modparam("pua_dialoginfo", "include_tags", 0)
 ```
 ### `nopublish_flag` (string)
 
@@ -178,7 +178,7 @@ By default, reINVITEs will trigger a PUBLISH. They are actually the only in-dial
 **Example.** no_publish.
 
 ```opensips
-modparam("pua\_dialoginfo", "nopublish\_flag", "no\_publish")
+modparam("pua_dialoginfo", "nopublish_flag", "no_publish")
 ```
 ### `osips_ps` (integer)
 
@@ -194,7 +194,7 @@ It is advisable to specify if you use a different presence server than OpenSIPS 
 **Example.** 0.
 
 ```opensips
-modparam("pua\_dialoginfo", "osips\_ps", 0)
+modparam("pua_dialoginfo", "osips_ps", 0)
 ```
 ### `presence_server` (string)
 
@@ -203,11 +203,11 @@ The address of the presence server, where the PUBLISH messages should be sent (n
 **Example.** sip:ps@opensips.org:5060.
 
 ```opensips
-modparam("pua\_dialoginfo", "presence\_server", "sip:ps@opensips.org:5060")
+modparam("pua_dialoginfo", "presence_server", "sip:ps@opensips.org:5060")
 ```
 ### `publish_on_trying` (integer)
 
-Usually the dialog-info of the caller will be "trying -> early -> confirmed". The "trying" state will be triggered as soon as you call [dialoginfo\_set()](#func_dialoginfo_set "1.4.1.� dialoginfo_set([side])") on the caller, while "early" is triggered as soon as the callee is ringing (triggered by a 180 or 183 provisional reply). Sometimes, it is advisable to be notified only when the callee reaches the early state and not before. In other cases, it is advisable to notify the early state. This setting allows controlling the behavior.
+Usually the dialog-info of the caller will be "trying -> early -> confirmed". The "trying" state will be triggered as soon as you call [dialoginfo_set()](#func_dialoginfo_set "1.4.1. dialoginfo_set([side])") on the caller, while "early" is triggered as soon as the callee is ringing (triggered by a 180 or 183 provisional reply). Sometimes, it is advisable to be notified only when the callee reaches the early state and not before. In other cases, it is advisable to notify the early state. This setting allows controlling the behavior.
 
 The intended purpose of this parameter is to reduce the rate of notifications (see RFC4235, section 3.10. Rate of Notifications).
 
@@ -216,7 +216,7 @@ The intended purpose of this parameter is to reduce the rate of notifications (s
 **Example.** 0.
 
 ```opensips
-modparam("pua\_dialoginfo", "publish\_on\_trying", 0)
+modparam("pua_dialoginfo", "publish_on_trying", 0)
 
 # Successful call scenario:
 #
@@ -265,10 +265,10 @@ This function must be called for INVITE messages, in the branch route only, in o
 
 ```opensips
 ...
-	branch\_route\[out\] {
+	branch_route\[out\] {
 		# mute publishing for callee side if not a local domain
-		if (!is\_domain\_local("$rd"))
-			dialoginfo\_mute\_branch("B");
+		if (!is_domain_local("$rd"))
+			dialoginfo_mute_branch("B");
 	}
 ...
 ```
@@ -289,9 +289,9 @@ This function must be called for INVITE messages that initialize a dialog for wh
 
 ```opensips
 ...
-if(is\_method("INVITE"))
+if(is_method("INVITE"))
 	if($ru =~ "opensips.org")
-		dialoginfo\_set();
+		dialoginfo_set();
 ...
 ```
 
@@ -301,7 +301,7 @@ This function is to be used only from a branch route for setting a per-branch ca
 
 **Parameters:**
 
-- `callee` *(string, required)* — a SIP nams addr description of the callee (the name\_addr format is '\[display\] <uri>' or 'uri', as in the To or From headers)
+- `callee` *(string, required)* — a SIP nams addr description of the callee (the name_addr format is '\[display\] <uri>' or 'uri', as in the To or From headers)
 
 **Usable from:** BRANCH_ROUTE
 
@@ -309,11 +309,11 @@ This function is to be used only from a branch route for setting a per-branch ca
 
 ```opensips
 ...
-branch\_route\[out\]
+branch_route\[out\]
 {
 ....
 	#align the published info with the RURI of the branch
-	dialoginfo\_set\_branch\_callee("sip:$rU@opensips.org");
+	dialoginfo_set_branch_callee("sip:$rU@opensips.org");
 ...
 }
 ```
@@ -324,35 +324,35 @@ branch\_route\[out\]
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "include\_callid", 0)
+modparam("pua_dialoginfo", "include_callid", 0)
 ...
 ```
 ### Set `include_tags` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "include\_tags", 0)
+modparam("pua_dialoginfo", "include_tags", 0)
 ...
 ```
 ### Set `include_localremote` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "include\_localremote", 0)
+modparam("pua_dialoginfo", "include_localremote", 0)
 ...
 ```
 ### Set `caller_confirmed` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "caller\_confirmed", 1)
+modparam("pua_dialoginfo", "caller_confirmed", 1)
 ...
 ```
 ### Set `publish_on_trying` parameter to 0
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "publish\_on\_trying", 0)
+modparam("pua_dialoginfo", "publish_on_trying", 0)
 
 # Successful call scenario:
 #
@@ -387,7 +387,7 @@ modparam("pua\_dialoginfo", "publish\_on\_trying", 0)
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "publish\_on\_trying", 1)
+modparam("pua_dialoginfo", "publish_on_trying", 1)
 
 # Successful call scenario:
 #
@@ -425,55 +425,55 @@ modparam("pua\_dialoginfo", "publish\_on\_trying", 1)
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "nopublish\_flag", "no\_publish")
+modparam("pua_dialoginfo", "nopublish_flag", "no_publish")
 ...
 ```
 ### Set `presence_server` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "presence\_server", "sip:ps@opensips.org:5060")
+modparam("pua_dialoginfo", "presence_server", "sip:ps@opensips.org:5060")
 ...
 ```
 ### Set `caller_spec_param` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "caller\_spec\_param", "$avp(10)")
+modparam("pua_dialoginfo", "caller_spec_param", "$avp(10)")
 ...
 ```
 ### Set `caller_spec_param` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "callee\_spec\_param", "$avp(11)")
+modparam("pua_dialoginfo", "callee_spec_param", "$avp(11)")
 ...
 ```
 ### Set `osips_ps` parameter
 
 ```opensips
 ...
-modparam("pua\_dialoginfo", "osips\_ps", 0)
+modparam("pua_dialoginfo", "osips_ps", 0)
 ...
 ```
 ### `dialoginfo_set` usage
 
 ```opensips
 ...
-	if(is\_method("INVITE"))
+	if(is_method("INVITE"))
 		if($ru =~ "opensips.org")
-			dialoginfo\_set();
+			dialoginfo_set();
 ...
 ```
 ### `dialoginfo_set_branch_callee` usage
 
 ```opensips
 ...
-branch\_route[out]
+branch_route[out]
 {
 ....
 	#align the published info with the RURI of the branch
-	dialoginfo\_set\_branch\_callee("sip:$rU@opensips.org");
+	dialoginfo_set_branch_callee("sip:$rU@opensips.org");
 ...
 }
 ...
@@ -482,10 +482,10 @@ branch\_route[out]
 
 ```opensips
 ...
-	branch\_route[out] {
+	branch_route[out] {
 		# mute publishing for callee side if not a local domain
-		if (!is\_domain\_local("$rd"))
-			dialoginfo\_mute\_branch("B");
+		if (!is_domain_local("$rd"))
+			dialoginfo_mute_branch("B");
 	}
 ...
 ```

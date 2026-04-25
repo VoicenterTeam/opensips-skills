@@ -77,12 +77,12 @@ modparam("load_balancer", "cluster_sharing_tag", "vip")
 
 The name of the DB table containing the load-balancing rules.
 
-*Default value is load\_balancer.*
+*Default value is load_balancer.*
 
 **Example.** lb.
 
 ```opensips
-modparam("load\_balancer", "db\_table", "lb")
+modparam("load_balancer", "db_table", "lb")
 ```
 ### `db_url` (string)
 
@@ -93,7 +93,7 @@ The URL pointing to the database where the load-balancing rules are stored.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("load\_balancer", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("load_balancer", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `fetch_freeswitch_stats` (integer)
 
@@ -101,7 +101,7 @@ If enabled, the maximum value of a resource may also consist of FreeSWITCH Event
 
 OpenSIPS will establish a connection with the given socket and periodically update the internal maximum value of the given resource using statistics pushed by the FreeSWITCH box.
 
-The max value of a resource is updated every _event\_heartbeat\_interval_ seconds (see the "freeswitch" OpenSIPS module for more details regarding this setting), as the stats arrive from FreeSWITCH.
+The max value of a resource is updated every _event_heartbeat_interval_ seconds (see the "freeswitch" OpenSIPS module for more details regarding this setting), as the stats arrive from FreeSWITCH.
 
 Given the following format for FreeSWITCH heartbeat messages:
 
@@ -115,16 +115,16 @@ Given the following format for FreeSWITCH heartbeat messages:
   ...
 }
 
-, the load balancer uses the following formula in order to periodically update its "max\_load" values for each FreeSWITCH box (FreeSWITCH data is highlighted in bold):
+, the load balancer uses the following formula in order to periodically update its "max_load" values for each FreeSWITCH box (FreeSWITCH data is highlighted in bold):
 
-_max\_load = (**Idle-CPU** / 100) \* (**Max-Sessions** - (**Session-Count** - current\_load))_
+_max_load = (**Idle-CPU** / 100) \* (**Max-Sessions** - (**Session-Count** - current_load))_
 
 *Default value is 0 (disabled).*
 
 **Example.** 1.
 
 ```opensips
-modparam("load\_balancer", "fetch\_freeswitch\_stats", 1)
+modparam("load_balancer", "fetch_freeswitch_stats", 1)
 ```
 ### `initial_freeswitch_load` (integer)
 
@@ -135,7 +135,7 @@ This parameter is only relevant for some seconds after module startup/reload, wh
 **Example.** 200.
 
 ```opensips
-modparam("load\_balancer", "initial\_freeswitch\_load", 200)
+modparam("load_balancer", "initial_freeswitch_load", 200)
 ```
 ### `lb_define_blacklist` (string)
 
@@ -148,8 +148,8 @@ Multiple instances of this param are allowed.
 **Example.** list= 1,4,3.
 
 ```opensips
-modparam("load\_balancer", "lb\_define\_blacklist", "list= 1,4,3")
-modparam("load\_balancer", "lb\_define\_blacklist", "blist2= 2,10,6")
+modparam("load_balancer", "lb_define_blacklist", "list= 1,4,3")
+modparam("load_balancer", "lb_define_blacklist", "blist2= 2,10,6")
 ```
 ### `probing_from` (string)
 
@@ -160,7 +160,7 @@ The FROM SIP URI to be advertised in the SIP probing requests.
 **Example.** sip:pinger@192.168.2.10.
 
 ```opensips
-modparam("load\_balancer", "probing\_from", "sip:pinger@192.168.2.10")
+modparam("load_balancer", "probing_from", "sip:pinger@192.168.2.10")
 ```
 ### `probing_interval` (integer)
 
@@ -171,7 +171,7 @@ How often (in seconds) the probing of a destination should be done. If set to 0,
 **Example.** 60.
 
 ```opensips
-modparam("load\_balancer", "probing\_interval", 60)
+modparam("load_balancer", "probing_interval", 60)
 ```
 ### `probing_method` (string)
 
@@ -182,7 +182,7 @@ The SIP method to be used for the probing requests.
 **Example.** INFO.
 
 ```opensips
-modparam("load\_balancer", "probing\_method", "INFO")
+modparam("load_balancer", "probing_method", "INFO")
 ```
 ### `probing_reply_codes` (string)
 
@@ -193,7 +193,7 @@ A comma separted list of SIP reply codes. The codes defined here will be conside
 **Example.** 501, 403.
 
 ```opensips
-modparam("load\_balancer", "probing\_reply\_codes", "501, 403")
+modparam("load_balancer", "probing_reply_codes", "501, 403")
 ```
 ### `probing_verbose` (number)
 
@@ -208,7 +208,7 @@ The extra logging will be done on INFO level.
 **Example.** 1.
 
 ```opensips
-modparam("load\_balancer", "probing\_verbose", 1)
+modparam("load_balancer", "probing_verbose", 1)
 ```
 
 ## Exported Functions
@@ -448,7 +448,7 @@ Lists all the destinations and the maximum and current load for each resource of
 **Example.** Example 1.19. lb_list usage
 
 ```opensips
-$ opensips-cli -x mi lb\_list
+$ opensips-cli -x mi lb_list
 Destination:: sip:127.0.0.1:5100 id=1 enabled=yes auto-re=on
         Resource:: pstn max=3 load=0
         Resource:: transc max=5 load=1
@@ -466,7 +466,7 @@ Trigers the reload of the load balancing data from the DB.
 **Example.**
 
 ```opensips
-		opensips-cli -x mi lb\_reload
+		opensips-cli -x mi lb_reload
 ```
 
 ### `lb_resize`
@@ -482,7 +482,7 @@ Changes the capacity for a resource of a destination.
 **Example.**
 
 ```opensips
-		opensips-cli -x mi lb\_resize 11 voicemail 56
+		opensips-cli -x mi lb_resize 11 voicemail 56
 ```
 
 ### `lb_status`
@@ -497,10 +497,10 @@ Gets or sets the status (enabled or disabled) of a destination.
 **Example.** Example 1.20. lb_status usage
 
 ```opensips
-$ opensips-cli -x mi lb\_status 2
+$ opensips-cli -x mi lb_status 2
 enable:: no
-$ opensips-cli -x mi lb\_status 2 1
-$ opensips-cli -x mi lb\_status 2
+$ opensips-cli -x mi lb_status 2 1
+$ opensips-cli -x mi lb_status 2
 enable:: yes
 ```
 
@@ -524,7 +524,7 @@ The URL pointing to the database where the load-balancing rules are stored.
 
 ```opensips
 ...
-modparam("load\_balancer", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("load_balancer", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `db_table` parameter
@@ -533,7 +533,7 @@ The name of the DB table containing the load-balancing rules.
 
 ```opensips
 ...
-modparam("load\_balancer", "db\_table", "lb")
+modparam("load_balancer", "db_table", "lb")
 ...
 ```
 ### Set `probing_interval` parameter
@@ -542,7 +542,7 @@ How often (in seconds) the probing of a destination should be done. If set to 0,
 
 ```opensips
 ...
-modparam("load\_balancer", "probing\_interval", 60)
+modparam("load_balancer", "probing_interval", 60)
 ...
 ```
 ### Set `probing_method` parameter
@@ -551,7 +551,7 @@ The SIP method to be used for the probing requests.
 
 ```opensips
 ...
-modparam("load\_balancer", "probing\_method", "INFO")
+modparam("load_balancer", "probing_method", "INFO")
 ...
 ```
 ### Set `probing_from` parameter
@@ -560,7 +560,7 @@ The FROM SIP URI to be advertised in the SIP probing requests.
 
 ```opensips
 ...
-modparam("load\_balancer", "probing\_from", "sip:pinger@192.168.2.10")
+modparam("load_balancer", "probing_from", "sip:pinger@192.168.2.10")
 ...
 ```
 ### Set `probing_reply_codes` parameter
@@ -569,7 +569,7 @@ A comma separted list of SIP reply codes. The codes defined here will be conside
 
 ```opensips
 ...
-modparam("load\_balancer", "probing\_reply\_codes", "501, 403")
+modparam("load_balancer", "probing_reply_codes", "501, 403")
 ...
 ```
 ### Set `probing_verbose` parameter
@@ -578,7 +578,7 @@ A boolean option to enable extra logging related to the enabling or disabling of
 
 ```opensips
 ...
-modparam("load\_balancer", "probing\_verbose", 1)
+modparam("load_balancer", "probing_verbose", 1)
 ...
 ```
 ### Set the `lb_define_blacklist` parameter
@@ -587,8 +587,8 @@ Defines a blacklist based on a lb group. This list will contain the IPs (no port
 
 ```opensips
 ...
-modparam("load\_balancer", "lb\_define\_blacklist", "list= 1,4,3")
-modparam("load\_balancer", "lb\_define\_blacklist", "blist2= 2,10,6")
+modparam("load_balancer", "lb_define_blacklist", "list= 1,4,3")
+modparam("load_balancer", "lb_define_blacklist", "blist2= 2,10,6")
 ...
 ```
 ### Set the `fetch_freeswitch_load` parameter
@@ -597,7 +597,7 @@ If enabled, the maximum value of a resource may also consist of FreeSWITCH Event
 
 ```opensips
 ...
-modparam("load\_balancer", "fetch\_freeswitch\_stats", 1)
+modparam("load_balancer", "fetch_freeswitch_stats", 1)
 ...
 ```
 ### Set the `initial_freeswitch_load` parameter
@@ -606,7 +606,7 @@ This parameter is only relevant for some seconds after module startup/reload, wh
 
 ```opensips
 ...
-modparam("load\_balancer", "initial\_freeswitch\_load", 200)
+modparam("load_balancer", "initial_freeswitch_load", 200)
 ...
 ```
 ### Set `cluster_id` parameter
@@ -616,7 +616,7 @@ The ID of the cluster the module is part of. The clustering support is used in l
 ```opensips
 ...
 # replicate destination status with all OpenSIPS in cluster ID 9
-modparam("load\_balancer", "cluster\_id", 9)
+modparam("load_balancer", "cluster_id", 9)
 ...
 ```
 ### Set `cluster_sharing_tag` parameter
@@ -627,8 +627,8 @@ The name of the sharing tag (as defined per clusterer modules) to control which 
 ...
 # only the node with the active "vip" sharing tag will perform pinging
 # and broadcast the status changes
-modparam("load\_balancer", "cluster\_id", 9)
-modparam("load\_balancer", "cluster\_sharing\_tag", "vip")
+modparam("load_balancer", "cluster_id", 9)
+modparam("load_balancer", "cluster_sharing_tag", "vip")
 ...
 ```
 ### `lb_start` usage
@@ -637,10 +637,10 @@ The function starts a new load-balancing session over the available destinations
 
 ```opensips
 ...
-if (lb\_start(1,"trascoding;conference")) {
+if (lb_start(1,"trascoding;conference")) {
 	# dst URI points to the new destination
 	xlog("sending call to $du\\n");
-	t\_relay();
+	t_relay();
 	exit;
 }
 ...
@@ -651,12 +651,12 @@ Function to be used to pull the next available (and less loaded) destination. Yo
 
 ```opensips
 ...
-if (t\_check\_status("(408)|(5\[0-9\]\[0-9\])")) {
+if (t_check_status("(408)|(5\[0-9\]\[0-9\])")) {
 	/\* check next available LB destination \*/
-	if ( lb\_next() ) {
-		t\_on\_failure("1");
+	if ( lb_next() ) {
+		t_on_failure("1");
 		xlog("-----------new dst is $du\\n");
-		t\_relay();
+		t_relay();
 		exit;
 	}
 }
@@ -669,18 +669,18 @@ Function to stop and flush a current LB session. To be used in failure route, if
 
 ```opensips
 ...
-if (t\_check\_status("(5\[0-9\]\[0-9\])")) {
+if (t_check_status("(5\[0-9\]\[0-9\])")) {
 	/\* check next available LB destination \*/
-	if ( lb\_next() ) {
-		t\_on\_failure("1");
+	if ( lb_next() ) {
+		t_on_failure("1");
 		xlog("-----------new dst is $du\\n");
-		t\_relay();
+		t_relay();
 		exit;
 	}
-} else if (t\_check\_status("(408)")) {
-	lb\_reset();
-	if (lb\_start(1,"conference")) {
-		t\_relay();
+} else if (t_check_status("(408)")) {
+	lb_reset();
+	if (lb_start(1,"conference")) {
+		t_relay();
 		exit;
 	}
 }
@@ -692,14 +692,14 @@ Marks as disabled the last destination that was used for the current call. The d
 
 ```opensips
 ...
-if (t\_check\_status("(408)|(5\[0-9\]\[0-9\])")) {
-	lb\_disable\_dst();
-	if ( lb\_next() ) {
-		t\_on\_failure("1");
+if (t_check_status("(408)|(5\[0-9\]\[0-9\])")) {
+	lb_disable_dst();
+	if ( lb_next() ) {
+		t_on_failure("1");
 		xlog("-----------new dst is $du\\n");
-		t\_relay();
+		t_relay();
 	} else {
-		t\_reply(500,"Error");
+		t_reply(500,"Error");
 	}
 }
 
@@ -711,7 +711,7 @@ Checks if the given IP and PORT belongs to a destination configured in the load-
 
 ```opensips
 ...
-if (lb\_is\_destination($si,$sp) ) {
+if (lb_is_destination($si,$sp) ) {
 	# request from a LB destination
 }
 ...
@@ -723,18 +723,18 @@ The function counts the current call as load for a given destination with some g
 ```opensips
 ...
 # count as load also the calls orgininated by lb destinations
-if (lb\_is\_destination($si,$sp) ) {
+if (lb_is_destination($si,$sp) ) {
 	# inbound call from destination
-	lb\_count\_call($si,$sp,-1,"conference");
+	lb_count_call($si,$sp,-1,"conference");
 } else {
 	# outbound call to destinations
-	if ( !load\_balance(1,"conference") ) {
-		send\_reply(503,"unavailable");
+	if ( !load_balance(1,"conference") ) {
+		send_reply(503,"unavailable");
 		exit();
 	}
 	# dst URI points to the new destination
 	xlog("sending call to $du\\n");
-	t\_relay();
+	t_relay();
 	exit;
 }
 ...
@@ -744,7 +744,7 @@ if (lb\_is\_destination($si,$sp) ) {
 Lists all the destinations and the maximum and current load for each resource of the destination.
 
 ```opensips
-$ opensips-cli -x mi lb\_list
+$ opensips-cli -x mi lb_list
 Destination:: sip:127.0.0.1:5100 id=1 enabled=yes auto-re=on
         Resource:: pstn max=3 load=0
         Resource:: transc max=5 load=1
@@ -759,9 +759,9 @@ Destination:: sip:127.0.0.1:5200 id=2 enabled=no auto-re=on
 Gets or sets the status (enabled or disabled) of a destination.
 
 ```opensips
-$ opensips-cli -x mi lb\_status 2
+$ opensips-cli -x mi lb_status 2
 enable:: no
-$ opensips-cli -x mi lb\_status 2 1
-$ opensips-cli -x mi lb\_status 2
+$ opensips-cli -x mi lb_status 2 1
+$ opensips-cli -x mi lb_status 2
 enable:: yes
 ```

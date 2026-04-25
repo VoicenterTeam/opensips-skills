@@ -67,18 +67,18 @@ Full path to LDAP configuration file.
 **Example.** /etc/opensips/ldap.ini.
 
 ```opensips
-modparam("ldap", "config\_file", "/etc/opensips/ldap.ini")
+modparam("ldap", "config_file", "/etc/opensips/ldap.ini")
 ```
 ### `max_async_connections` (integer)
 
-Number of maximum asynchronous connections that will be started with the ldap server for executing asynchronous ldap\_search calls. The number of connections is per process, so if there are 8 worker processes with 20 max\_async\_connections, there will be a maximum of 160 connections to the ldap server.
+Number of maximum asynchronous connections that will be started with the ldap server for executing asynchronous ldap_search calls. The number of connections is per process, so if there are 8 worker processes with 20 max_async_connections, there will be a maximum of 160 connections to the ldap server.
 
 *Default value is 20.*
 
 **Example.** 50.
 
 ```opensips
-modparam("ldap", "max\_async\_connections", 50)
+modparam("ldap", "max_async_connections", 50)
 ```
 
 ## Exported Functions

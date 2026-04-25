@@ -45,7 +45,7 @@ This is the url representing the AAA protocol used and the location of the confi
 **Example.** radius:/etc/radiusclient-ng/radiusclient.conf.
 
 ```opensips
-modparam("group", "aaa\_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
+modparam("group", "aaa_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
 ```
 ### `db_url` (string)
 
@@ -54,7 +54,7 @@ URL of the database table to be used.
 **Example.** mysql://username:password@dbhost/opensips.
 
 ```opensips
-modparam("group", "db\_url", "mysql://username:password@dbhost/opensips")
+modparam("group", "db_url", "mysql://username:password@dbhost/opensips")
 ```
 ### `domain_column` (string)
 
@@ -65,7 +65,7 @@ Name of the “table” column holding domains.
 **Example.** realm.
 
 ```opensips
-modparam("group", "domain\_column", "realm")
+modparam("group", "domain_column", "realm")
 ```
 ### `group_column` (string)
 
@@ -76,7 +76,7 @@ Name of the “table” column holding groups.
 **Example.** grp.
 
 ```opensips
-modparam("group", "group\_column", "grp")
+modparam("group", "group_column", "grp")
 ```
 ### `multiple_gid` (integer)
 
@@ -87,29 +87,29 @@ If enabled (non zero value) the regular-expression matching will return all grou
 **Example.** 0.
 
 ```opensips
-modparam("group", "multiple\_gid", 0)
+modparam("group", "multiple_gid", 0)
 ```
 ### `re_exp_column` (string)
 
-Name of the “re\_table” column holding the regular expression used for user matching.
+Name of the “re_table” column holding the regular expression used for user matching.
 
-*Default value is “reg\_exp”.*
+*Default value is “reg_exp”.*
 
 **Example.** re.
 
 ```opensips
-modparam("group", "re\_exp\_column", "re")
+modparam("group", "re_exp_column", "re")
 ```
 ### `re_gid_column` (string)
 
-Name of the “re\_table” column holding the group IDs.
+Name of the “re_table” column holding the group IDs.
 
-*Default value is “group\_id”.*
+*Default value is “group_id”.*
 
-**Example.** grp\_id.
+**Example.** grp_id.
 
 ```opensips
-modparam("group", "re\_gid\_column", "grp\_id")
+modparam("group", "re_gid_column", "grp_id")
 ```
 ### `re_table` (string)
 
@@ -117,10 +117,10 @@ Name of the table holding definitions for regular-expression based groups. If no
 
 *Default value is “NULL”.*
 
-**Example.** re\_grp.
+**Example.** re_grp.
 
 ```opensips
-modparam("group", "re\_table", "re\_grp")
+modparam("group", "re_table", "re_grp")
 ```
 ### `table` (string)
 
@@ -128,10 +128,10 @@ Name of the table holding strict definitions of groups and their members.
 
 *Default value is grp.*
 
-**Example.** grp\_table.
+**Example.** grp_table.
 
 ```opensips
-modparam("group", "table", "grp\_table")
+modparam("group", "table", "grp_table")
 ```
 ### `use_domain` (integer)
 
@@ -142,7 +142,7 @@ If enabled (set to non zero value) then domain will be used also used for strict
 **Example.** 1.
 
 ```opensips
-modparam("group", "use\_domain", 1)
+modparam("group", "use_domain", 1)
 ```
 ### `user_column` (string)
 
@@ -153,7 +153,7 @@ Name of the “table” column holding usernames.
 **Example.** user.
 
 ```opensips
-modparam("group", "user\_column", "user")
+modparam("group", "user_column", "user")
 ```
 
 ## Exported Functions
@@ -266,7 +266,7 @@ URL of the database table to be used.
 
 ```opensips
 ...
-modparam("group", "db\_url", "mysql://username:password@dbhost/opensips")
+modparam("group", "db_url", "mysql://username:password@dbhost/opensips")
 ...
 ```
 ### Set `table` parameter
@@ -275,7 +275,7 @@ Name of the table holding strict definitions of groups and their members.
 
 ```opensips
 ...
-modparam("group", "table", "grp\_table")
+modparam("group", "table", "grp_table")
 ...
 ```
 ### Set `user_column` parameter
@@ -284,7 +284,7 @@ Name of the “table” column holding usernames.
 
 ```opensips
 ...
-modparam("group", "user\_column", "user")
+modparam("group", "user_column", "user")
 ...
 ```
 ### Set `domain_column` parameter
@@ -293,7 +293,7 @@ Name of the “table” column holding domains.
 
 ```opensips
 ...
-modparam("group", "domain\_column", "realm")
+modparam("group", "domain_column", "realm")
 ...
 ```
 ### Set `group_column` parameter
@@ -302,7 +302,7 @@ Name of the “table” column holding groups.
 
 ```opensips
 ...
-modparam("group", "group\_column", "grp")
+modparam("group", "group_column", "grp")
 ...
 ```
 ### Set `use_domain` parameter
@@ -311,7 +311,7 @@ If enabled (set to non zero value) then domain will be used also used for strict
 
 ```opensips
 ...
-modparam("group", "use\_domain", 1)
+modparam("group", "use_domain", 1)
 ...
 ```
 ### Set `re_table` parameter
@@ -320,7 +320,7 @@ Name of the table holding definitions for regular-expression based groups. If no
 
 ```opensips
 ...
-modparam("group", "re\_table", "re\_grp")
+modparam("group", "re_table", "re_grp")
 ...
 ```
 ### Set `re_exp_column` parameter
@@ -329,7 +329,7 @@ Name of the “re_table” column holding the regular expression used for user m
 
 ```opensips
 ...
-modparam("group", "re\_exp\_column", "re")
+modparam("group", "re_exp_column", "re")
 ...
 ```
 ### Set `re_gid_column` parameter
@@ -338,7 +338,7 @@ Name of the “re_table” column holding the group IDs.
 
 ```opensips
 ...
-modparam("group", "re\_gid\_column", "grp\_id")
+modparam("group", "re_gid_column", "grp_id")
 ...
 ```
 ### Set `multiple_gid` parameter
@@ -347,7 +347,7 @@ If enabled (non zero value) the regular-expression matching will return all grou
 
 ```opensips
 ...
-modparam("group", "multiple\_gid", 0)
+modparam("group", "multiple_gid", 0)
 ...
 ```
 ### Set `aaa_url` parameter
@@ -356,7 +356,7 @@ This is the url representing the AAA protocol used and the location of the confi
 
 ```opensips
 ...
-modparam("group", "aaa\_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
+modparam("group", "aaa_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
 ...
 ```
 ### `db_is_user_in` usage
@@ -365,13 +365,13 @@ This function is to be used for script group membership. The function returns tr
 
 ```opensips
 ...
-if (db\_is\_user\_in("Request-URI", "ld")) {
+if (db_is_user_in("Request-URI", "ld")) {
 	...
 }
 ...
 $avp(grouptocheck)="offline";
 
-if (db\_is\_user\_in("Credentials", $avp(grouptocheck))) {
+if (db_is_user_in("Credentials", $avp(grouptocheck))) {
 	...
 }
 ...
@@ -382,7 +382,7 @@ This function is to be used for regular expression based group membership, using
 
 ```opensips
 ...
-if (db\_get\_user\_group("Request-URI", $avp(10))) {
+if (db_get_user_group("Request-URI", $avp(10))) {
     xdbg("User $ru belongs to the following groups: $(avp(10)\[\*])\\n");
     ....
 };
@@ -394,7 +394,7 @@ This function checks group membership, using AAA support. The function returns t
 
 ```opensips
 ...
-if (aaa\_is\_user\_in("Request-URI", "ld")) {
+if (aaa_is_user_in("Request-URI", "ld")) {
 	...
 };
 ...

@@ -43,7 +43,7 @@ Since the library does not support a function to return the number of rows in a 
 **Example.** Set the `alloc_limit` parameter.
 
 ```opensips
-modparam("db\_sqlite", "alloc\_limit", 25)
+modparam("db_sqlite", "alloc_limit", 25)
 ```
 ### `busy_timeout` (integer)
 
@@ -54,7 +54,7 @@ This parameter sets the default busy_handler for the SQLite library, that sleeps
 **Example.** Set the `busy_timeout` parameter.
 
 ```opensips
-modparam("db\_sqlite", "busy\_timeout", 5000)
+modparam("db_sqlite", "busy_timeout", 5000)
 ```
 ### `exec_pragma` (string)
 
@@ -65,9 +65,9 @@ This parameter allows configuring an SQLite database with "PRAGMA" statements, (
 **Example.** Set the `exec_pragma` parameter.
 
 ```opensips
-modparam("db\_sqlite", "exec\_pragma", "journal\_mode=wal")
-modparam("db\_sqlite", "exec\_pragma", "synchronous=normal")
-modparam("db\_sqlite", "exec\_pragma", "cache\_size=-2000")
+modparam("db_sqlite", "exec_pragma", "journal_mode=wal")
+modparam("db_sqlite", "exec_pragma", "synchronous=normal")
+modparam("db_sqlite", "exec_pragma", "cache_size=-2000")
 ```
 ### `load_extension` (string)
 
@@ -78,8 +78,8 @@ This parameter enables extension loading, similiar to ".load" functionality in s
 **Example.** Set the `load_extension` parameter.
 
 ```opensips
-modparam("db\_sqlite", "load\_extension", "/usr/lib/sqlite3/pcre.so")
-modparam("db\_sqlite", "load\_extension", "/usr/lib/sqlite3/pcre.so;sqlite3\_extension\_init")
+modparam("db_sqlite", "load_extension", "/usr/lib/sqlite3/pcre.so")
+modparam("db_sqlite", "load_extension", "/usr/lib/sqlite3/pcre.so;sqlite3_extension_init")
 ```
 
 ## Configuration Examples

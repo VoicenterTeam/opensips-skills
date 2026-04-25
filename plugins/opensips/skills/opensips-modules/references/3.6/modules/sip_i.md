@@ -45,7 +45,7 @@ Country Code that the first part of the number from P-Asserted-Identity is teste
 
 ```opensips
 ...
-modparam("sip\_i", "country\_code", "+4")
+modparam("sip_i", "country_code", "+4")
 ...
 ```
 ### `default_part_headers` (string)
@@ -58,7 +58,7 @@ The default set of headers (fully defined, including the header termination) to 
 
 ```opensips
 ...
-modparam("sip\_i", "default\_part\_headers", "Content-Disposition:signal;handling=required\r\n")
+modparam("sip_i", "default_part_headers", "Content-Disposition:signal;handling=required\r\n")
 ...
 ```
 ### `isup_mime_str` (string)
@@ -71,12 +71,12 @@ The string to be used for the Content-Type header field of the ISUP MIME body wh
 
 ```opensips
 ...
-modparam("sip\_i", "isup\_mime\_str", "application/ISUP;base=itu-t92+;version=itu-t")
+modparam("sip_i", "isup_mime_str", "application/ISUP;base=itu-t92+;version=itu-t")
 ...
 ```
 ### `param_subfield_separator` (string)
 
-The character to be used as separator in the subname of the _$isup\_param_ and _$isup\_param\_str_ pseudovariables between the ISUP parameter name and subfield name.
+The character to be used as separator in the subname of the _$isup_param_ and _$isup_param_str_ pseudovariables between the ISUP parameter name and subfield name.
 
 *Default value is |.*
 
@@ -84,7 +84,7 @@ The character to be used as separator in the subname of the _$isup\_param_ and _
 
 ```opensips
 ...
-modparam("sip\_i", "param\_subfield\_separator", ":")
+modparam("sip_i", "param_subfield_separator", ":")
 ...
 ```
 
@@ -175,15 +175,15 @@ if ($rs == "183") {
 
 ### `$(isup_param(param_name{sep}subfield_name)[byte_index])`
 
-The ISUP parameter named _param\_name_ of a received or newly added ISUP message can be accessed through this read-write variable. For optional parameters, writing to a _param\_name_ that does not exist in this ISUP message will insert it. Assigning null to this variable will remove the optional parameter from the message or zeroize the parameter in case of a mandatory one.
+The ISUP parameter named _param_name_ of a received or newly added ISUP message can be accessed through this read-write variable. For optional parameters, writing to a _param_name_ that does not exist in this ISUP message will insert it. Assigning null to this variable will remove the optional parameter from the message or zeroize the parameter in case of a mandatory one.
 
 The format of the subname for `$isup_param` is the following:
 
-*   _param\_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763
+*   _param_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763
     
 *   _sep_ - separator, whitespaces allowed before/after
     
-*   _subfield\_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763
+*   _subfield_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763
 
 The ISUP parameter can be addressed in different ways:
 
@@ -202,21 +202,21 @@ For more information on supported subfields and aliases check [Section 1.7, “I
 **Example 1.6. `isup_param` usage**
 
 ...
-	$isup\_param(Called Party Number | Nature of address indicator) = 3;
+	$isup_param(Called Party Number | Nature of address indicator) = 3;
 	...
 	# use a string alias
-	$isup\_param(Called Party Number | Numbering plan indicator) = "ISDN";
+	$isup_param(Called Party Number | Numbering plan indicator) = "ISDN";
 	...
-	$isup\_param(Called Party Number | Address signal) = "99991234";
-	$isup\_param(Nature of connection indicators) = "0x01"
-	$isup\_param(Calling party's category) = 10;
+	$isup_param(Called Party Number | Address signal) = "99991234";
+	$isup_param(Nature of connection indicators) = "0x01"
+	$isup_param(Calling party's category) = 10;
 	...
 	# use a string alias
-	$isup\_param(Transmission Medium Requirement) = "speech";
+	$isup_param(Transmission Medium Requirement) = "speech";
 	...
 	# access at byte level
-	$(isup\_param(Forward Call Indicators)\[0\]) = 96;
-	$(isup\_param(Forward Call Indicators)\[1\]) = 1;
+	$(isup_param(Forward Call Indicators)\[0\]) = 96;
+	$(isup_param(Forward Call Indicators)\[1\]) = 1;
 ...
 
 - **Type:** string, integer
@@ -230,7 +230,7 @@ Read-only variable, returns the ISUP message type as string.
 
 ...
 	# may print: "ISUP msg is: IAM"
-	xlog("ISUP msg is: $isup\_msg\_type");
+	xlog("ISUP msg is: $isup_msg_type");
 ...
 
 - **Type:** string
@@ -238,27 +238,27 @@ Read-only variable, returns the ISUP message type as string.
 - **Scope:** 
 ### `$isup_param_str(param_name{sep}subfield_name)`
 
-The ISUP parameter named _param\_name_ of a received or newly added ISUP message can also be accessed through this read-only variable. This variable is similar in usage with _$isup\_param_ except it will return the string alias for the value when possible.
+The ISUP parameter named _param_name_ of a received or newly added ISUP message can also be accessed through this read-only variable. This variable is similar in usage with _$isup_param_ except it will return the string alias for the value when possible.
 
 The format of the subname for `$isup_param_str` is the following:
 
-*   _param\_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763
+*   _param_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763
     
 *   _sep_ - separator, whitespaces allowed before/after
     
-*   _subfield\_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763
+*   _subfield_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763
 
 **Example 1.7. `isup_param_str` usage**
 
 ...
 	# may print: "NOA is: national"  
-	xlog("NOA is: $isup\_param\_str(Called Party Number|Nature of address indicator)");
+	xlog("NOA is: $isup_param_str(Called Party Number|Nature of address indicator)");
 	# may print: "CpN is: 99991234"
-	xlog("CpN is: $isup\_param\_str(Called Party Number|Address signal)");
+	xlog("CpN is: $isup_param_str(Called Party Number|Address signal)");
 	# may print: "nature of conn: 0x01"
-	xlog("nature of conn: $isup\_param\_str(Nature of connection indicators)");
+	xlog("nature of conn: $isup_param_str(Nature of connection indicators)");
 	# may print: "Cg cat is: ordinary"
-	xlog("$isup\_param\_str(Calling party's category)");
+	xlog("$isup_param_str(Calling party's category)");
 ...
 
 - **Type:** string
@@ -269,11 +269,11 @@ The format of the subname for `$isup_param_str` is the following:
 
 ### Set `param_subfield_separator` parameter
 
-The character to be used as separator in the subname of the _$isup\_param_ and _$isup\_param\_str_ pseudovariables between the ISUP parameter name and subfield name.
+The character to be used as separator in the subname of the _$isup_param_ and _$isup_param_str_ pseudovariables between the ISUP parameter name and subfield name.
 
 ```opensips
 ...
-modparam("sip\_i", "param\_subfield\_separator", ":")
+modparam("sip_i", "param_subfield_separator", ":")
 ...
 ```
 ### Set `isup_mime_str` parameter
@@ -282,7 +282,7 @@ The string to be used for the Content-Type header field of the ISUP MIME body wh
 
 ```opensips
 ...
-modparam("sip\_i", "isup\_mime\_str", "application/ISUP;base=itu-t92+;version=itu-t")
+modparam("sip_i", "isup_mime_str", "application/ISUP;base=itu-t92+;version=itu-t")
 ...
 ```
 ### Set `default_part_headers` parameter
@@ -291,7 +291,7 @@ The default set of headers (fully defined, including the header termination) to 
 
 ```opensips
 ...
-modparam("sip\_i", "default\_part\_headers", "Content-Disposition:signal;handling=required\\r\\n")
+modparam("sip_i", "default_part_headers", "Content-Disposition:signal;handling=required\\r\\n")
 ...
 ```
 ### Set `country_code` parameter
@@ -300,7 +300,7 @@ Country Code that the first part of the number from P-Asserted-Identity is teste
 
 ```opensips
 ...
-modparam("sip\_i", "country\_code", "+4")
+modparam("sip_i", "country_code", "+4")
 ...
 ```
 ### `add_isup_part` usage
@@ -311,7 +311,7 @@ Adds a new ISUP part to the SIP message body.
 ...
 if ($rs == "183") {
 	# Encapsulate a CPG
-	add\_isup\_part("Call progress");
+	add_isup_part("Call progress");
 	# set desired parameters
 	...
 }
@@ -319,41 +319,41 @@ if ($rs == "183") {
 ```
 ### `isup_param` usage
 
-The ISUP parameter named _param\_name_ of a received or newly added ISUP message can be accessed through this read-write variable.
+The ISUP parameter named _param_name_ of a received or newly added ISUP message can be accessed through this read-write variable.
 
 ```opensips
 ...
-	$isup\_param(Called Party Number | Nature of address indicator) = 3;
+	$isup_param(Called Party Number | Nature of address indicator) = 3;
 	...
 	# use a string alias
-	$isup\_param(Called Party Number | Numbering plan indicator) = "ISDN";
+	$isup_param(Called Party Number | Numbering plan indicator) = "ISDN";
 	...
-	$isup\_param(Called Party Number | Address signal) = "99991234";
-	$isup\_param(Nature of connection indicators) = "0x01"
-	$isup\_param(Calling party's category) = 10;
+	$isup_param(Called Party Number | Address signal) = "99991234";
+	$isup_param(Nature of connection indicators) = "0x01"
+	$isup_param(Calling party's category) = 10;
 	...
 	# use a string alias
-	$isup\_param(Transmission Medium Requirement) = "speech";
+	$isup_param(Transmission Medium Requirement) = "speech";
 	...
 	# access at byte level
-	$(isup\_param(Forward Call Indicators)\[0\]) = 96;
-	$(isup\_param(Forward Call Indicators)\[1\]) = 1;
+	$(isup_param(Forward Call Indicators)\[0\]) = 96;
+	$(isup_param(Forward Call Indicators)\[1\]) = 1;
 ...
 ```
 ### `isup_param_str` usage
 
-The ISUP parameter named _param\_name_ of a received or newly added ISUP message can also be accessed through this read-only variable.
+The ISUP parameter named _param_name_ of a received or newly added ISUP message can also be accessed through this read-only variable.
 
 ```opensips
 ...
 	# may print: "NOA is: national"  
-	xlog("NOA is: $isup\_param\_str(Called Party Number|Nature of address indicator)");
+	xlog("NOA is: $isup_param_str(Called Party Number|Nature of address indicator)");
 	# may print: "CpN is: 99991234"
-	xlog("CpN is: $isup\_param\_str(Called Party Number|Address signal)");
+	xlog("CpN is: $isup_param_str(Called Party Number|Address signal)");
 	# may print: "nature of conn: 0x01"
-	xlog("nature of conn: $isup\_param\_str(Nature of connection indicators)");
+	xlog("nature of conn: $isup_param_str(Nature of connection indicators)");
 	# may print: "Cg cat is: ordinary"
-	xlog("$isup\_param\_str(Calling party's category)");
+	xlog("$isup_param_str(Calling party's category)");
 ...
 ```
 ### `isup_msg_type` usage
@@ -363,50 +363,50 @@ Read-only variable, returns the ISUP message type as string.
 ```opensips
 ...
 	# may print: "ISUP msg is: IAM"
-	xlog("ISUP msg is: $isup\_msg\_type");
+	xlog("ISUP msg is: $isup_msg_type");
 ...
 ```
 ### `isup.param` usage
 
-The result of this transformation is similar to a read access of the `$isup\_param` pseudovariable with the exception that byte level access is not provided.
+The result of this transformation is similar to a read access of the `$isup_param` pseudovariable with the exception that byte level access is not provided.
 
 ```opensips
 ...
 	# for this example, we take the ISUP body from the received SIP-I message
-	$var(isup\_body) = $(rb\[1\]);
+	$var(isup_body) = $(rb\[1\]);
 
 	# may print: "NOA is: 3"  
-	xlog("NOA is: $(var(isup\_body){isup.param, Called Party Number, Nature of address indicator})\\n");
+	xlog("NOA is: $(var(isup_body){isup.param, Called Party Number, Nature of address indicator})\\n");
 
 	# may print: "CpN is: 99991234"  
-	xlog("CpN is: $(var(isup\_body){isup.param, Called Party Number, Address signal})\\n");
+	xlog("CpN is: $(var(isup_body){isup.param, Called Party Number, Address signal})\\n");
 
 	# may print: "Cg cat is: 10"
-	xlog("Cg cat is: $(var(isup\_body){isup.param, Calling party's category})\\n");
+	xlog("Cg cat is: $(var(isup_body){isup.param, Calling party's category})\\n");
 
 	# may print: "nature of conn: 0x01"
-	xlog("nature of conn: $(var(isup\_body){isup.param, Nature of connection indicators})\\n");
+	xlog("nature of conn: $(var(isup_body){isup.param, Nature of connection indicators})\\n");
 ...
 ```
 ### `isup.param.str` usage
 
-The result of this transformation is similar to a read access of the `$isup\_param\_str` pseudovariable with the exception that byte level access is not provided.
+The result of this transformation is similar to a read access of the `$isup_param_str` pseudovariable with the exception that byte level access is not provided.
 
 ```opensips
 ...
 	# for this example, we take the ISUP body from the received SIP-I message
-	$var(isup\_body) = $(rb\[1\]);
+	$var(isup_body) = $(rb\[1\]);
 
 	# may print: "NOA is: national"  
-	xlog("NOA is: $(var(isup\_body){isup.param.str, Called Party Number, Nature of address indicator})\\n");
+	xlog("NOA is: $(var(isup_body){isup.param.str, Called Party Number, Nature of address indicator})\\n");
 
 	# may print: "CpN is: 99991234"  
-	xlog("CpN is: $(var(isup\_body){isup.param.str, Called Party Number, Address signal})\\n");
+	xlog("CpN is: $(var(isup_body){isup.param.str, Called Party Number, Address signal})\\n");
 
 	# may print: "Cg cat is: ordinary"
-	xlog("Cg cat is: $(var(isup\_body){isup.param.str, Calling party's category})\\n");
+	xlog("Cg cat is: $(var(isup_body){isup.param.str, Calling party's category})\\n");
 
 	# may print: "nature of conn: 0x01"
-	xlog("nature of conn: $(var(isup\_body){isup.param.str, Nature of connection indicators})\\n");
+	xlog("nature of conn: $(var(isup_body){isup.param.str, Nature of connection indicators})\\n");
 ...
 ```

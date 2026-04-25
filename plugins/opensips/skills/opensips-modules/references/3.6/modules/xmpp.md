@@ -31,13 +31,13 @@ In the component mode, you need a local XMPP server (recommended jabberd2 or eja
 
 After you have a running XMPP server, what you need to do is set the following parameters in the OpenSIPS configuration file:
 
-*   xmpp\_domain and xmpp\_host, which are explained in the [Exported Parameters](#exported_parameters "1.3.�Exported Parameters") section;
+*   xmpp_domain and xmpp_host, which are explained in the [Exported Parameters](#exported_parameters "1.3.Exported Parameters") section;
     
 *   socket= your ip;
     
 *   alias=opensips domain and alias=gateway domain;
     
-*   you can also change the jabber server password, which must be the same as the xmpp\_password parameter.
+*   you can also change the jabber server password, which must be the same as the xmpp_password parameter.
     
 A use case, for the component-mode, would look like this:
 
@@ -49,7 +49,7 @@ A use case, for the component-mode, would look like this:
     
 In the server mode, the xmpp module is a minimal jabber server, thus you do not need to install another jabber server, the gateway will connect to the jabber servers, where the users you want to chat with have an account.
 
-If you want to change to server-mode, you have to change the "backend" parameter, as shown in the [Exported Parameters](#exported_parameters "1.3.�Exported Parameters") section, from component to server.
+If you want to change to server-mode, you have to change the "backend" parameter, as shown in the [Exported Parameters](#exported_parameters "1.3.Exported Parameters") section, from component to server.
 
 A use case, for the server-mode, would look like this:
 
@@ -94,7 +94,7 @@ The SIP address used as next hop when sending the message. Very useful when usin
 **Example.** sip:opensips.org;transport=tcp.
 
 ```opensips
-modparam("xmpp", "outbound\_proxy", "sip:opensips.org;transport=tcp")
+modparam("xmpp", "outbound_proxy", "sip:opensips.org;transport=tcp")
 ```
 ### `sip_domain` (string)
 
@@ -105,7 +105,7 @@ This parameter must be set only if the xmpp module is used in component mode and
 **Example.** sip.opensips.org.
 
 ```opensips
-modparam("xmpp", "sip\_domain", "sip.opensips.org")
+modparam("xmpp", "sip_domain", "sip.opensips.org")
 ```
 ### `xmpp_domain` (string)
 
@@ -116,7 +116,7 @@ The xmpp domain of the component or the server, depending on the mode we are in.
 **Example.** xmpp.opensips.org.
 
 ```opensips
-modparam("xmpp", "xmpp\_domain", "xmpp.opensips.org")
+modparam("xmpp", "xmpp_domain", "xmpp.opensips.org")
 ```
 ### `xmpp_host` (string)
 
@@ -127,7 +127,7 @@ The ip address or the name of the local jabber server, if the backend is set to 
 **Example.** xmpp.opensips.org.
 
 ```opensips
-modparam("xmpp", "xmpp\_host", "xmpp.opensips.org")
+modparam("xmpp", "xmpp_host", "xmpp.opensips.org")
 ```
 ### `xmpp_password` (string)
 
@@ -145,7 +145,7 @@ The password of the local jabber server.
 **Example.** secret.
 
 ```opensips
-modparam("xmpp", "xmpp\_password", "secret")
+modparam("xmpp", "xmpp_password", "secret")
 ```
 ### `xmpp_port` (integer)
 
@@ -156,7 +156,7 @@ In the component mode, this is the port of the jabber router we connect to. In t
 **Example.** 5269.
 
 ```opensips
-modparam("xmpp", "xmpp\_port", 5269)
+modparam("xmpp", "xmpp_port", 5269)
 ```
 
 ## Exported Functions
@@ -188,7 +188,7 @@ The xmpp domain of the component or the server, depending on the mode we are in.
 
 ```opensips
 ...
- modparam("xmpp", "xmpp\_domain", "xmpp.opensips.org")
+ modparam("xmpp", "xmpp_domain", "xmpp.opensips.org")
 ...
 ```
 ### Set `xmpp_host` parameter
@@ -197,7 +197,7 @@ The ip address or the name of the local jabber server, if the backend is set to 
 
 ```opensips
 ...
- modparam("xmpp", "xmpp\_host", "xmpp.opensips.org")
+ modparam("xmpp", "xmpp_host", "xmpp.opensips.org")
 ...
 ```
 ### Set `xmpp_host` parameter
@@ -206,7 +206,7 @@ This parameter must be set only if the xmpp module is used in component mode and
 
 ```opensips
 ...
- modparam("xmpp", "sip\_domain", "sip.opensips.org")
+ modparam("xmpp", "sip_domain", "sip.opensips.org")
 ...
 ```
 ### Set `xmpp_port` parameter
@@ -215,7 +215,7 @@ In the component mode, this is the port of the jabber router we connect to. In t
 
 ```opensips
 ...
- modparam("xmpp", "xmpp\_port", 5269)
+ modparam("xmpp", "xmpp_port", 5269)
 ...
 ```
 ### Set `xmpp_password` parameter
@@ -224,7 +224,7 @@ The password of the local jabber server.
 
 ```opensips
 ...
- modparam("xmpp", "xmpp\_password", "secret")
+ modparam("xmpp", "xmpp_password", "secret")
 ...
 ```
 ### Set `outbound_proxy` parameter
@@ -233,7 +233,7 @@ The SIP address used as next hop when sending the message. Very useful when usin
 
 ```opensips
 ...
- modparam("xmpp", "outbound\_proxy", "sip:opensips.org;transport=tcp")
+ modparam("xmpp", "outbound_proxy", "sip:opensips.org;transport=tcp")
 ...
 ```
 ### `xmpp_send_message()` usage
@@ -242,7 +242,7 @@ Converts SIP messages to XMPP(jabber) messages, in order to be relayed to a XMPP
 
 ```opensips
 ...
-xmpp\_send\_message();
+xmpp_send_message();
 ...
 ```
 ### Configuration
@@ -260,17 +260,17 @@ Next is presented a sample configuration file one can use to implement a standal
 #
 # ----------- global configuration parameters ------------------------
 
-log\_level=3        # debug level (cmd line: -dddddddddd)
-stderror\_enabled=no
-syslog\_enabled=yes
+log_level=3        # debug level (cmd line: -dddddddddd)
+stderror_enabled=no
+syslog_enabled=yes
 
 /* Uncomment these line to enter debugging mode */
-#debug\_mode=yes
+#debug_mode=yes
 
-check\_via=no	# (cmd. line: -v)
+check_via=no	# (cmd. line: -v)
 dns=no          # (cmd. line: -r)
-rev\_dns=no      # (cmd. line: -R)
-udp\_workers=4
+rev_dns=no      # (cmd. line: -R)
+udp_workers=4
 
 socket=udp:10.10.10.10:5076
 alias=sip-xmpp.opensips.org
@@ -283,22 +283,22 @@ loadmodule "tm.so"
 loadmodule "rr.so"
 loadmodule "maxfwd.so"
 loadmodule "textops.so"
-loadmodule "mi\_fifo.so"
+loadmodule "mi_fifo.so"
 
 # XMPP
 loadmodule "xmpp.so"
 
-modparam("xmpp", "xmpp\_domain", "xmpp-sip.opensips.org")
-modparam("xmpp", "xmpp\_host", "xmpp.opensips.org")
+modparam("xmpp", "xmpp_domain", "xmpp-sip.opensips.org")
+modparam("xmpp", "xmpp_host", "xmpp.opensips.org")
 
 #modparam("xmpp", "backend", "server")
 modparam("xmpp", "backend", "component")
 
 # ----------------- setting module-specific parameters ---------------
 
-# -- mi\_fifo params --
+# -- mi_fifo params --
 
-modparam("mi\_fifo", "fifo\_name", "/tmp/opensips\_fifo\_xmpp")
+modparam("mi_fifo", "fifo_name", "/tmp/opensips_fifo_xmpp")
 
 # -------------------------  request routing logic -------------------
 
@@ -307,29 +307,29 @@ modparam("mi\_fifo", "fifo\_name", "/tmp/opensips\_fifo\_xmpp")
 route{
 
 	# initial sanity checks -- messages with
-	# max\_forwards==0, or excessively long requests
-	if (!mf\_process\_maxfwd\_header("10")) {
-		sl\_send\_reply(483,"Too Many Hops");
+	# max_forwards==0, or excessively long requests
+	if (!mf_process_maxfwd_header("10")) {
+		sl_send_reply(483,"Too Many Hops");
 		exit;
 	};
 
 	### absorb retransmissions ###
-	if (!t\_newtran()) {
-		sl\_reply\_error();
+	if (!t_newtran()) {
+		sl_reply_error();
 		return;
 	}
-	if (is\_method("MESSAGE")) {
+	if (is_method("MESSAGE")) {
 		log("\*\*\* xmpp-handled MESSAGE message.\\n");
-		if (xmpp\_send\_message()) {
-			t\_reply(200, "Accepted");
+		if (xmpp_send_message()) {
+			t_reply(200, "Accepted");
 		} else {
-			t\_reply(404, "Not found");
+			t_reply(404, "Not found");
 		}
 		return;
 	}
 		
 	log("\*\*\* xmpp: unhandled message type\\n");
-	t\_reply(503, "Service unavailable");
+	t_reply(503, "Service unavailable");
 	return;
 }
 

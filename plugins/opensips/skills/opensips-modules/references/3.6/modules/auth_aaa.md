@@ -35,12 +35,12 @@ None.
 
 This is the url representing the AAA protocol used and the location of the configuration file of this protocol.
 
-The syntax for the url is the following: "name\_of\_the\_aaa\_protocol\_used:path\_of\_the\_configuration\_file"
+The syntax for the url is the following: "name_of_the_aaa_protocol_used:path_of_the_configuration_file"
 
 **Example.** radius:/etc/radiusclient-ng/radiusclient.conf.
 
 ```opensips
-modparam("auth\_aaa", "aaa\_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
+modparam("auth_aaa", "aaa_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
 ```
 ### `auth_service_type` (integer)
 
@@ -51,7 +51,7 @@ This is the value of the Service-Type aaa attribute to be used when performing a
 **Example.** 15.
 
 ```opensips
-modparam("auth\_aaa", "auth\_service\_type", 15)
+modparam("auth_aaa", "auth_service_type", 15)
 ```
 ### `check_service_type` (integer)
 
@@ -62,7 +62,7 @@ AAA service type used by `aaa_does_uri_exist` and `aaa_does_uri_user_exist` chec
 **Example.** 11.
 
 ```opensips
-modparam("auth\_aaa", "check\_service\_type", 11)
+modparam("auth_aaa", "check_service_type", 11)
 ```
 ### `use_ruri_flag` (string)
 
@@ -73,7 +73,7 @@ When this parameter is set to the value other than "NULL" and the request being 
 **Example.** USE_RURI_FLAG.
 
 ```opensips
-modparam("auth\_aaa", "use\_ruri\_flag", "USE\_RURI\_FLAG")
+modparam("auth_aaa", "use_ruri_flag", "USE_RURI_FLAG")
 ```
 
 ## Exported Functions

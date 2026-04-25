@@ -41,29 +41,29 @@ If set to 1, the module will internally create the dialog ( if not already creat
 **Example.** 1.
 
 ```opensips
-modparam("topology\_hiding", "force\_dialog", 1)
+modparam("topology_hiding", "force_dialog", 1)
 ```
 ### `th_callid_passwd` (string)
 
-The string password that will be used for encoding/decoding the callid in case of topology\_hiding with callid mangling.
+The string password that will be used for encoding/decoding the callid in case of topology_hiding with callid mangling.
 
 *Default value is OpenSIPS.*
 
-**Example.** my\_topo\_hiding\_secret.
+**Example.** my_topo_hiding_secret.
 
 ```opensips
-modparam("topology\_hiding", "th\_callid\_passwd", "my\_topo\_hiding\_secret")
+modparam("topology_hiding", "th_callid_passwd", "my_topo_hiding_secret")
 ```
 ### `th_callid_prefix` (string)
 
 The prefix that will be used for detecting callids which have been encoded by the dialog topology hiding. Make sure to change this value in case your SIP path contains multiple OpenSIPS boxes with topology hiding.
 
-*Default value is DLGCH\_.*
+*Default value is DLGCH_.*
 
-**Example.** MYCALLIDPREFIX\_.
+**Example.** MYCALLIDPREFIX_.
 
 ```opensips
-modparam("topology\_hiding", "th\_callid\_prefix", "MYCALLIDPREFIX\_")
+modparam("topology_hiding", "th_callid_prefix", "MYCALLIDPREFIX_")
 ```
 ### `th_contact_encode_param` (string)
 
@@ -74,7 +74,7 @@ When not relying on the dialog module ( due to script writer preference or simpl
 **Example.** customparam.
 
 ```opensips
-modparam("topology\_hiding", "th\_contact\_encode\_param", "customparam")
+modparam("topology_hiding", "th_contact_encode_param", "customparam")
 ```
 ### `th_contact_encode_passwd` (string)
 
@@ -82,10 +82,10 @@ When not relying on the dialog module ( due to script writer preference or simpl
 
 *Default value is ToPoCtPaSS.*
 
-**Example.** my\_topoh\_passwd.
+**Example.** my_topoh_passwd.
 
 ```opensips
-modparam("topology\_hiding", "th\_contact\_encode\_passwd", "my\_topoh\_passwd")
+modparam("topology_hiding", "th_contact_encode_passwd", "my_topoh_passwd")
 ```
 ### `th_contact_encode_scheme` (string)
 
@@ -101,7 +101,7 @@ When not relying on the dialog module ( due to script writer preference or simpl
 **Example.** base32.
 
 ```opensips
-modparam("topology\_hiding", "th\_contact\_encode\_scheme", "base32")
+modparam("topology_hiding", "th_contact_encode_scheme", "base32")
 ```
 ### `th_passed_contact_params` (string)
 
@@ -109,10 +109,10 @@ List of semicolon-separated Contact header parameters that will be passed from o
 
 *Default value is empty.*
 
-**Example.** paramname1;myparam;custom\_param.
+**Example.** paramname1;myparam;custom_param.
 
 ```opensips
-modparam("topology\_hiding", "th\_passed\_contact\_params", "paramname1;myparam;custom\_param")
+modparam("topology_hiding", "th_passed_contact_params", "paramname1;myparam;custom_param")
 ```
 ### `th_passed_contact_uri_params` (string)
 
@@ -120,10 +120,10 @@ List of semicolon-separated Contact URI parameters that will be passed from one 
 
 *Default value is empty.*
 
-**Example.** paramname1;myparam;custom\_param.
+**Example.** paramname1;myparam;custom_param.
 
 ```opensips
-modparam("topology\_hiding", "th\_passed\_contact\_uri\_params", "paramname1;myparam;custom\_param")
+modparam("topology_hiding", "th_passed_contact_uri_params", "paramname1;myparam;custom_param")
 ```
 
 ## Exported Functions
@@ -231,9 +231,9 @@ if (has_totag()) {
 
 ### `$TH_callee_callid`
 
-Read only variable that will contain the callid as it is propagated towards the callee side, in case topology\_hiding("C") is called.
+Read only variable that will contain the callid as it is propagated towards the callee side, in case topology_hiding("C") is called.
 
-NULL will be returned if there is no topology hiding dialog for the request or if topology\_hiding with callid encoding was not used for the current dialog.
+NULL will be returned if there is no topology hiding dialog for the request or if topology_hiding with callid encoding was not used for the current dialog.
 
 - **Type:** string
 - **Read/write:** read-only
@@ -247,7 +247,7 @@ Set `th_callid_passwd` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_callid\_passwd", "my\_topo\_hiding\_secret")
+modparam("topology_hiding", "th_callid_passwd", "my_topo_hiding_secret")
 ...
 ```
 ### Set `th_callid_prefix` parameter
@@ -256,7 +256,7 @@ Set `th_callid_prefix` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_callid\_prefix", "MYCALLIDPREFIX\_")
+modparam("topology_hiding", "th_callid_prefix", "MYCALLIDPREFIX_")
 ...
 ```
 ### Set `th_passed_contact_uri_params` parameter
@@ -265,7 +265,7 @@ Set `th_passed_contact_uri_params` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_passed\_contact\_uri\_params", "paramname1;myparam;custom\_param")
+modparam("topology_hiding", "th_passed_contact_uri_params", "paramname1;myparam;custom_param")
 ...
 ```
 ### Set `th_passed_contact_params` parameter
@@ -274,7 +274,7 @@ Set `th_passed_contact_params` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_passed\_contact\_params", "paramname1;myparam;custom\_param")
+modparam("topology_hiding", "th_passed_contact_params", "paramname1;myparam;custom_param")
 ...
 ```
 ### Set `force_dialog` parameter
@@ -283,7 +283,7 @@ Set `force_dialog` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "force\_dialog", 1)
+modparam("topology_hiding", "force_dialog", 1)
 ...
 ```
 ### Set `th_contact_encode_passwd` parameter
@@ -292,7 +292,7 @@ Set `th_contact_encode_passwd` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_contact\_encode\_passwd", "my\_topoh\_passwd")
+modparam("topology_hiding", "th_contact_encode_passwd", "my_topoh_passwd")
 ...
 ```
 ### Set `th_contact_encode_param` parameter
@@ -301,7 +301,7 @@ Set `th_contact_encode_param` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_contact\_encode\_param", "customparam")
+modparam("topology_hiding", "th_contact_encode_param", "customparam")
 ...
 ```
 ### Set `th_contact_encode_scheme` parameter
@@ -310,7 +310,7 @@ Set `th_contact_encode_scheme` parameter
 
 ```opensips
 ...
-modparam("topology\_hiding", "th\_contact\_encode\_scheme", "base32")
+modparam("topology_hiding", "th_contact_encode_scheme", "base32")
 ...
 ```
 ### `topology_hiding` usage
@@ -319,13 +319,13 @@ modparam("topology\_hiding", "th\_contact\_encode\_scheme", "base32")
 
 ```opensips
 ...
-if(!has\_totag() && is\_method("INVITE")) {
-	topology\_hiding();
+if(!has_totag() && is_method("INVITE")) {
+	topology_hiding();
 }
 ...
 ...
-if(!has\_totag() && is\_method("INVITE")) {
-	topology\_hiding("U");
+if(!has_totag() && is_method("INVITE")) {
+	topology_hiding("U");
 }
 ...
 ```
@@ -335,8 +335,8 @@ if(!has\_totag() && is\_method("INVITE")) {
 
 ```opensips
 ...
-if (has\_totag())
-        if(topology\_hiding\_match())
+if (has_totag())
+        if(topology_hiding_match())
         {
                 xlog("Found a request $rm belonging to an existing topology hiding dialog\\n");
                 route(relay);
@@ -351,10 +351,10 @@ if (has\_totag())
 
 ```opensips
 ...
-    if (has\_totag()) {
-        if (!topology\_hiding\_match() ) {
+    if (has_totag()) {
+        if (!topology_hiding_match() ) {
             xlog(" cannot match request to a dialog \\n");
-	    send\_reply(404,"Not found");
+	    send_reply(404,"Not found");
         } else
 		route(RELAY);
     }

@@ -18,15 +18,15 @@ Reference for the OpenSIPs 3.6 b2b_sca module. Read this file when configuring o
 
 ## Overview
 
-This module provides core SCA (Shared Call Appearance) functionality for OpenSIPS. It is designed to work in tandem with the presence\_callinfo module.
+This module provides core SCA (Shared Call Appearance) functionality for OpenSIPS. It is designed to work in tandem with the presence_callinfo module.
 
-The module handles the basic SIP signalling for call controll while publishing callinfo events to a presence server. It is built on top of the b2b\_logic module and it is using the 'top hiding' scenario to control SIP signalling.
+The module handles the basic SIP signalling for call controll while publishing callinfo events to a presence server. It is built on top of the b2b_logic module and it is using the 'top hiding' scenario to control SIP signalling.
 
 ## How It Works
 
-A typical usage example is provided below, where Alice makes a call to Bob. The call leg between Alice and the b2b\_sca server is an "appearance" call of the "shared" call between the b2b\_sca server and Bob.
+A typical usage example is provided below, where Alice makes a call to Bob. The call leg between Alice and the b2b_sca server is an "appearance" call of the "shared" call between the b2b_sca server and Bob.
 
-   caller         caller      b2b\_sca     callee   presence server
+   caller         caller      b2b_sca     callee   presence server
 alice1@example alice2@example  server   bob@example watcher@example
      |              |             |           |           |
      |--INV bob------------------>|           |           |
@@ -90,8 +90,8 @@ The column's name in the database storing the b2b_logic key of a particular appe
 **Example.** first_b2bl_key.
 
 ```opensips
-modparam("b2b\_sca", "app1\_b2bl\_key\_column", "first\_b2bl\_key")
-modparam("b2b\_sca", "app2\_b2bl\_key\_column", "second\_b2bl\_key")
+modparam("b2b_sca", "app1_b2bl_key_column", "first_b2bl_key")
+modparam("b2b_sca", "app2_b2bl_key_column", "second_b2bl_key")
 ```
 ### `app[index]_call_info_appearance_uri_column` (string)
 
@@ -104,8 +104,8 @@ The column's name in the database storing the call info appearance URI of a part
 **Example.** first_call_info_appearance_uri.
 
 ```opensips
-modparam("b2b\_sca", "app1\_call\_info\_appearance\_uri\_column", "first\_call\_info\_appearance\_uri")
-modparam("b2b\_sca", "app2\_call\_info\_appearance\_uri\_column", "second\_call\_info\_appearance\_uri")
+modparam("b2b_sca", "app1_call_info_appearance_uri_column", "first_call_info_appearance_uri")
+modparam("b2b_sca", "app2_call_info_appearance_uri_column", "second_call_info_appearance_uri")
 ```
 ### `app[index]_call_info_uri_column` (string)
 
@@ -118,8 +118,8 @@ The column's name in the database storing the call info URI of a particular appe
 **Example.** first_call_info_uri.
 
 ```opensips
-modparam("b2b\_sca", "app1\_call\_info\_uri\_column", "first\_call\_info\_uri")
-modparam("b2b\_sca", "app2\_call\_info\_uri\_column", "second\_call\_info\_uri")
+modparam("b2b_sca", "app1_call_info_uri_column", "first_call_info_uri")
+modparam("b2b_sca", "app2_call_info_uri_column", "second_call_info_uri")
 ```
 ### `app[index]_call_state_column` (string)
 
@@ -132,8 +132,8 @@ The column's name in the database storing the call state of a particular appeara
 **Example.** first_call_state.
 
 ```opensips
-modparam("b2b\_sca", "app1\_call\_state\_column", "first\_call\_state")
-modparam("b2b\_sca", "app2\_call\_state\_column", "second\_call\_state")
+modparam("b2b_sca", "app1_call_state_column", "first_call_state")
+modparam("b2b_sca", "app2_call_state_column", "second_call_state")
 ```
 ### `app[index]_shared_entity_column` (string)
 
@@ -146,23 +146,23 @@ The column's name in the database storing the shared entity of a particular appe
 **Example.** first_shared_entity.
 
 ```opensips
-modparam("b2b\_sca", "app1\_shared\_entity\_column", "first\_shared\_entity")
-modparam("b2b\_sca", "app2\_shared\_entity\_column", "second\_shared\_entity")
+modparam("b2b_sca", "app1_shared_entity_column", "first_shared_entity")
+modparam("b2b_sca", "app2_shared_entity_column", "second_shared_entity")
 ```
 ### `appearance_name_addr_spec_param` (string)
 
-Mandatory parameter. It must be a valid SIP URI. It will populate the _appearance-uri_ SIP parameter inside the _Call-Info_ SIP header. The appearance\_name\_addr\_spec\_param MUST be set before calling sca\_init\_request();
+Mandatory parameter. It must be a valid SIP URI. It will populate the _appearance-uri_ SIP parameter inside the _Call-Info_ SIP header. The appearance_name_addr_spec_param MUST be set before calling sca_init_request();
 
 *Default value is NULL.*
 
 **Example.** Set the `appearance_name_addr_spec_param` parameter.
 
 ```opensips
-modparam("b2b\_sca", "appearance\_name\_addr\_spec\_param", "")
+modparam("b2b_sca", "appearance_name_addr_spec_param", "")
 ```
 ### `db_mode` (integer)
 
-The b2b\_sca module can utilize database for persistent call appearance storage. Using a database ensure that active call appearances will survive machine restarts or SW crashes. The following databse accessing modes are available for b2b\_sca module:
+The b2b_sca module can utilize database for persistent call appearance storage. Using a database ensure that active call appearances will survive machine restarts or SW crashes. The following databse accessing modes are available for b2b_sca module:
 
 *Default value is 0.*
 
@@ -174,7 +174,7 @@ The b2b\_sca module can utilize database for persistent call appearance storage.
 **Example.** 1.
 
 ```opensips
-modparam("b2b\_sca", "db\_mode", 1)
+modparam("b2b_sca", "db_mode", 1)
 ```
 ### `db_url` (string)
 
@@ -185,7 +185,7 @@ This is URL of the database to be used.
 **Example.** [dbdriver]://[[username]:[password]]@[dbhost]/[dbname].
 
 ```opensips
-modparam("b2b\_sca", "db\_url", "\[dbdriver\]://\[\[username\]:\[password\]\]@\[dbhost\]/\[dbname\]")
+modparam("b2b_sca", "db_url", "\[dbdriver\]://\[\[username\]:\[password\]\]@\[dbhost\]/\[dbname\]")
 ```
 ### `hash_size` (integer)
 
@@ -196,7 +196,7 @@ The size of the hash table internally used to keep the shared calls. A larger ta
 **Example.** 5.
 
 ```opensips
-modparam("b2b\_sca", "hash\_size", "5")
+modparam("b2b_sca", "hash_size", "5")
 ```
 ### `presence_server` (string)
 
@@ -207,69 +207,69 @@ The address of the presence server, where the PUBLISH messages should be sent (n
 **Example.** sip:opensips.org.
 
 ```opensips
-modparam("b2b\_sca", "presence\_server", "sip:opensips.org")
+modparam("b2b_sca", "presence_server", "sip:opensips.org")
 ```
 ### `shared_line_column` (string)
 
-The column's name in the database storing the shared call/line id. See "shared\_line\_spec\_param" parameter.
+The column's name in the database storing the shared call/line id. See "shared_line_spec_param" parameter.
 
-*Default value is shared\_line.*
+*Default value is shared_line.*
 
 **Example.** Set the `shared_line_column` parameter.
 
 ```opensips
-modparam("b2b\_sca", "shared\_line\_column", "")
+modparam("b2b_sca", "shared_line_column", "")
 ```
 ### `shared_line_spec_param` (string)
 
-Mandatory parameter. Opaque string identifing the shared line/call. The shared\_line\_spec\_param MUST be set before calling sca\_init\_request();
+Mandatory parameter. Opaque string identifing the shared line/call. The shared_line_spec_param MUST be set before calling sca_init_request();
 
 *Default value is NULL.*
 
-**Example.** $var(shared\_line).
+**Example.** $var(shared_line).
 
 ```opensips
-modparam("b2b\_sca", "shared\_line\_spec\_param", "$var(shared\_line)")
+modparam("b2b_sca", "shared_line_spec_param", "$var(shared_line)")
 ```
 ### `table_name` (string)
 
 Identifies the table name from the defined database.
 
-*Default value is b2b\_sca.*
+*Default value is b2b_sca.*
 
 **Example.** sla.
 
 ```opensips
-modparam("b2b\_sca", "table\_name", "sla")
+modparam("b2b_sca", "table_name", "sla")
 ```
 ### `watchers_avp_spec` (string)
 
-AVP that will hold one or more watcher URI(s). If not set, no PUBLISH requests will be sent out. The watchers\_avp\_spec MUST be set before calling sca\_init\_request();
+AVP that will hold one or more watcher URI(s). If not set, no PUBLISH requests will be sent out. The watchers_avp_spec MUST be set before calling sca_init_request();
 
 *Default value is NULL.*
 
-**Example.** $avp(watchers\_avp\_spec).
+**Example.** $avp(watchers_avp_spec).
 
 ```opensips
-modparam("b2b\_sca", "watchers\_avp\_spec", "$avp(watchers\_avp\_spec)")
+modparam("b2b_sca", "watchers_avp_spec", "$avp(watchers_avp_spec)")
 ...
 route {
 	...
-	$avp(watchers\_avp\_spec) = "sip:first\_watcher@opensip.org";
-	$avp(watchers\_avp\_spec) = "sip:second\_watcher@opensip.org";
+	$avp(watchers_avp_spec) = "sip:first_watcher@opensip.org";
+	$avp(watchers_avp_spec) = "sip:second_watcher@opensip.org";
 	...
 }
 ```
 ### `watchers_column` (string)
 
-The column's name in the database storing the list of watchers. See "watchers\_avp\_spec" parameter.
+The column's name in the database storing the list of watchers. See "watchers_avp_spec" parameter.
 
 *Default value is watchers.*
 
 **Example.** Set the `watchers_column` parameter.
 
 ```opensips
-modparam("b2b\_sca", "watchers\_column", "")
+modparam("b2b_sca", "watchers_column", "")
 ```
 
 ## Exported Functions
@@ -350,7 +350,7 @@ It lists the appearances belonging to a shared line/call.
 **Example.** MI FIFO Command Format
 
 ```bash
-	opensips-cli -x mi sca\_list
+	opensips-cli -x mi sca_list
 ```
 
 ## Configuration Examples

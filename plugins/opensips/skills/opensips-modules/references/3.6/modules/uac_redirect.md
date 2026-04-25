@@ -54,7 +54,7 @@ The regular expression for default accept filtering. It make sens to be defined 
 **Example.** .*@siphub\.net.
 
 ```opensips
-modparam("uac\_redirect","accept\_filter",".\*@siphub\\.net")
+modparam("uac_redirect","accept_filter",".\*@siphub\\.net")
 ```
 ### `default_filter` (string)
 
@@ -72,7 +72,7 @@ The default behavior in filtering contacts. It may be “accept” or “deny”
 **Example.** deny.
 
 ```opensips
-modparam("uac\_redirect","default\_filter","deny")
+modparam("uac_redirect","default_filter","deny")
 ```
 ### `deny_filter` (string)
 
@@ -85,7 +85,7 @@ The regular expression for default deny filtering. It make sens to be defined on
 **Example.** .*@siphub\.net.
 
 ```opensips
-modparam("uac\_redirect","deny\_filter",".\*@siphub\\.net")
+modparam("uac_redirect","deny_filter",".\*@siphub\\.net")
 ```
 
 ## Exported Functions
@@ -106,13 +106,13 @@ The function may be called only from failure routes. It will extract the contact
 ```opensips
 ...
 # no restrictions
-get\_redirects();
+get_redirects();
 ...
 # no limits per branch, but not more than 6 overall contacts
-get\_redirects(6);
+get_redirects(6);
 ...
 # max 2 contacts per branch, but no overall limit
-get\_redirects(, 2);
+get_redirects(, 2);
 ...
 ```
 
@@ -135,8 +135,8 @@ Sets additional accept filters. Maximum 6 may be combined. This additional filte
 
 ```opensips
 ...
-set\_accept\_filter(".\*@domain2.net","reset\_added");
-set\_accept\_filter(".\*@domain1.net","");
+set_accept_filter(".\*@domain2.net","reset_added");
+set_accept_filter(".\*@domain1.net","");
 ...
 ```
 
@@ -159,8 +159,8 @@ Sets additional deny filters. Maximum 6 may be combined. This additional filter 
 
 ```opensips
 ...
-set\_deny\_filter(".\*@domain2.net","reset\_all");
-set\_deny\_filter(".\*@domain1.net","");
+set_deny_filter(".\*@domain2.net","reset_all");
+set_deny_filter(".\*@domain1.net","");
 ...
 ```
 

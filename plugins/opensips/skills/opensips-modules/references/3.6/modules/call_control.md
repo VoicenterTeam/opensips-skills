@@ -83,7 +83,7 @@ Specification of the AVP which holds an optional application defined canonical r
 
 ```opensips
 ...
-modparam("call\_control", "canonical\_uri\_avp", "$avp(cc\_can\_uri)")
+modparam("call_control", "canonical_uri_avp", "$avp(cc_can_uri)")
 ...
 ```
 ### `disable` (integer)
@@ -96,7 +96,7 @@ Boolean flag that specifies if callcontrol should be disabled. This is useful wh
 
 ```opensips
 ...
-modparam("call\_control", "disable", 1)
+modparam("call_control", "disable", 1)
 ...
 ```
 ### `diverter_avp` (string)
@@ -156,7 +156,7 @@ Specification of the AVP which holds the IP address from where the SIP signaling
 
 ```opensips
 ...
-modparam("call\_control", "signaling\_ip\_avp", "$avp(cc\_signaling\_ip)")
+modparam("call_control", "signaling_ip_avp", "$avp(cc_signaling_ip)")
 ...
 ```
 ### `socket_name` (string)
@@ -169,7 +169,7 @@ It is the path to the filesystem socket where the callcontrol application listen
 
 ```opensips
 ...
-modparam("call\_control", "socket\_name", "/run/callcontrol/socket")
+modparam("call_control", "socket_name", "/run/callcontrol/socket")
 ...
 ```
 ### `socket_timeout` (integer)
@@ -182,7 +182,7 @@ How much time (in milliseconds) to wait for an answer from the callcontrol appli
 
 ```opensips
 ...
-modparam("call\_control", "socket\_timeout", 500)
+modparam("call_control", "socket_timeout", 500)
 ...
 ```
 ### `start` (string)
@@ -204,8 +204,8 @@ If the parameter is not set, the default start message is sent.
 
 ```opensips
 ...
-modparam("call\_control", "start", "call-id=$ci to=$tu from=$fu 
-			authruri=$du another\_field = $avp(10)")
+modparam("call_control", "start", "call-id=$ci to=$tu from=$fu 
+			authruri=$du another_field = $avp(10)")
 ...
 ```
 ### `stop` (string)
@@ -227,8 +227,8 @@ If the parameter is not set, the default stop message is sent.
 
 ```opensips
 ...
-modparam("call\_control", "stop", "call-id=$ci to=$tu from=$fu 
-			authruri=$du another\_field = $avp(10)")
+modparam("call_control", "stop", "call-id=$ci to=$tu from=$fu 
+			authruri=$du another_field = $avp(10)")
 ...
 ```
 

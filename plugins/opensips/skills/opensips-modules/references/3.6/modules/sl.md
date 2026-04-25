@@ -51,7 +51,7 @@ SL module provides statistics about how many replies were sent ( splitted per co
 **Example.** 0.
 
 ```opensips
-modparam("sl", "enable\_stats", 0)
+modparam("sl", "enable_stats", 0)
 ```
 
 ## Exported Functions

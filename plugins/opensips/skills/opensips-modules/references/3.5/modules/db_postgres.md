@@ -40,7 +40,7 @@ If queries take longer than 'exec_query_threshold' microseconds, warning message
 
 ```opensips
 ...
-modparam("db\_postgres", "exec\_query\_threshold", 60000)
+modparam("db_postgres", "exec_query_threshold", 60000)
 ...
 ```
 ### `max_db_queries` (integer)
@@ -53,7 +53,7 @@ The maximum number of database queries to be executed. If this parameter is set 
 
 ```opensips
 ...
-modparam("db\_postgres", "max\_db\_queries", 2)
+modparam("db_postgres", "max_db_queries", 2)
 ...
 ```
 ### `timeout` (integer)
@@ -68,7 +68,7 @@ The number of seconds the PostgreSQL library waits to connect and query the serv
 
 ```opensips
 ...
-modparam("db\_postgres", "timeout", 2)
+modparam("db_postgres", "timeout", 2)
 ...
 ```
 ### `use_tls` (integer)
@@ -101,14 +101,14 @@ Also, you can _NOT_ enable TLS for the connection to the database of the _tls_mg
 **Example.** 1.
 
 ```opensips
-modparam("tls\_mgm", "client\_domain", "dom1")
-modparam("tls\_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
-modparam("tls\_mgm", "private\_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
-modparam("tls\_mgm", "ca\_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
+modparam("tls_mgm", "client_domain", "dom1")
+modparam("tls_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
+modparam("tls_mgm", "private_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
+modparam("tls_mgm", "ca_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
 ...
-modparam("db\_postgres", "use\_tls", 1)
+modparam("db_postgres", "use_tls", 1)
 ...
-modparam("usrloc", "db\_url", "postgres://root:1234@localhost/opensips?tls\_domain=dom1")
+modparam("usrloc", "db_url", "postgres://root:1234@localhost/opensips?tls_domain=dom1")
 ```
 
 ## Configuration Examples
@@ -119,7 +119,7 @@ If queries take longer than 'exec_query_threshold' microseconds, warning message
 
 ```opensips
 ...
-modparam("db\_postgres", "exec\_query\_threshold", 60000)
+modparam("db_postgres", "exec_query_threshold", 60000)
 ...
 ```
 ### Set `max_db_queries` parameter
@@ -128,7 +128,7 @@ The maximum number of database queries to be executed. If this parameter is set 
 
 ```opensips
 ...
-modparam("db\_postgres", "max\_db\_queries", 2)
+modparam("db_postgres", "max_db_queries", 2)
 ...
 ```
 ### Set `timeout` parameter
@@ -137,7 +137,7 @@ The number of seconds the PostgreSQL library waits to connect and query the serv
 
 ```opensips
 ...
-modparam("db\_postgres", "timeout", 2)
+modparam("db_postgres", "timeout", 2)
 ...
 ```
 ### Set the `use_tls` parameter
@@ -146,13 +146,13 @@ Parameter to control the way the SSL support is used when connecting to the Post
 
 ```opensips
 ...
-modparam("tls\_mgm", "client\_domain", "dom1")
-modparam("tls\_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
-modparam("tls\_mgm", "private\_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
-modparam("tls\_mgm", "ca\_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
+modparam("tls_mgm", "client_domain", "dom1")
+modparam("tls_mgm", "certificate", "\[dom1\]/etc/pki/tls/certs/opensips.pem")
+modparam("tls_mgm", "private_key", "\[dom1\]/etc/pki/tls/private/opensips.key")
+modparam("tls_mgm", "ca_list",     "\[dom1\]/etc/pki/tls/certs/ca.pem")
 ...
-modparam("db\_postgres", "use\_tls", 1)
+modparam("db_postgres", "use_tls", 1)
 ...
-modparam("usrloc", "db\_url", "postgres://root:1234@localhost/opensips?tls\_domain=dom1")
+modparam("usrloc", "db_url", "postgres://root:1234@localhost/opensips?tls_domain=dom1")
 ...
 ```

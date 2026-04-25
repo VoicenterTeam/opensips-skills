@@ -65,47 +65,47 @@ Controls whether the module should require the Origin header or not.
 **Example.** no.
 
 ```opensips
-modparam("proto\_ws", "require\_origin", no)
+modparam("proto_ws", "require_origin", no)
 ```
 ### `trace_destination` (string)
 
-Trace destination as defined in the tracing module. Currently the only tracing module is **proto\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about http request and reply belonging to web socket protocol handshake and network layer information shall be sent.
+Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about http request and reply belonging to web socket protocol handshake and network layer information shall be sent.
 
 *Default value is none(not defined).*
 
-**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\_hep**).
+**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**).
 
-**Example.** hep\_dest.
+**Example.** hep_dest.
 
 ```opensips
-modparam("proto\_hep", "hep\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_ws", "trace\_destination", "hep\_dest")
+modparam("proto_ws", "trace_destination", "hep_dest")
 ```
 ### `trace_filter_route` (string)
 
-Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace\_destination](#param_trace_destination "1.3.4.�trace_destination (string)") and trace must be on at the time this connection is opened).
+Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace_destination](#param_trace_destination "1.3.4.trace_destination (string)") and trace must be on at the time this connection is opened).
 
 *Default value is none(no route is set).*
 
-**Notes:** IMPORTANT: Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket\_in(ip)** (ip) and **$socket\_in(port)** (port) can be used.
+**Notes:** IMPORTANT: Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used.
 
-WARNING: IF [trace\_on](#param_trace_on "1.3.5.�trace\_on (int)") is set to 0 or tracing is deactived via the mi command [ws\_trace](#mi_ws_trace "1.4.1.� ws_trace") this route won't be called.
+WARNING: IF [trace_on](#param_trace_on "1.3.5.trace_on (int)") is set to 0 or tracing is deactived via the mi command [ws_trace](#mi_ws_trace "1.4.1. ws_trace") this route won't be called.
 
-**Example.** ws\_filter.
+**Example.** ws_filter.
 
 ```opensips
-modparam("proto\_ws", "trace\_filter\_route", "ws\_filter")
+modparam("proto_ws", "trace_filter_route", "ws_filter")
 ...
 /* all ws connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route[ws\_filter] {
+route[ws_filter] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;
@@ -113,14 +113,14 @@ route[ws\_filter] {
 ```
 ### `trace_on` (integer)
 
-This controls whether tracing for ws is on or not. You still need to define [trace\_destination](#param_trace_destination "1.3.4.�trace_destination (string)")in order to work, but this value will be controlled using mi function [ws\_trace](#mi_ws_trace "1.4.1.� ws_trace").
+This controls whether tracing for ws is on or not. You still need to define [trace_destination](#param_trace_destination "1.3.4.trace_destination (string)")in order to work, but this value will be controlled using mi function [ws_trace](#mi_ws_trace "1.4.1. ws_trace").
 
 *Default value is 0(tracing inactive).*
 
 **Example.** 1.
 
 ```opensips
-modparam("proto\_ws", "trace\_on", 1)
+modparam("proto_ws", "trace_on", 1)
 ```
 ### `ws_max_msg_chunks` (integer)
 
@@ -131,7 +131,7 @@ The maximum number of chunks in which a SIP message is expected to arrive via We
 **Example.** 8.
 
 ```opensips
-modparam("proto\_ws", "ws\_max\_msg\_chunks", 8)
+modparam("proto_ws", "ws_max_msg_chunks", 8)
 ```
 ### `ws_port` (integer)
 
@@ -144,7 +144,7 @@ If you want to change only the listening port for WS, use the port option in the
 **Example.** 8080.
 
 ```opensips
-modparam("proto\_ws", "ws\_port", 8080)
+modparam("proto_ws", "ws_port", 8080)
 ```
 ### `ws_send_timeout` (integer)
 
@@ -155,7 +155,7 @@ Time in milliseconds after a WebSocket connection will be closed if it is not av
 **Example.** 200.
 
 ```opensips
-modparam("proto\_ws", "ws\_send\_timeout", 200)
+modparam("proto_ws", "ws_send_timeout", 200)
 ```
 
 ## Exported MI Functions
@@ -169,7 +169,7 @@ modparam("proto\_ws", "ws\_send\_timeout", 200)
 **Example.** MI FIFO Command Format
 
 ```bash
-opensips-cli -x mi ws\_trace on
+opensips-cli -x mi ws_trace on
 ```
 
 ## Configuration Examples

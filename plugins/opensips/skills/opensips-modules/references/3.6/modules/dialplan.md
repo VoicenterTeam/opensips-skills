@@ -22,15 +22,15 @@ This module implements generic string translations based on matching and replace
 
 ## How It Works
 
-At startup, the module will load all transformation rules from one or more dialplan-compatible tables. The data of each table will be stored in a _partition_ (data source), which is defined by the "db\_url" and "table\_name" properties. Every table row will be stored in memory as a translation rule. Each rule will describe how the matching should be made, how the input value should be modified and which attributes should be set for the matching transformation.
+At startup, the module will load all transformation rules from one or more dialplan-compatible tables. The data of each table will be stored in a _partition_ (data source), which is defined by the "db_url" and "table_name" properties. Every table row will be stored in memory as a translation rule. Each rule will describe how the matching should be made, how the input value should be modified and which attributes should be set for the matching transformation.
 
 A dialplan rule can be of two types:
 
-*   _"String matching" rule_ - performs a string equality test against the input string. The case of the characters can be ignored by enabling bit 1 of the rule's "match\_flags" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)
+*   _"String matching" rule_ - performs a string equality test against the input string. The case of the characters can be ignored by enabling bit 1 of the rule's "match_flags" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)
     
-*   _"Regex matching" rule_ - uses Perl Compatible Regular Expressions, and will attempt to match the rule's expression against an input string. The regex maching can be done in a caseless manner by enabling bit 1 of the rule's "match\_flags" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)
+*   _"Regex matching" rule_ - uses Perl Compatible Regular Expressions, and will attempt to match the rule's expression against an input string. The regex maching can be done in a caseless manner by enabling bit 1 of the rule's "match_flags" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)
     
-The module provides the _dp\_translate()_ script function, which expects an input **string** value that will be matched, at worst, against all rules of a partition.
+The module provides the _dp_translate()_ script function, which expects an input **string** value that will be matched, at worst, against all rules of a partition.
 
 Internally, the module groups a partition's rules into two sets, "string" and "regex". The matching logic will attempt to find the first match within each of these two sets of rules. Each set will be iterated in **ascending** order of priority. If an input string happens to match a rule in each of the two sets, the rule with the smallest priority will be chosen. Furthermore, should these two matching rules also have equal priorities, the one with the smallest "id" field (the unique key) will be chosen.
 
@@ -61,7 +61,7 @@ modparam("dialplan", "attrs_col", "column_name")
 ```
 ### `db_url` (string)
 
-The default DB connection of the module, overriding the global 'db\_default\_url' setting. Once specified, partitions which are missing the 'db\_url' property will inherit their URL from this value.
+The default DB connection of the module, overriding the global 'db_default_url' setting. Once specified, partitions which are missing the 'db_url' property will inherit their URL from this value.
 
 *Default value is NULL (not set).*
 
@@ -90,7 +90,7 @@ The column name to store the dialplan ID group.
 **Example.** Set the `dpid_col` parameter.
 
 ```opensips
-modparam("dialplan", "dpid\_col", "column\_name")
+modparam("dialplan", "dpid_col", "column_name")
 ```
 ### `match_exp_col` (string)
 
@@ -138,17 +138,17 @@ modparam("dialplan", "match_op_col", "column_name")
 ```
 ### `partition` (string)
 
-Specify a new dialplan partition (data source). This parameter may be set multiple times. Each partition may have a specific "db\_url" and "table\_name". If not specified, these values will be inherited from [db\_url](#param_db_url "1.6.2.�db\_url (string)"), db\_default\_url or [table\_name](#param_table_name "1.6.3.�table\_name (string)"), respectively. The name of the default partition is 'default'.
+Specify a new dialplan partition (data source). This parameter may be set multiple times. Each partition may have a specific "db_url" and "table_name". If not specified, these values will be inherited from [db_url](#param_db_url "1.6.2.db_url (string)"), db_default_url or [table_name](#param_table_name "1.6.3.table_name (string)"), respectively. The name of the default partition is 'default'.
 
-**Notes:** Note: OpenSIPS will validate each partition, so make sure to add any required entries in the "version" table of each database defined through the 'db\_url' property.
+**Notes:** Note: OpenSIPS will validate each partition, so make sure to add any required entries in the "version" table of each database defined through the 'db_url' property.
 
 **Example.** Set the `partition` parameter.
 
 ```opensips
 modparam("dialplan", "partition", "
 	pstn:
-		table\_name = dialplan;
-		db\_url = mysql://opensips:opensipsrw@127.0.0.1/opensips")
+		table_name = dialplan;
+		db_url = mysql://opensips:opensipsrw@127.0.0.1/opensips")
 ```
 ### `pr_col` (string)
 
@@ -159,7 +159,7 @@ The column name to store the priority of the corresponding rule from the table r
 **Example.** Set the `pr_col` parameter.
 
 ```opensips
-modparam("dialplan", "pr\_col", "column\_name")
+modparam("dialplan", "pr_col", "column_name")
 ```
 ### `repl_exp_col` (string)
 
@@ -189,14 +189,14 @@ modparam("dialplan", "subst_exp_col", "column_name")
 ```
 ### `table_name` (string)
 
-The default name of the table from which to load translation rules. Partitions which are missing the 'table\_name' property will inherit their table name from this value.
+The default name of the table from which to load translation rules. Partitions which are missing the 'table_name' property will inherit their table name from this value.
 
 *Default value is dialplan.*
 
 **Example.** Set the `table_name` parameter.
 
 ```opensips
-modparam("dialplan", "table_name", "my\_table")
+modparam("dialplan", "table_name", "my_table")
 ```
 ### `timerec_col` (string)
 
@@ -312,8 +312,8 @@ Defining the `'pstn'` partition
 ...
 modparam("dialplan", "partition", "
 	pstn:
-		table\_name = dialplan;
-		db\_url = mysql://opensips:opensipsrw@127.0.0.1/opensips")
+		table_name = dialplan;
+		db_url = mysql://opensips:opensipsrw@127.0.0.1/opensips")
 ...
 ```
 ### Define the 'pstn' partition and make it the 'default' partition, so we avoid loading the 'dialplan' table
@@ -322,12 +322,12 @@ Define the 'pstn' partition and make it the 'default' partition, so we avoid loa
 
 ```opensips
 ...
-db\_default\_url = "mysql://opensips:opensipsrw@localhost/opensips"
+db_default_url = "mysql://opensips:opensipsrw@localhost/opensips"
 
 loadmodule "dialplan.so"
 modparam("dialplan", "partition", "
 	pstn:
-		table\_name = dialplan\_pstn")
+		table_name = dialplan_pstn")
 modparam("dialplan", "partition", "default: pstn")
 ...
 ```
@@ -337,7 +337,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("dialplan", "db\_url", "mysql://user:passwd@localhost/db")
+modparam("dialplan", "db_url", "mysql://user:passwd@localhost/db")
 ...
 ```
 ### Set `table_name` parameter
@@ -346,7 +346,7 @@ Set `table_name` parameter
 
 ```opensips
 ...
-modparam("dialplan", "table\_name", "my\_table")
+modparam("dialplan", "table_name", "my_table")
 ...
 ```
 ### Set `dpid_col` parameter
@@ -355,7 +355,7 @@ Set `dpid_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "dpid\_col", "column\_name")
+modparam("dialplan", "dpid_col", "column_name")
 ...
 ```
 ### Set `pr_col` parameter
@@ -364,7 +364,7 @@ Set `pr_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "pr\_col", "column\_name")
+modparam("dialplan", "pr_col", "column_name")
 ...
 ```
 ### Set `match_op_col` parameter
@@ -373,7 +373,7 @@ Set `match_op_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "match\_op\_col", "column\_name")
+modparam("dialplan", "match_op_col", "column_name")
 ...
 ```
 ### Set `match_exp_col` parameter
@@ -382,7 +382,7 @@ Set `match_exp_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "match\_exp\_col", "column\_name")
+modparam("dialplan", "match_exp_col", "column_name")
 ...
 ```
 ### Set `match_flags_col` parameter
@@ -391,7 +391,7 @@ Set `match_flags_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "match\_flags\_col", "column\_name")
+modparam("dialplan", "match_flags_col", "column_name")
 ...
 ```
 ### Set `subs_exp_col` parameter
@@ -400,7 +400,7 @@ Set `subs_exp_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "subst\_exp\_col", "column\_name")
+modparam("dialplan", "subst_exp_col", "column_name")
 ...
 ```
 ### Set `repl_exp_col` parameter
@@ -409,7 +409,7 @@ Set `repl_exp_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "repl\_exp\_col", "column\_name")
+modparam("dialplan", "repl_exp_col", "column_name")
 ...
 ```
 ### Set `timerec_col` parameter
@@ -418,7 +418,7 @@ Set `timerec_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "timerec\_col", "month\_match")
+modparam("dialplan", "timerec_col", "month_match")
 ...
 ```
 ### Set `disabled_col` parameter
@@ -427,7 +427,7 @@ Set `disabled_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "disabled\_col", "disabled\_column")
+modparam("dialplan", "disabled_col", "disabled_column")
 ...
 ```
 ### Set `attrs_col` parameter
@@ -436,7 +436,7 @@ Set `attrs_col` parameter
 
 ```opensips
 ...
-modparam("dialplan", "attrs\_col", "column\_name")
+modparam("dialplan", "attrs_col", "column_name")
 ...
 ```
 ### `dp_translate` usage
@@ -445,7 +445,7 @@ modparam("dialplan", "attrs\_col", "column\_name")
 
 ```opensips
 ...
-dp\_translate(240, $ru, $var(out));
+dp_translate(240, $ru, $var(out));
 xlog("translated into '$var(out)' \\n");
 ...
 ```
@@ -456,7 +456,7 @@ xlog("translated into '$var(out)' \\n");
 ```opensips
 ...
 $avp(src) = $ruri.user;
-dp\_translate($var(x), $avp(src), $var(y), $var(attrs));
+dp_translate($var(x), $avp(src), $var(y), $var(attrs));
 xlog("translated to var $var(y) with attributes: '$var(attrs)'\\n");
 ...
 ```
@@ -467,8 +467,8 @@ xlog("translated to var $var(y) with attributes: '$var(attrs)'\\n");
 ```opensips
 ...
 $var(id) = 10;
-dp\_translate($var(id), $avp(in), , $avp(attrs), "example\_partition");
-xlog("matched with attributes '$avp(attrs) against example\_partition'\\n");
+dp_translate($var(id), $avp(in), , $avp(attrs), "example_partition");
+xlog("matched with attributes '$avp(attrs) against example_partition'\\n");
 ...
 ```
 ### `dp_translate` usage
@@ -477,7 +477,7 @@ xlog("matched with attributes '$avp(attrs) against example\_partition'\\n");
 
 ```opensips
 ...
-dp\_translate(10, $var(in), , , $var(part));
+dp_translate(10, $var(in), , , $var(part));
 xlog("'$var(in)' matched against partition '$var(part)'\\n")
 ...
 ```

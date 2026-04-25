@@ -44,10 +44,10 @@ Text file containing the regular expression groups. It must be set in order to e
 
 *Default value is NULL.*
 
-**Example.** /etc/opensips/regex\_groups.
+**Example.** /etc/opensips/regex_groups.
 
 ```opensips
-modparam("regex", "file", "/etc/opensips/regex\_groups")
+modparam("regex", "file", "/etc/opensips/regex_groups")
 ```
 ### `group_max_size` (integer)
 
@@ -58,7 +58,7 @@ Max content size of a group in the text file.
 **Example.** 16384.
 
 ```opensips
-modparam("regex", "group\_max\_size", 16384)
+modparam("regex", "group_max_size", 16384)
 ```
 ### `max_groups` (integer)
 
@@ -69,7 +69,7 @@ Max number of regular expression groups in the text file.
 **Example.** 40.
 
 ```opensips
-modparam("regex", "max\_groups", 40)
+modparam("regex", "max_groups", 40)
 ```
 ### `pcre_caseless` (integer)
 
@@ -80,7 +80,7 @@ If this options is set, matching is done caseless. It is equivalent to Perl's /i
 **Example.** 1.
 
 ```opensips
-modparam("regex", "pcre\_caseless", 1)
+modparam("regex", "pcre_caseless", 1)
 ```
 ### `pcre_dotall` (integer)
 
@@ -91,7 +91,7 @@ If this option is set, a dot metacharater in the pattern matches all characters,
 **Example.** 1.
 
 ```opensips
-modparam("regex", "pcre\_dotall", 1)
+modparam("regex", "pcre_dotall", 1)
 ```
 ### `pcre_extended` (integer)
 
@@ -102,7 +102,7 @@ If this option is set, whitespace data characters in the pattern are totally ign
 **Example.** 1.
 
 ```opensips
-modparam("regex", "pcre\_extended", 1)
+modparam("regex", "pcre_extended", 1)
 ```
 ### `pcre_multiline` (integer)
 
@@ -113,7 +113,7 @@ By default, PCRE treats the subject string as consisting of a single line of cha
 **Example.** 1.
 
 ```opensips
-modparam("regex", "pcre\_multiline", 1)
+modparam("regex", "pcre_multiline", 1)
 ```
 
 ## Exported Functions
@@ -138,8 +138,8 @@ Matches the given string parameter against the regular expression pcre_regex, wh
 
 ```opensips
 ...
-if (pcre\_match("$ua", "(?i)^twinkle")) {
-    xlog("L\_INFO", "User-Agent matches\\n");
+if (pcre_match("$ua", "(?i)^twinkle")) {
+    xlog("L_INFO", "User-Agent matches\\n");
 }
 ...
 ```
@@ -252,7 +252,7 @@ Set `file` parameter
 
 ```opensips
 ...
-modparam("regex", "file", "/etc/opensips/regex\_groups")
+modparam("regex", "file", "/etc/opensips/regex_groups")
 ...
 ```
 ### Set `max_groups` parameter
@@ -261,7 +261,7 @@ Set `max_groups` parameter
 
 ```opensips
 ...
-modparam("regex", "max\_groups", 40)
+modparam("regex", "max_groups", 40)
 ...
 ```
 ### Set `group_max_size` parameter
@@ -270,7 +270,7 @@ Set `group_max_size` parameter
 
 ```opensips
 ...
-modparam("regex", "group\_max\_size", 16384)
+modparam("regex", "group_max_size", 16384)
 ...
 ```
 ### Set `pcre_caseless` parameter
@@ -279,7 +279,7 @@ Set `pcre_caseless` parameter
 
 ```opensips
 ...
-modparam("regex", "pcre\_caseless", 1)
+modparam("regex", "pcre_caseless", 1)
 ...
 ```
 ### Set `pcre_multiline` parameter
@@ -288,7 +288,7 @@ Set `pcre_multiline` parameter
 
 ```opensips
 ...
-modparam("regex", "pcre\_multiline", 1)
+modparam("regex", "pcre_multiline", 1)
 ...
 ```
 ### Set `pcre_dotall` parameter
@@ -297,7 +297,7 @@ Set `pcre_dotall` parameter
 
 ```opensips
 ...
-modparam("regex", "pcre\_dotall", 1)
+modparam("regex", "pcre_dotall", 1)
 ...
 ```
 ### Set `pcre_extended` parameter
@@ -306,7 +306,7 @@ Set `pcre_extended` parameter
 
 ```opensips
 ...
-modparam("regex", "pcre\_extended", 1)
+modparam("regex", "pcre_extended", 1)
 ...
 ```
 ### `pcre_match` usage (forcing case insensitive)
@@ -315,8 +315,8 @@ modparam("regex", "pcre\_extended", 1)
 
 ```opensips
 ...
-if (pcre\_match("$ua", "(?i)^twinkle")) {
-    xlog("L\_INFO", "User-Agent matches\\n");
+if (pcre_match("$ua", "(?i)^twinkle")) {
+    xlog("L_INFO", "User-Agent matches\\n");
 }
 ...
 ```
@@ -326,8 +326,8 @@ if (pcre\_match("$ua", "(?i)^twinkle")) {
 
 ```opensips
 ...
-if (pcre\_match($rU, "^user\[1234\]$$")) {  # Will be converted to "^user\[1234\]$"
-    xlog("L\_INFO", "RURI username matches\\n");
+if (pcre_match($rU, "^user\[1234\]$$")) {  # Will be converted to "^user\[1234\]$"
+    xlog("L_INFO", "RURI username matches\\n");
 }
 ...
 ```
@@ -337,8 +337,8 @@ if (pcre\_match($rU, "^user\[1234\]$$")) {  # Will be converted to "^user\[1234\
 
 ```opensips
 ...
-if (pcre\_match\_group($rU, 2)) {
-    xlog("L\_INFO", "RURI username matches group 2\\n");
+if (pcre_match_group($rU, 2)) {
+    xlog("L_INFO", "RURI username matches group 2\\n");
 }
 ...
 ```
@@ -391,9 +391,9 @@ Using with pua_usrloc
 
 ```opensips
 route[REGISTER] {
-    if (! pcre\_match\_group("$ua", 0)) {
-        xlog("L\_INFO", "Auto-generated PUBLISH for $fu ($ua)\\n");
-        pua\_set\_publish();
+    if (! pcre_match_group("$ua", 0)) {
+        xlog("L_INFO", "Auto-generated PUBLISH for $fu ($ua)\\n");
+        pua_set_publish();
     }
     save("location");
     exit;

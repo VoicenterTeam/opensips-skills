@@ -52,9 +52,9 @@ None.
 
 ### `qos_flag` (string)
 
-Keeping with OpenSIPS, the module will not do anything to any message unless instructed to do so via the config script. You must set the qos\_flag value in the setflag() call of the INVITE you want the qos module to process. But before you can do that, you need to tell the qos module which flag value you are assigning to qos.
+Keeping with OpenSIPS, the module will not do anything to any message unless instructed to do so via the config script. You must set the qos_flag value in the setflag() call of the INVITE you want the qos module to process. But before you can do that, you need to tell the qos module which flag value you are assigning to qos.
 
-In most cases when ever you create a new dialog via create\_dialog() function,you will want to set the qos flag. If create\_dialog() is not called and the qos flag is set, it will not have any effect.
+In most cases when ever you create a new dialog via create_dialog() function,you will want to set the qos flag. If create_dialog() is not called and the qos flag is set, it will not have any effect.
 
 This parameter must be set of the module will not load.
 
@@ -64,13 +64,13 @@ This parameter must be set of the module will not load.
 
 ```opensips
 ...
-modparam("qos", "qos\_flag", "QOS\_FLAG")
+modparam("qos", "qos_flag", "QOS_FLAG")
 ...
 route {
   ...
   if ($rm=="INVITE") {
-    setflag(QOS\_FLAG); # Set the qos flag
-	create\_dialog(); # create the dialog
+    setflag(QOS_FLAG); # Set the qos flag
+	create_dialog(); # create the dialog
   }
   ...
 }
@@ -84,13 +84,13 @@ Demonstrates how to configure the qos_flag parameter and use it within the route
 
 ```opensips
 ...
-modparam("qos", "qos\_flag", "QOS\_FLAG")
+modparam("qos", "qos_flag", "QOS_FLAG")
 ...
 route {
   ...
   if ($rm=="INVITE") {
-    setflag(QOS\_FLAG); # Set the qos flag
-	create\_dialog(); # create the dialog
+    setflag(QOS_FLAG); # Set the qos flag
+	create_dialog(); # create the dialog
   }
   ...
 }

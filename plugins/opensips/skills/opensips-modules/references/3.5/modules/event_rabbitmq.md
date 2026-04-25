@@ -43,7 +43,7 @@ The maximally allowed duration (in milliseconds) for the establishment of a TCP 
 
 ```opensips
 ...
-modparam("event\_rabbitmq", "connect\_timeout", 1000)
+modparam("event_rabbitmq", "connect_timeout", 1000)
 ...
 ```
 ### `heartbeat` (integer)
@@ -56,7 +56,7 @@ Enables heartbeat support for the AMQP communication. If the client does not rec
 
 ```opensips
 ...
-modparam("event\_rabbitmq", "heartbeat", 3)
+modparam("event_rabbitmq", "heartbeat", 3)
 ...
 ```
 ### `timeout` (integer)
@@ -71,12 +71,12 @@ Indicates the timeout (in milliseconds) of any command (i.e. publish) sent to th
 
 ```opensips
 ...
-modparam("event\_rabbitmq", "timeout", 1000) # timeout after 1s
+modparam("event_rabbitmq", "timeout", 1000) # timeout after 1s
 ...
 ```
 ### `use_tls` (integer)
 
-Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the "tls\_domain=_dom\_name_" parameter in the configuration specified through the [RabbitMQ socket syntax](#socket_syntax "1.3.�RabbitMQ socket syntax"). When using this parameter, you must also ensure that _tls\_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.
+Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the "tls_domain=_dom_name_" parameter in the configuration specified through the [RabbitMQ socket syntax](#socket_syntax "1.3.RabbitMQ socket syntax"). When using this parameter, you must also ensure that _tls_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.
 
 *Default value is 0 (not enabled).*
 
@@ -84,12 +84,12 @@ Setting this parameter will allow you to use TLS for broker connections. In orde
 
 ```opensips
 ...
-modparam("tls\_mgm", "client\_domain", "rmq")
-modparam("tls\_mgm", "certificate", "\[rmq\]/etc/pki/tls/certs/rmq.pem")
-modparam("tls\_mgm", "private\_key", "\[rmq\]/etc/pki/tls/private/rmq.key")
-modparam("tls\_mgm", "ca\_list",     "\[rmq\]/etc/pki/tls/certs/ca.pem")
+modparam("tls_mgm", "client_domain", "rmq")
+modparam("tls_mgm", "certificate", "\[rmq\]/etc/pki/tls/certs/rmq.pem")
+modparam("tls_mgm", "private_key", "\[rmq\]/etc/pki/tls/private/rmq.key")
+modparam("tls_mgm", "ca_list",     "\[rmq\]/etc/pki/tls/certs/ca.pem")
 ...
-modparam("event\_rabbitmq", "use\_tls", 1)
+modparam("event_rabbitmq", "use_tls", 1)
 ...
 ```
 
@@ -104,5 +104,5 @@ rabbitmq:guest:guest@127.0.0.1:5672/pike
 rabbitmq:127.0.0.1/pike
 
 # TLS broker connection
-rabbitmq:127.0.0.1/tls\_domain=rmq?pike
+rabbitmq:127.0.0.1/tls_domain=rmq?pike
 ```

@@ -278,7 +278,7 @@ if (has_totag() && is_method("INVITE") && !is_audio_on_hold())
 
 ### `media_exchange_from_call_to_uri`
 
-MI command that has the same behavior as [media_exchange_from_uri()](#func_media_exchange_from_uri "1.3.5.� media_exchange_from_uri(URI[, leg][, body][, headers][, nohold])"), only that the triggering is not script driven, but exterior driven. Useful for injecting media announcements during a call.
+MI command that has the same behavior as [media_exchange_from_uri()](#func_media_exchange_from_uri "1.3.5. media_exchange_from_uri(URI[, leg][, body][, headers][, nohold])"), only that the triggering is not script driven, but exterior driven. Useful for injecting media announcements during a call.
 
 **Parameters:**
 
@@ -300,7 +300,7 @@ opensips-cli -x mi media_exchange_from_call_to_uri \
 
 ### `media_exchange_from_call_to_uri_body`
 
-MI command that does the same thing as the [media_exchange_from_call_to_uri](#mi_media_exchange_from_call_to_uri "1.4.2.� media_exchange_from_call_to_uri") MI function, but also allows you to specify a custom body in the outgoing request. The body has to be specified in the mandatory _body_ parameter, all the other parameters being the same as the ones of [media_exchange_from_call_to_uri](#mi_media_exchange_from_call_to_uri "1.4.2.� media_exchange_from_call_to_uri").
+MI command that does the same thing as the [media_exchange_from_call_to_uri](#mi_media_exchange_from_call_to_uri "1.4.2. media_exchange_from_call_to_uri") MI function, but also allows you to specify a custom body in the outgoing request. The body has to be specified in the mandatory _body_ parameter, all the other parameters being the same as the ones of [media_exchange_from_call_to_uri](#mi_media_exchange_from_call_to_uri "1.4.2. media_exchange_from_call_to_uri").
 
 **Parameters:**
 
@@ -313,7 +313,7 @@ MI command that does the same thing as the [media_exchange_from_call_to_uri](#mi
 
 ### `media_fork_from_call_to_uri`
 
-MI command that has the same behavior as [media_fork_to_uri()](#func_media_fork_to_uri "1.3.1.� media_fork_to_uri(URI[, leg][, headers][, medianum][, instance])"), only that the triggering is not script driven, but exterior driven. Useful for starting listening a call.
+MI command that has the same behavior as [media_fork_to_uri()](#func_media_fork_to_uri "1.3.1. media_fork_to_uri(URI[, leg][, headers][, medianum][, instance])"), only that the triggering is not script driven, but exterior driven. Useful for starting listening a call.
 
 **Parameters:**
 

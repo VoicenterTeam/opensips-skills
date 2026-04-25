@@ -18,11 +18,11 @@ Reference for the OpenSIPs 3.5 presence_dialoginfo module. Read this file when c
 
 The module enables the handling of "Event: dialog" (as defined in RFC 4235) inside of the presence module. This can be used distribute the dialog-info status to the subscribed watchers.
 
-The module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle\_publish() and handle\_subscribe() functions.
+The module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle_publish() and handle_subscribe() functions.
 
-Note: This module only activates the processing of the "dialog" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the dialog info to the presence module. For example you can use the pua\_dialoginfo module or any external component. This approach allows to have the presence server and the dialog-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.
+Note: This module only activates the processing of the "dialog" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the dialog info to the presence module. For example you can use the pua_dialoginfo module or any external component. This approach allows to have the presence server and the dialog-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.
 
-This module by default does body aggregation. That means, if the presence module received PUBLISH from multiple presentities (e.g. if the entity has multiple dialogs the pua\_dialoginfo will send multiple PUBLISH), the module will parse all the received (and still valid, depending on the Expires header in the PUBLISH request) XML documents and generate a single XML document with multiple "dialog" elements. This is perfectly valid, but unfortunately not supported by all SIP phones, e.g. Linksys SPA962 crashes when it receives dialog-info with multiple dialog elements. In this case use the force\_single\_dialog module parameter.
+This module by default does body aggregation. That means, if the presence module received PUBLISH from multiple presentities (e.g. if the entity has multiple dialogs the pua_dialoginfo will send multiple PUBLISH), the module will parse all the received (and still valid, depending on the Expires header in the PUBLISH request) XML documents and generate a single XML document with multiple "dialog" elements. This is perfectly valid, but unfortunately not supported by all SIP phones, e.g. Linksys SPA962 crashes when it receives dialog-info with multiple dialog elements. In this case use the force_single_dialog module parameter.
 
 ## How It Works
 
@@ -64,11 +64,11 @@ alice@example   presence   bob@example   watcher@example
     
 *   Alice calls Bob.
     
-*   Bob replies with ringing, the dialog in the dialog module transits to "early". The callback in pua\_dialoginfo is executed. The pua\_dialoginfo module creates the XML document and uses the pua module to send the PUBLISH. (pua module itself uses tm module to send the PUBLISH stateful)
+*   Bob replies with ringing, the dialog in the dialog module transits to "early". The callback in pua_dialoginfo is executed. The pua_dialoginfo module creates the XML document and uses the pua module to send the PUBLISH. (pua module itself uses tm module to send the PUBLISH stateful)
     
-*   PUBLISH is received and handled by presence module. Presence module updates the "presentity". Presence module checks for active watchers of the presentity. It gives all the XML dcouments to presence\_dialoginfo module to aggregate them into a single XML document. Then it sends the NOTIFY with the aggregated XML document to all active watchers.
+*   PUBLISH is received and handled by presence module. Presence module updates the "presentity". Presence module checks for active watchers of the presentity. It gives all the XML dcouments to presence_dialoginfo module to aggregate them into a single XML document. Then it sends the NOTIFY with the aggregated XML document to all active watchers.
 
-The presence server can also be separated from the main proxy by using a separate OpenSIPS instance as shown in the following figure. (Either set the outbound\_proxy parameter of pua module or make sure to route the "looped" PUBLISH requests from the main proxy to the presence server).
+The presence server can also be separated from the main proxy by using a separate OpenSIPS instance as shown in the following figure. (Either set the outbound_proxy parameter of pua module or make sure to route the "looped" PUBLISH requests from the main proxy to the presence server).
 
     Main Proxy and Presence Server use a separate Instance
 
@@ -121,7 +121,7 @@ By default the module aggregates all available dialog info into a single dialog-
 **Example.** 1.
 
 ```opensips
-modparam("presence\_dialoginfo", "force\_single\_dialog", 1)
+modparam("presence_dialoginfo", "force_single_dialog", 1)
 ```
 
 ## Configuration Examples
@@ -132,6 +132,6 @@ By default the module aggregates all available dialog info into a single dialog-
 
 ```opensips
 ...
-modparam("presence\_dialoginfo", "force\_single\_dialog", 1)
+modparam("presence_dialoginfo", "force_single_dialog", 1)
 ...
 ```

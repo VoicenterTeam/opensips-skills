@@ -40,7 +40,7 @@ Indicates whether the JSON responses stored in the return variable should be pre
 
 ```opensips
 ...
-modparam("mi\_script", "pretty\_printing", 1)
+modparam("mi_script", "pretty_printing", 1)
 ...
 ```
 ### `trace_bwlist` (string)
@@ -66,11 +66,11 @@ Defining a blacklists means all the commands that are not blacklisted will be tr
 ...
 ## blacklist ps and which mi commands
 ## all the other commands shall be traced
-modparam("mi\_script", "trace\_bwlist", "b: ps, which")
+modparam("mi_script", "trace_bwlist", "b: ps, which")
 ...
-## allow only sip\_trace mi command
+## allow only sip_trace mi command
 ## all the other commands will not be traced
-modparam("mi\_script", "trace\_bwlist", "w: sip\_trace")
+modparam("mi_script", "trace_bwlist", "w: sip_trace")
 ...
 ```
 ### `trace_destination` (string)
@@ -85,9 +85,9 @@ Trace destination as defined in the tracing module. Currently the only tracing m
 
 ```opensips
 ...
-modparam("proto\_hep", "trace\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "trace_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("mi\_script", "trace\_destination", "hep\_dest")
+modparam("mi_script", "trace_destination", "hep_dest")
 ...
 ```
 

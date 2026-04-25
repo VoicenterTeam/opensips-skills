@@ -43,7 +43,7 @@ If you want to change only the listening port for STP, use the port option in th
 
 ```opensips
 ...
-modparam("proto\_sctp", "sctp\_port", 5070)
+modparam("proto_sctp", "sctp_port", 5070)
 ...
 ```
 
@@ -55,6 +55,6 @@ The default port to be used for all SCTP related operation. Be careful as the de
 
 ```opensips
 ...
-modparam("proto\_sctp", "sctp\_port", 5070)
+modparam("proto_sctp", "sctp_port", 5070)
 ...
 ```

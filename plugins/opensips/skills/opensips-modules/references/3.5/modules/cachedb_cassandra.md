@@ -160,11 +160,11 @@ Sets the cachedb_url parameter to define the server groups and connection detail
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "cachedb\_url",
+modparam("cachedb_cassandra", "cachedb_url",
 	"cassandra:group1://localhost:9042/keyspace1.users.counters");
 
 # Defining multiple contact points for a Cassandra cluster
-modparam("cachedb\_cassandra", "cachedb\_url",
+modparam("cachedb_cassandra", "cachedb_url",
 	"cassandra:cluster1://10.0.0.10,10.0.0.15/keyspace2.keys.counters");
 ...
 ```
@@ -174,9 +174,9 @@ Demonstrates using the Cassandra servers in the script with cache_store, cache_f
 
 ```opensips
 ...
-cache\_store("cassandra:group1","key","$ru value");
-cache\_fetch("cassandra:cluster1","key",$avp(10));
-cache\_remove("cassandra:cluster1","key");
+cache_store("cassandra:group1","key","$ru value");
+cache_fetch("cassandra:cluster1","key",$avp(10));
+cache_remove("cassandra:cluster1","key");
 ...
 ```
 ### Set `connect_timeout` parameter
@@ -185,7 +185,7 @@ Sets the connect_timeout parameter.
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "connect\_timeout",1000);
+modparam("cachedb_cassandra", "connect_timeout",1000);
 ...
 ```
 ### Set `query_timeout` parameter
@@ -194,7 +194,7 @@ Sets the query_timeout parameter.
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "query\_timeout",1000);
+modparam("cachedb_cassandra", "query_timeout",1000);
 ...
 ```
 ### Set `wr_consistency_level` parameter
@@ -203,7 +203,7 @@ Sets the wr_consistency_level parameter.
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "wr\_consistency\_level", "each\_quorum");
+modparam("cachedb_cassandra", "wr_consistency_level", "each_quorum");
 ...
 ```
 ### Set `rd_consistency_level` parameter
@@ -212,7 +212,7 @@ Sets the rd_consistency_level parameter.
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "rd\_consistency\_level", "quorum");
+modparam("cachedb_cassandra", "rd_consistency_level", "quorum");
 ...
 ```
 ### Set `exec_threshold` parameter
@@ -221,6 +221,6 @@ Sets the exec_threshold parameter.
 
 ```opensips
 ...
-modparam("cachedb\_cassandra", "exec\_threshold", 100000)
+modparam("cachedb_cassandra", "exec_threshold", 100000)
 ...
 ```

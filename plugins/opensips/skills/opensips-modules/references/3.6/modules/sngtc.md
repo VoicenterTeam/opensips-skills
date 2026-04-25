@@ -63,9 +63,9 @@ Handles the SDP offer from 200 OK responses, intersects both offers with the cap
 
 ```opensips
 ...
-onreply\_route[1] {
+onreply_route[1] {
 	if ($rs == 200)
-		sngtc\_callee\_answer("11.12.13.14", "11.12.13.14");
+		sngtc_callee_answer("11.12.13.14", "11.12.13.14");
 }
 ...
 ```
@@ -84,11 +84,11 @@ Attaches an SDP body to the caller's ACK request, so that it matches the late SD
 
 ```opensips
 ...
-if (has\_totag()) {
-	if (loose\_route()) {
+if (has_totag()) {
+	if (loose_route()) {
 		...
-		if (is\_method("ACK"))
-			sngtc\_caller\_answer();
+		if (is_method("ACK"))
+			sngtc_caller_answer();
 	}
 	...
 }
@@ -110,10 +110,10 @@ The function strips off the SDP offer from a SIP INVITE, thus asking for another
 
 ```opensips
 ...
-if (is\_method("INVITE")) {
-	t\_newtran();
-	create\_dialog();
-	sngtc\_offer();
+if (is_method("INVITE")) {
+	t_newtran();
+	create_dialog();
+	sngtc_offer();
 }
 ...
 ```

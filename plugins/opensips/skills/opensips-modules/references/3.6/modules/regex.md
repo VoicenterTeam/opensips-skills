@@ -45,7 +45,7 @@ Text file containing the regular expression groups. It must be set in order to e
 **Example.** Set the `file` parameter.
 
 ```opensips
-modparam("regex", "file", "/etc/opensips/regex\_groups")
+modparam("regex", "file", "/etc/opensips/regex_groups")
 ```
 ### `group_max_size` (integer)
 
@@ -56,7 +56,7 @@ Max content size of a group in the text file.
 **Example.** Set the `group_max_size` parameter.
 
 ```opensips
-modparam("regex", "group\_max\_size", 16384)
+modparam("regex", "group_max_size", 16384)
 ```
 ### `max_groups` (integer)
 
@@ -67,7 +67,7 @@ Max number of regular expression groups in the text file.
 **Example.** Set the `max_groups` parameter.
 
 ```opensips
-modparam("regex", "max\_groups", 40)
+modparam("regex", "max_groups", 40)
 ```
 ### `pcre_caseless` (integer)
 
@@ -78,7 +78,7 @@ If this options is set, matching is done caseless. It is equivalent to Perl's /i
 **Example.** Set the `pcre_caseless` parameter.
 
 ```opensips
-modparam("regex", "pcre\_caseless", 1)
+modparam("regex", "pcre_caseless", 1)
 ```
 ### `pcre_dotall` (integer)
 
@@ -89,7 +89,7 @@ If this option is set, a dot metacharater in the pattern matches all characters,
 **Example.** Set the `pcre_dotall` parameter.
 
 ```opensips
-modparam("regex", "pcre\_dotall", 1)
+modparam("regex", "pcre_dotall", 1)
 ```
 ### `pcre_extended` (integer)
 
@@ -100,7 +100,7 @@ If this option is set, whitespace data characters in the pattern are totally ign
 **Example.** Set the `pcre_extended` parameter.
 
 ```opensips
-modparam("regex", "pcre\_extended", 1)
+modparam("regex", "pcre_extended", 1)
 ```
 ### `pcre_multiline` (integer)
 
@@ -111,7 +111,7 @@ By default, PCRE treats the subject string as consisting of a single line of cha
 **Example.** Set the `pcre_multiline` parameter.
 
 ```opensips
-modparam("regex", "pcre\_multiline", 1)
+modparam("regex", "pcre_multiline", 1)
 ```
 
 ## Exported Functions
@@ -136,8 +136,8 @@ Matches the given string parameter against the regular expression pcre_regex, wh
 
 ```opensips
 ...
-if (pcre\_match("$ua", "(?i)^twinkle")) {
-    xlog("L\_INFO", "User-Agent matches\\n");
+if (pcre_match("$ua", "(?i)^twinkle")) {
+    xlog("L_INFO", "User-Agent matches\\n");
 }
 ...
 ```

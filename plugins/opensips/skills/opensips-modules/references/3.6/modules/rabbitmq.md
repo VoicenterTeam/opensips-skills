@@ -67,7 +67,7 @@ The following parameters can be used:
     
 *   _non-persistent_ - indicates that the message should not be persistent in case the RabbitMQ server restarts. Optional parameter, default is persistent.
     
-*   _tls_domain_ - indicates which TLS domain (as defined using the _tls_mgm_ module) to use for this connection. This must be an _amqps_ URI and the [use_tls](#param_use_tls "1.3.2.�use_tls (integer)") module parameter must be enabled.
+*   _tls_domain_ - indicates which TLS domain (as defined using the _tls_mgm_ module) to use for this connection. This must be an _amqps_ URI and the [use_tls](#param_use_tls "1.3.2.use_tls (integer)") module parameter must be enabled.
 
 **Notes:** This parameter can be set multiple times, for each RabbitMQ server.
 
@@ -100,7 +100,7 @@ modparam("rabbitmq", "timeout", 1000) # timeout after 1s
 ```
 ### `use_tls` (integer)
 
-Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the "tls_domain=_dom_name_" parameter in the configuration specified through the [server_id](#param_server_id "1.3.1.�server_id (string)") module parameter.
+Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the "tls_domain=_dom_name_" parameter in the configuration specified through the [server_id](#param_server_id "1.3.1.server_id (string)") module parameter.
 
 When using this parameter, you must also ensure that _tls_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.
 
@@ -140,16 +140,16 @@ This function also allows you to attach AMQP headers and values in the AMQP mess
 
 ```opensips
 	...
-	rabbitmq\_publish("ID1", "call", "$fU called $rU");
+	rabbitmq_publish("ID1", "call", "$fU called $rU");
 	...
-	rabbitmq\_publish("ID1", "call", "{ \'caller\': \'$fU\',
+	rabbitmq_publish("ID1", "call", "{ \'caller\': \'$fU\',
 				\'callee\; \'$rU\'", "application/json");
 	...
-	$avp(hdr\_name) = "caller";
-	$avp(hdr\_value) = $fU;
-	$avp(hdr\_name) = "callee";
-	$avp(hdr\_value) = $rU;
-	rabbitmq\_publish("ID2", "call", $rb, , $avp(hdr\_name), $avp(hdr\_value));
+	$avp(hdr_name) = "caller";
+	$avp(hdr_value) = $fU;
+	$avp(hdr_name) = "callee";
+	$avp(hdr_value) = $rU;
+	rabbitmq_publish("ID2", "call", $rb, , $avp(hdr_name), $avp(hdr_value));
 	...
 ```
 

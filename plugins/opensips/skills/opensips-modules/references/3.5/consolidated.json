@@ -58,7 +58,7 @@
         "source": "module:acc"
       },
       "acc_new_leg": {
-        "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.�$acc_current_leg (read-only)\") only if multi-leg accounting is used.",
+        "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.$acc_current_leg (read-only)\") only if multi-leg accounting is used.",
         "path": "references/3.5/modules/acc.md",
         "source": "module:acc"
       },
@@ -168,7 +168,7 @@
         "source": "module:alias_db"
       },
       "allow_register": {
-        "description": "The function returns true if all pairs constructed as described in [Section 1.1.2, “Registration Permissions”](#sec-registration-permissions \"1.1.2.�Registration Permissions\") have appropriate permiss…",
+        "description": "The function returns true if all pairs constructed as described in [Section 1.1.2, “Registration Permissions”](#sec-registration-permissions \"1.1.2.Registration Permissions\") have appropriate permissi…",
         "path": "references/3.5/modules/permissions.md",
         "source": "module:permissions"
       },
@@ -178,7 +178,7 @@
         "source": "module:permissions"
       },
       "allow_uri": {
-        "description": "Returns true if the pair constructed as described in [Section 1.1.3, “URI Permissions”](#sec-uri-permissions \"1.1.3.�URI Permissions\") have appropriate permissions according to the configuration files…",
+        "description": "Returns true if the pair constructed as described in [Section 1.1.3, “URI Permissions”](#sec-uri-permissions \"1.1.3.URI Permissions\") have appropriate permissions according to the configuration files …",
         "path": "references/3.5/modules/permissions.md",
         "source": "module:permissions"
       },
@@ -773,7 +773,7 @@
         "source": "module:nathelper"
       },
       "fix_nated_register": {
-        "description": "The function creates a URI consisting of the source IP, port and protocol and stores it in the [received_avp](#param_received_avp \"1.4.5.�received_avp (str)\") AVP.",
+        "description": "The function creates a URI consisting of the source IP, port and protocol and stores it in the [received_avp](#param_received_avp \"1.4.5.received_avp (str)\") AVP.",
         "path": "references/3.5/modules/nathelper.md",
         "source": "module:nathelper"
       },
@@ -1008,7 +1008,7 @@
         "source": "module:enum"
       },
       "jab_exit_jconf": {
-        "description": "Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain .",
+        "description": "Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference_server@jdomain .",
         "path": "references/3.5/modules/jabber.md",
         "source": "module:jabber"
       },
@@ -1023,7 +1023,7 @@
         "source": "module:jabber"
       },
       "jab_join_jconf": {
-        "description": "Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain .",
+        "description": "Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference_server@jdomain .",
         "path": "references/3.5/modules/jabber.md",
         "source": "module:jabber"
       },
@@ -1433,7 +1433,7 @@
         "source": "module:python"
       },
       "qr_disable_dst": {
-        "description": "Within a given routing rule, temporarily remove the given gateway or carrier from routing, until they are re-enabled via [qr_enable_dst()](#func_qr_enable_dst \"1.5.3.� qr_enable_dst(rule_id, dst_name,…",
+        "description": "Within a given routing rule, temporarily remove the given gateway or carrier from routing, until they are re-enabled via [qr_enable_dst()](#func_qr_enable_dst \"1.5.3.",
         "path": "references/3.5/modules/qrouting.md",
         "source": "module:qrouting"
       },
@@ -3175,22 +3175,22 @@
         "source": "module:b2b_entities"
       },
       "ua_session_list": {
-        "description": "List information about UA sessions started with [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags])\") function or the [ua_session_client_start](#mi_…",
+        "description": "List information about UA sessions started with [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.",
         "path": "references/3.5/modules/b2b_entities.md",
         "source": "module:b2b_entities"
       },
       "ua_session_reply": {
-        "description": "Sends a reply for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags])\") function or the [ua_session_client_start](#mi_…",
+        "description": "Sends a reply for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.",
         "path": "references/3.5/modules/b2b_entities.md",
         "source": "module:b2b_entities"
       },
       "ua_session_terminate": {
-        "description": "Terminate a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags])\") function or the [ua_session_client_start](#mi_ua_sessi…",
+        "description": "Terminate a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.",
         "path": "references/3.5/modules/b2b_entities.md",
         "source": "module:b2b_entities"
       },
       "ua_session_update": {
-        "description": "Sends a sequential request for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags])\") function or the [ua_session_clien…",
+        "description": "Sends a sequential request for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.",
         "path": "references/3.5/modules/b2b_entities.md",
         "source": "module:b2b_entities"
       },
@@ -4621,7 +4621,7 @@
         "source": "module:cfgutils"
       },
       "$TH_callee_callid": {
-        "description": "Read only variable that will contain the callid as it is propagated towards the callee side, in case topology\\_hiding(\"C\") is called.",
+        "description": "Read only variable that will contain the callid as it is propagated towards the callee side, in case topology_hiding(\"C\") is called.",
         "path": "references/3.5/modules/topology_hiding.md",
         "source": "module:topology_hiding"
       },
@@ -4646,7 +4646,7 @@
         "source": "module:tm"
       },
       "$T_fr_timeout": {
-        "description": "the timeout for the final reply to the current transaction\n\nWith each different request received, _$T_fr_timeout_ will initially be equal to the **[fr_timeout](#param_fr_timeout \"1.3.1.�fr_timeout (in…",
+        "description": "the timeout for the final reply to the current transaction\n\nWith each different request received, _$T_fr_timeout_ will initially be equal to the **[fr_timeout](#param_fr_timeout \"1.3.1.fr_timeout (int…",
         "path": "references/3.5/modules/tm.md",
         "source": "module:tm"
       },
@@ -4836,7 +4836,7 @@
         "source": "module:cgrates"
       },
       "$cgr_opt(name) / $(cgr_opt(name)[session])": {
-        "description": "Used to tune the request parameter of a CGRateS request when used in non-_compat\\_mode_.",
+        "description": "Used to tune the request parameter of a CGRateS request when used in non-_compat_mode_.",
         "path": "references/3.5/modules/cgrates.md",
         "source": "module:cgrates"
       },
@@ -5261,7 +5261,7 @@
         "source": "core"
       },
       "$sql_cached_value(id{sep}col{sep}key)": {
-        "description": "The cached data is available through this read-only PV.The format is the following:\n\n*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter \"1.3.3.�pvar_delimiter (string)\")\n    \n*…",
+        "description": "The cached data is available through this read-only PV.The format is the following:\n\n*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter \"1.3.3.pvar_delimiter (string)\")\n    \n* …",
         "path": "references/3.5/modules/sql_cacher.md",
         "source": "module:sql_cacher"
       },

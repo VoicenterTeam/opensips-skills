@@ -108,13 +108,13 @@ Demonstrates setting single-instance and multi-instance URLs for the cachedb_url
 ```opensips
 ...
 # single-instance URLs
-modparam("cachedb\_dynamodb", "cachedb\_url", "dynamodb://localhost:8000/table1")
-modparam("cachedb\_dynamodb", "cachedb\_url", "dynamodb:///table2?region=central-1")
+modparam("cachedb_dynamodb", "cachedb_url", "dynamodb://localhost:8000/table1")
+modparam("cachedb_dynamodb", "cachedb_url", "dynamodb:///table2?region=central-1")
 
 # multi-instance URL (will perform circular **failover** on each query)
-modparam("cachedb\_dynamodb", "cachedb\_url", 
+modparam("cachedb_dynamodb", "cachedb_url", 
 	"dynamodb://localhost:8000/table1?key=Key;val=Val")
-modparam("cachedb\_dynamodb", "cachedb\_url", 
+modparam("cachedb_dynamodb", "cachedb_url", 
 	"dynamodb:///table2?region=central-1;key=Key;val=Val")
 
 ...
@@ -125,15 +125,15 @@ Demonstrates using cachedb operations such as store, fetch, remove, add, and sub
 
 ```opensips
 ...
-cache\_store("dynamodb", "call1", "10");
-cache\_store("dynamodb", "call2", "25", 150) // expires = 150s -optional
-cache\_fetch("dynamodb", "call1", $var(total));
-cache\_remove("dynamodb", "call1");
+cache_store("dynamodb", "call1", "10");
+cache_store("dynamodb", "call2", "25", 150) // expires = 150s -optional
+cache_fetch("dynamodb", "call1", $var(total));
+cache_remove("dynamodb", "call1");
 
-cache\_store("dynamodb", "counter1", "200");
-cache\_sub("dynamodb", "counter1", 4, 1000); // expires = 1000s -mandatory parameter
-cache\_add("dynamodb", "call2", 5, 0) // -this update will not expire  -mandatory parameter
-cache\_remove("dynamodb", "counter1");
+cache_store("dynamodb", "counter1", "200");
+cache_sub("dynamodb", "counter1", 4, 1000); // expires = 1000s -mandatory parameter
+cache_add("dynamodb", "call2", 5, 0) // -this update will not expire  -mandatory parameter
+cache_remove("dynamodb", "counter1");
 
 ...
 ```

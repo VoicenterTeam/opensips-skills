@@ -23,17 +23,17 @@ This module implements an User Agent capable of establishing messaging sessions 
 
 Through an internal API and exported script and MI functions, the module allows OpenSIPS to set up MSRP sessions via SIP and exchange messages as an MSRP endpoint.
 
-The module makes use of the _proto\_msrp_ module for the MSRP protocol stack and the _b2b\_entities_ module for the SIP UAC/UAS functionalities.
+The module makes use of the _proto_msrp_ module for the MSRP protocol stack and the _b2b_entities_ module for the SIP UAC/UAS functionalities.
 
 ## How It Works
 
-In order to start a SIP call carying MSRP from OpenSIPS you can use the [msrp\_ua\_start\_session](#mi_msrp_ua_start_session "1.6.2.� msrp_ua_start_session") MI function. Alternatively, to answer a SIP session with MSRP you can use the [msrp\_ua\_answer()](#func_msrp_ua_answer "1.5.1.� msrp_ua_answer(content_types)") script function.
+In order to start a SIP call carying MSRP from OpenSIPS you can use the [msrp_ua_start_session](#mi_msrp_ua_start_session "1.6.2. msrp_ua_start_session") MI function. Alternatively, to answer a SIP session with MSRP you can use the [msrp_ua_answer()](#func_msrp_ua_answer "1.5.1. msrp_ua_answer(content_types)") script function.
 
-When a UAC or UAS session is successfully established(ACK sent/received) the [E\_MSRP\_SESSION\_NEW](#event_E_MSRP_SESSION_NEW "1.7.1.� E_MSRP_SESSION_NEW") event is triggered. After this point, you may receive MSRP messages or Reports, signaled by the [E\_MSRP\_MSG\_RECEIVED](#event_E_MSRP_MSG_RECEIVED "1.7.3.� E_MSRP_MSG_RECEIVED") and [E\_MSRP\_REPORT\_RECEIVED](#event_E_MSRP_REPORT_RECEIVED "1.7.4.� E_MSRP_REPORT_RECEIVED") events.
+When a UAC or UAS session is successfully established(ACK sent/received) the [E_MSRP_SESSION_NEW](#event_E_MSRP_SESSION_NEW "1.7.1. E_MSRP_SESSION_NEW") event is triggered. After this point, you may receive MSRP messages or Reports, signaled by the [E_MSRP_MSG_RECEIVED](#event_E_MSRP_MSG_RECEIVED "1.7.3. E_MSRP_MSG_RECEIVED") and [E_MSRP_REPORT_RECEIVED](#event_E_MSRP_REPORT_RECEIVED "1.7.4. E_MSRP_REPORT_RECEIVED") events.
 
-Note that the _E\_MSRP\_REPORT\_RECEIVED_ event covers both actual MSRP REPORT requests as well as negative MSRP transaction responses and local send timeouts(which should be treated the same as a received timeout transaction response).
+Note that the _E_MSRP_REPORT_RECEIVED_ event covers both actual MSRP REPORT requests as well as negative MSRP transaction responses and local send timeouts(which should be treated the same as a received timeout transaction response).
 
-You can send MSRP messages to the peer with the [msrp\_ua\_send\_message](#mi_msrp_ua_send_message "1.6.1.� msrp_ua_send_message") MI function.
+You can send MSRP messages to the peer with the [msrp_ua_send_message](#mi_msrp_ua_send_message "1.6.1. msrp_ua_send_message") MI function.
 
 ## Dependencies
 
@@ -50,12 +50,12 @@ None.
 
 ### `advertised_contact` (string)
 
-Contact to be used in the generated SIP requests. For sessions answered by OpenSIPS, if it is not set, it is constructed dynamically from the socket where the initiating request was received. This parameter is mandatory when using the [msrp\_ua\_start\_session](#mi_msrp_ua_start_session "1.6.2.� msrp_ua_start_session") MI function.
+Contact to be used in the generated SIP requests. For sessions answered by OpenSIPS, if it is not set, it is constructed dynamically from the socket where the initiating request was received. This parameter is mandatory when using the [msrp_ua_start_session](#mi_msrp_ua_start_session "1.6.2. msrp_ua_start_session") MI function.
 
 **Example.** Set the `advertised_contact` parameter.
 
 ```opensips
-modparam("msrp\_ua", "advertised\_contact", "sip:oss@opensips.org")
+modparam("msrp_ua", "advertised_contact", "sip:oss@opensips.org")
 ```
 ### `cleanup_interval` (int)
 
@@ -66,7 +66,7 @@ The interval between full iterations of the sessions table in order to clean up 
 **Example.** Set the `cleanup_interval` parameter.
 
 ```opensips
-modparam("msrp\_ua", "cleanup\_interval", 30)
+modparam("msrp_ua", "cleanup_interval", 30)
 ```
 ### `hash_size` (int)
 
@@ -77,7 +77,7 @@ The size of the hash table that stores the MSRP session information. It is the 2
 **Example.** Set the `hash_size` parameter.
 
 ```opensips
-modparam("msrp\_ua", "hash\_size", 16)
+modparam("msrp_ua", "hash_size", 16)
 ```
 ### `max_duration` (integer)
 
@@ -88,7 +88,7 @@ The maximum duration of a call. If set to 0, there will be no limitation.
 **Example.** Set the `max_duration` parameter.
 
 ```opensips
-modparam("msrp\_ua", "max\_duration", 7200)
+modparam("msrp_ua", "max_duration", 7200)
 ```
 ### `my_uri` (string)
 
@@ -97,16 +97,16 @@ The MSRP URI of the OpenSIPS endpoint. This URI will be advertised in the SDP of
 **Example.** Set the `my_uri` parameter.
 
 ```opensips
-modparam("msrp\_ua", "my\_uri", "msrp://opensips.org:2855;tcp")
+modparam("msrp_ua", "my_uri", "msrp://opensips.org:2855;tcp")
 ```
 ### `relay_uri` (string)
 
-URI of an MSRP relay to use for both accepted and initiated sessions. Credentials for the MSRP client are provided via the _uac\_auth_ module by setting the _credential_ module parameter. If not set, no relay will be used.
+URI of an MSRP relay to use for both accepted and initiated sessions. Credentials for the MSRP client are provided via the _uac_auth_ module by setting the _credential_ module parameter. If not set, no relay will be used.
 
 **Example.** Set the `relay_uri` parameter.
 
 ```opensips
-modparam("msrp\_ua", "relay\_uri", "msrp://opensips.org:2856;tcp")
+modparam("msrp_ua", "relay_uri", "msrp://opensips.org:2856;tcp")
 ```
 
 ## Exported Functions

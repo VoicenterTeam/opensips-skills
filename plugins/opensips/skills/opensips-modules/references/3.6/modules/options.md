@@ -55,7 +55,7 @@ This parameter is the content of the Accept-Encoding header field. If “”, th
 **Example.** gzip.
 
 ```opensips
-modparam("options", "accept\_encoding", "gzip")
+modparam("options", "accept_encoding", "gzip")
 ```
 ### `accept_language` (string)
 
@@ -68,7 +68,7 @@ This parameter is the content of the Accept-Language header field. If “”, th
 **Example.** de.
 
 ```opensips
-modparam("options", "accept\_language", "de")
+modparam("options", "accept_language", "de")
 ```
 ### `support` (string)
 
@@ -103,9 +103,9 @@ The check for the request method and the missing username is optional because it
 
 ```opensips
 ...
-if (is\_myself("$rd")) {
-	if (is\_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
-		options\_reply();
+if (is_myself("$rd")) {
+	if (is_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
+		options_reply();
 	}
 }
 ...
@@ -128,7 +128,7 @@ This parameter is the content of the Accept-Encoding header field. If “”, th
 
 ```opensips
 ...
-modparam("options", "accept\_encoding", "gzip")
+modparam("options", "accept_encoding", "gzip")
 ...
 ```
 ### Set `accept_language` parameter
@@ -137,7 +137,7 @@ This parameter is the content of the Accept-Language header field. If “”, th
 
 ```opensips
 ...
-modparam("options", "accept\_language", "de")
+modparam("options", "accept_language", "de")
 ...
 ```
 ### Set `support` parameter
@@ -151,13 +151,13 @@ modparam("options", "support", "100rel")
 ```
 ### `options_reply` usage
 
-This function checks if the request method is OPTIONS and if the request URI does not contain an username. If both is true the request will be answered stateless with “200 OK” and the capabilities from the modules parameters. It sends “500 Server Internal Error” for some errors and returns false if it is called for a wrong request. The check for the request method and the missing username is optional because it is also done by the function itself. But you should not call this function outside the myself check because in this case the function could answer OPTIONS requests which are sent to you as outbound proxy but with an other destination then your proxy (this check is currently missing in the function). This function can be used from REQUEST\_ROUTE.
+This function checks if the request method is OPTIONS and if the request URI does not contain an username. If both is true the request will be answered stateless with “200 OK” and the capabilities from the modules parameters. It sends “500 Server Internal Error” for some errors and returns false if it is called for a wrong request. The check for the request method and the missing username is optional because it is also done by the function itself. But you should not call this function outside the myself check because in this case the function could answer OPTIONS requests which are sent to you as outbound proxy but with an other destination then your proxy (this check is currently missing in the function). This function can be used from REQUEST_ROUTE.
 
 ```opensips
 ...
-if (is\_myself("$rd")) {
-	if (is\_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
-		options\_reply();
+if (is_myself("$rd")) {
+	if (is_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
+		options_reply();
 	}
 }
 ...

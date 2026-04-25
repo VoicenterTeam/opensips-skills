@@ -131,23 +131,23 @@ if(mmg_lookup("continent.names.en:country.iso_code,",$si,$avp(geodata))) {
 
 ## Configuration Examples
 
-### Set “mmgeoip\_city\_db\_path” parameter
+### Set “mmgeoip_city_db_path” parameter
 
 Path to either a GeoLite or GeoIP City database file.
 
 ```opensips
 ...
-modparam("mmgeoip", "mmgeoip\_city\_db\_path",
+modparam("mmgeoip", "mmgeoip_city_db_path",
   "/usr/share/GeoIP/GeoLiteCity.dat")
 ...
 ```
-### Set “cache\_type” parameter
+### Set “cache_type” parameter
 
 Databse memory caching options.
 
 ```opensips
 ...
-modparam("mmgeoip", "cache\_type","MEM\_CACHE\_CHECK")
+modparam("mmgeoip", "cache_type","MEM_CACHE_CHECK")
 ...
 ```
 ### `mmg_lookup` usage
@@ -156,15 +156,15 @@ Looks up information specified by `field` associated with the IP address `src`.
 
 ```opensips
 ...
-if(mmg\_lookup("lon:lat",$si,$avp(lat\_lon))) {
-  xlog("L\_INFO","Source IP latitude:$(avp(lat\_lon)\[0\])\\n");
-  xlog("L\_INFO","Source IP longitude:$(avp(lat\_lon)\[1\])\\n");
+if(mmg_lookup("lon:lat",$si,$avp(lat_lon))) {
+  xlog("L_INFO","Source IP latitude:$(avp(lat_lon)\[0\])\\n");
+  xlog("L_INFO","Source IP longitude:$(avp(lat_lon)\[1\])\\n");
 };
 ...
 # fields format only supported for GeoIP2
-if(mmg\_lookup("continent.names.en:country.iso\_code,",$si,$avp(geodata))) {
-  xlog("L\_INFO","Source IP country code:$(avp(geodata)\[0\])\\n");
-  xlog("L\_INFO","Source IP continent:$(avp(geodata)\[1\])\\n");
+if(mmg_lookup("continent.names.en:country.iso_code,",$si,$avp(geodata))) {
+  xlog("L_INFO","Source IP country code:$(avp(geodata)\[0\])\\n");
+  xlog("L_INFO","Source IP continent:$(avp(geodata)\[1\])\\n");
 };
 ...
 ```

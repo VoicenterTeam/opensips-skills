@@ -16,7 +16,7 @@ Reference for the OpenSIPs 3.6 proto_tcp module. Read this file when configuring
 
 ## Overview
 
-The **proto\_tcp** module is a built-in transport module which implements SIP TCP-based communication. It does not handle TCP connections management, but only offers higher-level primitives to read and write SIP messages over TCP.
+The **proto_tcp** module is a built-in transport module which implements SIP TCP-based communication. It does not handle TCP connections management, but only offers higher-level primitives to read and write SIP messages over TCP.
 
 Once loaded, you will be able to define TCP listeners in your script, by adding its IP, and optionally the listening port, in your configuration file, similar to this example:
 
@@ -46,7 +46,7 @@ If the TCP connect and write operations should be done in an asynchronous mode (
 **Example.** 0.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_async", 0)
+modparam("proto_tcp", "tcp_async", 0)
 ```
 ### `tcp_async_local_connect_timeout` (integer)
 
@@ -57,7 +57,7 @@ If tcp_async is enabled, this specifies the number of milliseconds that a connec
 **Example.** 200.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_async\_local\_connect\_timeout", 200)
+modparam("proto_tcp", "tcp_async_local_connect_timeout", 200)
 ```
 ### `tcp_async_local_write_timeout` (integer)
 
@@ -68,7 +68,7 @@ If tcp_async is enabled, this specifies the number of milliseconds that a write 
 **Example.** 100.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_async\_local\_write\_timeout", 100)
+modparam("proto_tcp", "tcp_async_local_write_timeout", 100)
 ```
 ### `tcp_async_max_postponed_chunks` (integer)
 
@@ -79,18 +79,18 @@ If tcp_async is enabled, this specifies the maximum number of SIP messages that 
 **Example.** 16.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_async\_max\_postponed\_chunks", 16)
+modparam("proto_tcp", "tcp_async_max_postponed_chunks", 16)
 ```
 ### `tcp_crlf_drop` (integer)
 
-Drop CRLF (\r\n) ping messages. When this parameter is enabled, the TCP layer drops packets that contains a single CRLF message. If a CRLFCRLF message is received, it is handled according to the _tcp\_crlf\_pingpong_ parameter.
+Drop CRLF (\r\n) ping messages. When this parameter is enabled, the TCP layer drops packets that contains a single CRLF message. If a CRLFCRLF message is received, it is handled according to the _tcp_crlf_pingpong_ parameter.
 
 *Default value is 0 (disabled).*
 
 **Example.** 1.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_crlf\_drop", 1)
+modparam("proto_tcp", "tcp_crlf_drop", 1)
 ```
 ### `tcp_crlf_pingpong` (integer)
 
@@ -101,7 +101,7 @@ Send CRLF pong (\r\n) to incoming CRLFCRLF ping messages over TCP. By default it
 **Example.** 0.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_crlf\_pingpong", 0)
+modparam("proto_tcp", "tcp_crlf_pingpong", 0)
 ```
 ### `tcp_max_msg_chunks` (integer)
 
@@ -112,7 +112,7 @@ The maximum number of chunks that a SIP message is expected to arrive via TCP. I
 **Example.** 8.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_max\_msg\_chunks", 8)
+modparam("proto_tcp", "tcp_max_msg_chunks", 8)
 ```
 ### `tcp_parallel_handling` (integer)
 
@@ -123,7 +123,7 @@ This parameter says if the handling/processing (NOT READING) of the SIP messages
 **Example.** 1.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_parallel\_handling", 1)
+modparam("proto_tcp", "tcp_parallel_handling", 1)
 ```
 ### `tcp_port` (integer)
 
@@ -136,7 +136,7 @@ If you want to change only the listening port for TCP, use the port option in th
 **Example.** 5065.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_port", 5065)
+modparam("proto_tcp", "tcp_port", 5065)
 ```
 ### `tcp_send_timeout` (integer)
 
@@ -147,7 +147,7 @@ Time in milliseconds after a TCP connection will be closed if it is not availabl
 **Example.** 200.
 
 ```opensips
-modparam("proto\_tcp", "tcp\_send\_timeout", 200)
+modparam("proto_tcp", "tcp_send_timeout", 200)
 ```
 ### `trace_destination` (string)
 
@@ -160,32 +160,32 @@ Trace destination as defined in the tracing module. Currently the only tracing m
 **Example.** hep_dest.
 
 ```opensips
-modparam("proto\_hep", "hep\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_tcp", "trace\_destination", "hep\_dest")
+modparam("proto_tcp", "trace_destination", "hep_dest")
 ```
 ### `trace_filter_route` (string)
 
-Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.11, “`trace_destination` (string)”](#trace-destination "1.3.11.�trace_destination (string)") and trace must be on at the time this connection is opened.
+Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.11, “`trace_destination` (string)”](#trace-destination "1.3.11.trace_destination (string)") and trace must be on at the time this connection is opened.
 
 *Default value is none (no route is set).*
 
-**Notes:** **IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used. **WARNING:** IF [Section 1.3.12, “`trace_on` (int)”](#trace-on "1.3.12.�trace_on (int)") is set to 0 or tracing is deactived via the mi command [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace "1.4.1.� tcp_trace") this route won't be called.
+**Notes:** **IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used. **WARNING:** IF [Section 1.3.12, “`trace_on` (int)”](#trace-on "1.3.12.trace_on (int)") is set to 0 or tracing is deactived via the mi command [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace "1.4.1. tcp_trace") this route won't be called.
 
 **Example.** tcp_filter.
 
 ```opensips
-modparam("proto\_tcp", "trace\_filter\_route", "tcp\_filter")
+modparam("proto_tcp", "trace_filter_route", "tcp_filter")
 ...
 /* all tcp connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route\[tcp\_filter\] {
+route\[tcp_filter\] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;
@@ -193,14 +193,14 @@ route\[tcp\_filter\] {
 ```
 ### `trace_on` (int)
 
-This controls whether tracing for tcp is on or not. You still need to define [Section 1.3.11, “`trace_destination` (string)”](#trace-destination "1.3.11.�trace_destination (string)")in order to work, but this value will be controlled using mi function [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace "1.4.1.� tcp_trace").
+This controls whether tracing for tcp is on or not. You still need to define [Section 1.3.11, “`trace_destination` (string)”](#trace-destination "1.3.11.trace_destination (string)")in order to work, but this value will be controlled using mi function [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace "1.4.1. tcp_trace").
 
 *Default value is 0 (tracing inactive).*
 
 **Example.** 1.
 
 ```opensips
-modparam("proto\_tcp", "trace\_on", 1)
+modparam("proto_tcp", "trace_on", 1)
 ```
 
 ## Exported MI Functions
@@ -218,9 +218,9 @@ Set tcp tracing on and off. If the parameter is missing, the command will show t
 **Example.** MI FIFO Command Format
 
 ```fifo
-			:tcp\_trace:\_reply\_fifo\_file\_
-			trace\_mode
-			\_empty\_line\_
+			:tcp_trace:_reply_fifo_file_
+			trace_mode
+			_empty_line_
 ```
 
 ## Configuration Examples
@@ -231,7 +231,7 @@ Sets the `tcp_port` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_port", 5065)
+modparam("proto_tcp", "tcp_port", 5065)
 ...
 ```
 ### Set `tcp_send_timeout` parameter
@@ -240,7 +240,7 @@ Sets the `tcp_send_timeout` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_send\_timeout", 200)
+modparam("proto_tcp", "tcp_send_timeout", 200)
 ...
 ```
 ### Set `tcp_max_msg_chunks` parameter
@@ -249,7 +249,7 @@ Sets the `tcp_max_msg_chunks` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_max\_msg\_chunks", 8)
+modparam("proto_tcp", "tcp_max_msg_chunks", 8)
 ...
 ```
 ### Set `tcp_crlf_pingpong` parameter
@@ -258,7 +258,7 @@ Sets the `tcp_crlf_pingpong` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_crlf\_pingpong", 0)
+modparam("proto_tcp", "tcp_crlf_pingpong", 0)
 ...
 ```
 ### Set `tcp_crlf_drop` parameter
@@ -267,7 +267,7 @@ Sets the `tcp_crlf_drop` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_crlf\_drop", 1)
+modparam("proto_tcp", "tcp_crlf_drop", 1)
 ...
 ```
 ### Set `tcp_async` parameter
@@ -276,7 +276,7 @@ Sets the `tcp_async` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_async", 0)
+modparam("proto_tcp", "tcp_async", 0)
 ...
 ```
 ### Set `tcp_async_max_postponed_chunks` parameter
@@ -285,7 +285,7 @@ Sets the `tcp_async_max_postponed_chunks` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_async\_max\_postponed\_chunks", 16)
+modparam("proto_tcp", "tcp_async_max_postponed_chunks", 16)
 ...
 ```
 ### Set `tcp_async_local_connect_timeout` parameter
@@ -294,7 +294,7 @@ Sets the `tcp_async_local_connect_timeout` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_async\_local\_connect\_timeout", 200)
+modparam("proto_tcp", "tcp_async_local_connect_timeout", 200)
 ...
 ```
 ### Set `tcp_async_local_write_timeout` parameter
@@ -303,7 +303,7 @@ Sets the `tcp_async_local_write_timeout` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_async\_local\_write\_timeout", 100)
+modparam("proto_tcp", "tcp_async_local_write_timeout", 100)
 ...
 ```
 ### Set `tcp_parallel_handling` parameter
@@ -312,7 +312,7 @@ Sets the `tcp_parallel_handling` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "tcp\_parallel\_handling", 1)
+modparam("proto_tcp", "tcp_parallel_handling", 1)
 ...
 ```
 ### Set `trace_destination` parameter
@@ -321,9 +321,9 @@ Sets the `trace_destination` parameter.
 
 ```opensips
 ...
-modparam("proto\_hep", "hep\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_tcp", "trace\_destination", "hep\_dest")
+modparam("proto_tcp", "trace_destination", "hep_dest")
 ...
 ```
 ### Set `trace_on` parameter
@@ -332,7 +332,7 @@ Sets the `trace_on` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "trace\_on", 1)
+modparam("proto_tcp", "trace_on", 1)
 ...
 ```
 ### Set `trace_filter_route` parameter
@@ -341,17 +341,17 @@ Sets the `trace_filter_route` parameter.
 
 ```opensips
 ...
-modparam("proto\_tcp", "trace\_filter\_route", "tcp\_filter")
+modparam("proto_tcp", "trace_filter_route", "tcp_filter")
 ...
 /* all tcp connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route[tcp\_filter] {
+route[tcp_filter] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;

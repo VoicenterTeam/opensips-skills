@@ -43,7 +43,7 @@ Whether to aggregate in a single notify body all registration presentities. Usef
 
 ```opensips
 ...
-modparam("presence\_reginfo", "aggregate\_presentities", 1)
+modparam("presence_reginfo", "aggregate_presentities", 1)
 ...
 ```
 ### `default_expires` (integer)
@@ -56,7 +56,7 @@ The default expires value used when missing from SUBSCRIBE message (in seconds).
 
 ```opensips
 ...
-modparam("presence\_reginfo", "default\_expires", 3600)
+modparam("presence_reginfo", "default_expires", 3600)
 ...
 ```
 
@@ -68,7 +68,7 @@ The default expires value used when missing from SUBSCRIBE message (in seconds).
 
 ```opensips
         ...
-        modparam("presence\_reginfo", "default\_expires", 3600)
+        modparam("presence_reginfo", "default_expires", 3600)
         ...
 ```
 ### Set `aggregate_presentities` parameter
@@ -77,7 +77,7 @@ Whether to aggregate in a single notify body all registration presentities. Usef
 
 ```opensips
 					...
-					modparam("presence\_reginfo", "aggregate\_presentities", 1)
+					modparam("presence_reginfo", "aggregate_presentities", 1)
 					...
 					
 ```

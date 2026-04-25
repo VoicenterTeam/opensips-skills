@@ -66,7 +66,7 @@ Only relevant when no_concurrent_connects is enabled. By setting this parameter,
 **Example.** 1800.
 
 ```opensips
-modparam("rest\_client", "curl\_conn\_lifetime", 1800)
+modparam("rest_client", "curl_conn_lifetime", 1800)
 ```
 ### `curl_http_version` (integer)
 
@@ -150,7 +150,7 @@ Set to true in order to only allow one OpenSIPS worker to connect to a given URL
 **Example.** true.
 
 ```opensips
-modparam("rest\_client", "no\_concurrent\_connects", true)
+modparam("rest_client", "no_concurrent_connects", true)
 ```
 ### `ssl_capath` (string)
 
@@ -202,8 +202,8 @@ Append txt to the HTTP headers of the subsequent request. Multiple headers can b
 ...
 # Example of querying a REST service requiring additional headers
 
-rest\_append\_hf("Authorization: Bearer mF\_9.B5f-4.1JqM");
-$var(rc) = rest\_get("http://getcredit.org/?account=$fU", $var(credit));
+rest_append_hf("Authorization: Bearer mF_9.B5f-4.1JqM");
+$var(rc) = rest_get("http://getcredit.org/?account=$fU", $var(credit));
 ...		
 
 ```
@@ -235,19 +235,19 @@ Perform a blocking HTTP GET on the given url and return a representation of the 
 ```opensips
 ...
 # Example of querying a REST service to get the credit of an account
-$var(rc) = rest\_get("https://getcredit.org/?account=$fU",
+$var(rc) = rest_get("https://getcredit.org/?account=$fU",
                     $var(credit),
                     $var(ct),
                     $var(rcode));
 if ($var(rc) < 0) {
-	xlog("rest\_get() failed with $var(rc), acc=$fU\\n");
-	send\_reply(500, "Server Internal Error");
+	xlog("rest_get() failed with $var(rc), acc=$fU\\n");
+	send_reply(500, "Server Internal Error");
 	exit;
 }
 
 if ($var(rcode) != 200) {
-	xlog("L\_INFO", "rest\_get() rcode=$var(rcode), acc=$fU\\n");
-	send\_reply(403, "Forbidden");
+	xlog("L_INFO", "rest_get() rcode=$var(rcode), acc=$fU\\n");
+	send_reply(403, "Forbidden");
 	exit;
 }
 ...
@@ -267,8 +267,8 @@ Force a specific TLS domain to be used at most once, during the next GET/POST/PU
 
 ```opensips
 ...
-rest\_init\_client\_tls("dom1");
-if (!rest\_get("https://example.com"))
+rest_init_client_tls("dom1");
+if (!rest_get("https://example.com"))
     xlog("query failed\\n");
 ...
 ```
@@ -302,17 +302,17 @@ Perform a blocking HTTP POST on the given url.
 ```opensips
 ...
 # Creating a resource using a RESTful service with an HTTP POST request
-$var(rc) = rest\_post("https://myserver.org/register\_user",
+$var(rc) = rest_post("https://myserver.org/register_user",
                      $fU, , $var(body), $var(ct), $var(rcode));
 if ($var(rc) < 0) {
-	xlog("rest\_post() failed with $var(rc), user=$fU\\n");
-	send\_reply(500, "Server Internal Error 1");
+	xlog("rest_post() failed with $var(rc), user=$fU\\n");
+	send_reply(500, "Server Internal Error 1");
 	exit;
 }
 
 if ($var(rcode) != 200) {
-	xlog("rest\_post() rcode=$var(rcode), user=$fU\\n");
-	send\_reply(500, "Server Internal Error 2");
+	xlog("rest_post() rcode=$var(rcode), user=$fU\\n");
+	send_reply(500, "Server Internal Error 2");
 	exit;
 }
 ...
@@ -351,17 +351,17 @@ Perform a blocking HTTP PUT on the given url.
 ```opensips
 ...
 # Creating/Updating a resource using a RESTful service with an HTTP PUT request
-$var(rc) = rest\_put("https://myserver.org/users/$fU",
+$var(rc) = rest_put("https://myserver.org/users/$fU",
                     $var(userinfo), , $var(body), $var(ct), $var(rcode));
 if ($var(rc) < 0) {
-	xlog("rest\_put() failed with $var(rc), user=$fU\\n");
-	send\_reply(500, "Server Internal Error 3");
+	xlog("rest_put() failed with $var(rc), user=$fU\\n");
+	send_reply(500, "Server Internal Error 3");
 	exit;
 }
 
 if ($var(rcode) != 200) {
-	xlog("rest\_put() rcode=$var(rcode), user=$fU\\n");
-	send\_reply(500, "Server Internal Error 4");
+	xlog("rest_put() rcode=$var(rcode), user=$fU\\n");
+	send_reply(500, "Server Internal Error 4");
 	exit;
 }
 ...

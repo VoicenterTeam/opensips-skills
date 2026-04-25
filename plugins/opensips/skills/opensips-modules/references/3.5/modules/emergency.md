@@ -17,7 +17,7 @@ Reference for the OpenSIPs 3.5 emergency module. Read this file when configuring
 
 ## Overview
 
-The emergency module provides emergency call treatment for OpenSIPS, following the architecture i2 specification of the American entity NENA. (National Emergency Number Association). The NENA solution routes the emergency call to a closer gateway (ESGW) and this forward the call to a PSAP(call center responsible for answering emergency calls) that serves the area of ​​the caller, so this must consider the handling and transport of caller location information in the SIP protocol. To attend this new need the NENA solution consists of several servers: to determine the location (LIS), to determine the area of emergency treatment depending on location (VPC), validate location stored (VDB), among others. Along with these elements have the SIP Proxy that interface with these servers to route the call. The OpenSIPS can do the functions of these SIP Proxy through this emergency module, may perform the function of a Call Server, Redirect Server and Routing Proxy, depending on the proposed scenario:
+The emergency module provides emergency call treatment for OpenSIPS, following the architecture i2 specification of the American entity NENA. (National Emergency Number Association). The NENA solution routes the emergency call to a closer gateway (ESGW) and this forward the call to a PSAP(call center responsible for answering emergency calls) that serves the area of the caller, so this must consider the handling and transport of caller location information in the SIP protocol. To attend this new need the NENA solution consists of several servers: to determine the location (LIS), to determine the area of emergency treatment depending on location (VPC), validate location stored (VDB), among others. Along with these elements have the SIP Proxy that interface with these servers to route the call. The OpenSIPS can do the functions of these SIP Proxy through this emergency module, may perform the function of a Call Server, Redirect Server and Routing Proxy, depending on the proposed scenario:
 
 *   scenario I: The VSP(Voip Serve Provide) retains control over the processing of emergency calls. The VSP’s Call Server implements the v2 interface that queries the VPC for routing information, with this information selects the proper ESGW, if normal routing fails routes calls via the PSTN using the contingency number(LRO).
     
@@ -66,34 +66,34 @@ modparam("emergency","contingency_hostname",“176.34,29.102:5060”)
 
 The name of the db table that stores the nodes information of organization involved in emergency calls.
 
-*Default value is “emergency\_service\_provider”.*
+*Default value is “emergency_service_provider”.*
 
-**Example.** emergency\_service\_provider.
+**Example.** emergency_service_provider.
 
 ```opensips
-modparam("emergency", "db\_table\_provider", "emergency\_service\_provider")
+modparam("emergency", "db_table_provider", "emergency_service_provider")
 ```
 ### `db_table_report` (string)
 
 The name of the db table that stores the emergency call report.
 
-*Default value is “emergency\_report”.*
+*Default value is “emergency_report”.*
 
-**Example.** emergency\_report.
+**Example.** emergency_report.
 
 ```opensips
-modparam("emergency", "db\_table\_report", "emergency\_report")
+modparam("emergency", "db_table_report", "emergency_report")
 ```
 ### `db_table_routing` (string)
 
 The name of the db table storing routing information to emergency calls.
 
-*Default value is “emergency\_routing”.*
+*Default value is “emergency_routing”.*
 
-**Example.** emergency\_routing.
+**Example.** emergency_routing.
 
 ```opensips
-modparam("emergency", "db\_table\_routing", "emergency\_routing")
+modparam("emergency", "db_table_routing", "emergency_routing")
 ```
 ### `db_url` (string)
 
@@ -104,7 +104,7 @@ The database url must be specified.
 **Example.** mysql://opensips:opensipsrw@localhost/opensips”.
 
 ```opensips
-modparam("emergency", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips”)
+modparam("emergency", "db_url", "mysql://opensips:opensipsrw@localhost/opensips”)
 ```
 ### `emergency_call_server` (string)
 
@@ -155,7 +155,7 @@ This parameter define what role the opensips will take to treat emergency call:
 **Example.** 0.
 
 ```opensips
-modparam("emergency", "proxy\_role", 0))
+modparam("emergency", "proxy_role", 0))
 ```
 ### `timer_interval` (integer)
 
@@ -198,12 +198,12 @@ Checks whether the incoming call is an emergency call, case it is treats, and ro
 ...
 # Example of treat of emergency call
 
-��� if (emergency\_call()){
+ if (emergency_call()){
 
-��� ��� xlog("emergency call\\n");
-��� ��� t\_on_failure("emergency\_call");
-��      t\_relay();
-��      exit;
+  xlog("emergency call\\n");
+  t_on_failure("emergency_call");
+      t_relay();
+      exit;
 
   	}
 ...
@@ -226,10 +226,10 @@ This function is used when trying to route the emergency call to the destination
 # Example od treat of contingency in emergency call
 
     if (failure()) {
-��� ��� if (!t\_relay()) {
-��� ��� �� send\_reply(500,"Internal Error");
-��� ��� };
-��� ��� exit;
+  if (!t_relay()) {
+   send_reply(500,"Internal Error");
+  };
+  exit;
     }
 ...
 ```
@@ -240,70 +240,70 @@ This function is used when trying to route the emergency call to the destination
 
 ```opensips
 ...
-modparam("emergency", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips”)
+modparam("emergency", "db_url", "mysql://opensips:opensipsrw@localhost/opensips”)
 ...
 ```
 ### Setting the `db_table_routing` parameter
 
 ```opensips
 ...
-modparam("emergency", "db\_table\_routing", "emergency\_routing")
+modparam("emergency", "db_table_routing", "emergency_routing")
 ...
 ```
 ### Setting the `db_table_report` parameter
 
 ```opensips
 ...
-modparam("emergency", "db\_table\_report", "emergency\_report")
+modparam("emergency", "db_table_report", "emergency_report")
 ...
 ```
 ### Setting the `db_table_provider` parameter
 
 ```opensips
 ...
-modparam("emergency", "db\_table\_provider", "emergency\_service\_provider")
+modparam("emergency", "db_table_provider", "emergency_service_provider")
 ...
 ```
 ### Setting the `proxy_role` parameter
 
 ```opensips
 ...
-modparam("emergency", "proxy\_role", 0))
+modparam("emergency", "proxy_role", 0))
 ...
 ```
 ### Setting the `url_vpc` parameter
 
 ```opensips
 ...
-modparam("emergency", "url\_vpc", “192.168.0.103:5060”)
+modparam("emergency", "url_vpc", “192.168.0.103:5060”)
 ...
 ```
 ### Setting the `emergency_codes` parameter
 
 ```opensips
 ...
-modparam("emergency", "emergency\_codes", “911-us emegency code”)
+modparam("emergency", "emergency_codes", “911-us emegency code”)
 ...
 ```
 ### Setting the `timer_interval` parameter
 
 ```opensips
 ...
-modparam("emergency","timer\_interval",20)
+modparam("emergency","timer_interval",20)
 ...
 ```
 ### Setting the `contingency_hostname` parameter
 
 ```opensips
 ...
-modparam("emergency","contingency\_hostname",“176.34,29.102:5060”)
+modparam("emergency","contingency_hostname",“176.34,29.102:5060”)
 ...
 ```
 ### Setting the `emergency_call_server` parameter
 
 ```opensips
 ...
-modparam("emergency","emergency\_call\_server",“124.78.29.123:5060”)
+modparam("emergency","emergency_call_server",“124.78.29.123:5060”)
 ...
 ```
 ### `emergency_call()` usage
@@ -312,12 +312,12 @@ modparam("emergency","emergency\_call\_server",“124.78.29.123:5060”)
 ...
 # Example of treat of emergency call
 
-��� if (emergency\_call()){
+ if (emergency_call()){
 
-��� ��� xlog("emergency call\\n");
-��� ��� t\_on\_failure("emergency\_call");
-��      t\_relay();
-��      exit;
+  xlog("emergency call\\n");
+  t_on_failure("emergency_call");
+      t_relay();
+      exit;
 
 	}
 ...
@@ -329,10 +329,10 @@ modparam("emergency","emergency\_call\_server",“124.78.29.123:5060”)
 # Example od treat of contingency in emergency call
 
     if (failure()) {
-��� ��� if (!t\_relay()) {
-��� ��� �� send\_reply(500,"Internal Error");
-��� ��� };
-��� ��� exit;
+  if (!t_relay()) {
+   send_reply(500,"Internal Error");
+  };
+  exit;
     }
 ...
 ```

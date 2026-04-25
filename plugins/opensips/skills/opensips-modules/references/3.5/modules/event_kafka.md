@@ -67,9 +67,9 @@ Publishes a message to a Kafka broker (or cluster). As the actual send operation
 ```opensips
 ...
 $var(msg) = "my msg content";
-kafka\_publish("k1", $var(kmsg), $ci, "kafka\_report");
+kafka_publish("k1", $var(kmsg), $ci, "kafka_report");
 ...
-route[kafka\_report] {
+route[kafka_report] {
 	xlog("Delivery status: $avp(kafka_status) for broker: $avp(kafka_id)\n");
 }
 ...

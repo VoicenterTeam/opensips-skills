@@ -33,9 +33,9 @@ An OpenSIPS instance can dynamically learn all the nodes in the cluster if datab
 
 The clusterer module also keeps track of the state of the nodes in terms of data synchronization for the functionalities (or "capabilities") implemented on top by other modules. Some capabilities require a full data sync(at OpenSIPS startup or at runtime via MI) from a valid "donor" node in the cluster that has the full data set. Furthermore, a capability can query the clusterer module in order to partition some distributed logic only over the synchronized nodes in the cluster.
 
-Each node in the cluster starts with an empty dataset and tries to find a suitable node to pull data from. In order to help "bootstrap" the cluster, a "seed" node should be defined. This is done by setting the value _seed_ for the **flags** column in the clusterer table(or the property with the same name in the _my\_node\_info_ parameter). The seed node will simply fall back to a "synced" state after a configurable interval( [seed\_fallback\_interval](#param_seed_fallback_interval "1.4.11.�seed_fallback_interval") parameter). Note that this mechanism is required only for capabilities that synchronize data at startup, so check the corresponding modules documentation.
+Each node in the cluster starts with an empty dataset and tries to find a suitable node to pull data from. In order to help "bootstrap" the cluster, a "seed" node should be defined. This is done by setting the value _seed_ for the **flags** column in the clusterer table(or the property with the same name in the _my_node_info_ parameter). The seed node will simply fall back to a "synced" state after a configurable interval( [seed_fallback_interval](#param_seed_fallback_interval "1.4.11.seed_fallback_interval") parameter). Note that this mechanism is required only for capabilities that synchronize data at startup, so check the corresponding modules documentation.
 
-The clusterer module transparently exposes the _sip\_addr_ column from the clusterer table(or the property with the same name in the _my\_node\_info_ parameter) to the modules on top so check the corresponding modules documentation for the use of this node related information.
+The clusterer module transparently exposes the _sip_addr_ column from the clusterer table(or the property with the same name in the _my_node_info_ parameter) to the modules on top so check the corresponding modules documentation for the use of this node related information.
 
 ## Dependencies
 
@@ -65,7 +65,7 @@ modparam("clusterer", "cluster_id_col", "cluster_id")
 ```
 ### `db_mode` (integer)
 
-Specifies whether the node information for the local instance, as well as other instances in the cluster, should be loaded from the database or configured in the script(see [my\_node\_info](#param_my_node_info "1.4.6.�my_node_info") and [neighbor\_node\_info](#param_neighbor_node_info "1.4.7.�neighbor_node_info")). A value of “0” means that DB is not used and the cluster topology in terms of node information will be discovered dynamically at runtime.
+Specifies whether the node information for the local instance, as well as other instances in the cluster, should be loaded from the database or configured in the script(see [my_node_info](#param_my_node_info "1.4.6.my_node_info") and [neighbor_node_info](#param_neighbor_node_info "1.4.7.neighbor_node_info")). A value of “0” means that DB is not used and the cluster topology in terms of node information will be discovered dynamically at runtime.
 
 If DB mode is enabled, only the nodes defined in the database will be accepted by this instance.
 
@@ -80,7 +80,7 @@ If DB mode is enabled, only the nodes defined in the database will be accepted b
 
 ```opensips
 ...
-modparam("clusterer", "db\_mode", 0)
+modparam("clusterer", "db_mode", 0)
 ...
 ```
 ### `db_table` (string)
@@ -93,7 +93,7 @@ The name of the table storing the clustering information.
 
 ```opensips
 ...
-modparam("clusterer", "db\_table", "clusterer")
+modparam("clusterer", "db_table", "clusterer")
 ...
 ```
 ### `db_url` (string)
@@ -106,7 +106,7 @@ The database url.
 
 ```opensips
 ...
-modparam("clusterer", "db\_url",
+modparam("clusterer", "db_url",
 	"mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
@@ -135,7 +135,7 @@ Enables the dispatching of jobs(processing replicated data packets) from the rec
 **Example.** 0.
 
 ```opensips
-modparam("clusterer", "dispatch\_jobs", 0)
+modparam("clusterer", "dispatch_jobs", 0)
 ```
 ### `enable_rerouting` (integer)
 
@@ -181,11 +181,11 @@ The name of the column storing an id for the table rows.
 **Example.** id.
 
 ```opensips
-modparam("clusterer", "id\_col", "id")
+modparam("clusterer", "id_col", "id")
 ```
 ### `my_node_id` (integer)
 
-The id of the local instance. This parameter must be equal to one of the _node\_id_ fields in the database.
+The id of the local instance. This parameter must be equal to one of the _node_id_ fields in the database.
 
 *Default value is No default value. This parameter must be explicitly set to a value greater than zero..*
 
@@ -195,7 +195,7 @@ The id of the local instance. This parameter must be equal to one of the _node\_
 
 ```opensips
 ...
-modparam("clusterer", "my\_node\_id", 1)
+modparam("clusterer", "my_node_id", 1)
 ...
 ```
 ### `my_node_info` (string)
@@ -295,7 +295,7 @@ Only relevant for "seed" nodes. The time, in seconds, to wait for a suitable don
 **Example.** 10.
 
 ```opensips
-modparam("clusterer", "seed\_fallback\_interval", 10)
+modparam("clusterer", "seed_fallback_interval", 10)
 ```
 ### `sharing_tag` (string)
 
@@ -305,15 +305,15 @@ Note that other tags may be dynamically learned during runtime via clustering co
 
 *Default value is none.*
 
-**Notes:** The format for this value is “tag\_name / cluster\_id = active/backup”.
+**Notes:** The format for this value is “tag_name / cluster_id = active/backup”.
 Multiple definitions of this parameter are allowed.
 
 **Example.** Set the `sharing_tag` parameter.
 
 ```opensips
 ...
-modparam("clusterer", "sharing\_tag", "vip1/2=active")
-modparam("clusterer", "sharing\_tag", "node/10=backup")
+modparam("clusterer", "sharing_tag", "vip1/2=active")
+modparam("clusterer", "sharing_tag", "node/10=backup")
 ...
 ```
 ### `sip_addr_col` (string)
@@ -349,7 +349,7 @@ The maximum size of the BIN packets sent while doing data synchronization. This 
 **Example.** 32765.
 
 ```opensips
-modparam("clusterer", "sync\_packet\_size", 32765)
+modparam("clusterer", "sync_packet_size", 32765)
 ```
 ### `sync_timeout` (integer)
 
@@ -360,7 +360,7 @@ The inteval, in seconds, since the last sync data packet received after which to
 **Example.** 5.
 
 ```opensips
-modparam("clusterer", "sync\_timeout", 5)
+modparam("clusterer", "sync_timeout", 5)
 ```
 ### `url_col` (string)
 

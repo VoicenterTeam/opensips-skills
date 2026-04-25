@@ -119,13 +119,13 @@ This function logs the timer with the given ID. The following data are logged:
     
 *   _Last sum_ is the accumulated duration in the current logging interval (i.e. for the last “granularity” calls).
     
-*   _Last min_ is the minimum duration between start/log\_timer calls during the last interval.
+*   _Last min_ is the minimum duration between start/log_timer calls during the last interval.
     
 *   _Last max_ - maximum duration.
     
-*   _Last average_ is the average duration between bm\_start\_timer() and bm\_log\_timer() since the last logging.
+*   _Last average_ is the average duration between bm_start_timer() and bm_log_timer() since the last logging.
     
-*   _Global msgs_ number of calls to log\_timer.
+*   _Global msgs_ number of calls to log_timer.
     
 *   _Global sum_ total duration in microseconds.
     
@@ -146,12 +146,12 @@ This function logs the timer with the given ID. The following data are logged:
 **Example.** bm_log_timer usage.
 
 ```opensips
-bm\_log\_timer("test");
+bm_log_timer("test");
 ```
 
 ### `bm_start_timer(name)`
 
-Start timer “name”. A later call to “bm\_log\_timer()” logs this timer..
+Start timer “name”. A later call to “bm_log_timer()” logs this timer..
 
 **Parameters:**
 
@@ -164,7 +164,7 @@ Start timer “name”. A later call to “bm\_log\_timer()” logs this timer..
 **Example.** bm_start_timer usage.
 
 ```opensips
-bm\_start\_timer("test");
+bm_start_timer("test");
 ```
 
 ## Exported Pseudo-Variables

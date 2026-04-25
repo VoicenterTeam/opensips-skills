@@ -19,15 +19,15 @@ Reference for the OpenSIPs 3.6 gflags module. Read this file when configuring or
 
 gflags module (global flags) keeps a bitmap of flags in shared memory and may be used to change behaviour of server based on value of the flags. Example:
 
-if (is\_gflag(1)) {
-	t\_relay("udp:10.0.0.1:5060");
+if (is_gflag(1)) {
+	t_relay("udp:10.0.0.1:5060");
 } else {
-	t\_relay("udp:10.0.0.2:5060");
+	t_relay("udp:10.0.0.2:5060");
 }
 	
 The benefit of this module is the value of the switch flags can be manipulated by external applications such as web interface or command line tools. The size of bitmap is 32.
 
-The module exports external commands that can be used to change the global flags via Management Interface. The MI commands are: “set\_gflag”, “reset\_gflag” and “is\_gflag”.
+The module exports external commands that can be used to change the global flags via Management Interface. The MI commands are: “set_gflag”, “reset_gflag” and “is_gflag”.
 
 ## Dependencies
 
@@ -70,7 +70,7 @@ Check if bit at the position “flag” in global flags is set.
 
 ```opensips
 ...
-if(is\_gflag(4))
+if(is_gflag(4))
 {
 	log("global flag 4 is set\\n");
 } else {
@@ -94,7 +94,7 @@ Reset the bit at the position “flag” in global flags.
 
 ```opensips
 ...
-reset\_gflag(4);
+reset_gflag(4);
 ...
 ```
 
@@ -113,7 +113,7 @@ Set the bit at the position “flag” in global flags.
 
 ```opensips
 ...
-set\_gflag(4);
+set_gflag(4);
 ...
 ```
 
@@ -128,7 +128,7 @@ Return the bitmap with all flags. The function gets no parameters and returns th
 **Example.** get_gflags usage
 
 ```bash
-$ opensips-cli -x mi get\_gflags
+$ opensips-cli -x mi get_gflags
 0x3039
 12345
 ```
@@ -146,19 +146,19 @@ Returns true if the all the flags from the bitmask are set. The parameter value 
 **Example.** is_gflag usage
 
 ```bash
-$ opensips-cli -x mi set\_gflag 1024
-$ opensips-cli -x mi is\_gflag 1024
+$ opensips-cli -x mi set_gflag 1024
+$ opensips-cli -x mi is_gflag 1024
 TRUE
-$ opensips-cli -x mi is\_gflag 1025
+$ opensips-cli -x mi is_gflag 1025
 TRUE
-$ opensips-cli -x mi is\_gflag 1023
+$ opensips-cli -x mi is_gflag 1023
 FALSE
-$ opensips-cli -x mi set\_gflag 0x10
-$ opensips-cli -x mi is\_gflag 1023
+$ opensips-cli -x mi set_gflag 0x10
+$ opensips-cli -x mi is_gflag 1023
 TRUE
-$ opensips-cli -x mi is\_gflag 1007
+$ opensips-cli -x mi is_gflag 1007
 FALSE
-$ opensips-cli -x mi is\_gflag 16
+$ opensips-cli -x mi is_gflag 16
 TRUE
 ```
 
@@ -173,8 +173,8 @@ Reset the value of some flags to 0. The parameter value must be a bitmask in dec
 **Example.** reset_gflag usage
 
 ```bash
-$ opensips-cli -x mi reset\_gflag 1
-$ opensips-cli -x mi reset\_gflag 0x3
+$ opensips-cli -x mi reset_gflag 1
+$ opensips-cli -x mi reset_gflag 0x3
 ```
 
 ### `set_gflag`
@@ -188,8 +188,8 @@ Set the value of some flags (specified by bitmask) to 1. The parameter value mus
 **Example.** set_gflag usage
 
 ```bash
-$ opensips-cli -x mi set\_gflag 1
-$ opensips-cli -x mi set\_gflag 0x3
+$ opensips-cli -x mi set_gflag 1
+$ opensips-cli -x mi set_gflag 0x3
 ```
 
 ## Configuration Examples

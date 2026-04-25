@@ -21,7 +21,7 @@ The userblacklist module allows OpenSIPS to handle blacklists on a per user basi
 
 An additional functionality that this module provides is the ability to handle global blacklists. This lists are loaded on startup into memory, thus providing a better performance then in the userblacklist case. This global blacklists are useful to only allow calls to certain international destinations, i.e. block all not whitelisted numbers. They could also used to prevent the blacklisting of important numbers, as whitelisting is supported too. This is useful for example to prevent the customer from blocking emergency call number or service hotlines.
 
-The module exports two functions, _check\_blacklist_ and _check\_user\_blacklist_ for usage in the config file. Furthermore its provide a FIFO function to reload the global blacklist cache.
+The module exports two functions, _check_blacklist_ and _check_user_blacklist_ for usage in the config file. Furthermore its provide a FIFO function to reload the global blacklist cache.
 
 ## Dependencies
 
@@ -45,7 +45,7 @@ Name of the table where the user blacklist data is stored.
 
 ```opensips
 ...
-modparam("userblacklist", "db\_table", "userblacklist")
+modparam("userblacklist", "db_table", "userblacklist")
 ...
 ```
 ### `db_url` (string)
@@ -58,7 +58,7 @@ Url to the database containing the routing data.
 
 ```opensips
 ...
-modparam("userblacklist", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("userblacklist", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### `use_domain` (integer)
@@ -71,7 +71,7 @@ If set to non-zero value, the domain column in the userblacklist is used.
 
 ```opensips
 ...
-modparam("userblacklist", "use\_domain", 0)
+modparam("userblacklist", "use_domain", 0)
 ...
 ```
 
@@ -94,8 +94,8 @@ Finds the longest prefix that matches the request URI for the given table. If a 
 
 ```opensips
 ...
-if (!check\_blacklist("global\_blacklist")))
-	sl\_send\_reply(403, "Forbidden");
+if (!check_blacklist("global_blacklist")))
+	sl_send_reply(403, "Forbidden");
 	exit;
 }
 ...
@@ -121,8 +121,8 @@ Finds the longest prefix that matches the request URI user (or the number parame
 
 ```opensips
 ...
-if (!check\_user\_blacklist("user", "domain.com"))
-	sl\_send\_reply(403, "Forbidden");
+if (!check_user_blacklist("user", "domain.com"))
+	sl_send_reply(403, "Forbidden");
 	exit;
 }
 ...
@@ -148,7 +148,7 @@ Demonstrates setting the `db_url` parameter.
 
 ```opensips
 ...
-modparam("userblacklist", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("userblacklist", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `db_table` parameter
@@ -157,7 +157,7 @@ Demonstrates setting the `db_table` parameter.
 
 ```opensips
 ...
-modparam("userblacklist", "db\_table", "userblacklist")
+modparam("userblacklist", "db_table", "userblacklist")
 ...
 ```
 ### Set `use_domain` parameter
@@ -166,7 +166,7 @@ Demonstrates setting the `use_domain` parameter.
 
 ```opensips
 ...
-modparam("userblacklist", "use\_domain", 0)
+modparam("userblacklist", "use_domain", 0)
 ...
 ```
 ### `check_user_blacklist` usage
@@ -175,8 +175,8 @@ Demonstrates usage of the `check_user_blacklist` function.
 
 ```opensips
 ...
-if (!check\_user\_blacklist("user", "domain.com"))
-	sl\_send\_reply(403, "Forbidden");
+if (!check_user_blacklist("user", "domain.com"))
+	sl_send_reply(403, "Forbidden");
 	exit;
 }
 ...
@@ -187,8 +187,8 @@ Demonstrates usage of the `check_blacklist` function.
 
 ```opensips
 ...
-if (!check\_blacklist("global\_blacklist")))
-	sl\_send\_reply(403, "Forbidden");
+if (!check_blacklist("global_blacklist")))
+	sl_send_reply(403, "Forbidden");
 	exit;
 }
 ...
@@ -199,7 +199,7 @@ Demonstrates usage of the `reload_blacklists` MI function.
 
 ```opensips
 ...
-opensips-cli -x mi reload\_blacklist
+opensips-cli -x mi reload_blacklist
 ...
 ```
 ### Example database content - globalblacklist table
@@ -240,4 +240,4 @@ Demonstrates example database content for the userblacklist table.
 ...
 ```
 
-This table will setup user specific blacklists for certain usernames. For example for user “49721123456788” the prefix “1234” will be not allowed, but the number “123456788” is allowed. Additionally a domain could be specified that is used for username matching if the “use\_domain” parameter is set.
+This table will setup user specific blacklists for certain usernames. For example for user “49721123456788” the prefix “1234” will be not allowed, but the number “123456788” is allowed. Additionally a domain could be specified that is used for username matching if the “use_domain” parameter is set.

@@ -72,7 +72,7 @@ If set, this parameter specifies the longest time (in seconds) that a program is
 
 *Default value is 0.*
 
-**Notes:** NOTE: due to internal limitations, a SIGTERM will actually be sent to **all** job pids once the "time\_to\_kill" expiration timeout hits. On a standard system, this should have no side-effects, as pids are monotonically increasing in a slow manner, and OpenSIPS should run under the "opensips" user, thus rendering it unable to terminate non-child processes. If this is not the case on your system, do not use the OpenSIPS "time_to_kill" feature -- rather implement it within your external app!
+**Notes:** NOTE: due to internal limitations, a SIGTERM will actually be sent to **all** job pids once the "time_to_kill" expiration timeout hits. On a standard system, this should have no side-effects, as pids are monotonically increasing in a slow manner, and OpenSIPS should run under the "opensips" user, thus rendering it unable to terminate non-child processes. If this is not the case on your system, do not use the OpenSIPS "time_to_kill" feature -- rather implement it within your external app!
 
 **Example.** 20.
 
@@ -100,7 +100,7 @@ Meaning of the parameters is as follows:
     
 *   _stderr (var, optional)_ - optional output variable which will hold the standard error of the process
     
-*   _envavp (var, optional)_ - optional AVP which holds the values for the environment variables to be passed for the command. The names of the environment variables will be "OSIPS\_EXEC\_#", where "#" starts from 0. For example, if we push two values (e.g. "b" and "a") into an AVP variable, which acts like a stack, OSIPS\_EXEC\_0 will hold "a", while OSIPS\_EXEC\_1 will hold "b".
+*   _envavp (var, optional)_ - optional AVP which holds the values for the environment variables to be passed for the command. The names of the environment variables will be "OSIPS_EXEC_#", where "#" starts from 0. For example, if we push two values (e.g. "b" and "a") into an AVP variable, which acts like a stack, OSIPS_EXEC_0 will hold "a", while OSIPS_EXEC_1 will hold "b".
     
 NOTE: If expecting a multi-line formatted output, you should use $avp variables for the "stdout" and "stderr" parameters, to avoid only receiving the last lines of each stream.
 
@@ -111,7 +111,7 @@ WARNING: "stdin"/"stdout"/"stderr" parameters are not designed for large amounts
 **Parameters:**
 
 - `command` *(string, required)* — command to be executed
-- `envavp` *(var, optional)* — optional AVP which holds the values for the environment variables to be passed for the command. The names of the environment variables will be "OSIPS\_EXEC\_#", where "#" starts from 0. For example, if we push two values (e.g. "b" and "a") into an AVP variable, which acts like a stack, OSIPS\_EXEC\_0 will hold "a", while OSIPS\_EXEC\_1 will hold "b".
+- `envavp` *(var, optional)* — optional AVP which holds the values for the environment variables to be passed for the command. The names of the environment variables will be "OSIPS_EXEC_#", where "#" starts from 0. For example, if we push two values (e.g. "b" and "a") into an AVP variable, which acts like a stack, OSIPS_EXEC_0 will hold "a", while OSIPS_EXEC_1 will hold "b".
 - `stderr` *(var, optional)* — optional output variable which will hold the standard error of the process
 - `stdin` *(string, optional)* — string to be passed to the standard input of the command
 - `stdout` *(var, optional)* — optional output variable which will hold the standard output of the process

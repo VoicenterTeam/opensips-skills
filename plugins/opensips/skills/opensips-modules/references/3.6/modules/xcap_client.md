@@ -48,7 +48,7 @@ To disable it set this parameter to 0.
 **Example.** 0.
 
 ```opensips
-modparam("xcap\_client", "periodical\_query", 0)
+modparam("xcap_client", "periodical_query", 0)
 ```
 ### `query_period` (integer)
 
@@ -61,7 +61,7 @@ To disable it set this parameter to 0.
 **Example.** 50.
 
 ```opensips
-modparam("xcap\_client", "query\_period", 50)
+modparam("xcap_client", "query_period", 50)
 ```
 
 ## Exported MI Functions

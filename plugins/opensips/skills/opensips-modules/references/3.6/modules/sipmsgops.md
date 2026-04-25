@@ -775,7 +775,7 @@ if(remove_hf("User-Agent"))
 
 ### `remove_hf_glob(hname_pattern)`
 
-Remove from message all headers matching the “hname\_pattern” glob pattern.
+Remove from message all headers matching the “hname_pattern” glob pattern.
 
 **Parameters:**
 
@@ -795,7 +795,7 @@ remove_hf_glob("X-Billing\*");
 
 ### `remove_hf_re(hname_expr)`
 
-Remove from message all headers matching the “hname\_expr” POSIX regular expression.
+Remove from message all headers matching the “hname_expr” POSIX regular expression.
 
 **Parameters:**
 

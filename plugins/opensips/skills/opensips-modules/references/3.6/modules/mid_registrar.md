@@ -430,7 +430,7 @@ The minimally required list of RFC 8599 parameters (custom ones are accepted as 
 **Example.** pn-provider, pn-prid.
 
 ```opensips
-modparam("mid\_registrar", "pn\_ct\_match\_params", "pn-provider, pn-prid")
+modparam("mid_registrar", "pn_ct_match_params", "pn-provider, pn-prid")
 ```
 ### `pn_enable` (boolean)
 
@@ -441,7 +441,7 @@ Enable SIP Push Notification support (RFC 8599). If enabled, Contact header fiel
 **Example.** true.
 
 ```opensips
-modparam("mid\_registrar", "pn\_enable", true)
+modparam("mid_registrar", "pn_enable", true)
 ```
 ### `pn_enable_purr` (boolean)
 
@@ -449,7 +449,7 @@ Enable the SIP Push Notification mechanism for long-lived dialogs. If enabled, t
 
 During dialog setup, each UA may include, in its Contact header, the PURR value returned by OpenSIPS during registration. By including the PURR (e.g. ";pn-purr=XXX"), an agent indicates that it expects to be first awoken by a PN before being able to receive a mid-dialog request sent by the other party.
 
-When enabling this parameter, make sure to also add logic for [pn_process_purr()](#afunc_pn_process_purr "1.7.1.� pn_process_purr(domain)").
+When enabling this parameter, make sure to also add logic for [pn_process_purr()](#afunc_pn_process_purr "1.7.1. pn_process_purr(domain)").
 
 *Default value is false.*
 
@@ -467,7 +467,7 @@ For devices capable of waking up and refreshing their binding on their own (sign
 **Example.** 140.
 
 ```opensips
-modparam("mid\_registrar", "pn\_pnsreg\_interval", 140)
+modparam("mid_registrar", "pn_pnsreg_interval", 140)
 ```
 ### `pn_providers` (string)
 
@@ -484,11 +484,11 @@ A list of supported Push Notification providers. While only three possible value
 **Example.** apns, fcm, webpush.
 
 ```opensips
-modparam("mid\_registrar", "pn\_providers", "apns, fcm, webpush")
+modparam("mid_registrar", "pn_providers", "apns, fcm, webpush")
 ```
 ### `pn_refresh_timeout` (integer)
 
-This timeout starts counting following a _mid_registrar_lookup()_ or a [pn_process_purr()](#afunc_pn_process_purr "1.7.1.� pn_process_purr(domain)") which triggers a Push Notification. The value represents the maximum allowed sum of the duration required for the Push Notification to be sent and the duration required for the corresponding re-registration from the device to arrive.
+This timeout starts counting following a _mid_registrar_lookup()_ or a [pn_process_purr()](#afunc_pn_process_purr "1.7.1. pn_process_purr(domain)") which triggers a Push Notification. The value represents the maximum allowed sum of the duration required for the Push Notification to be sent and the duration required for the corresponding re-registration from the device to arrive.
 
 Once this timeout is exceeded for an initial or a mid-dialog request, any further re-registrations which match the pending Push Notification will no longer cause the desired effects. For example:
 
@@ -523,7 +523,7 @@ If a binding refresh REGISTER request from a given SIP endpoint does not arrive 
 **Example.** 130.
 
 ```opensips
-modparam("mid\_registrar", "pn\_trigger\_interval", 130)
+modparam("mid_registrar", "pn_trigger_interval", 130)
 ```
 ### `realm_prefix` (string)
 
@@ -631,14 +631,14 @@ Depending on the current working [mode](#param_mode "1.5.1. mode (integer)"), th
 ```opensips
 ...
 	# initial invites from the main registrar - need to look them up!
-	if (is\_method("INVITE") and $si == "10.0.0.3" and $sp == 5070) {
-		if (!mid\_registrar\_lookup("location")) {
-			t\_reply(404, "Not Found");
+	if (is_method("INVITE") and $si == "10.0.0.3" and $sp == 5070) {
+		if (!mid_registrar_lookup("location")) {
+			t_reply(404, "Not Found");
 			exit;
 		}
 
-		if (!t\_relay())
-			send\_reply(500, "Server Internal Error 3");
+		if (!t_relay())
+			send_reply(500, "Server Internal Error 3");
 
 	    exit;
 	}
@@ -692,23 +692,23 @@ Depending on the current working [mode](#param_mode "1.5.1. mode (integer)") and
 
 ```opensips
 ...
-if (is\_method("REGISTER")) {
-	mid\_registrar\_save("location");
+if (is_method("REGISTER")) {
+	mid_registrar_save("location");
 	switch ($retcode) {
 	case 1:
-		xlog("L\_INFO", "forwarding REGISTER to main registrar...\\n");
+		xlog("L_INFO", "forwarding REGISTER to main registrar...\\n");
 		$ru = "sip:10.0.0.3:5070";
-		if (!t\_relay()) {
-			send\_reply(500, "Server Internal Error 1");
+		if (!t_relay()) {
+			send_reply(500, "Server Internal Error 1");
 		}
 
 		break;
 	case 2:
-		xlog("L\_INFO", "REGISTER has been absorbed!\\n");
+		xlog("L_INFO", "REGISTER has been absorbed!\\n");
 		break;
 	default:
-		xlog("L\_ERR", "mid-registrar error!\\n");
-		send\_reply(500, "Server Internal Error 2");
+		xlog("L_ERR", "mid-registrar error!\\n");
+		send_reply(500, "Server Internal Error 2");
 	}
 
 	exit;
@@ -724,21 +724,21 @@ if (is\_method("REGISTER")) {
 Setting the _mode_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "mode", 2)
+modparam("mid_registrar", "mode", 2)
 ```
 ### Setting the _contact_id_insertion_ module parameter
 
 Setting the _contact_id_insertion_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "contact\_id\_insertion", "ct-username")
+modparam("mid_registrar", "contact_id_insertion", "ct-username")
 ```
 ### Setting the _contact_id_param_ module parameter
 
 Setting the _contact_id_param_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "contact\_id\_param", "ctid")
+modparam("mid_registrar", "contact_id_param", "ctid")
 
 # Example resulting Contact header field:
 # Contact: <sip:liviu@10.0.0.10:5060;ctid=619244948763447138>;expires=180.
@@ -748,7 +748,7 @@ modparam("mid\_registrar", "contact\_id\_param", "ctid")
 Setting the _at_escape_str_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "at\_escape\_str", "\_\_\_")
+modparam("mid_registrar", "at_escape_str", "___")
 
 # Example Contact header field generated by mid-registrar:
 # Contact: <sip:zach%40sipdomain.invalid@127.0.0.1:5060>;expires=120
@@ -758,21 +758,21 @@ modparam("mid\_registrar", "at\_escape\_str", "\_\_\_")
 Setting the _outgoing_expires_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "outgoing\_expires", 3600)
+modparam("mid_registrar", "outgoing_expires", 3600)
 ```
 ### Setting the _received_avp_ module parameter
 
 Setting the _received_avp_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "received\_avp", "$avp(rcv)")
+modparam("mid_registrar", "received_avp", "$avp(rcv)")
 ```
 ### Setting the _received_param_ module parameter
 
 Setting the _received_param_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "received\_param", "rcv")
+modparam("mid_registrar", "received_param", "rcv")
 ```
 ### Setting the _extra_contact_params_avp_ module parameter
 
@@ -780,32 +780,32 @@ Setting the _extra_contact_params_avp_ module parameter
 
 ```opensips
 \# NB: AVPs are cleared with every new SIP request
-modparam("mid\_registrar", "extra\_contact\_params\_avp", "$avp(extra\_ct\_params)")
+modparam("mid_registrar", "extra_contact_params_avp", "$avp(extra_ct_params)")
 
 # setting the AVP during SIP message processing
-$avp(extra\_ct\_params) = ";transport=tls";
+$avp(extra_ct_params) = ";transport=tls";
 ```
 ### Set `attr_avp` parameter
 
 Set `attr_avp` parameter
 
 ```opensips
-\# reading attributes from the attr\_pvar when doing parallel forking
+\# reading attributes from the attr_pvar when doing parallel forking
 ...
-modparam("mid\_registrar", "attr\_avp", "$avp(attr)")
+modparam("mid_registrar", "attr_avp", "$avp(attr)")
 
 ...
-if (is\_method("REGISTER")) {
-	$avp(attr) = "contact\_info";
-	mid\_registrar\_save("location");
+if (is_method("REGISTER")) {
+	$avp(attr) = "contact_info";
+	mid_registrar_save("location");
 	exit;
 }
 ...
-mid\_registrar\_lookup("location");
-t\_on\_branch("parallel\_fork");
+mid_registrar_lookup("location");
+t_on_branch("parallel_fork");
 ...
-branch\_route \[parallel\_fork\] {
-	xlog("Attributes for branch $T\_branch\_idx: $(avp(attr)\[$T\_branch\_idx\])\\n");
+branch_route \[parallel_fork\] {
+	xlog("Attributes for branch $T_branch_idx: $(avp(attr)\[$T_branch_idx\])\\n");
 }
 ```
 ### Setting the _min_expires_ module parameter
@@ -813,49 +813,49 @@ branch\_route \[parallel\_fork\] {
 Setting the _min_expires_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "min\_expires", 600)
+modparam("mid_registrar", "min_expires", 600)
 ```
 ### Setting the _default_expires_ module parameter
 
 Setting the _default_expires_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "default\_expires", 1800)
+modparam("mid_registrar", "default_expires", 1800)
 ```
 ### Setting the _max_expires_ module parameter
 
 Setting the _max_expires_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "max\_expires", 7200)
+modparam("mid_registrar", "max_expires", 7200)
 ```
 ### Setting the _default_q_ module parameter
 
 Setting the _default_q_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "default\_q", 380)
+modparam("mid_registrar", "default_q", 380)
 ```
 ### Setting the _tcp_persistent_flag_ module parameter
 
 Setting the _tcp_persistent_flag_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "tcp\_persistent\_flag", "TCP\_PERSIST\_REGISTRATIONS")
+modparam("mid_registrar", "tcp_persistent_flag", "TCP_PERSIST_REGISTRATIONS")
 ```
 ### Setting the _realm_prefix_ module parameter
 
 Setting the _realm_prefix_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "realm\_prefix", "sip.")
+modparam("mid_registrar", "realm_prefix", "sip.")
 ```
 ### Setting the _case_sensitive_ module parameter
 
 Setting the _case_sensitive_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "case\_sensitive", 0)
+modparam("mid_registrar", "case_sensitive", 0)
 ```
 ### Setting the `expires_max_deviation` parameter
 
@@ -864,7 +864,7 @@ Setting the `expires_max_deviation` parameter
 ```opensips
 ...
 # add a random +/- 0-100 seconds to each registration lifetime
-modparam("mid\_registrar", "expires\_max\_deviation", 100)
+modparam("mid_registrar", "expires_max_deviation", 100)
 ...
 ```
 ### Set `max_contacts` parameter
@@ -874,7 +874,7 @@ Set `max_contacts` parameter
 ```opensips
 ...
 # Allow no more than 10 contacts per AOR
-modparam("mid\_registrar", "max\_contacts", 10)
+modparam("mid_registrar", "max_contacts", 10)
 ...
 ```
 ### Setting the _max_username_len_ module parameter
@@ -882,49 +882,49 @@ modparam("mid\_registrar", "max\_contacts", 10)
 Setting the _max_username_len_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "max\_username\_len", 128)
+modparam("mid_registrar", "max_username_len", 128)
 ```
 ### Setting the _max_domain_len_ module parameter
 
 Setting the _max_domain_len_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "max\_domain\_len", 128)
+modparam("mid_registrar", "max_domain_len", 128)
 ```
 ### Setting the _max_aor_len_ module parameter
 
 Setting the _max_aor_len_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "max\_aor\_len", 512)
+modparam("mid_registrar", "max_aor_len", 512)
 ```
 ### Setting the _max_contact_len_ module parameter
 
 Setting the _max_contact_len_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "max\_contact\_len", 512)
+modparam("mid_registrar", "max_contact_len", 512)
 ```
 ### Setting the _retry_after_ module parameter
 
 Setting the _retry_after_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "retry\_after", 30)
+modparam("mid_registrar", "retry_after", 30)
 ```
 ### Setting the _gruu_secret_ module parameter
 
 Setting the _gruu_secret_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "disable\_gruu", 0)
+modparam("mid_registrar", "disable_gruu", 0)
 ```
 ### Setting the _gruu_secret_ module parameter
 
 Setting the _gruu_secret_ module parameter
 
 ```opensips
-modparam("mid\_registrar", "gruu\_secret", "my\_secret")
+modparam("mid_registrar", "gruu_secret", "my_secret")
 ```
 ### Setting the `pn_enable` parameter
 
@@ -932,7 +932,7 @@ Setting the `pn_enable` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_enable", true)
+modparam("mid_registrar", "pn_enable", true)
 ...
 ```
 ### Setting the `pn_providers` parameter
@@ -941,7 +941,7 @@ Setting the `pn_providers` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_providers", "apns, fcm, webpush")
+modparam("mid_registrar", "pn_providers", "apns, fcm, webpush")
 ...
 ```
 ### Setting the `pn_ct_match_params` parameter
@@ -950,7 +950,7 @@ Setting the `pn_ct_match_params` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_ct\_match\_params", "pn-provider, pn-prid")
+modparam("mid_registrar", "pn_ct_match_params", "pn-provider, pn-prid")
 ...
 ```
 ### Setting the `pn_pnsreg_interval` parameter
@@ -959,7 +959,7 @@ Setting the `pn_pnsreg_interval` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_pnsreg\_interval", 140)
+modparam("mid_registrar", "pn_pnsreg_interval", 140)
 ...
 ```
 ### Setting the `pn_trigger_interval` parameter
@@ -968,7 +968,7 @@ Setting the `pn_trigger_interval` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_trigger\_interval", 130)
+modparam("mid_registrar", "pn_trigger_interval", 130)
 ...
 ```
 ### Setting the `pn_skip_pn_interval` parameter
@@ -977,7 +977,7 @@ Setting the `pn_skip_pn_interval` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_skip\_pn\_interval", 10)
+modparam("mid_registrar", "pn_skip_pn_interval", 10)
 ...
 ```
 ### Setting the `pn_refresh_timeout` parameter
@@ -986,7 +986,7 @@ Setting the `pn_refresh_timeout` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_refresh\_timeout", 10)
+modparam("mid_registrar", "pn_refresh_timeout", 10)
 ...
 ```
 ### Setting the `pn_enable_purr` parameter
@@ -995,7 +995,7 @@ Setting the `pn_enable_purr` parameter
 
 ```opensips
 ...
-modparam("mid\_registrar", "pn\_enable\_purr", true)
+modparam("mid_registrar", "pn_enable_purr", true)
 ...
 ```
 ### `_mid_registrar_save_` usage
@@ -1004,23 +1004,23 @@ modparam("mid\_registrar", "pn\_enable\_purr", true)
 
 ```opensips
 ...
-if (is\_method("REGISTER")) {
-	mid\_registrar\_save("location");
+if (is_method("REGISTER")) {
+	mid_registrar_save("location");
 	switch ($retcode) {
 	case 1:
-		xlog("L\_INFO", "forwarding REGISTER to main registrar...\\n");
+		xlog("L_INFO", "forwarding REGISTER to main registrar...\\n");
 		$ru = "sip:10.0.0.3:5070";
-		if (!t\_relay()) {
-			send\_reply(500, "Server Internal Error 1");
+		if (!t_relay()) {
+			send_reply(500, "Server Internal Error 1");
 		}
 
 		break;
 	case 2:
-		xlog("L\_INFO", "REGISTER has been absorbed!\\n");
+		xlog("L_INFO", "REGISTER has been absorbed!\\n");
 		break;
 	default:
-		xlog("L\_ERR", "mid-registrar error!\\n");
-		send\_reply(500, "Server Internal Error 2");
+		xlog("L_ERR", "mid-registrar error!\\n");
+		send_reply(500, "Server Internal Error 2");
 	}
 
 	exit;
@@ -1034,14 +1034,14 @@ if (is\_method("REGISTER")) {
 ```opensips
 ...
 	# initial invites from the main registrar - need to look them up!
-	if (is\_method("INVITE") and $si == "10.0.0.3" and $sp == 5070) {
-		if (!mid\_registrar\_lookup("location")) {
-			t\_reply(404, "Not Found");
+	if (is_method("INVITE") and $si == "10.0.0.3" and $sp == 5070) {
+		if (!mid_registrar_lookup("location")) {
+			t_reply(404, "Not Found");
 			exit;
 		}
 
-		if (!t\_relay())
-			send\_reply(500, "Server Internal Error 3");
+		if (!t_relay())
+			send_reply(500, "Server Internal Error 3");
 
 	    exit;
 	}
@@ -1054,28 +1054,28 @@ if (is\_method("REGISTER")) {
 ```opensips
 route {
 	...
-	if (has\_totag()) {
-		if (is\_method("ACK") && t\_check\_trans()) {
-			t\_relay();
+	if (has_totag()) {
+		if (is_method("ACK") && t_check_trans()) {
+			t_relay();
 			exit;
 		}
 
-		if (!loose\_route()) {
-			send\_reply(404, "Not Found");
+		if (!loose_route()) {
+			send_reply(404, "Not Found");
 			exit;
 		}
 
-		if (!is\_method("ACK"))
-			async (pn\_process\_purr("location"), resume\_route);
+		if (!is_method("ACK"))
+			async (pn_process_purr("location"), resume_route);
 
 		route(relay);
 		exit;
 	}
 }
 
-route \[resume\_route\] {
+route \[resume_route\] {
 	$var(rc) = $rc;
-	xlog("pn\_process\_purr() finished with $var(rc)\\n");
+	xlog("pn_process_purr() finished with $var(rc)\\n");
 
 	...
 }

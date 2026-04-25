@@ -32,19 +32,19 @@ None.
 
 ### `max_limit` (integer)
 
-Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max\_limits - if it does, the header value will by decreased to “max\_limit”.
+Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max_limits - if it does, the header value will by decreased to “max_limit”.
 
 *Default value is 256.*
 
 *Valid range: 1 to 256.*
 
-**Notes:** Note: This check is done when calling the mf\_process\_maxfwd\_header() header.
+**Notes:** Note: This check is done when calling the mf_process_maxfwd_header() header.
 
 **Example.** 32.
 
 ```opensips
 ...
-modparam("maxfwd", "max\_limit", 32)
+modparam("maxfwd", "max_limit", 32)
 ...
 ```
 

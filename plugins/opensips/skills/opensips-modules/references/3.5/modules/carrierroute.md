@@ -59,7 +59,7 @@ Name of the column containing the carrier id.
 
 ```opensips
 ...
-modparam("carrierroute", "carrier\_column", "carrier")
+modparam("carrierroute", "carrier_column", "carrier")
 ...
 ```
 ### `carrier_id_col` (string)
@@ -72,7 +72,7 @@ The name of the column in the carrier table containing the carrier id.
 
 ```opensips
 ...
-modparam("carrierroute", "carrier\_id\_col", "id")
+modparam("carrierroute", "carrier_id_col", "id")
 ...
 ```
 ### `carrier_name_col` (string)
@@ -85,7 +85,7 @@ The name of the column in the carrier table containing the carrier name.
 
 ```opensips
 ...
-modparam("carrierroute", "carrier\_name\_col", "carrier")
+modparam("carrierroute", "carrier_name_col", "carrier")
 ...
 ```
 ### `carrier_table` (string)
@@ -123,7 +123,7 @@ Specifies the path to the config file.
 **Example.** /etc/opensips/carrierroute.conf.
 
 ```opensips
-modparam("carrierroute", "config\_file", "/etc/opensips/carrierroute.conf")
+modparam("carrierroute", "config_file", "/etc/opensips/carrierroute.conf")
 ```
 ### `config_source` (string)
 
@@ -139,7 +139,7 @@ Specifies whether the module loads its config data from a file or from a databas
 **Example.** file.
 
 ```opensips
-modparam("carrierroute", "config\_source", "file")
+modparam("carrierroute", "config_source", "file")
 ```
 ### `db_failure_table` (string)
 
@@ -162,7 +162,7 @@ Name of the table where the routing data is stored.
 
 ```opensips
 ...
-modparam("carrierroute", "db\_table", "carrierroute")
+modparam("carrierroute", "db_table", "carrierroute")
 ...
 ```
 ### `db_url` (string)
@@ -175,7 +175,7 @@ Url to the database containing the routing data.
 
 ```opensips
 ...
-modparam("carrierroute", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("carrierroute", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### `default_tree` (string)
@@ -187,7 +187,7 @@ The name of the carrier tree used per default (if the current subscriber has no 
 **Example.** default.
 
 ```opensips
-modparam("carrierroute", "default\_tree", "default")
+modparam("carrierroute", "default_tree", "default")
 ```
 ### `domain_column` (string)
 
@@ -198,7 +198,7 @@ Name of column containing the rule domain. You can define several routing domain
 **Example.** domain.
 
 ```opensips
-modparam("carrierroute", "domain\_column", "domain")
+modparam("carrierroute", "domain_column", "domain")
 ```
 ### `failure_carrier_column` (string)
 
@@ -220,7 +220,7 @@ Name of the column containing an optional comment.
 **Example.** description.
 
 ```opensips
-modparam("carrierroute", "failure\_comment\_column", "description")
+modparam("carrierroute", "failure_comment_column", "description")
 ```
 ### `failure_domain_column` (string)
 
@@ -231,7 +231,7 @@ Name of column containing the rule domain. You can define several routing domain
 **Example.** domain.
 
 ```opensips
-modparam("carrierroute", "failure\_domain\_column", "domain")
+modparam("carrierroute", "failure_domain_column", "domain")
 ```
 ### `failure_flags_column` (string)
 
@@ -242,18 +242,18 @@ Name of the column containing the flags.
 **Example.** flags.
 
 ```opensips
-modparam("carrierroute", "failure\_flags\_column", "flags")
+modparam("carrierroute", "failure_flags_column", "flags")
 ```
 ### `failure_host_name_column` (string)
 
 Name of the column containing the host name of the last routing destination.
 
-*Default value is host\_name.*
+*Default value is host_name.*
 
-**Example.** host\_name.
+**Example.** host_name.
 
 ```opensips
-modparam("carrierroute", "failure\_host\_name\_column", "host\_name")
+modparam("carrierroute", "failure_host_name_column", "host_name")
 ```
 ### `failure_id_column` (string)
 
@@ -275,7 +275,7 @@ Name of the column containing the flags mask.
 **Example.** mask.
 
 ```opensips
-modparam("carrierroute", "failure\_mask\_column", "mask")
+modparam("carrierroute", "failure_mask_column", "mask")
 ```
 ### `failure_next_domain_column` (string)
 
@@ -286,18 +286,18 @@ Name of the column containing the next routing domain.
 **Example.** next_domain.
 
 ```opensips
-modparam("carrierroute", "failure\_next\_domain\_column", "next_domain")
+modparam("carrierroute", "failure_next_domain_column", "next_domain")
 ```
 ### `failure_reply_code_column` (string)
 
 Name of the column containing the reply code.
 
-*Default value is reply\_code.*
+*Default value is reply_code.*
 
-**Example.** reply\_code.
+**Example.** reply_code.
 
 ```opensips
-modparam("carrierroute", "failure\_reply\_code\_column", "reply\_code")
+modparam("carrierroute", "failure_reply_code_column", "reply_code")
 ```
 ### `failure_scan_prefix_column` (string)
 
@@ -330,7 +330,7 @@ Name of the column containing the flags.
 **Example.** flags.
 
 ```opensips
-modparam("carrierroute", "flags\_column", "flags")
+modparam("carrierroute", "flags_column", "flags")
 ```
 ### `id_column` (string)
 
@@ -342,7 +342,7 @@ Name of the column containing the id identifier.
 
 ```opensips
 ...
-modparam("carrierroute", "id\_column", "id")
+modparam("carrierroute", "id_column", "id")
 ...
 ```
 ### `mask_column` (string)
@@ -354,7 +354,7 @@ Name of the column containing the flags mask.
 **Example.** mask.
 
 ```opensips
-modparam("carrierroute", "mask\_column", "mask")
+modparam("carrierroute", "mask_column", "mask")
 ```
 ### `prob_column` (string)
 
@@ -367,7 +367,7 @@ If all probabilities for a given prefix, tree and domain don't add to 100%, the 
 **Example.** prob.
 
 ```opensips
-modparam("carrierroute", "prob\_column", "prob")
+modparam("carrierroute", "prob_column", "prob")
 ```
 ### `rewrite_host_column` (string)
 
@@ -378,7 +378,7 @@ Name of column containing rewrite host value. An empty field represents a blackl
 **Example.** rewrite_host.
 
 ```opensips
-modparam("carrierroute", "rewrite\_host\_column", "rewrite\_host")
+modparam("carrierroute", "rewrite_host_column", "rewrite_host")
 ```
 ### `rewrite_prefix_column` (string)
 
@@ -416,7 +416,7 @@ Name of column containing the scan prefixes. Scan prefixes define the matching p
 
 ```opensips
 ...
-modparam("carrierroute", "scan\_prefix\_column", "scan_prefix")
+modparam("carrierroute", "scan_prefix_column", "scan_prefix")
 ...
 ```
 ### `strip_column` (string)
@@ -441,7 +441,7 @@ The name of the column in the subscriber table containing the carrier id of the 
 **Example.** cr_preferred_carrier.
 
 ```opensips
-modparam("carrierroute", "subscriber\_carrier\_col", "cr\_preferred\_carrier")
+modparam("carrierroute", "subscriber_carrier_col", "cr_preferred_carrier")
 ```
 ### `subscriber_domain_col` (string)
 
@@ -453,7 +453,7 @@ The name of the column in the subscriber table containing the domain of the subs
 
 ```opensips
 ...
-modparam("carrierroute", "subscriber\_domain\_col", "domain")
+modparam("carrierroute", "subscriber_domain_col", "domain")
 ...
 ```
 ### `subscriber_table` (string)
@@ -466,7 +466,7 @@ The name of the table containing the subscribers
 
 ```opensips
 ...
-modparam("carrierroute", "subscriber\_table", "subscriber")
+modparam("carrierroute", "subscriber_table", "subscriber")
 ...
 ```
 ### `subscriber_user_col` (string)
@@ -479,7 +479,7 @@ The name of the column in the subscriber table containing the usernames.
 
 ```opensips
 ...
-modparam("carrierroute", "subscriber\_user\_col", "username")
+modparam("carrierroute", "subscriber_user_col", "username")
 ...
 ```
 ### `use_domain` (integer)
@@ -491,7 +491,7 @@ When using tree lookup per user, this parameter specifies whether to use the dom
 **Example.** 0.
 
 ```opensips
-modparam("carrierroute", "use\_domain", 0)
+modparam("carrierroute", "use_domain", 0)
 ```
 
 ## Exported Functions
@@ -751,30 +751,30 @@ route {
 	# route calls based on hash over callid
 	# choose route domain 0 of the default carrier
 	
-	if(!cr\_route("default", "0", "$rU", "$rU", "call\_id", "crc32")){
-		sl\_send\_reply(403, "Not allowed");
+	if(!cr_route("default", "0", "$rU", "$rU", "call_id", "crc32")){
+		sl_send_reply(403, "Not allowed");
 	} else {
 		# In case of failure, re-route the request
-		t\_on\_failure("1");
+		t_on_failure("1");
 		# Relay the request to the gateway
-		t\_relay();
+		t_relay();
 	}
 }
 
-failure\_route[1] {
+failure_route[1] {
 	# In case of failure, send it to an alternative route:
-	if (t\_check\_status("408|5[0-9][0-9]")) {
+	if (t_check_status("408|5[0-9][0-9]")) {
 		#choose route domain 1 of the default carrier
-	if(!cr\_route("default", "1", "$rU", "$rU", "call\_id", "crc32")){
-			t\_reply(403, "Not allowed");
+	if(!cr_route("default", "1", "$rU", "$rU", "call_id", "crc32")){
+			t_reply(403, "Not allowed");
 		} else {
-			t\_on\_failure("2");
-			t\_relay();
+			t_on_failure("2");
+			t_relay();
 		}
 	}
 }
 
-failure\_route[2] {
+failure_route[2] {
 	# further processing
 }
 ```
@@ -784,37 +784,37 @@ Routing to user tree
 
 ```opensips
 route[1] {
-	cr\_user\_carrier("$fU", "$fd", "$avp(carrier)");
+	cr_user_carrier("$fU", "$fd", "$avp(carrier)");
 
 	# just an example domain
 	$avp(domain)="start";
-	if (!cr\_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
-			"call\_id", "$avp(host)")) {
-		xlog("L\_ERR", "cr\_route failed\\n");
+	if (!cr_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
+			"call_id", "$avp(host)")) {
+		xlog("L_ERR", "cr_route failed\\n");
 		exit;
 	}
-	t\_on\_failure("1");
-		if (!t\_relay()) {
-			sl\_reply\_error();
+	t_on_failure("1");
+		if (!t_relay()) {
+			sl_reply_error();
 	};
 }
 
-failure\_route[1] {
-	revert\_uri();
-	if (!cr\_next\_domain("$avp(carrier)", "$avp(domain)", "$rU",
-			"$avp(host)", "$T\_reply\_code", "$avp(domain)")) {
-		xlog("L\_ERR", "cr\_next\_domain failed\\n");
+failure_route[1] {
+	revert_uri();
+	if (!cr_next_domain("$avp(carrier)", "$avp(domain)", "$rU",
+			"$avp(host)", "$T_reply_code", "$avp(domain)")) {
+		xlog("L_ERR", "cr_next_domain failed\\n");
 		exit;
 	}
-	if (!cr\_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
-			"call\_id", "$avp(host)")) {
-		xlog("L\_ERR", "cr\_route failed\\n");
+	if (!cr_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
+			"call_id", "$avp(host)")) {
+		xlog("L_ERR", "cr_route failed\\n");
 		exit;
 	}
-	t\_on\_failure("1");
-	append\_branch();
-	if (!t\_relay()) {
-		xlog("L\_ERR", "t\_relay failed\\n");
+	t_on_failure("1");
+	append_branch();
+	if (!t_relay()) {
+		xlog("L_ERR", "t_relay failed\\n");
 		exit;
 	};
 }
@@ -830,16 +830,16 @@ Use the “NULL” prefix to specify an empty prefix in the config file. Please 
 ```opensips
 domain proxy {
    prefix 49 {
-     max\_targets = 2
+     max_targets = 2
       target proxy1.localdomain {
          prob = 0.500000
-         hash\_index = 1
+         hash_index = 1
          status = 1
          comment = "test target 1"
       }
       target proxy2.localdomain {
          prob = 0.500000
-         hash\_index = 2
+         hash_index = 2
          status = 1
          comment = "test target 2"
       }
@@ -848,16 +848,16 @@ domain proxy {
 
 domain register {
    prefix NULL {
-     max\_targets = 2
+     max_targets = 2
       target register1.localdomain {
          prob = 0.500000
-         hash\_index = 1
+         hash_index = 1
          status = 1
          comment = "test target 1"
       }
       target register2.localdomain {
          prob = 0.500000
-         hash\_index = 2
+         hash_index = 2
          status = 1
          comment = "test target 2"
       }

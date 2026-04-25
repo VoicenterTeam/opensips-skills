@@ -32,25 +32,25 @@ As storage container, the parameters of the Record-Route / Route header will be 
 
 For this purpose, the modules offers the following functions:
 
-*   add\_rr\_param() - see [add\_rr\_param()](#func_add_rr_param "1.5.4.� add_rr_param(param)")
+*   add_rr_param() - see [add_rr_param()](#func_add_rr_param "1.5.4. add_rr_param(param)")
     
-*   check\_route\_param() - see [check\_route\_param()](#func_check_route_param "1.5.5.� check_route_param(re)")
+*   check_route_param() - see [check_route_param()](#func_check_route_param "1.5.5. check_route_param(re)")
 
-**Example�1.1.�Dialog support in RR module**
+**Example1.1.Dialog support in RR module**
 
 UAC                       OpenSIPS PROXY                          UAS
 
----- INVITE ------>       record\_route()          ----- INVITE ---->
-                     add\_rr\_param(";foo=true")
+---- INVITE ------>       record_route()          ----- INVITE ---->
+                     add_rr_param(";foo=true")
 
---- reINVITE ----->        loose\_route()          ---- reINVITE --->
-                    check\_route\_param(";foo=true")
+--- reINVITE ----->        loose_route()          ---- reINVITE --->
+                    check_route_param(";foo=true")
 
-<-- reINVITE ------        loose\_route()          <--- reINVITE ----
-                    check\_route\_param(";foo=true")
+<-- reINVITE ------        loose_route()          <--- reINVITE ----
+                    check_route_param(";foo=true")
 
-<------ BYE -------        loose\_route()          <----- BYE -------
-                    check\_route\_param(";foo=true")
+<------ BYE -------        loose_route()          <----- BYE -------
+                    check_route_param(";foo=true")
 
 ## Dependencies
 
@@ -73,7 +73,7 @@ If set to a non 0 value (which means yes), the username part will be also added 
 **Example.** 1.
 
 ```opensips
-modparam("rr", "add\_username", 1)
+modparam("rr", "add_username", 1)
 ```
 ### `append_fromtag` (integer)
 
@@ -84,7 +84,7 @@ If turned on, request's from-tag is appended to record-route; that's useful for 
 **Example.** 0.
 
 ```opensips
-modparam("rr", "append\_fromtag", 0)
+modparam("rr", "append_fromtag", 0)
 ```
 ### `enable_double_rr` (integer)
 
@@ -95,18 +95,18 @@ There are some situations when the server needs to insert two Record-Route heade
 **Example.** 0.
 
 ```opensips
-modparam("rr", "enable\_double\_rr", 0)
+modparam("rr", "enable_double_rr", 0)
 ```
 ### `enable_socket_mismatch_warning` (integer)
 
-When a preset record-route header is forced in OpenSIPS config and the host from the record-route header is not the same as the host server, a warning will be printed out in the logs. The 'enable\_socket\_mismatch\_warning' parameter enables or disables the warning. When OpenSIPS is behind a NATed firewall, we don't want this warning to be printed for every bridged call.
+When a preset record-route header is forced in OpenSIPS config and the host from the record-route header is not the same as the host server, a warning will be printed out in the logs. The 'enable_socket_mismatch_warning' parameter enables or disables the warning. When OpenSIPS is behind a NATed firewall, we don't want this warning to be printed for every bridged call.
 
 *Default value is 1 (yes).*
 
 **Example.** 0.
 
 ```opensips
-modparam("rr", "enable\_socket\_mismatch\_warning", 0)
+modparam("rr", "enable_socket_mismatch_warning", 0)
 ```
 
 ## Exported Functions
@@ -255,19 +255,19 @@ Loading RR module's API from another module
 ...
 #include "../rr/api.h"
 ...
-struct rr\_binds my\_rrb;
+struct rr_binds my_rrb;
 ...
 ...
 /* load the RR API */
-if (load\_rr\_api( &my\_rrb )!=0) {
-    LM\_ERR("can't load RR API\\n");
+if (load_rr_api( &my_rrb )!=0) {
+    LM_ERR("can't load RR API\\n");
     goto error;
 }
 ...
 ...
 /* register a RR callback */
-if (my\_rrb.register\_rrcb(my\_callback,0,0))!=0) {
-    LM\_ERR("can't register RR callback\\n");
+if (my_rrb.register_rrcb(my_callback,0,0))!=0) {
+    LM_ERR("can't register RR callback\\n");
     goto error;
 }
 ...

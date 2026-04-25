@@ -92,10 +92,10 @@ The method called for each child process.
 
 *Default value is child_init.*
 
-**Example.** child\_initializer.
+**Example.** child_initializer.
 
 ```opensips
-modparam("python", "child\_init\_method", "child\_initializer")
+modparam("python", "child_init_method", "child_initializer")
 ```
 ### `mod_init_function` (string)
 
@@ -103,10 +103,10 @@ The method used to initialize the Python module and return the object.
 
 *Default value is mod_init.*
 
-**Example.** module\_initializer.
+**Example.** module_initializer.
 
 ```opensips
-modparam("python", "mod\_init\_function", "module\_initializer")
+modparam("python", "mod_init_function", "module_initializer")
 ```
 ### `script_name` (string)
 
@@ -114,10 +114,10 @@ The script that contains the Python module.
 
 *Default value is /usr/local/etc/opensips/handler.py.*
 
-**Example.** /usr/local/bin/opensips\_handler.py.
+**Example.** /usr/local/bin/opensips_handler.py.
 
 ```opensips
-modparam("python", "script\_name", "/usr/local/bin/opensips\_handler.py")
+modparam("python", "script_name", "/usr/local/bin/opensips_handler.py")
 ```
 
 ## Exported Functions

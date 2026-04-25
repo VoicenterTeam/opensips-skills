@@ -18,23 +18,23 @@ Reference for the OpenSIPs 3.6 config module. Read this file when configuring or
 
 ## Overview
 
-The _config_ module enables dynamic, runtime configuration of OpenSIPS parameters by loading them from persistent storage at startup and exposing them to the script level via the [$config(...)](#pv_config "1.4.1.�$config(name)") pseudo-variable.
+The _config_ module enables dynamic, runtime configuration of OpenSIPS parameters by loading them from persistent storage at startup and exposing them to the script level via the [$config(...)](#pv_config "1.4.1.$config(name)") pseudo-variable.
 
 ## How It Works
 
 All configuration variables are stored in OpenSIPS' internal cache, allowing fast access during SIP processing to maintain high performance. The cache can be updated in three ways:
 
-* _Script_ – Assigning a value to the [$config(...)](#pv_config "1.4.1.�$config(name)") pseudo-variable updates the in-memory cache, but this change is not persisted to the database.
-* _MI Commands_ – Using [config_push](#mi_config_push "1.5.3.�config_push") or [config_push_bulk](#mi_config_push_bulk "1.5.4.�config_push_bulk") updates one or more variables in the runtime cache. These updates are also not saved to the database.
-* _Database_ – Manually modifying values in the database, then triggering the [config_reload](#mi_config_reload "1.5.1.�config_reload") command, will refresh the in-memory cache with updated values from the database.
+* _Script_ – Assigning a value to the [$config(...)](#pv_config "1.4.1.$config(name)") pseudo-variable updates the in-memory cache, but this change is not persisted to the database.
+* _MI Commands_ – Using [config_push](#mi_config_push "1.5.3.config_push") or [config_push_bulk](#mi_config_push_bulk "1.5.4.config_push_bulk") updates one or more variables in the runtime cache. These updates are also not saved to the database.
+* _Database_ – Manually modifying values in the database, then triggering the [config_reload](#mi_config_reload "1.5.1.config_reload") command, will refresh the in-memory cache with updated values from the database.
 
-### 1.1.1.�Restart Persistent Memory
+### 1.1.1.Restart Persistent Memory
 
-By default, the configuration cache is initialized at startup by reading from the database and persists only during the runtime. Any temporary changes made through the script or MI commands that are not explicitly flushed to the database using the [config_flush](#mi_config_flush "1.5.5.�config_flush") command will be lost after a restart.
+By default, the configuration cache is initialized at startup by reading from the database and persists only during the runtime. Any temporary changes made through the script or MI commands that are not explicitly flushed to the database using the [config_flush](#mi_config_flush "1.5.5.config_flush") command will be lost after a restart.
 
-In such cases, restart persistent memory becomes useful. When enabled via the [enable_restart_persistency](#param_enable_rpm "1.3.6.�enable_restart_persistency (integer)") parameter, OpenSIPS no longer loads configuration values from the database on startup. Instead, it restores the previously saved in-memory cache, preserving runtime changes across restarts.
+In such cases, restart persistent memory becomes useful. When enabled via the [enable_restart_persistency](#param_enable_rpm "1.3.6.enable_restart_persistency (integer)") parameter, OpenSIPS no longer loads configuration values from the database on startup. Instead, it restores the previously saved in-memory cache, preserving runtime changes across restarts.
 
-If needed, you can still manually re-initialize the cache from the database by running the [config_reload](#mi_config_reload "1.5.1.�config_reload") MI command.
+If needed, you can still manually re-initialize the cache from the database by running the [config_reload](#mi_config_reload "1.5.1.config_reload") MI command.
 
 ## Dependencies
 
@@ -250,67 +250,67 @@ Reloads all configuration variables from the database.
 
 ## Configuration Examples
 
-### Set “db\_url” parameter
+### Set “db_url” parameter
 
 Database URL used to load the initial configuration values, and flush them at runtime using the config_flush MI command.
 
 ```opensips
 ...
-modparam("config", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("config", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
-### Set “table\_name” parameter
+### Set “table_name” parameter
 
 Name of the table where configuration entries are stored.
 
 ```opensips
 ...
-modparam("config", "table\_name", "configuration")
+modparam("config", "table_name", "configuration")
 ...
 ```
-### Set “name\_column” parameter
+### Set “name_column” parameter
 
 Name of the column storing configuration variable names.
 
 ```opensips
 ...
-modparam("config", "name\_column", "key")
+modparam("config", "name_column", "key")
 ...
 ```
-### Set “value\_column” parameter
+### Set “value_column” parameter
 
 Name of the column storing configuration variable values.
 
 ```opensips
 ...
-modparam("config", "value\_column", "val")
+modparam("config", "value_column", "val")
 ...
 ```
-### Set “desctiption\_column” parameter
+### Set “desctiption_column” parameter
 
 Name of the column storing variable descriptions.
 
 ```opensips
 ...
-modparam("config", "description\_column", "desc")
+modparam("config", "description_column", "desc")
 ...
 ```
-### Set “restart\_persistent\_memory” parameter
+### Set “restart_persistent_memory” parameter
 
 Enables restart persistency.
 
 ```opensips
 ...
-modparam("config", "restart\_persistent\_memory", yes)
+modparam("config", "restart_persistent_memory", yes)
 ...
 ```
-### Set “hash\_size” parameter
+### Set “hash_size” parameter
 
 Size of the internal hash table used to store config variables.
 
 ```opensips
 ...
-modparam("config", "hash\_size", 32)
+modparam("config", "hash_size", 32)
 ...
 ```
 ### Usage of `$config(...)`
@@ -319,8 +319,8 @@ Returns the value of the given config variable by name. Can also be used for tem
 
 ```opensips
 			...
-			xlog("Config value: $config(debug\_mode)\\n"); # reading the value
-			$config(debug\_mode) = 1; # temporarily changing the value
+			xlog("Config value: $config(debug_mode)\\n"); # reading the value
+			$config(debug_mode) = 1; # temporarily changing the value
 			...
 			
 ```
@@ -330,7 +330,7 @@ Returns the description of a config variable if available.
 
 ```opensips
 			...
-			xlog("Description: $config.description(debug\_mode)\\n");
+			xlog("Description: $config.description(debug_mode)\\n");
 			...
 			
 ```

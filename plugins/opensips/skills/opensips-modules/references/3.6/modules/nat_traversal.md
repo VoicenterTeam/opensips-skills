@@ -46,7 +46,7 @@ None.
 
 The ID of the cluster the module is part of. The clustering support is used by the nat_traversal module for controlling the pinging process. When part of a cluster of multiple nodes, the nodes can agree upon which node is the one responsible for pinging.
 
-The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the cluster_sharing_tag (1.4.7.�cluster_sharing_tag (string)) option.
+The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the cluster_sharing_tag (1.4.7.cluster_sharing_tag (string)) option.
 
 For more info on how to define and populate a cluster (with OpenSIPS nodes) see the "clusterer" module.
 
@@ -56,13 +56,13 @@ For more info on how to define and populate a cluster (with OpenSIPS nodes) see 
 
 ```opensips
 # Be part of cluster ID 9
-modparam("nat\_traversal", "cluster\_id", 9)
+modparam("nat_traversal", "cluster_id", 9)
 ```
 ### `cluster_sharing_tag` (string)
 
 The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform pinging of the contacts. If defined, only the node with active status of this tag will perform the pinging.
 
-The cluster_id (1.4.6.�cluster_id (integer)) must be defined for this option to work.
+The cluster_id (1.4.6.cluster_id (integer)) must be defined for this option to work.
 
 This is an optional parameter. If not set, all the nodes in the cluster will individually do the pinging.
 
@@ -72,8 +72,8 @@ This is an optional parameter. If not set, all the nodes in the cluster will ind
 
 ```opensips
 # only the node with the active "vip" sharing tag will perform pinging
-modparam("nat\_traversal", "cluster\_id", 9)
-modparam("nat\_traversal", "cluster\_sharing\_tag", "vip")
+modparam("nat_traversal", "cluster_id", 9)
+modparam("nat_traversal", "cluster_sharing_tag", "vip")
 ```
 ### `keepalive_extra_headers` (string)
 
@@ -81,10 +81,10 @@ Specifies extra headers that should be added to the keepalive messages that are 
 
 *Default value is undefined (send no extra headers)..*
 
-**Example.** User-Agent: OpenSIPS\r\nX-MyHeader: some\_value\r\n.
+**Example.** User-Agent: OpenSIPS\r\nX-MyHeader: some_value\r\n.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_extra\_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some\_value\r\n")
+modparam("nat_traversal", "keepalive_extra_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some_value\r\n")
 ```
 ### `keepalive_from` (string)
 
@@ -104,7 +104,7 @@ The time interval (in seconds) required to send a keepalive message to all the e
 **Example.** 90.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_interval", 90)
+modparam("nat_traversal", "keepalive_interval", 90)
 ```
 ### `keepalive_method` (string)
 
@@ -115,7 +115,7 @@ What SIP method to use to send keepalive messages. Typical methods used for this
 **Example.** OPTIONS.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_method", "OPTIONS")
+modparam("nat_traversal", "keepalive_method", "OPTIONS")
 ```
 ### `keepalive_state_file` (string)
 
@@ -128,7 +128,7 @@ The value of this parameter can be either a relative path, in which case it will
 **Example.** /run/opensips/keepalive_state.
 
 ```opensips
-modparam("nat\_traversal", "keepalive\_state\_file", "/run/opensips/keepalive\_state")
+modparam("nat_traversal", "keepalive_state_file", "/run/opensips/keepalive_state")
 ```
 
 ## Exported Functions
@@ -220,7 +220,7 @@ if (($rm=="REGISTER" || $rm=="SUBSCRIBE" ||
 
 ### `$keepalive.socket(nat_endpoint)`
 
-Returns the local socket used to send messages to the given NAT endpoint URI. The socket has the form proto:ip:port. The NAT endpoint URI is in the form: sip:ip:port\[;transport=xxx\] with transport missing if UDP. If the requested NAT endpoint URI is present in the internal keepalive table for any condition, it will return its associated local socket, else it will return null. The nat\_endpoint can be a string or another pseudo-variable. This can be useful to restore the sending socket when relaying messages to a given user agent in multi-proxy environments. Consider an example where 2 proxies are involved, P1 and P2. A user agent registers by sending a REGISTER request to P1. P1 will call nat\_keepalive() but because it determines that P2 should actually handle the user registration will forward the request to P2. Now assume P2 receives an incoming INVITE for this user. It will determine that the registration came through P1 and will forward the request to P1. P2 should also include the NAT endpoint URI where this request is to be relayed. This information should have been provided by P1 when it relayed the REGISTER request to P2. The means to do this is out of the scope of this example, but one can either use the path extension or custom headers to do this. When P1 receives the INVITE it will use the NAT endpoint URI it has received along with the request to determine the socket to send out the request, which should be the same as the one where the registration request was originally received. In the example below lets assume that P2 provided the original NAT endpoint address in a custom header called X-NAT-URI and that it also provides a custom header called X-Scope to indicate that the message is sent to P1 for being relayed back to the user agent by P1 which has the NAT open with it.
+Returns the local socket used to send messages to the given NAT endpoint URI. The socket has the form proto:ip:port. The NAT endpoint URI is in the form: sip:ip:port\[;transport=xxx\] with transport missing if UDP. If the requested NAT endpoint URI is present in the internal keepalive table for any condition, it will return its associated local socket, else it will return null. The nat_endpoint can be a string or another pseudo-variable. This can be useful to restore the sending socket when relaying messages to a given user agent in multi-proxy environments. Consider an example where 2 proxies are involved, P1 and P2. A user agent registers by sending a REGISTER request to P1. P1 will call nat_keepalive() but because it determines that P2 should actually handle the user registration will forward the request to P2. Now assume P2 receives an incoming INVITE for this user. It will determine that the registration came through P1 and will forward the request to P1. P2 should also include the NAT endpoint URI where this request is to be relayed. This information should have been provided by P1 when it relayed the REGISTER request to P2. The means to do this is out of the scope of this example, but one can either use the path extension or custom headers to do this. When P1 receives the INVITE it will use the NAT endpoint URI it has received along with the request to determine the socket to send out the request, which should be the same as the one where the registration request was originally received. In the example below lets assume that P2 provided the original NAT endpoint address in a custom header called X-NAT-URI and that it also provides a custom header called X-Scope to indicate that the message is sent to P1 for being relayed back to the user agent by P1 which has the NAT open with it.
 
 **Example 1.11. Using `$keepalive.socket` in multi-proxy environments**
 
@@ -230,7 +230,7 @@ Returns the local socket used to send messages to the given NAT endpoint URI. Th
 if ($rm=="INVITE" && $hdr(X-Scope)=="nat-relay") {
     $du = $hdr(X-NAT-URI);
     $fs = $keepalive.socket($du);
-    t\_relay();
+    t_relay();
     exit;
 }
 ...
@@ -245,7 +245,7 @@ if ($rm=="INVITE" && $hdr(X-Scope)=="nat-relay") {
 - null
 ### `$nat_traversal.track_dialog`
 
-Returns a boolean value (0 or 1) indicating if dialog tracking will be enabled by the nat\_traversal module. The nat\_traversal module will always track the dialog (by calling create\_dialog internally) unless told otherwise. This is an advanced setting which is only meant to be used by multi-proxy setups where a proxy doesn't want to keep track of a dialog, that is, if it won't stay in the signaling path. By setting this pv to 0 the nat\_traversal module will not attempt to create the dialog.
+Returns a boolean value (0 or 1) indicating if dialog tracking will be enabled by the nat_traversal module. The nat_traversal module will always track the dialog (by calling create_dialog internally) unless told otherwise. This is an advanced setting which is only meant to be used by multi-proxy setups where a proxy doesn't want to keep track of a dialog, that is, if it won't stay in the signaling path. By setting this pv to 0 the nat_traversal module will not attempt to create the dialog.
 
 - **Type:** boolean
 - **Read/write:** read-write
@@ -257,40 +257,40 @@ Returns a boolean value (0 or 1) indicating if dialog tracking will be enabled b
 - 1
 ### `$source_uri`
 
-Returns the URI specification from where a request was received in the form sip:ip:port\[;transport=xxx\] with transport missing if UDP. This pseudo-variable can be used to set the received AVP for the registrar module to indicate that a user agent is behind NAT. This is meant as a more flexible replacement for the fix\_nated\_register() function, because it allows one to modify the source uri by appending some extra parameters before saving it to the received AVP. Another use for this pseudo-variable is in multi-proxy environments to indicate the NAT endpoint URI to the next proxy (if needed). Consider the previous example with two proxies P1 and P2. P1 receives the REGISTER request from a user agent and forwards it to P2 which does the actual registration. P1 needs to indicate the NAT endpoint URI to P2, so that P2 can include it later for incoming INVITE requests to this user agent.
+Returns the URI specification from where a request was received in the form sip:ip:port\[;transport=xxx\] with transport missing if UDP. This pseudo-variable can be used to set the received AVP for the registrar module to indicate that a user agent is behind NAT. This is meant as a more flexible replacement for the fix_nated_register() function, because it allows one to modify the source uri by appending some extra parameters before saving it to the received AVP. Another use for this pseudo-variable is in multi-proxy environments to indicate the NAT endpoint URI to the next proxy (if needed). Consider the previous example with two proxies P1 and P2. P1 receives the REGISTER request from a user agent and forwards it to P2 which does the actual registration. P1 needs to indicate the NAT endpoint URI to P2, so that P2 can include it later for incoming INVITE requests to this user agent.
 
 **Example 1.12. Using `$source_uri` to set the received AVP on registrars**
 
 ...
-modparam("registrar", "received\_avp", "$avp(received\_uri)")
-modparam("registrar", "tcp\_persistent\_flag", 10)
+modparam("registrar", "received_avp", "$avp(received_uri)")
+modparam("registrar", "tcp_persistent_flag", 10)
 ...
 # This code runs on the registrar, assuming it has received the
 # REGISTER request directly from the user agent.
 if ($rm=="REGISTER") {
-    if (client\_nat\_test(3)) {
-        if ($socket\_in(proto)==UDP) {
-            nat\_keepalive();
+    if (client_nat_test(3)) {
+        if ($socket_in(proto)==UDP) {
+            nat_keepalive();
         } else {
             # Keep TCP/TLS connections open until the registration
-            # expires, by setting the tcp\_persistent\_flag
+            # expires, by setting the tcp_persistent_flag
             setflag(10);
         }
-        force\_rport();
-        $avp(received\_uri) = $source\_uri;
+        force_rport();
+        $avp(received_uri) = $source_uri;
         # or we could add some extra parameters to it if needed
-        # $avp(received\_uri) = $source\_uri + ";relayed=false" 
+        # $avp(received_uri) = $source_uri + ";relayed=false" 
     }
-    if (!www\_authorize("", "subscriber")) {
-        www\_challenge("", "0");
+    if (!www_authorize("", "subscriber")) {
+        www_challenge("", "0");
         return;
     } else if ($au!=$tU) {
-        sl\_send\_reply("403", "Username!=To not allowed ($au!=$tU)");
+        sl_send_reply("403", "Username!=To not allowed ($au!=$tU)");
         return;
     }
 
     if (!save("location")) {
-        sl\_reply\_error();
+        sl_reply_error();
     }
     exit;
 }
@@ -302,13 +302,13 @@ if ($rm=="REGISTER") {
 # This code runs on P1 which received the REGISTER request and has to
 # forward it to the registrar P2.
 if ($rm=="REGISTER") {
-    if (client\_nat\_test(3)) {
-        force\_rport();
-        nat\_keepalive();
-        append\_hf("X-NAT-URI: $source\_uri\r\n");
+    if (client_nat_test(3)) {
+        force_rport();
+        nat_keepalive();
+        append_hf("X-NAT-URI: $source_uri\r\n");
     }
-    $du = "sip:P2\_ip:P2\_port";
-    t\_relay();
+    $du = "sip:P2_ip:P2_port";
+    t_relay();
     exit;
 }
 ...
@@ -353,7 +353,7 @@ Setting the `keepalive_interval` parameter
 
 ```opensips
 ...
-modparam("nat\_traversal", "keepalive\_interval", 90)
+modparam("nat_traversal", "keepalive_interval", 90)
 ...
 ```
 ### Setting the `keepalive_method` parameter
@@ -362,7 +362,7 @@ Setting the `keepalive_method` parameter
 
 ```opensips
 ...
-modparam("nat\_traversal", "keepalive\_method", "OPTIONS")
+modparam("nat_traversal", "keepalive_method", "OPTIONS")
 ...
 ```
 ### Setting the `keepalive_from` parameter
@@ -371,7 +371,7 @@ Setting the `keepalive_from` parameter
 
 ```opensips
 ...
-modparam("nat\_traversal", "keepalive\_from", "sip:keepalive@my-domain.com")
+modparam("nat_traversal", "keepalive_from", "sip:keepalive@my-domain.com")
 ...
 ```
 ### Setting the `keepalive_extra_headers` parameter
@@ -380,7 +380,7 @@ Setting the `keepalive_extra_headers` parameter
 
 ```opensips
 ...
-modparam("nat\_traversal", "keepalive\_extra\_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some\_value\r\n")
+modparam("nat_traversal", "keepalive_extra_headers", "User-Agent: OpenSIPS\r\nX-MyHeader: some_value\r\n")
 ...
 ```
 ### Setting the `keepalive_state_file` parameter
@@ -389,7 +389,7 @@ Setting the `keepalive_state_file` parameter
 
 ```opensips
 ...
-modparam("nat\_traversal", "keepalive\_state\_file", "/run/opensips/keepalive\_state")
+modparam("nat_traversal", "keepalive_state_file", "/run/opensips/keepalive_state")
 ...
 ```
 ### Set `cluster_id` parameter
@@ -399,7 +399,7 @@ Set `cluster_id` parameter
 ```opensips
 ...
 # Be part of cluster ID 9
-modparam("nat\_traversal", "cluster\_id", 9)
+modparam("nat_traversal", "cluster_id", 9)
 ...
 ```
 ### Set `cluster_sharing_tag` parameter
@@ -409,8 +409,8 @@ Set `cluster_sharing_tag` parameter
 ```opensips
 ...
 # only the node with the active "vip" sharing tag will perform pinging
-modparam("nat\_traversal", "cluster\_id", 9)
-modparam("nat\_traversal", "cluster\_sharing\_tag", "vip")
+modparam("nat_traversal", "cluster_id", 9)
+modparam("nat_traversal", "cluster_sharing_tag", "vip")
 ...
 ```
 ### Using the `client_nat_test` function
@@ -419,7 +419,7 @@ Using the `client_nat_test` function
 
 ```opensips
 ...
-if (client\_nat\_test(3)) {
+if (client_nat_test(3)) {
     .....
 }
 ...
@@ -430,8 +430,8 @@ Using the `fix_contact` function
 
 ```opensips
 ...
-if (client\_nat\_test(3)) {
-    fix\_contact();
+if (client_nat_test(3)) {
+    fix_contact();
 }
 ...
 ```
@@ -442,9 +442,9 @@ Using the `nat_keepalive` function
 ```opensips
 ...
 if (($rm=="REGISTER" || $rm=="SUBSCRIBE" ||
-    ($rm=="INVITE" && !has\_totag())) && client\_nat\_test(3))
+    ($rm=="INVITE" && !has_totag())) && client_nat_test(3))
 {
-    nat\_keepalive();
+    nat_keepalive();
 }
 ...
 ```
@@ -459,7 +459,7 @@ Using `$keepalive.socket` in multi-proxy environments
 if ($rm=="INVITE" && $hdr(X-Scope)=="nat-relay") {
     $du = $hdr(X-NAT-URI);
     $fs = $keepalive.socket($du);
-    t\_relay();
+    t_relay();
     exit;
 }
 ...
@@ -470,35 +470,35 @@ Using `$source_uri` to set the received AVP on registrars
 
 ```opensips
 ...
-modparam("registrar", "received\_avp", "$avp(received\_uri)")
-modparam("registrar", "tcp\_persistent\_flag", 10)
+modparam("registrar", "received_avp", "$avp(received_uri)")
+modparam("registrar", "tcp_persistent_flag", 10)
 ...
 # This code runs on the registrar, assuming it has received the
 # REGISTER request directly from the user agent.
 if ($rm=="REGISTER") {
-    if (client\_nat\_test(3)) {
-        if ($socket\_in(proto)==UDP) {
-            nat\_keepalive();
+    if (client_nat_test(3)) {
+        if ($socket_in(proto)==UDP) {
+            nat_keepalive();
         } else {
             # Keep TCP/TLS connections open until the registration
-            # expires, by setting the tcp\_persistent\_flag
+            # expires, by setting the tcp_persistent_flag
             setflag(10);
         }
-        force\_rport();
-        $avp(received\_uri) = $source\_uri;
+        force_rport();
+        $avp(received_uri) = $source_uri;
         # or we could add some extra parameters to it if needed
-        # $avp(received\_uri) = $source\_uri + ";relayed=false" 
+        # $avp(received_uri) = $source_uri + ";relayed=false" 
     }
-    if (!www\_authorize("", "subscriber")) {
-        www\_challenge("", "0");
+    if (!www_authorize("", "subscriber")) {
+        www_challenge("", "0");
         return;
     } else if ($au!=$tU) {
-        sl\_send\_reply("403", "Username!=To not allowed ($au!=$tU)");
+        sl_send_reply("403", "Username!=To not allowed ($au!=$tU)");
         return;
     }
 
     if (!save("location")) {
-        sl\_reply\_error();
+        sl_reply_error();
     }
     exit;
 }
@@ -513,13 +513,13 @@ Using `$source_uri` in multi-proxy environments
 # This code runs on P1 which received the REGISTER request and has to
 # forward it to the registrar P2.
 if ($rm=="REGISTER") {
-    if (client\_nat\_test(3)) {
-        force\_rport();
-        nat\_keepalive();
-        append\_hf("X-NAT-URI: $source\_uri\r\n");
+    if (client_nat_test(3)) {
+        force_rport();
+        nat_keepalive();
+        append_hf("X-NAT-URI: $source_uri\r\n");
     }
-    $du = "sip:P2\_ip:P2\_port";
-    t\_relay();
+    $du = "sip:P2_ip:P2_port";
+    t_relay();
     exit;
 }
 ...

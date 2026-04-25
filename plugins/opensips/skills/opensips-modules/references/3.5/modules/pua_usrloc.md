@@ -40,7 +40,7 @@ The default domain to use when constructing the presentity uri if it is missing 
 **Example.** opensips.org.
 
 ```opensips
-modparam("pua\_usrloc", "default\_domain", "opensips.org")
+modparam("pua_usrloc", "default_domain", "opensips.org")
 ```
 ### `entity_prefix` (string)
 
@@ -51,7 +51,7 @@ The prefix when construstructing entity attribute to be added to presence node i
 **Example.** pres.
 
 ```opensips
-modparam("pua\_usrloc", "entity\_prefix", "pres")
+modparam("pua_usrloc", "entity_prefix", "pres")
 ```
 ### `presence_server` (string)
 
@@ -60,7 +60,7 @@ The the address of the presence server. If set, it will be used as outbound prox
 **Example.** sip:pa@opensips.org:5075.
 
 ```opensips
-modparam("pua\_usrloc", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_usrloc", "presence_server", "sip:pa@opensips.org:5075")
 ```
 
 ## Exported Functions
@@ -72,8 +72,8 @@ The function is used to mark REGISTER requests that have to issue a PUBLISH. The
 **Example.** pua_set_publish usage.
 
 ```opensips
-if(is\_method("REGISTER") && $fu=~"john@opensips.org") 
-	pua\_set\_publish();
+if(is_method("REGISTER") && $fu=~"john@opensips.org") 
+	pua_set_publish();
 ```
 
 ## Configuration Examples
@@ -84,7 +84,7 @@ The default domain to use when constructing the presentity uri if it is missing 
 
 ```opensips
 ...
-modparam("pua\_usrloc", "default\_domain", "opensips.org")
+modparam("pua_usrloc", "default_domain", "opensips.org")
 ...
 ```
 ### Set `presentity_prefix` parameter
@@ -93,7 +93,7 @@ The prefix when construstructing entity attribute to be added to presence node i
 
 ```opensips
 ...
-modparam("pua\_usrloc", "entity\_prefix", "pres")
+modparam("pua_usrloc", "entity_prefix", "pres")
 ...
 ```
 ### Set `presence_server` parameter
@@ -102,7 +102,7 @@ The the address of the presence server. If set, it will be used as outbound prox
 
 ```opensips
 ...
-modparam("pua\_usrloc", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_usrloc", "presence_server", "sip:pa@opensips.org:5075")
 ...
 ```
 ### `pua_set_publish` usage
@@ -111,7 +111,7 @@ The function is used to mark REGISTER requests that have to issue a PUBLISH. The
 
 ```opensips
 ...
-if(is\_method("REGISTER") && $fu=~"john@opensips.org") 
-	pua\_set\_publish();
+if(is_method("REGISTER") && $fu=~"john@opensips.org") 
+	pua_set_publish();
 ...
 ```

@@ -84,14 +84,14 @@ None.
 
 ### `allow_dup_cseq` (boolean)
 
-Some SIP stacks will re-REGISTER using the same Call-ID and CSeq values. While rejecting such requests is consistent with RFC 3261 � 10.3.7, enabling this parameter instructs the registrar to accept them instead, improving interoperability.
+Some SIP stacks will re-REGISTER using the same Call-ID and CSeq values. While rejecting such requests is consistent with RFC 3261  10.3.7, enabling this parameter instructs the registrar to accept them instead, improving interoperability.
 
 *Default value is true (duplicate CSeq is accepted).*
 
 **Example.** false.
 
 ```opensips
-modparam("registrar", "allow\_dup\_cseq", false)
+modparam("registrar", "allow_dup_cseq", false)
 ```
 ### `attr_avp` (string)
 
@@ -126,7 +126,7 @@ If set to 1 then AOR comparison will be case sensitive (as RFC3261 instructs), i
 **Example.** 0.
 
 ```opensips
-modparam("registrar", "case\_sensitive", 0)
+modparam("registrar", "case_sensitive", 0)
 ```
 ### `default_expires` (integer)
 
@@ -137,18 +137,18 @@ If the processed message contains neither Expires HFs nor expires contact parame
 **Example.** 1800.
 
 ```opensips
-modparam("registrar", "default\_expires", 1800)
+modparam("registrar", "default_expires", 1800)
 ```
 ### `default_q` (integer)
 
-The parameter represents default q value for new contacts. Because OpenSIPS doesn't support float parameter types, the value in the parameter is divided by 1000 and stored as float. For example, if you want default\_q to be 0.38, use value 380 here.
+The parameter represents default q value for new contacts. Because OpenSIPS doesn't support float parameter types, the value in the parameter is divided by 1000 and stored as float. For example, if you want default_q to be 0.38, use value 380 here.
 
 *Default value is 0.*
 
 **Example.** 1000.
 
 ```opensips
-modparam("registrar", "default\_q", 1000)
+modparam("registrar", "default_q", 1000)
 ```
 ### `disable_gruu` (integer)
 
@@ -159,7 +159,7 @@ Globally disable GRUU handling
 **Example.** 0.
 
 ```opensips
-modparam("registrar", "disable\_gruu", 0)
+modparam("registrar", "disable_gruu", 0)
 ```
 ### `expires_max_deviation` (integer)
 
@@ -172,7 +172,7 @@ By randomizing the registration lifetimes of the contacts, the server is better 
 **Example.** 100.
 
 ```opensips
-modparam("registrar", "expires\_max\_deviation", 100)
+modparam("registrar", "expires_max_deviation", 100)
 ```
 ### `gruu_secret` (string)
 
@@ -183,7 +183,7 @@ The string that will be used in XORing when generating temporary GRUUs.
 **Example.** top_secret.
 
 ```opensips
-modparam("registrar", "gruu\_secret", "top\_secret")
+modparam("registrar", "gruu_secret", "top_secret")
 ```
 ### `max_aor_len` (integer)
 
@@ -194,7 +194,7 @@ The maximum length of an Address-of-Record SIP URI.
 **Example.** 512.
 
 ```opensips
-modparam("registrar", "max\_aor\_len", 512)
+modparam("registrar", "max_aor_len", 512)
 ```
 ### `max_contact_len` (integer)
 
@@ -219,14 +219,14 @@ modparam("registrar", "max_contact_len", 512)
 
 The parameter can be used to limit the number of contacts per AOR (Address of Record) in the user location database. Value 0 disables the check.
 
-This is the default value and will be used only if no other value (for max\_contacts) is passed as parameter to the save() function. That's it - the function parameter overwride this global parameter.
+This is the default value and will be used only if no other value (for max_contacts) is passed as parameter to the save() function. That's it - the function parameter overwride this global parameter.
 
 *Default value is 0.*
 
 **Example.** 10.
 
 ```opensips
-modparam("registrar", "max\_contacts", 10)
+modparam("registrar", "max_contacts", 10)
 ```
 ### `max_domain_len` (integer)
 
@@ -237,7 +237,7 @@ The maximum length of the "domain" part of an Address-of-Record SIP URI.
 **Example.** 128.
 
 ```opensips
-modparam("registrar", "max\_domain\_len", 128)
+modparam("registrar", "max_domain_len", 128)
 ```
 ### `max_expires` (integer)
 
@@ -248,7 +248,7 @@ The maximum expires value of a Contact, values higher than this maximum will be 
 **Example.** 120.
 
 ```opensips
-modparam("registrar", "max\_expires", 120)
+modparam("registrar", "max_expires", 120)
 ```
 ### `max_username_len` (integer)
 
@@ -259,7 +259,7 @@ The maximum length of the "username" part of an Address-of-Record SIP URI.
 **Example.** 128.
 
 ```opensips
-modparam("registrar", "max\_username\_len", 128)
+modparam("registrar", "max_username_len", 128)
 ```
 ### `mcontact_avp` (string)
 
@@ -289,7 +289,7 @@ The minimum expires value of a Contact, values lower than this minimum will be a
 **Example.** 60.
 
 ```opensips
-modparam("registrar", "min\_expires", 60)
+modparam("registrar", "min_expires", 60)
 ```
 ### `pn_ct_match_params` (string)
 
@@ -304,7 +304,7 @@ After calling lookup() or pn_process_purr(), the above PN-related parameters wil
 **Example.** pn-provider, pn-prid.
 
 ```opensips
-modparam("registrar", "pn\_ct\_match\_params", "pn-provider, pn-prid")
+modparam("registrar", "pn_ct_match_params", "pn-provider, pn-prid")
 ```
 ### `pn_enable` (boolean)
 
@@ -315,11 +315,11 @@ Enable SIP Push Notification support (RFC 8599). If enabled, Contact header fiel
 **Example.** true.
 
 ```opensips
-modparam("registrar", "pn\_enable", true)
+modparam("registrar", "pn_enable", true)
 ```
 ### `pn_enable_purr` (boolean)
 
-Enable the SIP Push Notification mechanism for long-lived dialogs. If enabled, the registrar will include a _"+sip.pnspurr"_ Feature-Caps header field tag in 200 OK replies to REGISTER requests. This tag represents a unique identifier for the registration (PURR - Proxy Unique Registration Reference). During dialog setup, each UA may include, in its Contact header, the PURR value returned by OpenSIPS during registration. By including the PURR (e.g. ";pn-purr=XXX"), an agent indicates that it expects to be first awoken by a PN before being able to receive a mid-dialog request sent by the other party. When enabling this parameter, make sure to also add logic for [pn_process_purr()](#afunc_pn_process_purr "1.5.1.� pn_process_purr(domain)").
+Enable the SIP Push Notification mechanism for long-lived dialogs. If enabled, the registrar will include a _"+sip.pnspurr"_ Feature-Caps header field tag in 200 OK replies to REGISTER requests. This tag represents a unique identifier for the registration (PURR - Proxy Unique Registration Reference). During dialog setup, each UA may include, in its Contact header, the PURR value returned by OpenSIPS during registration. By including the PURR (e.g. ";pn-purr=XXX"), an agent indicates that it expects to be first awoken by a PN before being able to receive a mid-dialog request sent by the other party. When enabling this parameter, make sure to also add logic for [pn_process_purr()](#afunc_pn_process_purr "1.5.1. pn_process_purr(domain)").
 
 *Default value is false.*
 
@@ -354,11 +354,11 @@ A list of supported Push Notification providers. While only three possible value
 **Example.** apns, fcm, webpush.
 
 ```opensips
-modparam("registrar", "pn\_providers", "apns, fcm, webpush")
+modparam("registrar", "pn_providers", "apns, fcm, webpush")
 ```
 ### `pn_refresh_timeout` (integer)
 
-This timeout starts counting following a _lookup()_ or a [pn_process_purr()](#afunc_pn_process_purr "1.5.1.� pn_process_purr(domain)") which triggers a Push Notification. The value represents the maximum allowed sum of the duration required for the Push Notification to be sent and the duration required for the corresponding re-registration from the device to arrive. Once this timeout is exceeded for an initial or a mid-dialog request, any further re-registrations which match the pending Push Notification will no longer cause the desired effects. For example: * pending initial INVITE transactions will complete and will no longer auto-fork an additional branch for each REGISTER sent by the callee side * pending BYE messages will time out and OpenSIPS will attempt to route them despite not having received a confirmation that the target device is actually reachable
+This timeout starts counting following a _lookup()_ or a [pn_process_purr()](#afunc_pn_process_purr "1.5.1. pn_process_purr(domain)") which triggers a Push Notification. The value represents the maximum allowed sum of the duration required for the Push Notification to be sent and the duration required for the corresponding re-registration from the device to arrive. Once this timeout is exceeded for an initial or a mid-dialog request, any further re-registrations which match the pending Push Notification will no longer cause the desired effects. For example: * pending initial INVITE transactions will complete and will no longer auto-fork an additional branch for each REGISTER sent by the callee side * pending BYE messages will time out and OpenSIPS will attempt to route them despite not having received a confirmation that the target device is actually reachable
 
 *Default value is 6.*
 
@@ -380,7 +380,7 @@ modparam("registrar", "pn_skip_pn_interval", 10)
 ```
 ### `pn_trigger_interval` (integer)
 
-If a binding refresh REGISTER request from a given SIP endpoint does not arrive within at least [pn_trigger_interval](#param_pn_trigger_interval "1.3.27.�pn_trigger_interval (integer)") seconds prior to expiration (e.g. because the device does not support _";+sip.pnsreg"_ or because of other error conditions), the [E_UL_CONTACT_REFRESH](usrloc#event_E_UL_CONTACT_REFRESH) usrloc event will be triggered. Once [E_UL_CONTACT_REFRESH](usrloc#event_E_UL_CONTACT_REFRESH) is triggered, the script writer should use the RFC 8599 parameters from the Contact URI in order to generate a Push Notification request to the PN provider of the device, in order to cause the device to wake up and re-register.
+If a binding refresh REGISTER request from a given SIP endpoint does not arrive within at least [pn_trigger_interval](#param_pn_trigger_interval "1.3.27.pn_trigger_interval (integer)") seconds prior to expiration (e.g. because the device does not support _";+sip.pnsreg"_ or because of other error conditions), the [E_UL_CONTACT_REFRESH](usrloc#event_E_UL_CONTACT_REFRESH) usrloc event will be triggered. Once [E_UL_CONTACT_REFRESH](usrloc#event_E_UL_CONTACT_REFRESH) is triggered, the script writer should use the RFC 8599 parameters from the Contact URI in order to generate a Push Notification request to the PN provider of the device, in order to cause the device to wake up and re-register.
 
 *Default value is 120.*
 
@@ -391,14 +391,14 @@ modparam("registrar", "pn_trigger_interval", 130)
 ```
 ### `realm_prefix` (string)
 
-Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm\_prefix "sip.", at registration, sip.mydomain.net will be equivalent to mydomain.net .
+Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm_prefix "sip.", at registration, sip.mydomain.net will be equivalent to mydomain.net .
 
 *Default value is NULL (none).*
 
 **Example.** sip..
 
 ```opensips
-modparam("registrar", "realm\_prefix", "sip.")
+modparam("registrar", "realm_prefix", "sip.")
 ```
 ### `received_avp` (string)
 
@@ -411,7 +411,7 @@ Registrar will store the value of the AVP configured by this parameter in the re
 **Example.** $avp(rcv).
 
 ```opensips
-modparam("registrar", "received\_avp", "$avp(rcv)")
+modparam("registrar", "received_avp", "$avp(rcv)")
 ```
 ### `received_param` (string)
 
@@ -422,7 +422,7 @@ The name of the parameter that will be appended to Contacts of 200 OK when the r
 **Example.** rcv.
 
 ```opensips
-modparam("registrar", "received\_param", "rcv")
+modparam("registrar", "received_param", "rcv")
 ```
 ### `retry_after` (integer)
 
@@ -468,10 +468,10 @@ The parameter specifies the message flag to be used to control the module behavi
 
 *Default value is -1 (disabled).*
 
-**Example.** TCP\_PERSIST\_DURATION.
+**Example.** TCP_PERSIST_DURATION.
 
 ```opensips
-modparam("registrar", "tcp\_persistent\_flag", "TCP\_PERSIST\_DURATION")
+modparam("registrar", "tcp_persistent_flag", "TCP_PERSIST_DURATION")
 ```
 
 ## Exported Functions
@@ -820,7 +820,7 @@ Set the default expiration time for contacts if none is provided in the message.
 
 ```opensips
 ...
-modparam("registrar", "default\_expires", 1800)
+modparam("registrar", "default_expires", 1800)
 ...
 ```
 ### Set `min_expires` parameter
@@ -829,7 +829,7 @@ Set the minimum expiration time for a Contact.
 
 ```opensips
 ...
-modparam("registrar", "min\_expires", 60)
+modparam("registrar", "min_expires", 60)
 ...
 ```
 ### Set `max_expires` parameter
@@ -838,7 +838,7 @@ Set the maximum expiration time for a Contact.
 
 ```opensips
 ...
-modparam("registrar", "max\_expires", 120)
+modparam("registrar", "max_expires", 120)
 ...
 ```
 ### Set `default_q` parameter
@@ -847,7 +847,7 @@ Set the default q value for new contacts.
 
 ```opensips
 ...
-modparam("registrar", "default\_q", 1000)
+modparam("registrar", "default_q", 1000)
 ...
 ```
 ### Set `tcp_persistent_flag` parameter
@@ -856,7 +856,7 @@ Set the message flag to control TCP connection behavior.
 
 ```opensips
 ...
-modparam("registrar", "tcp\_persistent\_flag", "TCP\_PERSIST\_DURATION")
+modparam("registrar", "tcp_persistent_flag", "TCP_PERSIST_DURATION")
 ...
 ```
 ### Set `realm_prefix` parameter
@@ -865,7 +865,7 @@ Set the prefix to be automatically stripped from realm.
 
 ```opensips
 ...
-modparam("registrar", "realm\_prefix", "sip.")
+modparam("registrar", "realm_prefix", "sip.")
 ...
 ```
 ### Set `case_sensitive` parameter
@@ -874,7 +874,7 @@ Set whether AOR comparison is case sensitive.
 
 ```opensips
 ...
-modparam("registrar", "case\_sensitive", 0)
+modparam("registrar", "case_sensitive", 0)
 ...
 ```
 ### Set `received_avp` parameter
@@ -883,7 +883,7 @@ Set the AVP to store the received URI in the user location database.
 
 ```opensips
 ...
-modparam("registrar", "received\_avp", "$avp(rcv)")
+modparam("registrar", "received_avp", "$avp(rcv)")
 ...
 ```
 ### Set `received_param` parameter
@@ -892,7 +892,7 @@ Set the name of the parameter appended to Contacts of 200 OK.
 
 ```opensips
 ...
-modparam("registrar", "received\_param", "rcv")
+modparam("registrar", "received_param", "rcv")
 ...
 ```
 ### Setting the `allow_dup_cseq` parameter
@@ -902,7 +902,7 @@ Instruct the registrar to accept duplicate CSeq values.
 ```opensips
 ...
 # strict RFC 3261 compliance: reject REGISTER requests with duplicate CSeq
-modparam("registrar", "allow\_dup\_cseq", false)
+modparam("registrar", "allow_dup_cseq", false)
 ...
 ```
 ### Setting the `expires_max_deviation` parameter
@@ -912,7 +912,7 @@ Add a random deviation to the expiration interval of a newly registered contact.
 ```opensips
 ...
 # add a random +/- 0-100 seconds to each registration lifetime
-modparam("registrar", "expires\_max\_deviation", 100)
+modparam("registrar", "expires_max_deviation", 100)
 ...
 ```
 ### Set `max_contacts` parameter
@@ -922,36 +922,36 @@ Limit the number of contacts per AOR.
 ```opensips
 ...
 # Allow no more than 10 contacts per AOR
-modparam("registrar", "max\_contacts", 10)
+modparam("registrar", "max_contacts", 10)
 ...
 ```
-### Setting the _max\_username\_len_ module parameter
+### Setting the _max_username_len_ module parameter
 
 Set the maximum length of the username part of an AOR.
 
 ```opensips
-modparam("registrar", "max\_username\_len", 128)
+modparam("registrar", "max_username_len", 128)
 ```
-### Setting the _max\_domain\_len_ module parameter
+### Setting the _max_domain_len_ module parameter
 
 Set the maximum length of the domain part of an AOR.
 
 ```opensips
-modparam("registrar", "max\_domain\_len", 128)
+modparam("registrar", "max_domain_len", 128)
 ```
-### Setting the _max\_aor\_len_ module parameter
+### Setting the _max_aor_len_ module parameter
 
 Set the maximum length of an AOR.
 
 ```opensips
-modparam("registrar", "max\_aor\_len", 512)
+modparam("registrar", "max_aor_len", 512)
 ```
-### Setting the _max\_contact\_len_ module parameter
+### Setting the _max_contact_len_ module parameter
 
 Set the maximum length of a Contact header field SIP URI.
 
 ```opensips
-modparam("registrar", "max\_contact\_len", 512)
+modparam("registrar", "max_contact_len", 512)
 ```
 ### Set `retry_after` parameter
 
@@ -959,7 +959,7 @@ Add the Retry-After header field in 5xx replies.
 
 ```opensips
 ...
-modparam("registrar", "retry\_after", 30)
+modparam("registrar", "retry_after", 30)
 ...
 ```
 ### Set `sock_hdr_namer` parameter
@@ -968,7 +968,7 @@ Set the header which contains a socket description.
 
 ```opensips
 ...
-modparam("registrar", "sock\_hdr\_name", "Sock-Info")
+modparam("registrar", "sock_hdr_name", "Sock-Info")
 ...
 ```
 ### Set `mcontact_avp` parameter
@@ -977,20 +977,20 @@ Set the AVP to store the modified binding/contact during cached registrations.
 
 ```opensips
 ...
-modparam("registrar", "mcontact\_avp", "$avp(orig\_ct)")
+modparam("registrar", "mcontact_avp", "$avp(orig_ct)")
 ...
 route {
    ...
    # before forwarding the REGISTER request, save the outgoing contact.
    # Be SURE to do it after all the possible changes over the contact,
-   # like fix\_nated\_contact()
-   $avp(orig\_ct) = $ct.fields(uri);
-   t\_on\_reply("do\_save");
-   t\_relay("udp:ip:port");
+   # like fix_nated_contact()
+   $avp(orig_ct) = $ct.fields(uri);
+   t_on_reply("do_save");
+   t_relay("udp:ip:port");
    ...
 }
 ...
-onreply\_route\[do\_save\] {
+onreply_route\[do_save\] {
 	if ($rs=="200")
 		save("location");
 }
@@ -1001,13 +1001,13 @@ onreply\_route\[do\_save\] {
 Set the AVP to store specific additional information for each registration.
 
 ```opensips
-# reading attributes from the attr\_pvar when doing parallel forking
+# reading attributes from the attr_pvar when doing parallel forking
 ...
-modparam("registrar", "attr\_avp", "$avp(attr)")
+modparam("registrar", "attr_avp", "$avp(attr)")
 
 ...
-if (is\_method("REGISTER")) {
-	$avp(attr) = "contact\_info";
+if (is_method("REGISTER")) {
+	$avp(attr) = "contact_info";
 	save("location");
 	exit;
 }
@@ -1020,11 +1020,11 @@ while ($(msg.branch.uri\[$var(i)\])!=NULL) {
 	$var(i) = $var(i) + 1;
 }
 ....
-t\_on\_branch("parallel\_fork");
-t\_relay();
+t_on_branch("parallel_fork");
+t_relay();
 ...
-branch\_route \[parallel\_fork\] {
-	xlog("Attributes for branch $T\_branch\_idx: $tm.branch.attr(attr)\\n");
+branch_route \[parallel_fork\] {
+	xlog("Attributes for branch $T_branch_idx: $tm.branch.attr(attr)\\n");
 }
 ```
 ### Set `gruu_secret` parameter
@@ -1033,7 +1033,7 @@ Set the string used in XORing when generating temporary GRUUs.
 
 ```opensips
 ...
-modparam("registrar", "gruu\_secret", "top\_secret")
+modparam("registrar", "gruu_secret", "top_secret")
 ...
 ```
 ### Set `gruu_secret` parameter
@@ -1042,7 +1042,7 @@ Globally disable GRUU handling.
 
 ```opensips
 ...
-modparam("registrar", "disable\_gruu", 0)
+modparam("registrar", "disable_gruu", 0)
 ...
 ```
 ### Setting the `pn_enable` parameter
@@ -1051,7 +1051,7 @@ Enable SIP Push Notification support.
 
 ```opensips
 ...
-modparam("registrar", "pn\_enable", true)
+modparam("registrar", "pn_enable", true)
 ...
 ```
 ### Setting the `pn_providers` parameter
@@ -1060,7 +1060,7 @@ Set a list of supported Push Notification providers.
 
 ```opensips
 ...
-modparam("registrar", "pn\_providers", "apns, fcm, webpush")
+modparam("registrar", "pn_providers", "apns, fcm, webpush")
 ...
 ```
 ### Setting the `pn_ct_match_params` parameter
@@ -1069,7 +1069,7 @@ Set the minimally required list of RFC 8599 parameters for matching.
 
 ```opensips
 ...
-modparam("registrar", "pn\_ct\_match\_params", "pn-provider, pn-prid")
+modparam("registrar", "pn_ct_match_params", "pn-provider, pn-prid")
 ...
 ```
 ### Setting the `pn_pnsreg_interval` parameter
@@ -1078,7 +1078,7 @@ Set the prior-to-expiration interval advertised by the server.
 
 ```opensips
 ...
-modparam("registrar", "pn\_pnsreg\_interval", 140)
+modparam("registrar", "pn_pnsreg_interval", 140)
 ...
 ```
 ### Setting the `pn_trigger_interval` parameter
@@ -1087,7 +1087,7 @@ Set the interval prior to expiration to trigger the refresh event.
 
 ```opensips
 ...
-modparam("registrar", "pn\_trigger\_interval", 130)
+modparam("registrar", "pn_trigger_interval", 130)
 ...
 ```
 ### Setting the `pn_skip_pn_interval` parameter
@@ -1096,7 +1096,7 @@ Set the time interval during which the contact is assumed to be reachable.
 
 ```opensips
 ...
-modparam("registrar", "pn\_skip\_pn\_interval", 10)
+modparam("registrar", "pn_skip_pn_interval", 10)
 ...
 ```
 ### Setting the `pn_refresh_timeout` parameter
@@ -1105,7 +1105,7 @@ Set the maximum allowed sum of the duration required for the Push Notification.
 
 ```opensips
 ...
-modparam("registrar", "pn\_refresh\_timeout", 10)
+modparam("registrar", "pn_refresh_timeout", 10)
 ...
 ```
 ### Setting the `pn_enable_purr` parameter
@@ -1114,7 +1114,7 @@ Enable the SIP Push Notification mechanism for long-lived dialogs.
 
 ```opensips
 ...
-modparam("registrar", "pn\_enable\_purr", true)
+modparam("registrar", "pn_enable_purr", true)
 ...
 ```
 ### `save` usage
@@ -1155,8 +1155,8 @@ remove("location", "sip:bob@atlanta.com", "sip:bob@46.50.64.78");
 ...
 # remove all bob's phones which are behind "50.60.50.60"
 # note that "contact" parameter has to be specified with NULL value even though not used
-$var(next\_hop) = "50.60.50.60"
-remove("location", "sip:bob@atlanta.com", , $var(next\_hop));
+$var(next_hop) = "50.60.50.60"
+remove("location", "sip:bob@atlanta.com", , $var(next_hop));
 ...
 # remove bob's phone with contact "sip:bob@46.50.64.78" that is behind "50.60.50.60"
 remove("location", "sip:bob@atlanta.com", "sip:bob@46.50.64.78", "50.60.50.60");
@@ -1171,10 +1171,10 @@ Remove all contacts behind a specific IP and Port.
 ```opensips
 ...
 # remove all contacts behind 8.8.8.8 port 43213
-remove\_ip\_port("8.8.8.8",43213,"location");
+remove_ip_port("8.8.8.8",43213,"location");
 ...
 # remove only bob's contacts behind the 8.8.8.8:43213 host
-remove\_ip\_port("8.8.8.8",43213,"location","sip:bob@atlanta.com");
+remove_ip_port("8.8.8.8",43213,"location","sip:bob@atlanta.com");
 ...
 ```
 ### `lookup` usage
@@ -1197,10 +1197,10 @@ lookup("location", "", $var(aor)); # simple lookup with AOR from var
 switch ($retcode) {
     case -1:
     case -3:
-        sl\_send\_reply(404, "Not Found");
+        sl_send_reply(404, "Not Found");
         exit;
     case -2:
-        sl\_send\_reply(405, "Not Found");
+        sl_send_reply(405, "Not Found");
         exit;
 };
 ...
@@ -1212,15 +1212,15 @@ Check if an AOR is registered.
 ```opensips
 ...
 /***/
-if (is\_method("REGISTER")) {
+if (is_method("REGISTER")) {
 	/* automatically uses the URI from the To header */
-	if (is\_registered("location")) {
+	if (is_registered("location")) {
 		xlog("this AOR is registered\\n")
 		...
 	}
 };
 /* check the From uri whether this aor is registered or not */
-if (is\_registered("location",$fu)) {
+if (is_registered("location",$fu)) {
 	xlog("caller is registered\\n");
 }
 ...
@@ -1232,16 +1232,16 @@ Check if a contact and/or a callid from a certain AOR is registered.
 ```opensips
 ...
 /* block users which are not registered... */
-if (is\_method("INVITE")) {
-	if (!is\_contact\_registered("location")) {
-		sl\_send\_reply(401, "Unauthorized");
+if (is_method("INVITE")) {
+	if (!is_contact_registered("location")) {
+		sl_send_reply(401, "Unauthorized");
 		...
 	}
 }
 
 /* ... or check whether the 2nd Contact URI is registered or not */
-if (is\_method("INVITE")) {
-	if (is\_contact\_registered("location", $fu, $(ct.fields(uri)\[1\])))
+if (is_method("INVITE")) {
+	if (is_contact_registered("location", $fu, $(ct.fields(uri)\[1\])))
 		xlog("caller is registered\\n");
 }
 ...
@@ -1253,8 +1253,8 @@ Check if there is at least one contact registered from a specific IP.
 ```opensips
 ...
 /* check the source ip  whether it is already registered */
-if (is\_method("REGISTER")) {
-	if (is\_ip\_registered("location",$tu,$si)) {
+if (is_method("REGISTER")) {
+	if (is_ip_registered("location",$tu,$si)) {
 		xlog("already registered from this ip\\n");
 		...
 	}
@@ -1267,7 +1267,7 @@ Add a header with the description of the received socket to the current REGISTER
 
 ```opensips
 ...
-add\_sock\_hdr("Sock-Info");
+add_sock_hdr("Sock-Info");
 ...
 ```
 ### `async pn_process_purr()` usage
@@ -1277,28 +1277,28 @@ Perform mid-dialog request processing according to RFC 8599.
 ```opensips
 route {
 	...
-	if (has\_totag()) {
-		if (is\_method("ACK") && t\_check\_trans()) {
-			t\_relay();
+	if (has_totag()) {
+		if (is_method("ACK") && t_check_trans()) {
+			t_relay();
 			exit;
 		}
 
-		if (!loose\_route()) {
-			send\_reply(404, "Not Found");
+		if (!loose_route()) {
+			send_reply(404, "Not Found");
 			exit;
 		}
 
-		if (!is\_method("ACK"))
-			async (pn\_process\_purr("location"), resume\_route);
+		if (!is_method("ACK"))
+			async (pn_process_purr("location"), resume_route);
 
 		route(relay);
 		exit;
 	}
 }
 
-route \[resume\_route\] {
+route \[resume_route\] {
 	$var(rc) = $rc;
-	xlog("pn\_process\_purr() finished with $var(rc)\\n");
+	xlog("pn_process_purr() finished with $var(rc)\\n");
 
 	...
 }

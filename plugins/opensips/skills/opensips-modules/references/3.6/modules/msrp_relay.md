@@ -42,7 +42,7 @@ The _Expires_ header value to be provided in the 200 OK response to an AUTH requ
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_expires", 600)
+modparam("msrp_relay", "auth_expires", 600)
 ...
 ```
 ### `auth_max_expires` (int)
@@ -53,7 +53,7 @@ The maximum value accepted by the relay in the _Expires_ header, if the client p
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_max\_expires", 60)
+modparam("msrp_relay", "auth_max_expires", 60)
 ...
 ```
 ### `auth_min_expires` (int)
@@ -64,7 +64,7 @@ The minimum value accepted by the relay in the _Expires_ header, if the client p
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_min\_expires", 60)
+modparam("msrp_relay", "auth_min_expires", 60)
 ...
 ```
 ### `auth_realm` (string)
@@ -74,11 +74,11 @@ The realm to be provided in the WWW-Authenticate header when the relay automatic
 **Example.** opensips.org.
 
 ```opensips
-modparam("msrp\_relay", "auth\_realm", "opensips.org")
+modparam("msrp_relay", "auth_realm", "opensips.org")
 ```
 ### `auth_route` (str)
 
-The name of the script route to be called when authorizing MSRP clients (receiving an AUTH request with an Authorization header). Here you should provide the appropriate password (or pre-calculated HA1 string) for the credentials via the [password\_var](#param_password_var "1.3.6.�password_var (string)") pseudo-variable, in order for the relay to check the client response.
+The name of the script route to be called when authorizing MSRP clients (receiving an AUTH request with an Authorization header). Here you should provide the appropriate password (or pre-calculated HA1 string) for the credentials via the [password_var](#param_password_var "1.3.6.password_var (string)") pseudo-variable, in order for the relay to check the client response.
 
 **Notes:** No default value; this parameter is mandatory.
 
@@ -86,7 +86,7 @@ The name of the script route to be called when authorizing MSRP clients (receivi
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_route", "auth")
+modparam("msrp_relay", "auth_route", "auth")
 ...
 ```
 ### `calculate_ha1` (integer)
@@ -98,7 +98,7 @@ This parameter configures whether the value of the password_var pseudo-variable 
 **Example.** Set the `calculate_ha1` parameter.
 
 ```opensips
-modparam("msrp\_relay", "calculate\_ha1", 1)
+modparam("msrp_relay", "calculate_ha1", 1)
 ```
 ### `cleanup_interval` (int)
 
@@ -110,7 +110,7 @@ The interval between full iterations of the sessions table in order to clean up 
 
 ```opensips
 ...
-modparam("msrp\_relay", "cleanup\_interval", 30)
+modparam("msrp_relay", "cleanup_interval", 30)
 ...
 ```
 ### `dst_host_var` (string)
@@ -133,7 +133,7 @@ The size of the hash table that stores the MSRP sessions. It is the 2 logarithmi
 
 ```opensips
 ...
-modparam("msrp\_relay", "hash\_size", 10)
+modparam("msrp_relay", "hash_size", 10)
 ...
 ```
 ### `my_uri` (string)
@@ -149,7 +149,7 @@ If the port is not set explicitly, the default value of 2855 wil be assumed. The
 **Example.** msrp://opensips.org:2855;tcp.
 
 ```opensips
-modparam("msrp\_relay", "my\_uri", "msrp://opensips.org:2855;tcp")
+modparam("msrp_relay", "my_uri", "msrp://opensips.org:2855;tcp")
 ```
 ### `nonce_expire` (integer)
 
@@ -160,7 +160,7 @@ Nonces have limited lifetime. After a given period of time nonces will be consid
 **Example.** 15.
 
 ```opensips
-modparam("msrp\_relay", "nonce\_expire", 15)   # Set nonce\_expire to 15s
+modparam("msrp_relay", "nonce_expire", 15)   # Set nonce_expire to 15s
 ```
 ### `password_var` (string)
 
@@ -171,7 +171,7 @@ This name of the pseudo-variable that should be set in the auth_route script rou
 **Example.** Set the `password_var` parameter.
 
 ```opensips
-modparam("msrp\_relay", "password\_var", "$var(msrp\_auth\_password)")
+modparam("msrp_relay", "password_var", "$var(msrp_auth_password)")
 ```
 ### `realm_var` (string)
 
@@ -182,7 +182,7 @@ This name of the pseudo-variable that hols the authentication Realm.
 **Example.** $var(msrp_auth_realm).
 
 ```opensips
-modparam("msrp\_relay", "realm\_var", "$var(msrp\_auth\_realm)")
+modparam("msrp_relay", "realm_var", "$var(msrp_auth_realm)")
 ```
 ### `socket_route` (str)
 
@@ -194,13 +194,13 @@ The optional name of the script route to be called when start relaying a new MSR
 
 ```opensips
 ...
-modparam("msrp\_relay", "socket\_route", "msrp\_routing")
+modparam("msrp_relay", "socket_route", "msrp_routing")
 
-route[msrp\_routing] {
-	xlog("MSRP request comming from $si:$sp on $socket\_in socket\n");
-	xlog("trying to go to $var(dst\_schema)://$var(dst\_host)\n");
+route[msrp_routing] {
+	xlog("MSRP request comming from $si:$sp on $socket_in socket\n");
+	xlog("trying to go to $var(dst_schema)://$var(dst_host)\n");
 
-	$socket\_out = "msrp:1.2.3.4:9999";
+	$socket_out = "msrp:1.2.3.4:9999";
 }
 ...
 ```
@@ -213,7 +213,7 @@ This name of the pseudo-variable that holds the authentication username.
 **Example.** $var(msrp_auth_user).
 
 ```opensips
-modparam("msrp\_relay", "username\_var", "$var(msrp\_auth\_user)")
+modparam("msrp_relay", "username_var", "$var(msrp_auth_user)")
 ```
 
 ## Configuration Examples
@@ -224,7 +224,7 @@ Set the hash_size parameter for the MSRP sessions table.
 
 ```opensips
 ...
-modparam("msrp\_relay", "hash\_size", 10)
+modparam("msrp_relay", "hash_size", 10)
 ...
 ```
 
@@ -235,7 +235,7 @@ Set the interval between full iterations of the sessions table in order to clean
 
 ```opensips
 ...
-modparam("msrp\_relay", "cleanup\_interval", 30)
+modparam("msrp_relay", "cleanup_interval", 30)
 ...
 ```
 
@@ -246,7 +246,7 @@ Set the name of the script route to be called when authorizing MSRP clients.
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_route", "auth")
+modparam("msrp_relay", "auth_route", "auth")
 ...
 ```
 
@@ -256,7 +256,7 @@ null
 Configure the pseudo-variable that holds the authentication username.
 
 ```opensips
-modparam("msrp\_relay", "username\_var", "$var(msrp\_auth\_user)")
+modparam("msrp_relay", "username_var", "$var(msrp_auth_user)")
 ```
 
 null
@@ -265,7 +265,7 @@ null
 Configure the pseudo-variable that holds the authentication Realm.
 
 ```opensips
-modparam("msrp\_relay", "realm\_var", "$var(msrp\_auth\_realm)")
+modparam("msrp_relay", "realm_var", "$var(msrp_auth_realm)")
 ```
 
 null
@@ -274,7 +274,7 @@ null
 Configure the pseudo-variable that should be set in the auth_route script route in order to check the client response when authenticating.
 
 ```opensips
-modparam("msrp\_relay", "password\_var", "$var(msrp\_auth\_password)")
+modparam("msrp_relay", "password_var", "$var(msrp_auth_password)")
 ```
 
 null
@@ -283,7 +283,7 @@ null
 Configure whether the value of the password_var pseudo-variable should be treated as a plaintext password or a pre-calculated HA1 string.
 
 ```opensips
-modparam("msrp\_relay", "calculate\_ha1", 1)
+modparam("msrp_relay", "calculate_ha1", 1)
 ```
 
 null
@@ -293,13 +293,13 @@ Set the script route to be called when starting to relay a new MSRP session to a
 
 ```opensips
 ...
-modparam("msrp\_relay", "socket\_route", "msrp\_routing")
+modparam("msrp_relay", "socket_route", "msrp_routing")
 
-route\[msrp\_routing\] {
-	xlog("MSRP request comming from $si:$sp on $socket\_in socket\\n");
-	xlog("trying to go to $var(dst\_schema)://$var(dst\_host)\\n");
+route\[msrp_routing\] {
+	xlog("MSRP request comming from $si:$sp on $socket_in socket\\n");
+	xlog("trying to go to $var(dst_schema)://$var(dst_host)\\n");
 
-	$socket\_out = "msrp:1.2.3.4:9999";
+	$socket_out = "msrp:1.2.3.4:9999";
 }
 ...
 ```
@@ -310,7 +310,7 @@ null
 Set the realm to be provided in the WWW-Authenticate header when the relay automatically challenges an MSRP client.
 
 ```opensips
-modparam("msrp\_relay", "auth\_realm", "opensips.org")
+modparam("msrp_relay", "auth_realm", "opensips.org")
 ```
 
 null
@@ -320,7 +320,7 @@ Set the auth_expires header value to be provided in the 200 OK response to an AU
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_expires", 600)
+modparam("msrp_relay", "auth_expires", 600)
 ...
 ```
 
@@ -331,7 +331,7 @@ Set the minimum value accepted by the relay in the Expires header.
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_min\_expires", 60)
+modparam("msrp_relay", "auth_min_expires", 60)
 ...
 ```
 
@@ -342,7 +342,7 @@ Set the maximum value accepted by the relay in the Expires header.
 
 ```opensips
 ...
-modparam("msrp\_relay", "auth\_max\_expires", 60)
+modparam("msrp_relay", "auth_max_expires", 60)
 ...
 ```
 
@@ -352,7 +352,7 @@ null
 Set the lifetime of nonces to protect against replay attacks.
 
 ```opensips
-modparam("msrp\_relay", "nonce\_expire", 15)   # Set nonce\_expire to 15s
+modparam("msrp_relay", "nonce_expire", 15)   # Set nonce_expire to 15s
 ```
 
 null
@@ -361,7 +361,7 @@ null
 Set the MSRP URI of the relay to be matched against the To-Path header.
 
 ```opensips
-modparam("msrp\_relay", "my\_uri", "msrp://opensips.org:2855;tcp")
+modparam("msrp_relay", "my_uri", "msrp://opensips.org:2855;tcp")
 ```
 
 null

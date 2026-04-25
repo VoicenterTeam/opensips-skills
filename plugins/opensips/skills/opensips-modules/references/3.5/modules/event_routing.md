@@ -29,7 +29,7 @@ Depending on how the notification is handled by the subscribing processing, we d
 
 So, EBR allows your SIP processing to synchronize or the exchange info between, even if these processings are completely unrelated from SIP, time or handling perspective.
 
-With the help of the EBR support, more advanced routing scenarios are possible now, scenarios where you need to handle and put together different processing as type and time, like the handling of various calls with the handling of registrations or with the DTMF extraction. For more, see the [Examples](#Examples "1.6.�Usage Examples") section.
+With the help of the EBR support, more advanced routing scenarios are possible now, scenarios where you need to handle and put together different processing as type and time, like the handling of various calls with the handling of registrations or with the DTMF extraction. For more, see the [Examples](#Examples "1.6.Usage Examples") section.
 
 ## Dependencies
 
@@ -67,9 +67,9 @@ As an exception, in the notification route, the EBR module will make available t
 ```opensips
 ...
 $avp(filter) = "aor=\*@opensips.org"
-notify\_on\_event("E\_UL\_AOR\_INSERT",$avp(filter),"reg\_done",60);
+notify_on_event("E_UL_AOR_INSERT",$avp(filter),"reg_done",60);
 ...
-route\[reg\_done\] {
+route\[reg_done\] {
 	xlog("a new user $avp(aor) registered with opensips.org domain\\n");
 }
 ```

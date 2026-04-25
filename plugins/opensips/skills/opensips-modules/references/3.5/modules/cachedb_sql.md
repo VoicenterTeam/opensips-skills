@@ -38,20 +38,20 @@ The interval in seconds at which the expired keys will be removed from the datab
 **Example.** 10.
 
 ```opensips
-modparam("cachedb\_sql", "cache\_clean\_period",10);
+modparam("cachedb_sql", "cache_clean_period",10);
 ```
 ### `cachedb_url` (string)
 
-The url of the Database that OpenSIPS will connect to in order to use the from script cache\_store,cache\_fetch, etc operations.
+The url of the Database that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations.
 
-The format to follow is : sql:\[conn\_id\]-dburl
+The format to follow is : sql:\[conn_id\]-dburl
 
 The parameter can be set multiple times to create multiple connections accessible from the OpenSIPS script.
 
 **Example.** sql:1st-mysql://root:vlad@localhost/opensips_sql.
 
 ```opensips
-modparam("cachedb\_sql", "cachedb\_url", "sql:1st-mysql://root:vlad@localhost/opensips\_sql")
+modparam("cachedb_sql", "cachedb_url", "sql:1st-mysql://root:vlad@localhost/opensips_sql")
 ```
 ### `counter_column` (string)
 
@@ -60,16 +60,16 @@ The column where the counter value will be stored
 **Example.** some_name.
 
 ```opensips
-modparam("cachedb\_sql", "counter\_column","some\_name");
+modparam("cachedb_sql", "counter_column","some_name");
 ```
 ### `db_table` (string)
 
-The table of the Database that OpenSIPS will connect to in order to use the from script cache\_store,cache\_fetch, etc operations.
+The table of the Database that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations.
 
 **Example.** my_table.
 
 ```opensips
-modparam("cachedb\_sql", "db\_table","my\_table");
+modparam("cachedb_sql", "db_table","my_table");
 ```
 ### `expires_column` (string)
 
@@ -78,7 +78,7 @@ The column where the expires will be stored
 **Example.** some_name.
 
 ```opensips
-modparam("cachedb\_sql", "expires\_column","some\_name");
+modparam("cachedb_sql", "expires_column","some_name");
 ```
 ### `key_column` (string)
 
@@ -87,7 +87,7 @@ The column where the key will be stored
 **Example.** some_name.
 
 ```opensips
-modparam("cachedb\_sql", "key\_column","some\_name");
+modparam("cachedb_sql", "key_column","some_name");
 ```
 ### `value_column` (string)
 
@@ -96,7 +96,7 @@ The column where the value will be stored
 **Example.** some_name.
 
 ```opensips
-modparam("cachedb\_sql", "value\_column","some\_name");
+modparam("cachedb_sql", "value_column","some_name");
 ```
 
 ## Configuration Examples

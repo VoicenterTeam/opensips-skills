@@ -104,7 +104,7 @@ Set `auto_reload` parameter
 
 ```opensips
 ...
-modparam("db\_berkeley", "auto\_reload", 1)
+modparam("db_berkeley", "auto_reload", 1)
 ...
 ```
 ### Set `log_enable` parameter
@@ -113,7 +113,7 @@ Set `log_enable` parameter
 
 ```opensips
 ...
-modparam("db\_berkeley", "log\_enable", 1)
+modparam("db_berkeley", "log_enable", 1)
 ...
 ```
 ### Set `journal_roll_interval` parameter
@@ -122,6 +122,6 @@ Set `journal_roll_interval` parameter
 
 ```opensips
 ...
-modparam("db\_berkeley", "journal\_roll\_interval", 3600)
+modparam("db_berkeley", "journal_roll_interval", 3600)
 ...
 ```

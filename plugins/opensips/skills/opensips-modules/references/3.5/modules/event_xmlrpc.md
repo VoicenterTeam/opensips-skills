@@ -44,7 +44,7 @@ When raising an event, pack the name and value of the parameters in a XMLRPC str
 
 ```opensips
 ...
-modparam("event\_xmlrpc", "use\_struct\_param", 1)
+modparam("event_xmlrpc", "use_struct_param", 1)
 ...
 ```
 
@@ -53,6 +53,6 @@ modparam("event\_xmlrpc", "use\_struct\_param", 1)
 ### Example 1.3. XMLRPC socket
 
 ```opensips
-	# calls the 'block\_ip' function
-	xmlrpc:127.0.0.1:8080:block\_ip
+	# calls the 'block_ip' function
+	xmlrpc:127.0.0.1:8080:block_ip
 ```

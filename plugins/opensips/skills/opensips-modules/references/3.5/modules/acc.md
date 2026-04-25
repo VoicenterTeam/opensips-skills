@@ -58,24 +58,24 @@ The SQL, Event Interface and AAA backend support are compiled in the module.
 
 A very comprehensive description of how the accounting module works in terms accounting scope, accounting events and accounting backends can be found in this online Advanced Accounting Tutorial.
 
-### 1.1.1.�General Example
+### 1.1.1.General Example
 
 loadmodule "modules/acc/acc.so"
 
 if ($ru=~"sip:+40") /\* calls to Romania \*/ {
-    if (!proxy\_authorize("sip\_domain.net" /\* realm \*/,
+    if (!proxy_authorize("sip_domain.net" /\* realm \*/,
     "subscriber" /\* table name \*/))  {
-        proxy\_challenge("sip\_domain.net" /\* realm \*/, "0" /\* no qop \*/ );
+        proxy_challenge("sip_domain.net" /\* realm \*/, "0" /\* no qop \*/ );
         exit;
     }
 
-    if (is\_method("INVITE") && $au!=$fU) {
+    if (is_method("INVITE") && $au!=$fU) {
         xlog("FROM URI != digest username\\n");
-        sl\_send\_reply(403,"Forbidden");
+        sl_send_reply(403,"Forbidden");
     }
 
-    do\_accounting("log"); /\* set for accounting via syslog \*/
-    t\_relay(); /\* enter stateful mode now \*/
+    do_accounting("log"); /\* set for accounting via syslog \*/
+    t_relay(); /\* enter stateful mode now \*/
 };
 
 ## Dependencies
@@ -356,7 +356,7 @@ acc_db_request("$T_reply_code $(<reply>rr)", "acc");
 
 ### `acc_evi_request(comment)`
 
-Like acc_log_request, acc_evi_request reports on a request. The report is packed as an event sent through the OpenSIPS Event Interface as _E_ACC_EVENT_ if the reply code is a positive one (lower than 300), or _E_ACC_MISSED_EVENT_ for negative or no codes. More information on this in [Exported Events](#exported_events "1.9.�Exported Events").
+Like acc_log_request, acc_evi_request reports on a request. The report is packed as an event sent through the OpenSIPS Event Interface as _E_ACC_EVENT_ if the reply code is a positive one (lower than 300), or _E_ACC_MISSED_EVENT_ for negative or no codes. More information on this in [Exported Events](#exported_events "1.9.Exported Events").
 
 **Parameters:**
 
@@ -431,7 +431,7 @@ acc_log_request("403 Destination not allowed");
 
 ### `acc_new_leg()`
 
-Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg "1.7.3.�$acc_current_leg (read-only)") only if multi-leg accounting is used. All values of the new leg will be initialized to null.
+Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg "1.7.3.$acc_current_leg (read-only)") only if multi-leg accounting is used. All values of the new leg will be initialized to null.
 
 **Usable from:** REQUEST_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE, LOCAL_ROUTE
 

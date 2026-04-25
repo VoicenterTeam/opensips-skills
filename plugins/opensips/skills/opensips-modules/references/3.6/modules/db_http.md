@@ -306,7 +306,7 @@ Character to be used to delimit fields in the reply.Only one char may be set.
 **Example.** ;.
 
 ```opensips
-modparam("db\_http", "field\_delimiter",";")
+modparam("db_http", "field_delimiter",";")
 ```
 ### `quote_delimiter` (string)
 
@@ -317,7 +317,7 @@ Character to be used to quote fields that require quoting in the reply.Only one 
 **Example.** |.
 
 ```opensips
-modparam("db\_http", "quote\_delimiter","|")
+modparam("db_http", "quote_delimiter","|")
 ```
 ### `row_delimiter` (string)
 
@@ -328,7 +328,7 @@ Character to be used to delimit rows in the reply.Only one char may be set.
 **Example.** \n.
 
 ```opensips
-modparam("db\_http", "row\_delimiter","\\n")
+modparam("db_http", "row_delimiter","\\n")
 ```
 ### `timeout` (integer)
 
@@ -339,7 +339,7 @@ The maximum number of milliseconds that the HTTP ops are allowed to last
 **Example.** 5000.
 
 ```opensips
-modparam("db\_http", "timeout",5000)
+modparam("db_http", "timeout",5000)
 ```
 ### `value_delimiter` (string)
 
@@ -350,7 +350,7 @@ The delimiter used to separate multiple fields of a single variable (see Section
 **Example.** ;.
 
 ```opensips
-modparam("db\_http", "value\_delimiter",";")
+modparam("db_http", "value_delimiter",";")
 ```
 
 ## Configuration Examples
@@ -361,9 +361,9 @@ Demonstrates how to set the db_url parameter for a module using the http scheme.
 
 ```opensips
 ...
-modparam("presence", "db\_url","http://user:pass@localhost:13100")
+modparam("presence", "db_url","http://user:pass@localhost:13100")
 or
-modparam("presence", "db\_url","http://user:pass@www.some.com/some/some")
+modparam("presence", "db_url","http://user:pass@www.some.com/some/some")
 ...
 ```
 ### Set `SSL` parameter
@@ -372,7 +372,7 @@ Demonstrates setting the SSL parameter to 1.
 
 ```opensips
 ...
-modparam("db\_http", "SSL",1)
+modparam("db_http", "SSL",1)
 ...
 ```
 ### Set `cap_raw_query` parameter
@@ -381,7 +381,7 @@ Demonstrates setting the cap_raw_query parameter.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_raw\_query", 1)
+modparam("db_http", "cap_raw_query", 1)
 ...
 ```
 ### Set `cap_replace` parameter
@@ -390,7 +390,7 @@ Demonstrates setting the cap_replace parameter.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_replace", 1)
+modparam("db_http", "cap_replace", 1)
 ...
 ```
 ### Set `cap_insert_update` parameter
@@ -399,7 +399,7 @@ Demonstrates setting the cap_insert_update parameter.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_insert\_update", 1)
+modparam("db_http", "cap_insert_update", 1)
 ...
 ```
 ### Set `cap_last_inserted_id` parameter
@@ -408,7 +408,7 @@ Demonstrates setting the cap_last_inserted_id parameter.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_last\_inserted\_id", 1)
+modparam("db_http", "cap_last_inserted_id", 1)
 ...
 ```
 ### Set `field_delimiter` parameter
@@ -417,7 +417,7 @@ Demonstrates setting the field_delimiter parameter.
 
 ```opensips
 ...
-modparam("db\_http", "field\_delimiter",";")
+modparam("db_http", "field_delimiter",";")
 ...
 ```
 ### Set `row_delimiter` parameter
@@ -426,7 +426,7 @@ Demonstrates setting the row_delimiter parameter.
 
 ```opensips
 ...
-modparam("db\_http", "row\_delimiter","\\n")
+modparam("db_http", "row_delimiter","\\n")
 ...
 ```
 ### Set `quote_delimiter` parameter
@@ -435,7 +435,7 @@ Demonstrates setting the quote_delimiter parameter.
 
 ```opensips
 ...
-modparam("db\_http", "quote\_delimiter","|")
+modparam("db_http", "quote_delimiter","|")
 ...
 ```
 ### Set `value_delimiter` parameter
@@ -444,7 +444,7 @@ Demonstrates setting the value_delimiter parameter.
 
 ```opensips
 ...
-modparam("db\_http", "value\_delimiter",";")
+modparam("db_http", "value_delimiter",";")
 ...
 ```
 ### Set `timeout` parameter
@@ -453,7 +453,7 @@ Demonstrates setting the timeout parameter.
 
 ```opensips
 ...
-modparam("db\_http", "timeout",5000)
+modparam("db_http", "timeout",5000)
 ...
 ```
 ### Set `disable_expect` parameter
@@ -462,6 +462,6 @@ Demonstrates setting the disable_expect parameter.
 
 ```opensips
 ...
-modparam("db\_http", "disable\_expect",1)
+modparam("db_http", "disable_expect",1)
 ...
 ```

@@ -92,7 +92,7 @@ modparam("mi_xmlrpc_ng", "trace_destination", "hep_dest")
 
 ### Example 1.4. XMLRPC request
 
-This is an example showing the xmlrpc format for the “get\_statistics net: shmem:” MI commad: response.
+This is an example showing the xmlrpc format for the “get_statistics net: shmem:” MI commad: response.
 
 ```opensips
 POST /xmlrpc HTTP/1.0
@@ -103,7 +103,7 @@ Content-Length: 216
 
 <?xml version='1.0'?>
 <methodCall>
-	<methodName>get\_statistics</methodName>
+	<methodName>get_statistics</methodName>
 	<params>
 		<param>
 		<value>
@@ -133,6 +133,6 @@ Date: Mon, 8 Mar 2013 12:00:00 GMT
 <?xml version="1.0" encoding="UTF-8"?>.
 <methodResponse>
 <params><param>
-<value><struct><member><name>net:waiting\_udp</name><value><string>0</string></value></member><member><name>net:waiting\_tcp</name><value><string>0</string></value></member><member><name>net:waiting\_tls</name><value><string>0</string></value></member><member><name>shmem:total\_size</name><value><string>268435456</string></value></member><member><name>shmem:used\_size</name><value><string>40032</string></value></member><member><name>shmem:real\_used\_size</name><value><string>277112</string></value></member><member><name>shmem:max\_used\_size</name><value><string>277112</string></value></member><member><name>shmem:free\_size</name><value><string>268158344</string></value></member><member><name>shmem:fragments</name><value><string>194</string></value></member></struct></value></param></params>
+<value><struct><member><name>net:waiting_udp</name><value><string>0</string></value></member><member><name>net:waiting_tcp</name><value><string>0</string></value></member><member><name>net:waiting_tls</name><value><string>0</string></value></member><member><name>shmem:total_size</name><value><string>268435456</string></value></member><member><name>shmem:used_size</name><value><string>40032</string></value></member><member><name>shmem:real_used_size</name><value><string>277112</string></value></member><member><name>shmem:max_used_size</name><value><string>277112</string></value></member><member><name>shmem:free_size</name><value><string>268158344</string></value></member><member><name>shmem:fragments</name><value><string>194</string></value></member></struct></value></param></params>
 </methodResponse>.
 ```

@@ -18,13 +18,13 @@ Reference for the OpenSIPs 3.6 proto_ipsec module. Read this file when configuri
 
 ## Overview
 
-The **proto\_ipsec** module provides IPSec sockets for establishing secure communication channels. It relies on RFC 3329 (Security Mechanism Agreement for the Session Initiation Protocol (SIP)) to establish the IPSec parameters necessary for creating dynamic Security Associations (SAs) for each connection.
+The **proto_ipsec** module provides IPSec sockets for establishing secure communication channels. It relies on RFC 3329 (Security Mechanism Agreement for the Session Initiation Protocol (SIP)) to establish the IPSec parameters necessary for creating dynamic Security Associations (SAs) for each connection.
 
 This module has been developed to fully comply with the VoLTE specification (GSMA PRD IR.92) and implements the extensions defined in TS 33.203 (3G Security: Access Security for IP-based Services).
 
 ## How It Works
 
-It allows creation of both UDP and TCP secure connections on the same IP:port pair, defined as sockets. Essentially, when defining a socket using the _proto\_ipsec_ protocol, two new internal/hidden sockets are created on the specified port. For example, defining the following socket:
+It allows creation of both UDP and TCP secure connections on the same IP:port pair, defined as sockets. Essentially, when defining a socket using the _proto_ipsec_ protocol, two new internal/hidden sockets are created on the specified port. For example, defining the following socket:
 
 ...
 socket=ipsec:127.0.0.1:5100
@@ -45,7 +45,7 @@ IPSec communication requires each participant to define at least two ports for e
 
 The module implements the entire logic of keeping track of the registration status by hooking into the usrloc module and listening for contact changes updates. It also ensures the persistency of the tunnels by restoring them after a restart.
 
-When a request is received over an IPSec tunnel, the module provides two variables, [$ipsec(field)](#pv_ipsec "1.5.1.�$ipsec") and [$ipsec\_ue(field)](#pv_ipsec_ue "1.5.2.�$ipsec_ue") to inspect details about it.
+When a request is received over an IPSec tunnel, the module provides two variables, [$ipsec(field)](#pv_ipsec "1.5.1.$ipsec") and [$ipsec_ue(field)](#pv_ipsec_ue "1.5.2.$ipsec_ue") to inspect details about it.
 
 ## Dependencies
 
@@ -99,9 +99,9 @@ Currently supported algorithms are:
 **Example.** null.
 
 ```opensips
-modparam("proto\_ipsec", "allowed\_algorithms", "null")
-modparam("proto\_ipsec", "allowed\_algorithms", "hmac-sha-1-96=null")
-modparam("proto\_ipsec", "allowed\_algorithms", "hmac-sha-1-96=null,aes-gmac=aes-gcm")
+modparam("proto_ipsec", "allowed_algorithms", "null")
+modparam("proto_ipsec", "allowed_algorithms", "hmac-sha-1-96=null")
+modparam("proto_ipsec", "allowed_algorithms", "hmac-sha-1-96=null,aes-gmac=aes-gcm")
 ```
 ### `default_client_port` (integer)
 
@@ -112,7 +112,7 @@ Default port value to be used when we act as clients in the IPSec communication.
 **Example.** 5100.
 
 ```opensips
-modparam("proto\_ipsec", "default\_client\_port", 5100)
+modparam("proto_ipsec", "default_client_port", 5100)
 ```
 ### `default_server_port` (integer)
 
@@ -123,7 +123,7 @@ Default port value to be used when we act as server in the IPSec communication.
 **Example.** 6100.
 
 ```opensips
-modparam("proto\_ipsec", "default\_server\_port", 6100)
+modparam("proto_ipsec", "default_server_port", 6100)
 ```
 ### `disable_deprecated_algorithms` (integer)
 
@@ -142,7 +142,7 @@ Indicates whether we should ignore deprecated algorithms, as defined in TS 33.20
 **Example.** yes.
 
 ```opensips
-modparam("proto\_ipsec", "disable\_deprecated\_algorithms", yes)
+modparam("proto_ipsec", "disable_deprecated_algorithms", yes)
 ```
 ### `max_spi` (integer)
 
@@ -153,7 +153,7 @@ This parameter represents the maximum value for the Security Association's (SA) 
 **Example.** 20000.
 
 ```opensips
-modparam("proto\_ipsec", "max\_spi", 20000)
+modparam("proto_ipsec", "max_spi", 20000)
 ```
 ### `min_spi` (integer)
 
@@ -164,7 +164,7 @@ This parameter represents the minimum value for the Security Association's (SA) 
 **Example.** 10000.
 
 ```opensips
-modparam("proto\_ipsec", "min\_spi", 10000)
+modparam("proto_ipsec", "min_spi", 10000)
 ```
 ### `port` (integer)
 
@@ -175,7 +175,7 @@ Default IPSec port used when no prot is being specified in the _socket_ global p
 **Example.** 5100.
 
 ```opensips
-modparam("proto\_ipsec", "port", 5100)
+modparam("proto_ipsec", "port", 5100)
 ```
 ### `temporary_timeout` (integer)
 
@@ -188,7 +188,7 @@ The timeout signifies the duration elapsed after sending the Security Associatio
 **Example.** 10.
 
 ```opensips
-param("proto\_ipsec", "temporary\_timeout", 10) # number of seconds
+param("proto_ipsec", "temporary_timeout", 10) # number of seconds
 ```
 
 ## Exported Functions
@@ -282,7 +282,7 @@ The following fields can be retrieved:
 **Example 1.11. `$ipsec_ue(field)` usage**
 
 ...
-xlog("Using $ipsec\_ue(ip):$ipsec\_ue(port-c) and $ipsec\_ue(ip):$ipsec\_ue(port-s) socket\\n");
+xlog("Using $ipsec_ue(ip):$ipsec_ue(port-c) and $ipsec_ue(ip):$ipsec_ue(port-s) socket\\n");
 ...
 
 - **Type:** struct
@@ -297,25 +297,25 @@ Default IPSec port used when no prot is being specified in the _socket_ global p
 
 ```opensips
 ...
-modparam("proto\_ipsec", "port", 5100)
+modparam("proto_ipsec", "port", 5100)
 ...
 ```
 ### Set `min_spi` parameter
 
-This parameter represents the minimum value for the Security Association's (SA) SPI parameter. In conjunction with the _max\_spi_ setting, it defines the SPI range _\[min\_spi, max\_spi\]_ that must be unique within the system.
+This parameter represents the minimum value for the Security Association's (SA) SPI parameter. In conjunction with the _max_spi_ setting, it defines the SPI range _\[min_spi, max_spi\]_ that must be unique within the system.
 
 ```opensips
 ...
-modparam("proto\_ipsec", "min\_spi", 10000)
+modparam("proto_ipsec", "min_spi", 10000)
 ...
 ```
 ### Set `max_spi` parameter
 
-This parameter represents the maximum value for the Security Association's (SA) SPI parameter. In conjunction with the _min\_spi_ setting, it defines the SPI range _\[min\_spi, max\_spi\]_ that must be unique within the system.
+This parameter represents the maximum value for the Security Association's (SA) SPI parameter. In conjunction with the _min_spi_ setting, it defines the SPI range _\[min_spi, max_spi\]_ that must be unique within the system.
 
 ```opensips
 ...
-modparam("proto\_ipsec", "max\_spi", 20000)
+modparam("proto_ipsec", "max_spi", 20000)
 ...
 ```
 ### Set `temporary_timeout` variable
@@ -323,7 +323,7 @@ modparam("proto\_ipsec", "max\_spi", 20000)
 Sets the timeout (in seconds) a temporary security association can be stored in memory until in is confirmed (or used) by the remote endpoint. The timeout signifies the duration elapsed after sending the Security Association's (SA) parameters in the 401 reply and when the User Equipment (UE) transmits the initial message over the new secure channel.
 
 ```opensips
-param("proto\_ipsec", "temporary\_timeout", 10) # number of seconds
+param("proto_ipsec", "temporary_timeout", 10) # number of seconds
 ```
 ### Set `default_client_port` parameter
 
@@ -331,7 +331,7 @@ Default port value to be used when we act as clients in the IPSec communication.
 
 ```opensips
 ...
-modparam("proto\_ipsec", "default\_client\_port", 5100)
+modparam("proto_ipsec", "default_client_port", 5100)
 ...
 ```
 ### Set `default_server_port` parameter
@@ -340,7 +340,7 @@ Default port value to be used when we act as server in the IPSec communication.
 
 ```opensips
 ...
-modparam("proto\_ipsec", "default\_server\_port", 6100)
+modparam("proto_ipsec", "default_server_port", 6100)
 ...
 ```
 ### Set `allowed_algorithms` parameter
@@ -349,9 +349,9 @@ Whitelists the authentication and encryption algorithms that can be used for IPS
 
 ```opensips
 ...
-modparam("proto\_ipsec", "allowed\_algorithms", "null")
-modparam("proto\_ipsec", "allowed\_algorithms", "hmac-sha-1-96=null")
-modparam("proto\_ipsec", "allowed\_algorithms", "hmac-sha-1-96=null,aes-gmac=aes-gcm")
+modparam("proto_ipsec", "allowed_algorithms", "null")
+modparam("proto_ipsec", "allowed_algorithms", "hmac-sha-1-96=null")
+modparam("proto_ipsec", "allowed_algorithms", "hmac-sha-1-96=null,aes-gmac=aes-gcm")
 ...
 ```
 ### Set `disable_deprecated_algorithms` parameter
@@ -360,7 +360,7 @@ Indicates whether we should ignore deprecated algorithms, as defined in TS 33.20
 
 ```opensips
 ...
-modparam("proto\_ipsec", "disable\_deprecated\_algorithms", yes)
+modparam("proto_ipsec", "disable_deprecated_algorithms", yes)
 ...
 ```
 ### `ipsec_create()` usage
@@ -369,9 +369,9 @@ Creates an IPSec SA/tunnel according to the _Security-Client_ header and the AKA
 
 ```opensips
 ...
-onreply\_route\[ipsec\] {
-	if ($T\_reply\_code == 401)
-		if (ipsec\_create())
+onreply_route\[ipsec\] {
+	if ($T_reply_code == 401)
+		if (ipsec_create())
 }
 ...
 ```
@@ -390,6 +390,6 @@ Populated for a request that is being received over an IPSec tunnel, it contains
 
 ```opensips
 ...
-xlog("Using $ipsec\_ue(ip):$ipsec\_ue(port-c) and $ipsec\_ue(ip):$ipsec\_ue(port-s) socket\\n");
+xlog("Using $ipsec_ue(ip):$ipsec_ue(port-c) and $ipsec_ue(ip):$ipsec_ue(port-s) socket\\n");
 ...
 ```

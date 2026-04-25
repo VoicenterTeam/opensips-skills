@@ -40,18 +40,18 @@ None.
 
 ### `auto_reconnect` (integer)
 
-Turns on or off the auto\_reconnect mode.
+Turns on or off the auto_reconnect mode.
 
 *Default value is 1.*
 
 **Example.** 0.
 
 ```opensips
-modparam("db\_unixodbc", "auto\_reconnect", 0)
+modparam("db_unixodbc", "auto_reconnect", 0)
 ```
 ### `use_escape_common` (integer)
 
-Escape values in query using internal escape\_common() function. It escapes single quote ''', double quote '"', backslash '\\', and NULL characters.\n\nYou should enable this parameter if you know that the ODBC driver considers the above characters as special (for marking begin and end of a value, escape other characters ...). It prevents against SQL injection.
+Escape values in query using internal escape_common() function. It escapes single quote ''', double quote '"', backslash '\\', and NULL characters.\n\nYou should enable this parameter if you know that the ODBC driver considers the above characters as special (for marking begin and end of a value, escape other characters ...). It prevents against SQL injection.
 
 *Default value is 0.*
 
@@ -63,7 +63,7 @@ Escape values in query using internal escape\_common() function. It escapes sing
 **Example.** 1.
 
 ```opensips
-modparam("db\_unixodbc", "use\_escape\_common", 1)
+modparam("db_unixodbc", "use_escape_common", 1)
 ```
 
 ## Configuration Examples

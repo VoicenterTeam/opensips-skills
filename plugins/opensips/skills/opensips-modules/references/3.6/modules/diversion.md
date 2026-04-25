@@ -85,7 +85,7 @@ The function adds a new diversion header field before any other existing Diversi
 
 ```opensips
 ...
-add\_diversion("user-busy");
+add_diversion("user-busy");
 ...
 ```
 

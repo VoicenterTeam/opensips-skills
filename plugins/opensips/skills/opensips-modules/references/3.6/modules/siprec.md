@@ -64,13 +64,13 @@ _By default any negative reply generates a failover._
 
 ```opensips
 # do not failover on 408 reply codes
-modparam("siprec", "skip\_failover\_codes", "408")
+modparam("siprec", "skip_failover_codes", "408")
 
 # do not failover on 408 or 487 reply codes
-modparam("siprec", "skip\_failover\_codes", "408|487")
+modparam("siprec", "skip_failover_codes", "408|487")
 
 # do not failover on any 3xx or 4xx reply code
-modparam("siprec", "skip\_failover\_codes", "\[34\]\[0-9\]\[0-9\]")
+modparam("siprec", "skip_failover_codes", "\[34\]\[0-9\]\[0-9\]")
 ```
 
 ## Exported Functions
@@ -296,13 +296,13 @@ Set `skip_failover_codes` parameter
 ```opensips
 ...
 # do not failover on 408 reply codes
-modparam("siprec", "skip\_failover\_codes", "408")
+modparam("siprec", "skip_failover_codes", "408")
 
 # do not failover on 408 or 487 reply codes
-modparam("siprec", "skip\_failover\_codes", "408|487")
+modparam("siprec", "skip_failover_codes", "408|487")
 
 # do not failover on any 3xx or 4xx reply code
-modparam("siprec", "skip\_failover\_codes", "\[34\]\[0-9\]\[0-9\]")
+modparam("siprec", "skip_failover_codes", "\[34\]\[0-9\]\[0-9\]")
 ...
 ```
 ### Use `siprec_start_recording()` function with a single SRS
@@ -311,10 +311,10 @@ Use `siprec_start_recording()` function with a single SRS
 
 ```opensips
 	...
-	if (!has\_totag() && is\_method("INVITE")) {
+	if (!has_totag() && is_method("INVITE")) {
 		$var(srs) = "sip:127.0.0.1";
 		xlog("Engage SIPREC call recording to $var(srs) for $ci\\n");
-		siprec\_start\_recording($var(srs));
+		siprec_start_recording($var(srs));
 	}
 	...
 ```
@@ -324,10 +324,10 @@ Use `siprec_start_recording()` function with multiple SRS servers
 
 ```opensips
 	...
-	if (!has\_totag() && is\_method("INVITE")) {
+	if (!has_totag() && is_method("INVITE")) {
 		$var(srs) = "sip:127.0.0.1, sip:127.0.0.1;transport=TCP";
 		xlog("Engage SIPREC call recording to servers $var(srs) for $ci in inbound group\\n");
-		siprec\_start\_recording($var(srs), "inbound");
+		siprec_start_recording($var(srs), "inbound");
 	}
 	...
 ```
@@ -337,11 +337,11 @@ Use `siprec_start_recording()` function with custom XML values for participants
 
 ```opensips
 	...
-	$xml(caller\_xml) = "<nameID></nameID>";
-	$xml(caller\_xml/nameID.attr/aor) = "sip:6024151234@10.0.0.11:5090";
-	$xml(caller\_xml/nameID) = "<name>test</name>";
-	$siprec(caller) = $xml(caller\_xml/nameID);
-	siprec\_start\_recording($var(srs));
+	$xml(caller_xml) = "<nameID></nameID>";
+	$xml(caller_xml/nameID.attr/aor) = "sip:6024151234@10.0.0.11:5090";
+	$xml(caller_xml/nameID) = "<name>test</name>";
+	$siprec(caller) = $xml(caller_xml/nameID);
+	siprec_start_recording($var(srs));
 	...
 ```
 ### Use `siprec_start_recording()` function with custom headers
@@ -350,8 +350,8 @@ Use `siprec_start_recording()` function with custom headers
 
 ```opensips
 	...
-	$siprec(headers) = "X-MY-CUSTOM\_HDR: 1\\r\\n";
-	siprec\_start\_recording($var(srs));
+	$siprec(headers) = "X-MY-CUSTOM_HDR: 1\\r\\n";
+	siprec_start_recording($var(srs));
 	...
 ```
 ### Use `siprec_start_recording()` function with custom group and session extensions
@@ -361,10 +361,10 @@ Use `siprec_start_recording()` function with custom group and session extensions
 ```opensips
 	...
 	$var(temp) = "<callcenterID> 17</callcenterID>";
-	$siprec(group\_custom\_extension) = $var(temp);
-	$siprec(session\_custom\_extension) = "<callcenterCode>dfgh3q45gsdfty5</callcenterCode>";
+	$siprec(group_custom_extension) = $var(temp);
+	$siprec(session_custom_extension) = "<callcenterCode>dfgh3q45gsdfty5</callcenterCode>";
 
-	siprec\_start\_recording($var(srs));
+	siprec_start_recording($var(srs));
 	...
 ```
 ### Use `siprec_pause_recording()`
@@ -373,9 +373,9 @@ Use `siprec_pause_recording()`
 
 ```opensips
 	...
-	if (has\_totag() && is\_method("INVITE")) {
-		if (is\_audio\_on\_hold())
-			siprec\_pause\_recording();
+	if (has_totag() && is_method("INVITE")) {
+		if (is_audio_on_hold())
+			siprec_pause_recording();
 	}
 	...
 ```
@@ -385,9 +385,9 @@ Use `siprec_resume_recording()`
 
 ```opensips
 	...
-	if (has\_totag() && is\_method("INVITE")) {
-		if (!is\_audio\_on\_hold())
-			siprec\_resume\_recording();
+	if (has_totag() && is_method("INVITE")) {
+		if (!is_audio_on_hold())
+			siprec_resume_recording();
 	}
 	...
 ```
@@ -397,9 +397,9 @@ Use `siprec_stop_recording()`
 
 ```opensips
 	...
-	if (has\_totag() && is\_method("INVITE")) {
-		if (is\_audio\_on\_hold())
-			siprec\_stop\_recording();
+	if (has_totag() && is_method("INVITE")) {
+		if (is_audio_on_hold())
+			siprec_stop_recording();
 	}
 	...
 ```
@@ -409,8 +409,8 @@ Use `siprec_send_indialog()`
 
 ```opensips
 	...
-	if (has\_totag() && is\_method("INFO")) {
-		siprec\_send\_indialog("Content-Type: $hdr(Content-Type)\\r\\n", $rb);
+	if (has_totag() && is_method("INFO")) {
+		siprec_send_indialog("Content-Type: $hdr(Content-Type)\\r\\n", $rb);
 	}
 	...
 ```

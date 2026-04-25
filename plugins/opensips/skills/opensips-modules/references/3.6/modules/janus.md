@@ -45,7 +45,7 @@ The sleep interval used when polling for an Janus command response. Since the va
 **Example.** 3000.
 
 ```opensips
-modparam("janus", "janus\_cmd\_polling\_itv", 3000)
+modparam("janus", "janus_cmd_polling_itv", 3000)
 ```
 ### `janus_cmd_timeout` (integer)
 
@@ -56,7 +56,7 @@ The maximally allowed duration for the execution of an Janus command. This inter
 **Example.** 3000.
 
 ```opensips
-modparam("janus", "janus\_cmd\_timeout", 3000)
+modparam("janus", "janus_cmd_timeout", 3000)
 ```
 ### `janus_db_table` (string)
 
@@ -67,7 +67,7 @@ The DB Table from where OpenSIPS will load the list of Janus connection
 **Example.** my_janus_table.
 
 ```opensips
-modparam("janus", "janus\_db\_table", "my\_janus\_table")
+modparam("janus", "janus_db_table", "my_janus_table")
 ```
 ### `janus_db_url` (string)
 
@@ -78,7 +78,7 @@ The DB URL from where OpenSIPS will load the list of Janus connection
 **Example.** mysql://root@localhost/opensips.
 
 ```opensips
-modparam("janus", "janus\_db\_url", "mysql://root@localhost/opensips")
+modparam("janus", "janus_db_url", "mysql://root@localhost/opensips")
 ```
 ### `janus_max_msg_chunks` (integer)
 
@@ -89,7 +89,7 @@ The maximum number of chunks in which a Janus message is expected to arrive via 
 **Example.** 8.
 
 ```opensips
-modparam("janus", "janus\_max\_msg\_chunks", 8)
+modparam("janus", "janus_max_msg_chunks", 8)
 ```
 ### `janus_ping_interval` (integer)
 
@@ -100,7 +100,7 @@ The time interval at which OpenSIPS will do keepalive pinging on the Janus conne
 **Example.** 10.
 
 ```opensips
-modparam("janus", "janus\_ping\_interval", 10)
+modparam("janus", "janus_ping_interval", 10)
 ```
 ### `janus_send_timeout` (integer)
 
@@ -111,7 +111,7 @@ Time in milliseconds after a Janus WebSocket connection will be closed if it is 
 **Example.** 2000.
 
 ```opensips
-modparam("janus", "janus\_send\_timeout", 2000)
+modparam("janus", "janus_send_timeout", 2000)
 ```
 
 ## Exported Functions
@@ -201,7 +201,7 @@ Setting the `janus_send_timeout` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_send\_timeout", 2000)
+modparam("janus", "janus_send_timeout", 2000)
 ...
 ```
 ### Setting the `janus_max_msg_chunks` parameter
@@ -210,7 +210,7 @@ Setting the `janus_max_msg_chunks` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_max\_msg\_chunks", 8)
+modparam("janus", "janus_max_msg_chunks", 8)
 ...
 ```
 ### Setting the `janus_cmd_timeout` parameter
@@ -219,7 +219,7 @@ Setting the `janus_cmd_timeout` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_cmd\_timeout", 3000)
+modparam("janus", "janus_cmd_timeout", 3000)
 ...
 ```
 ### Setting the `janus_cmd_polling_itv` parameter
@@ -228,7 +228,7 @@ Setting the `janus_cmd_polling_itv` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_cmd\_polling\_itv", 3000)
+modparam("janus", "janus_cmd_polling_itv", 3000)
 ...
 ```
 ### Setting the `janus_ping_interval` parameter
@@ -237,7 +237,7 @@ Setting the `janus_ping_interval` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_ping\_interval", 10)
+modparam("janus", "janus_ping_interval", 10)
 ...
 ```
 ### Setting the `janus_db_url` parameter
@@ -246,7 +246,7 @@ Setting the `janus_db_url` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_db\_url", "mysql://root@localhost/opensips")
+modparam("janus", "janus_db_url", "mysql://root@localhost/opensips")
 ...
 ```
 ### Setting the `janus_db_table` parameter
@@ -255,7 +255,7 @@ Setting the `janus_db_table` parameter
 
 ```opensips
 ...
-modparam("janus", "janus\_db\_table", "my\_janus\_table")
+modparam("janus", "janus_db_table", "my_janus_table")
 ...
 ```
 ### `_janus_send_request()_` usage
@@ -266,14 +266,14 @@ Usage of the janus_send_request function
 ...
 # if the DB contains: 
 #       id: 1
-# janus\_id: test\_janus
-# janus\_url: janusws://my\_janus\_host:80/janus?room=abcd
+# janus_id: test_janus
+# janus_url: janusws://my_janus_host:80/janus?room=abcd
 
-	$var(rc) = janus\_send\_request("test\_janus", "{
+	$var(rc) = janus_send_request("test_janus", "{
   "janus": "attach",
   "plugin": "janus.plugin.videoroom",
   "transaction": "abcdef123456",
-  "session\_id": 987654321
+  "session_id": 987654321
 }", $var(response));
 	if (!$var(rc)) {
 		xlog("failed to execute Janus command ($var(rc))\\n");
@@ -290,15 +290,15 @@ Example of the E_JANUS_EVENT
 ...
 # if the DB contains: 
 #       id: 1
-# janus\_id: test\_janus
-# janus\_url: janusws://my\_janus\_host:80/janus?room=abcd
+# janus_id: test_janus
+# janus_url: janusws://my_janus_host:80/janus?room=abcd
 
-event\_route\[E\_JANUS\_EVENT\] {
-	xlog("Received janus event from $param(janus\_id) - $param(janus\_url) - $param(janus\_body) \\n");
-	$json(janus\_body) := $param(janus\_body);
-	$avp(janus\_sender) =  $json(janus\_body/sender);
-	if ($avp(janus\_sender) != NULL) {
-		xlog("Received event from sender $avp(janus\_sender) \\n");
+event_route\[E_JANUS_EVENT\] {
+	xlog("Received janus event from $param(janus_id) - $param(janus_url) - $param(janus_body) \\n");
+	$json(janus_body) := $param(janus_body);
+	$avp(janus_sender) =  $json(janus_body/sender);
+	if ($avp(janus_sender) != NULL) {
+		xlog("Received event from sender $avp(janus_sender) \\n");
 	}
 }
 ...

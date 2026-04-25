@@ -44,7 +44,7 @@ The database table column where the advertised definition is stored.
 **Example.** adv.
 
 ```opensips
-modparam("sockets\_mgm", "advertised\_column", "adv")
+modparam("sockets_mgm", "advertised_column", "adv")
 ```
 ### `db_url` (string)
 
@@ -55,7 +55,7 @@ The database URL where the sockets are fetched from.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("sockets\_mgm", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("sockets_mgm", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `flags_column` (string)
 
@@ -66,7 +66,7 @@ The database table column where the flags definition is stored.
 **Example.** sock.
 
 ```opensips
-modparam("sockets\_mgm", "flags\_column", "sock")
+modparam("sockets_mgm", "flags_column", "sock")
 ```
 ### `max_sockets` (integer)
 
@@ -77,7 +77,7 @@ The maximum number of sockets that can be defined dynamically. See the Limitatio
 **Example.** 2000.
 
 ```opensips
-modparam("sockets\_mgm", "max\_sockets", 2000)
+modparam("sockets_mgm", "max_sockets", 2000)
 ```
 ### `processes` (integer)
 
@@ -88,7 +88,7 @@ The number of processes designated to handle UDP sockets.
 **Example.** 32.
 
 ```opensips
-modparam("sockets\_mgm", "processes", 32)
+modparam("sockets_mgm", "processes", 32)
 ```
 ### `socket_column` (string)
 
@@ -99,7 +99,7 @@ The database table column where the socket definition is stored.
 **Example.** sock.
 
 ```opensips
-modparam("sockets\_mgm", "socket\_column", "sock")
+modparam("sockets_mgm", "socket_column", "sock")
 ```
 ### `table_name` (string)
 
@@ -110,7 +110,7 @@ The database table name where the sockets are stored.
 **Example.** sockets_def.
 
 ```opensips
-modparam("sockets\_mgm", "table\_name", "sockets_def")
+modparam("sockets_mgm", "table_name", "sockets_def")
 ```
 ### `tag_column` (string)
 
@@ -121,7 +121,7 @@ The database table column where the tag definition is stored.
 **Example.** sock.
 
 ```opensips
-modparam("sockets\_mgm", "tag\_column", "sock")
+modparam("sockets_mgm", "tag_column", "sock")
 ```
 ### `tos_column` (string)
 
@@ -132,110 +132,110 @@ The database table column where the tos definition is stored.
 **Example.** sock.
 
 ```opensips
-modparam("sockets\_mgm", "tos\_column", "sock")
+modparam("sockets_mgm", "tos_column", "sock")
 ```
 
 ## Exported MI Functions
 
 ### `sockets_mgm:list`
 
-Replaces obsolete MI command: _sockets\_list_.
+Replaces obsolete MI command: _sockets_list_.
 
 MI command to list all the currently used dynamic sockets.
 
 **Example.** reload sockets from the database
 
 ```opensips-mi
-opensips-mi sockets\_mgm:list
+opensips-mi sockets_mgm:list
 ```
 
 **Example.** reload sockets from the database
 
 ```opensips-cli
-opensips-cli -x mi sockets\_mgm:list
+opensips-cli -x mi sockets_mgm:list
 ```
 
 ### `sockets_mgm:reload`
 
-Replaces obsolete MI command: _sockets\_reload_.
+Replaces obsolete MI command: _sockets_reload_.
 
 MI command used to reload the sockets from the database.
 
 **Example.** reload sockets from the database
 
 ```opensips-mi
-opensips-mi sockets\_mgm:reload
+opensips-mi sockets_mgm:reload
 ```
 
 **Example.** reload sockets from the database
 
 ```opensips-cli
-opensips-cli -x mi sockets\_mgm:reload
+opensips-cli -x mi sockets_mgm:reload
 ```
 
 ## Configuration Examples
 
-### Set “db\_url” parameter
+### Set “db_url” parameter
 
-Set “db\_url” parameter
+Set “db_url” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "db_url", "dbdriver://username:password@dbhost/dbname")
+modparam("sockets_mgm", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
-### Set “table\_name” parameter
+### Set “table_name” parameter
 
-Set “table\_name” parameter
+Set “table_name” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "table_name", "sockets_def")
+modparam("sockets_mgm", "table_name", "sockets_def")
 ...
 ```
-### Set “socket\_column” parameter
+### Set “socket_column” parameter
 
-Set “socket\_column” parameter
+Set “socket_column” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "socket_column", "sock")
+modparam("sockets_mgm", "socket_column", "sock")
 ...
 ```
-### Set “advertised\_column” parameter
+### Set “advertised_column” parameter
 
-Set “advertised\_column” parameter
+Set “advertised_column” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "advertised_column", "adv")
+modparam("sockets_mgm", "advertised_column", "adv")
 ...
 ```
-### Set “tag\_column” parameter
+### Set “tag_column” parameter
 
-Set “tag\_column” parameter
+Set “tag_column” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "tag_column", "sock")
+modparam("sockets_mgm", "tag_column", "sock")
 ...
 ```
-### Set “flags\_column” parameter
+### Set “flags_column” parameter
 
-Set “flags\_column” parameter
+Set “flags_column” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "flags_column", "sock")
+modparam("sockets_mgm", "flags_column", "sock")
 ...
 ```
-### Set “tos\_column” parameter
+### Set “tos_column” parameter
 
-Set “tos\_column” parameter
+Set “tos_column” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "tos_column", "sock")
+modparam("sockets_mgm", "tos_column", "sock")
 ...
 ```
 ### Set “processes” parameter
@@ -244,15 +244,15 @@ Set “processes” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "processes", 32)
+modparam("sockets_mgm", "processes", 32)
 ...
 ```
-### Set “max\_sockets” parameter
+### Set “max_sockets” parameter
 
-Set “max\_sockets” parameter
+Set “max_sockets” parameter
 
 ```opensips
 ...
-modparam("sockets\_mgm", "max_sockets", 2000)
+modparam("sockets_mgm", "max_sockets", 2000)
 ...
 ```

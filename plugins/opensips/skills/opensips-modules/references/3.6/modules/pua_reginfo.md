@@ -56,18 +56,18 @@ The default domain for the registered users to be used when constructing the uri
 **Example.** kamailio.org.
 
 ```opensips
-modparam("pua\_reginfo", "default\_domain", "kamailio.org")
+modparam("pua_reginfo", "default_domain", "kamailio.org")
 ```
 ### `outbound_proxy` (string)
 
-The outbound\_proxy uri to be used when sending Subscribe and Publish requests.
+The outbound_proxy uri to be used when sending Subscribe and Publish requests.
 
 *Default value is NULL.*
 
 **Example.** sip:proxy@kamailio.org.
 
 ```opensips
-modparam("pua\_reginfo", "outbound\_proxy", "sip:proxy@kamailio.org")
+modparam("pua_reginfo", "outbound_proxy", "sip:proxy@kamailio.org")
 ```
 ### `publish_reginfo` (integer)
 
@@ -78,7 +78,7 @@ Whether or not to generate PUBLISH requests.
 **Example.** 0.
 
 ```opensips
-modparam("pua\_reginfo", "publish\_reginfo", 0)
+modparam("pua_reginfo", "publish_reginfo", 0)
 ```
 ### `server_address` (string)
 
@@ -87,7 +87,7 @@ The IP address of the server.
 **Example.** sip:reginfo@160.34.23.12.
 
 ```opensips
-modparam("pua\_reginfo", "server_address", "sip:reginfo@160.34.23.12")
+modparam("pua_reginfo", "server_address", "sip:reginfo@160.34.23.12")
 ```
 ### `ul_domain` (string)
 
@@ -98,7 +98,7 @@ The domain for for querying the usrloc-database.
 **Example.** location.
 
 ```opensips
-modparam("pua\_reginfo", "ul\_domain", "location")
+modparam("pua_reginfo", "ul_domain", "location")
 ```
 ### `ul_identities_key` (string)
 
@@ -109,12 +109,12 @@ The Key, which may be used for retrieving multiple public identies for a user.
 **Example.** identities.
 
 ```opensips
-modparam("pua\_reginfo", "ul\_identities\_key", "identities")
+modparam("pua_reginfo", "ul_identities_key", "identities")
 ...
-onreply\_route[register\_reply] {
-	if (t\_check\_status("200") && $hdr(P-Associated-URI)) {
-        ul\_add\_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
-        reginfo\_update("$tU@$td");
+onreply_route[register_reply] {
+	if (t_check_status("200") && $hdr(P-Associated-URI)) {
+        ul_add_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
+        reginfo_update("$tU@$td");
 	}
 }
 ```
@@ -200,7 +200,7 @@ The default domain for the registered users to be used when constructing the uri
 
 ```opensips
 ...
-modparam("pua\_reginfo", "default\_domain", "kamailio.org")
+modparam("pua_reginfo", "default_domain", "kamailio.org")
 ...
 ```
 ### Set `publish_reginfo` parameter
@@ -209,7 +209,7 @@ Whether or not to generate PUBLISH requests.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "publish\_reginfo", 0)
+modparam("pua_reginfo", "publish_reginfo", 0)
 ...
 ```
 ### Set `outbound_proxy` parameter
@@ -218,7 +218,7 @@ The outbound_proxy uri to be used when sending Subscribe and Publish requests.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "outbound\_proxy", "sip:proxy@kamailio.org")
+modparam("pua_reginfo", "outbound_proxy", "sip:proxy@kamailio.org")
 ...
 ```
 ### Set `server_address` parameter
@@ -227,7 +227,7 @@ The IP address of the server.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "server\_address", "sip:reginfo@160.34.23.12")
+modparam("pua_reginfo", "server_address", "sip:reginfo@160.34.23.12")
 ...
 ```
 ### Set `ul_domain` parameter
@@ -236,7 +236,7 @@ The domain for for querying the usrloc-database.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "ul\_domain", "location")
+modparam("pua_reginfo", "ul_domain", "location")
 ...
 ```
 ### Set `ul_identities_key` parameter
@@ -245,12 +245,12 @@ The Key, which may be used for retrieving multiple public identies for a user.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "ul\_identities\_key", "identities")
+modparam("pua_reginfo", "ul_identities_key", "identities")
 ...
-onreply\_route\[register\_reply\] {
-	if (t\_check\_status("200") && $hdr(P-Associated-URI)) {
-        ul\_add\_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
-        reginfo\_update("$tU@$td");
+onreply_route\[register_reply\] {
+	if (t_check_status("200") && $hdr(P-Associated-URI)) {
+        ul_add_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
+        reginfo_update("$tU@$td");
 	}
 }
 
@@ -262,9 +262,9 @@ This function processes received "NOTIFY"-requests and updates the local registr
 
 ```opensips
 ...
-if(is\_method("NOTIFY")) 
-	if (reginfo\_handle\_notify("location"))
-		send\_reply("202", "Accepted");
+if(is_method("NOTIFY")) 
+	if (reginfo_handle_notify("location"))
+		send_reply("202", "Accepted");
 ...
 ```
 ### `reginfo_subscribe` usage
@@ -274,13 +274,13 @@ This function will subscribe for reginfo-information at the given server URI.
 ```opensips
 ...
 route {
-	t\_on\_reply("1");
-	t\_relay();
+	t_on_reply("1");
+	t_relay();
 }
 
-reply\_route\[1\] {
-	if (t\_check\_status("200")) 
-		reginfo\_subscribe("$ru");		
+reply_route\[1\] {
+	if (t_check_status("200")) 
+		reginfo_subscribe("$ru");		
 }
 ...
 ```
@@ -290,13 +290,13 @@ Explicitly update the presence status, e.g., when new information is learned.
 
 ```opensips
 ...
-modparam("pua\_reginfo", "ul\_domain", "location")
-modparam("pua\_reginfo", "ul\_identities\_key", "identities")
+modparam("pua_reginfo", "ul_domain", "location")
+modparam("pua_reginfo", "ul_identities_key", "identities")
 ...
-onreply\_route\[register\_reply\] {
-	if (t\_check\_status("200") && $hdr(P-Associated-URI)) {
-        ul\_add\_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
-        reginfo\_update("$tU@$td");
+onreply_route\[register_reply\] {
+	if (t_check_status("200") && $hdr(P-Associated-URI)) {
+        ul_add_key("location", "$tU@$td", "identities", "$hdr(P-Associated-URI)");
+        reginfo_update("$tU@$td");
 	}
 }
 

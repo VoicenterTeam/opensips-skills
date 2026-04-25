@@ -59,7 +59,7 @@ The period at which to check for expired information.
 
 ```opensips
 ...
-modparam("rls", "clean\_period", 100)
+modparam("rls", "clean_period", 100)
 ...
 ```
 ### `contact_user` (string)
@@ -73,7 +73,7 @@ If set to an empty string, no username will be added to the contact and the cont
 **Example.** rls.
 
 ```opensips
-modparam("rls", "contact\_user", "rls")
+modparam("rls", "contact_user", "rls")
 ```
 ### `hash_size` (integer)
 
@@ -84,7 +84,7 @@ The dimension of the hash table used to store subscription to a list. This param
 **Example.** 11.
 
 ```opensips
-modparam("rls", "hash\_size", 11)
+modparam("rls", "hash_size", 11)
 ```
 ### `max_expires` (integer)
 
@@ -96,7 +96,7 @@ The maximum accepted expires for a subscription to a list.
 
 ```opensips
 ...
-modparam("rls", "max\_expires", 10800)
+modparam("rls", "max_expires", 10800)
 ...
 ```
 ### `presence_server` (string)
@@ -106,7 +106,7 @@ The address of the presence server. It will be used as outbound proxy for Subscr
 **Example.** sip:pres@opensips.org:5060.
 
 ```opensips
-modparam("rls", "presence\_server", "sip:pres@opensips.org:5060")
+modparam("rls", "presence_server", "sip:pres@opensips.org:5060")
 ```
 ### `rlpres_table` (string)
 
@@ -118,7 +118,7 @@ The name of the db table where notified event specific information is stored.
 
 ```opensips
 ...
-modparam("rls", "rlpres\_table", "rls\_notify")
+modparam("rls", "rlpres_table", "rls_notify")
 ...
 ```
 ### `rls_event` (string)
@@ -132,7 +132,7 @@ The default event that RLS handles is presence. If some other events should also
 **Example.** dialog;sla.
 
 ```opensips
-modparam("rls", "rls\_event", "dialog;sla")
+modparam("rls", "rls_event", "dialog;sla")
 ```
 ### `rlsubs_table` (string)
 
@@ -144,7 +144,7 @@ The name of the db table where resource lists subscription information is stored
 
 ```opensips
 ...
-modparam("rls", "rlsubs\_table", "rls\_subscriptions")
+modparam("rls", "rlsubs_table", "rls_subscriptions")
 ...
 ```
 ### `to_presence_code` (integer)
@@ -156,7 +156,7 @@ The code to be returned by rls_handle_subscribe function if the processed Subscr
 **Example.** 10.
 
 ```opensips
-modparam("rls", "to\_presence\_code", 10)
+modparam("rls", "to_presence_code", 10)
 ```
 ### `waitn_time` (integer)
 
@@ -168,7 +168,7 @@ The timer period at which the server should attempt to send Notifies with the up
 
 ```opensips
 ...
-modparam("rls", "waitn\_time", 10)
+modparam("rls", "waitn_time", 10)
 ...
 ```
 ### `xcap_root` (string)
@@ -180,7 +180,7 @@ The address of the xcap server.
 **Example.** http://192.168.2.132/xcap-root:800.
 
 ```opensips
-modparam("rls", "xcap\_root", "http://192.168.2.132/xcap-root:800")
+modparam("rls", "xcap_root", "http://192.168.2.132/xcap-root:800")
 ```
 
 ## Exported Functions
@@ -202,7 +202,7 @@ This function has to be called for Notify messages sent by presence servers in r
 ```opensips
 ...
 if($rm=="NOTIFY")
-    rls\_handle\_notify();
+    rls_handle_notify();
 ...
 ```
 
@@ -217,23 +217,23 @@ This function detects if a Subscribe message should be handled by RLS. If not it
 ```opensips
 ...
 For presence and rls on the same machine:
-	modparam(rls, "to\_presence\_code", 10)
+	modparam(rls, "to_presence_code", 10)
 
-	if(is\_method("SUBSCRIBE"))
+	if(is_method("SUBSCRIBE"))
 	{	
-		$var(ret\_code)= rls\_handle\_subscribe();
+		$var(ret_code)= rls_handle_subscribe();
 
-		if($var(ret\_code)== 10)
-				handle\_subscribe();
+		if($var(ret_code)== 10)
+				handle_subscribe();
 
-		t\_release();
+		t_release();
 	}
 
 For rls only:
-	if(is\_method("SUBSCRIBE"))
+	if(is_method("SUBSCRIBE"))
 	{
-		rls\_handle\_subscribe();
-		t\_release();
+		rls_handle_subscribe();
+		t_release();
 	}
 
 ...
@@ -263,7 +263,7 @@ The name of the db table where resource lists subscription information is stored
 
 ```opensips
 ...
-modparam("rls", "rlsubs\_table", "rls\_subscriptions")
+modparam("rls", "rlsubs_table", "rls_subscriptions")
 ...
 ```
 ### Set `rlpres_table` parameter
@@ -272,7 +272,7 @@ The name of the db table where notified event specific information is stored.
 
 ```opensips
 ...
-modparam("rls", "rlpres\_table", "rls\_notify")
+modparam("rls", "rlpres_table", "rls_notify")
 ...
 ```
 ### Set `clean_period` parameter
@@ -281,7 +281,7 @@ The period at which to check for expired information.
 
 ```opensips
 ...
-modparam("rls", "clean\_period", 100)
+modparam("rls", "clean_period", 100)
 ...
 ```
 ### Set `waitn_time` parameter
@@ -290,7 +290,7 @@ The timer period at which the server should attempt to send Notifies with the up
 
 ```opensips
 ...
-modparam("rls", "waitn\_time", 10)
+modparam("rls", "waitn_time", 10)
 ...
 ```
 ### Set `max_expires` parameter
@@ -299,7 +299,7 @@ The maximum accepted expires for a subscription to a list.
 
 ```opensips
 ...
-modparam("rls", "max\_expires", 10800)
+modparam("rls", "max_expires", 10800)
 ...
 ```
 ### Set `hash_size` parameter
@@ -308,7 +308,7 @@ The dimension of the hash table used to store subscription to a list. This param
 
 ```opensips
 ...
-modparam("rls", "hash\_size", 11)
+modparam("rls", "hash_size", 11)
 ...
 ```
 ### Set `hash_size` parameter
@@ -317,7 +317,7 @@ The address of the xcap server.
 
 ```opensips
 ...
-modparam("rls", "xcap\_root", "http://192.168.2.132/xcap-root:800")
+modparam("rls", "xcap_root", "http://192.168.2.132/xcap-root:800")
 ...
 ```
 ### Set `to_presence_code` parameter
@@ -326,7 +326,7 @@ The code to be returned by rls_handle_subscribe function if the processed Subscr
 
 ```opensips
 ...
-modparam("rls", "to\_presence\_code", 10)
+modparam("rls", "to_presence_code", 10)
 ...
 ```
 ### Set `rls_event` parameter
@@ -335,7 +335,7 @@ The default event that RLS handles is presence. If some other events should also
 
 ```opensips
 ...
-modparam("rls", "rls\_event", "dialog;sla")
+modparam("rls", "rls_event", "dialog;sla")
 ...
 ```
 ### Set `presence_server` parameter
@@ -344,7 +344,7 @@ The address of the presence server. It will be used as outbound proxy for Subscr
 
 ```opensips
 ...
-modparam("rls", "presence\_server", "sip:pres@opensips.org:5060")
+modparam("rls", "presence_server", "sip:pres@opensips.org:5060")
 ...
 ```
 ### Set `contact_user` parameter
@@ -353,7 +353,7 @@ This is the username that will be used in the Contact header for the 200 OK repl
 
 ```opensips
 ...
-modparam("rls", "contact\_user", "rls")
+modparam("rls", "contact_user", "rls")
 ...
 ```
 ### `rls_handle_subscribe` usage

@@ -38,11 +38,11 @@ None.
 
 ### `queue_url` (string)
 
-This parameter specifies the configuration for an SQS queue that can be used to publish messages directly from the script, using the sqs\_publish\_message() function or to send messages using raise\_event function.
+This parameter specifies the configuration for an SQS queue that can be used to publish messages directly from the script, using the sqs_publish_message() function or to send messages using raise_event function.
 
-The format of the parameter is: \[ID\]sqs\_url, where ID is an identifier for this SQS queue instance and sqs\_url is the full url of the queue.
+The format of the parameter is: \[ID\]sqs_url, where ID is an identifier for this SQS queue instance and sqs_url is the full url of the queue.
 
-The queue\_url contains:
+The queue_url contains:
 
 *   _endpoint_
     
@@ -55,10 +55,10 @@ The queue\_url contains:
 ```opensips
 ...
 
-modparam("event\_sqs", "queue_url",
+modparam("event_sqs", "queue_url",
 	  "\[q1\]https://sqs.us-west-2.amazonaws.com/123456789012/Queue1")
 
-modparam("event\_sqs", "queue_url",
+modparam("event_sqs", "queue_url",
 	  "\[q2\]http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/Queue2")
 
 ...

@@ -34,10 +34,10 @@ None.
 
 Use a different name for column "column-name".
 
-**Example.** connect\_to.
+**Example.** connect_to.
 
 ```opensips
-modparam("tcp\_mgm", "connect\_timeout\_col", "connect\_to")
+modparam("tcp_mgm", "connect_timeout_col", "connect_to")
 ```
 ### `db_table` (string)
 
@@ -45,10 +45,10 @@ The name of the table holding the TCP paths (rules).
 
 *Default value is tcp_mgm.*
 
-**Example.** tcp\_mgm.
+**Example.** tcp_mgm.
 
 ```opensips
-modparam("tcp\_mgm", "db\_table", "tcp\_mgm")
+modparam("tcp_mgm", "db_table", "tcp_mgm")
 ```
 ### `db_url` (string)
 
@@ -57,14 +57,14 @@ Mandatory URL to the SQL database.
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("tcp\_mgm", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("tcp_mgm", "db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 
 ## Exported MI Functions
 
 ### `tcp_reload`
 
-Reload all TCP paths from the _tcp\_mgm_ table without disrupting ongoing traffic. Note that the reloaded rules will NOT immediately apply to existing TCP connections, rather only to newly established ones.
+Reload all TCP paths from the _tcp_mgm_ table without disrupting ongoing traffic. Note that the reloaded rules will NOT immediately apply to existing TCP connections, rather only to newly established ones.
 
 **Returns:** OK
 
@@ -72,7 +72,7 @@ Reload all TCP paths from the _tcp\_mgm_ table without disrupting ongoing traffi
 
 ```bash
 \# reload all TCP paths
-$ opensips-cli -x mi tcp\_reload
+$ opensips-cli -x mi tcp_reload
 $ "OK"
 ```
 
@@ -83,19 +83,19 @@ $ "OK"
 Mandatory URL to the SQL database.
 
 ```opensips
-modparam("tcp\_mgm", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("tcp_mgm", "db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### Setting the `db_table` parameter
 
 The name of the table holding the TCP paths (rules). Default value is "tcp_mgm".
 
 ```opensips
-modparam("tcp\_mgm", "db\_table", "tcp\_mgm")
+modparam("tcp_mgm", "db_table", "tcp_mgm")
 ```
 ### Setting the `[column-name]_col` parameter
 
 Use a different name for column "column-name".
 
 ```opensips
-modparam("tcp\_mgm", "connect\_timeout\_col", "connect\_to")
+modparam("tcp_mgm", "connect_timeout_col", "connect_to")
 ```

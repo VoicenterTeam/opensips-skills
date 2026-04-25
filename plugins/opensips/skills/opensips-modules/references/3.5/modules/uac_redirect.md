@@ -52,7 +52,7 @@ The parameter may be defined only one - multiple definition will overwrite the p
 
 ```opensips
 ...
-modparam("uac\_redirect","accept\_filter",".\*@siphub\\.net")
+modparam("uac_redirect","accept_filter",".\*@siphub\\.net")
 ...
 ```
 ### `default_filter` (string)
@@ -70,7 +70,7 @@ The default behavior in filtering contacts. It may be “accept” or “deny”
 
 ```opensips
 ...
-modparam("uac\_redirect","default\_filter","deny")
+modparam("uac_redirect","default_filter","deny")
 ...
 ```
 ### `deny_filter` (string)
@@ -85,7 +85,7 @@ The parameter may be defined only one - multiple definition will overwrite the p
 
 ```opensips
 ...
-modparam("uac\_redirect","deny\_filter",".\*@siphub\\.net")
+modparam("uac_redirect","deny_filter",".\*@siphub\\.net")
 ...
 ```
 

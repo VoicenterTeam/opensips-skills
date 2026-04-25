@@ -83,7 +83,7 @@ The column's name in the database storing the critical threshold value for the n
 **Example.** concalls_crit_thresh.
 
 ```opensips
-modparam("fraud\_detection", "concalls\_thresh\_crit\_col", "concalls\_crit\_thresh")
+modparam("fraud_detection", "concalls_thresh_crit_col", "concalls_crit_thresh")
 ```
 ### `concalls_thresh_warn_col` (string)
 
@@ -94,7 +94,7 @@ The column's name in the database storing the warning threshold value for the nu
 **Example.** concalls_warn_thresh.
 
 ```opensips
-modparam("fraud\_detection", "concalls\_thresh\_warn\_col", "concalls\_warn\_thresh")
+modparam("fraud_detection", "concalls_thresh_warn_col", "concalls_warn_thresh")
 ```
 ### `cpm_thresh_crit_col` (string)
 
@@ -117,7 +117,7 @@ The column's name in the database storing the warning threshold value for calls 
 
 ```opensips
 ...
-modparam("fraud\_detection", "cpm\_thresh\_warn\_col", "cpm\_warn\_thresh")
+modparam("fraud_detection", "cpm_thresh_warn_col", "cpm_warn_thresh")
 ...
 ```
 ### `days_col` (string)
@@ -132,7 +132,7 @@ The daysoftheweek needs to be specified as a string containing a list of days or
 
 ```opensips
 ...
-modparam("fraud\_detection", "days\_col", "days")
+modparam("fraud_detection", "days_col", "days")
 ...
 ```
 ### `db_url` (string)
@@ -146,7 +146,7 @@ Database where to load the rules from.
 **Example.** mysql://user:passwb@localhost/database.
 
 ```opensips
-modparam("fraud\_detection", "db\_url", "mysql://user:passwb@localhost/database")
+modparam("fraud_detection", "db_url", "mysql://user:passwb@localhost/database")
 ```
 ### `end_h` (string)
 
@@ -160,7 +160,7 @@ The time needs to be specified as string using the format: “HH:MM”
 
 ```opensips
 ...
-modparam("fraud\_detection", "end\_h", "the\_end\_time")
+modparam("fraud_detection", "end_h", "the_end_time")
 ...
 ```
 ### `pid_col` (string)
@@ -174,7 +174,7 @@ The column's name in the database storing the fraud profile's id. Please keep in
 **Example.** profile.
 
 ```opensips
-modparam("fraud\_detection", "pid\_col", "profile")
+modparam("fraud_detection", "pid_col", "profile")
 ```
 ### `prefix_col` (string)
 
@@ -186,7 +186,7 @@ The column's name in the database storing the prefix for which the fraud rule wi
 
 ```opensips
 ...
-modparam("fraud\_detection", "prefix\_col", "myprefix")
+modparam("fraud_detection", "prefix_col", "myprefix")
 ...
 ```
 ### `rid_col` (string)
@@ -198,7 +198,7 @@ The column's name in the database storing the fraud rule's id.
 **Example.** theruleid.
 
 ```opensips
-modparam("fraud\_detection", "rid\_col", "theruleid")
+modparam("fraud_detection", "rid_col", "theruleid")
 ```
 ### `seqcalls_thresh_crit_col` (string)
 
@@ -209,7 +209,7 @@ The column's name in the database storing the critical threshold value for the n
 **Example.** seqcalls_crit_thresh.
 
 ```opensips
-modparam("fraud\_detection", "seqcalls\_thresh\_crit\_col", "seqcalls\_crit\_thresh")
+modparam("fraud_detection", "seqcalls_thresh_crit_col", "seqcalls_crit_thresh")
 ```
 ### `seqcalls_thresh_warn_col` (string)
 
@@ -220,7 +220,7 @@ The column's name in the database storing the warning threshold value for the nu
 **Example.** seqcalls_warn_thresh.
 
 ```opensips
-modparam("fraud\_detection", "seqcalls\_thresh\_warn\_col", "seqcalls\_warn\_thresh")
+modparam("fraud_detection", "seqcalls_thresh_warn_col", "seqcalls_warn_thresh")
 ```
 ### `start_h` (string)
 
@@ -234,7 +234,7 @@ The time needs to be specified as string using the format: “HH:MM”
 
 ```opensips
 ...
-modparam("fraud\_detection", "start\_h", "the\_start\_time")
+modparam("fraud_detection", "start_h", "the_start_time")
 ...
 ```
 ### `table_name` (string)
@@ -246,7 +246,7 @@ If you want to load the rules from the database you must set this parameter as t
 **Example.** my_fraud.
 
 ```opensips
-modparam("fraud\_detection", "table\_name", "my\_fraud")
+modparam("fraud_detection", "table_name", "my_fraud")
 ```
 ### `totalc_thresh_crit_col` (string)
 
@@ -279,7 +279,7 @@ Set this parameter to non-zero in order to enable UTC-based interval matching an
 **Example.** 1.
 
 ```opensips
-modparam("fraud\_detection", "use\_utc\_time", 1)
+modparam("fraud_detection", "use_utc_time", 1)
 ```
 
 ## Exported Functions
@@ -288,7 +288,7 @@ modparam("fraud\_detection", "use\_utc\_time", 1)
 
 This method should be called each time a given _user_ calls a given _number_. It will try to match a fraud rule within the given fraud profile and update the stats (see above). Furthermore, the stats will be checked against the rule's thresholds. If any of the stats is above its threshold value, the appropriate event will also be raised (see further details below).
 
-Designed to only work with initial INVITE messages! If a dialog is not already present, one will be created (equivalent of create\_dialog()).
+Designed to only work with initial INVITE messages! If a dialog is not already present, one will be created (equivalent of create_dialog()).
 
 **Parameters:**
 
@@ -314,7 +314,7 @@ Reload the all the fraud rules.
 
 ### `show_fraud_stats`
 
-Show the current statistics for all dials of a _user_ to a _prefix_. NOTE: Since the fraud statistics are refreshed on-the-fly, as check\_fraud() is called, **this function will return stale data** if check\_fraud() has not been called at least once for the (user, prefix) pair within a newly matching time interval!
+Show the current statistics for all dials of a _user_ to a _prefix_. NOTE: Since the fraud statistics are refreshed on-the-fly, as check_fraud() is called, **this function will return stale data** if check_fraud() has not been called at least once for the (user, prefix) pair within a newly matching time interval!
 
 **Parameters:**
 

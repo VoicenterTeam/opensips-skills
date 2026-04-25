@@ -27,9 +27,9 @@ The module is compatible with the [SMPP v3.4](http://opensmpp.org/specs/SMPP_v3_
 
 ## How It Works
 
-In order to convert a SIP message to a SMPP all you need to do is to call the [send_smpp_message()](#func_send_smpp_message "1.7.1.� send_smpp_message(smsc_name, [from],[to],[body],[utf-16],[delivery_receipt])") function, indicating the SMSc you want to send the message to. The module will build the PDU according to the parameters provisioned in the database.
+In order to convert a SIP message to a SMPP all you need to do is to call the [send_smpp_message()](#func_send_smpp_message "1.7.1. send_smpp_message(smsc_name, [from],[to],[body],[utf-16],[delivery_receipt])") function, indicating the SMSc you want to send the message to. The module will build the PDU according to the parameters provisioned in the database.
 
-When bridging a message received over the SMPP interface, OpenSIPS builds a SIP Message and sends it to the outbound proxy identified by the [outbound_uri](#param_smpp_outbound_uri "1.6.5.�outbound_uri (string)") module's parameter.
+When bridging a message received over the SMPP interface, OpenSIPS builds a SIP Message and sends it to the outbound proxy identified by the [outbound_uri](#param_smpp_outbound_uri "1.6.5.outbound_uri (string)") module's parameter.
 
 In order to be able to deliver messages to SMSc, an ESME needs to first bind to the SMSc. This is done at OpenSIPS startup by sending a SMPP _bind_transciever_ command to connect to the SMSc, or an _outbind_ command to inform an SMSc it can now bind to our gateway.
 
@@ -155,7 +155,7 @@ The name of the column that holds the Destination TON values.
 
 ```opensips
 ...
-modparam("proto\_smpp", "dst\_ton\_col", "smsc\_dst\_ton")
+modparam("proto_smpp", "dst_ton_col", "smsc_dst_ton")
 ...
 ```
 ### `ip_col` (string)
@@ -205,7 +205,7 @@ The name of the password column used to authenticate the SMSc.
 
 ```opensips
 ...
-modparam("proto\_smpp", "password\_col", "smsc\_password")
+modparam("proto_smpp", "password_col", "smsc_password")
 ...
 ```
 ### `port_col` (string)
@@ -290,7 +290,7 @@ The name of the column that holds the Source NPI values.
 
 ```opensips
 ...
-modparam("proto\_smpp", "src\_npi\_col", "smsc\_src\_npi")
+modparam("proto_smpp", "src_npi_col", "smsc_src_npi")
 ...
 ```
 ### `src_ton_col` (string)
@@ -303,7 +303,7 @@ The name of the column that holds the Source TON values.
 
 ```opensips
 ...
-modparam("proto\_smpp", "src\_ton\_col", "smsc\_src\_ton")
+modparam("proto_smpp", "src_ton_col", "smsc_src_ton")
 ...
 ```
 ### `system_id_col` (string)
@@ -329,7 +329,7 @@ The name of the System Type column used to bind the SMSc.
 
 ```opensips
 ...
-modparam("proto\_smpp", "system\_type\_col", "smsc\_system\_type")
+modparam("proto_smpp", "system_type_col", "smsc_system_type")
 ...
 ```
 
@@ -337,7 +337,7 @@ modparam("proto\_smpp", "system\_type\_col", "smsc\_system\_type")
 
 ### `send_smpp_message(smsc_name, [from],[to],[body],[utf-16],[delivery_receipt])`
 
-This function is used to convert a SIP message received in the OpenSIPS script to a SMPP PDU and send it to the _smsc\_name (string)_ received as parameter. The SMPP parameters used to construct the PDU are provisione in the database, and the command sent is either _submit\_sm_ or _deliver\_sm_, depending on the type of the SMSc.
+This function is used to convert a SIP message received in the OpenSIPS script to a SMPP PDU and send it to the _smsc_name (string)_ received as parameter. The SMPP parameters used to construct the PDU are provisione in the database, and the command sent is either _submit_sm_ or _deliver_sm_, depending on the type of the SMSc.
 
 **Parameters:**
 
@@ -361,8 +361,8 @@ This function is used to convert a SIP message received in the OpenSIPS script t
 **Example.** send_smpp_message() usage.
 
 ```opensips
-if (is\_method("MESSAGE"))
-		send\_smpp\_message("MY\_SMSC");
+if (is_method("MESSAGE"))
+		send_smpp_message("MY_SMSC");
 ```
 
 ## Configuration Examples
@@ -373,7 +373,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("proto_smpp", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `smpp_port` variable
@@ -382,7 +382,7 @@ Set `smpp_port` variable
 
 ```opensips
 ...
-modparam("proto\_smpp", "smpp\_port", 27775)
+modparam("proto_smpp", "smpp_port", 27775)
 ...
 ```
 ### Set `smpp_max_msg_chunks` parameter
@@ -391,7 +391,7 @@ Set `smpp_max_msg_chunks` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "smpp\_max\_msg\_chunks", 32)
+modparam("proto_smpp", "smpp_max_msg_chunks", 32)
 ...
 ```
 ### Set `smpp_send_timeout` parameter
@@ -400,7 +400,7 @@ Set `smpp_send_timeout` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "smpp\_send\_timeout", 200)
+modparam("proto_smpp", "smpp_send_timeout", 200)
 ...
 ```
 ### Set `outbound_uri` parameter
@@ -409,7 +409,7 @@ Set `outbound_uri` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "outbound\_uri", "sip:127.0.0.1:5060")
+modparam("proto_smpp", "outbound_uri", "sip:127.0.0.1:5060")
 ...
 ```
 ### Set `smpp_table` parameter
@@ -418,7 +418,7 @@ Set `smpp_table` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "smpp\_table", "smsc")
+modparam("proto_smpp", "smpp_table", "smsc")
 ...
 ```
 ### Set `name_col` parameter
@@ -427,7 +427,7 @@ Set `name_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "name\_col", "smsc\_name")
+modparam("proto_smpp", "name_col", "smsc_name")
 ...
 ```
 ### Set `ip_col` parameter
@@ -436,7 +436,7 @@ Set `ip_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "ip\_col", "smsc\_ip")
+modparam("proto_smpp", "ip_col", "smsc_ip")
 ...
 ```
 ### Set `port_col` parameter
@@ -445,7 +445,7 @@ Set `port_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "port\_col", "smsc\_port")
+modparam("proto_smpp", "port_col", "smsc_port")
 ...
 ```
 ### Set `system_id_col` parameter
@@ -454,7 +454,7 @@ Set `system_id_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "system\_id\_col", "smsc\_system\_id")
+modparam("proto_smpp", "system_id_col", "smsc_system_id")
 ...
 ```
 ### Set `password_col` parameter
@@ -463,7 +463,7 @@ Set `password_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "password\_col", "smsc\_password")
+modparam("proto_smpp", "password_col", "smsc_password")
 ...
 ```
 ### Set `system_type_col` parameter
@@ -472,7 +472,7 @@ Set `system_type_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "system\_type\_col", "smsc\_system\_type")
+modparam("proto_smpp", "system_type_col", "smsc_system_type")
 ...
 ```
 ### Set `src_ton_col` parameter
@@ -481,7 +481,7 @@ Set `src_ton_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "src\_ton\_col", "smsc\_src\_ton")
+modparam("proto_smpp", "src_ton_col", "smsc_src_ton")
 ...
 ```
 ### Set `src_npi_col` parameter
@@ -490,7 +490,7 @@ Set `src_npi_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "src\_npi\_col", "smsc\_src\_npi")
+modparam("proto_smpp", "src_npi_col", "smsc_src_npi")
 ...
 ```
 ### Set `dst_ton_col` parameter
@@ -499,7 +499,7 @@ Set `dst_ton_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "dst\_ton\_col", "smsc\_dst\_ton")
+modparam("proto_smpp", "dst_ton_col", "smsc_dst_ton")
 ...
 ```
 ### Set `dst_npi_col` parameter
@@ -508,7 +508,7 @@ Set `dst_npi_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "dst\_npi\_col", "smsc\_dst\_npi")
+modparam("proto_smpp", "dst_npi_col", "smsc_dst_npi")
 ...
 ```
 ### Set `session_type_col` parameter
@@ -517,7 +517,7 @@ Set `session_type_col` parameter
 
 ```opensips
 ...
-modparam("proto\_smpp", "session\_type\_col", "smsc\_session\_type")
+modparam("proto_smpp", "session_type_col", "smsc_session_type")
 ...
 ```
 ### `send_smpp_message()` usage
@@ -526,7 +526,7 @@ modparam("proto\_smpp", "session\_type\_col", "smsc\_session\_type")
 
 ```opensips
 ...
-    if (is\_method("MESSAGE"))
-			send\_smpp\_message("MY\_SMSC");
+    if (is_method("MESSAGE"))
+			send_smpp_message("MY_SMSC");
 ...
 ```

@@ -49,7 +49,7 @@ Sets the separator between the parameters of the event in the logging file.
 **Example.** ;.
 
 ```opensips
-modparam("event\_flatstore", "delimiter", ";")
+modparam("event_flatstore", "delimiter", ";")
 ```
 ### `file_permissions` (string)
 
@@ -60,7 +60,7 @@ Sets the permissions for the newly created logs. It expects a string representat
 **Example.** 664.
 
 ```opensips
-modparam("event\_flatstore", "file\_permissions", "664")
+modparam("event_flatstore", "file_permissions", "664")
 ```
 ### `max_open_sockets` (integer)
 
@@ -71,7 +71,7 @@ Defines the maximum number of simultaneously opened files by the module. If the 
 **Example.** 200.
 
 ```opensips
-modparam("event\_flatstore", "max\_open\_sockets", 200)
+modparam("event_flatstore", "max_open_sockets", 200)
 ```
 ### `suppress_event_name` (int)
 
@@ -82,7 +82,7 @@ Suppresses the name of the event in the log file.
 **Example.** 1.
 
 ```opensips
-modparam("event\_flatstore", "suppress\_event\_name", 1)
+modparam("event_flatstore", "suppress_event_name", 1)
 ```
 
 ## Exported MI Functions
@@ -109,7 +109,7 @@ Defines the maximum number of simultaneously opened files by the module. If the 
 
 ```opensips
 ...
-modparam("event\_flatstore", "max\_open\_sockets", 200)
+modparam("event_flatstore", "max_open_sockets", 200)
 ...
 ```
 ### Set `delimiter` parameter
@@ -118,7 +118,7 @@ Sets the separator between the parameters of the event in the logging file.
 
 ```opensips
 ...
-modparam("event\_flatstore", "delimiter", ";")
+modparam("event_flatstore", "delimiter", ";")
 ...
 ```
 ### Set `file_permissions` parameter
@@ -127,7 +127,7 @@ Sets the permissions for the newly created logs. It expects a string representat
 
 ```opensips
 ...
-modparam("event\_flatstore", "file\_permissions", "664")
+modparam("event_flatstore", "file_permissions", "664")
 ...
 ```
 ### Set `suppress_event_name` parameter
@@ -136,6 +136,6 @@ Suppresses the name of the event in the log file.
 
 ```opensips
 ...
-modparam("event\_flatstore", "suppress\_event\_name", 1)
+modparam("event_flatstore", "suppress_event_name", 1)
 ...
 ```

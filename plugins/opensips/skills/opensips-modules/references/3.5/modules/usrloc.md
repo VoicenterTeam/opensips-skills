@@ -75,7 +75,7 @@ Name of column containing additional registration-related information.
 **Example.** attributes.
 
 ```opensips
-modparam("usrloc", "attr\_column", "attributes")
+modparam("usrloc", "attr_column", "attributes")
 ```
 ### `cachedb_url` (string)
 
@@ -87,7 +87,7 @@ URL of a NoSQL database to be used. Only required in a cachedb-enabled cluster_m
 
 ```opensips
 ...
-modparam("usrloc", "cachedb\_url", "mongodb://10.0.0.4:27017/opensipsDB.userlocation")
+modparam("usrloc", "cachedb_url", "mongodb://10.0.0.4:27017/opensipsDB.userlocation")
 ...
 ```
 ### `callid_column` (string)
@@ -99,7 +99,7 @@ Name of column containing callid values.
 **Example.** callid.
 
 ```opensips
-modparam("usrloc", "callid\_column", "callid")
+modparam("usrloc", "callid_column", "callid")
 ```
 ### `cflags_column` (string)
 
@@ -110,7 +110,7 @@ Name of column to save the branch/contact flags of the record.
 **Example.** Set the `cflags_column` parameter.
 
 ```opensips
-modparam("usrloc", "cflags\_column", "cflags")
+modparam("usrloc", "cflags_column", "cflags")
 ```
 ### `cluster_mode` (string)
 
@@ -143,7 +143,7 @@ This parameter may take the following values:
 **Example.** federation-cachedb.
 
 ```opensips
-modparam("usrloc", "cluster\_mode", "federation-cachedb")
+modparam("usrloc", "cluster_mode", "federation-cachedb")
 ```
 ### `contact_column` (string)
 
@@ -169,7 +169,7 @@ modparam("usrloc", "contact_id_column", "ctid")
 ```
 ### `contact_refresh_timer` (boolean)
 
-Enable a timer which will periodically scan a sorted list of contacts and raise the [E_UL_CONTACT_REFRESH](#event_E_UL_CONTACT_REFRESH "1.9.6.� E_UL_CONTACT_REFRESH") for any of them which are past their re-registration time interval limit. This limit may given by registrar's _pn_trigger_interval_ module parameter, for example.
+Enable a timer which will periodically scan a sorted list of contacts and raise the [E_UL_CONTACT_REFRESH](#event_E_UL_CONTACT_REFRESH "1.9.6. E_UL_CONTACT_REFRESH") for any of them which are past their re-registration time interval limit. This limit may given by registrar's _pn_trigger_interval_ module parameter, for example.
 
 *Default value is false (disabled).*
 
@@ -187,7 +187,7 @@ Name of column containing cseq numbers.
 **Example.** cseq.
 
 ```opensips
-modparam("usrloc", "cseq\_column", "cseq")
+modparam("usrloc", "cseq_column", "cseq")
 ```
 ### `cseq_delay` (integer)
 
@@ -198,7 +198,7 @@ Delay (in seconds) for accepting as retransmissions register requests with same 
 **Example.** 5.
 
 ```opensips
-modparam("usrloc", "cseq\_delay", 5)
+modparam("usrloc", "cseq_delay", 5)
 ```
 ### `db_mode` (integer, deprecated)
 
@@ -217,7 +217,7 @@ This parameter has been kept for backwards compatibility. It acts as a working_m
 
 ```opensips
 ...
-modparam("usrloc", "db\_mode", 2)
+modparam("usrloc", "db_mode", 2)
 ...
 ```
 ### `db_url` (string)
@@ -230,7 +230,7 @@ URL of the database that should be used.
 
 ```opensips
 ...
-modparam("usrloc", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("usrloc", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### `desc_time_order` (integer)
@@ -243,7 +243,7 @@ If the user's contacts should be kept timestamp ordered; otherwise the contact w
 
 ```opensips
 ...
-modparam("usrloc", "desc\_time\_order", 1)
+modparam("usrloc", "desc_time_order", 1)
 ...
 ```
 ### `domain_column` (string)
@@ -266,7 +266,7 @@ Name of column containing expires value.
 **Example.** expires.
 
 ```opensips
-modparam("usrloc", "expires\_column", "expires")
+modparam("usrloc", "expires_column", "expires")
 ```
 ### `flags_column` (string)
 
@@ -277,11 +277,11 @@ Name of column to save the internal flags of the record.
 **Example.** Set the `flags_column` parameter.
 
 ```opensips
-modparam("usrloc", "flags\_column", "flags")
+modparam("usrloc", "flags_column", "flags")
 ```
 ### `hash_size` (integer)
 
-The number of entries of the hash table used by usrloc to store the location records is 2^hash\_size. For hash\_size=4, the number of entries of the hash table is 16. Since version 2.2, the maximu size of this parameter is 16, meaning that the hash supports maximum 65536 entries.
+The number of entries of the hash table used by usrloc to store the location records is 2^hash_size. For hash_size=4, the number of entries of the hash table is 16. Since version 2.2, the maximu size of this parameter is 16, meaning that the hash supports maximum 65536 entries.
 
 *Default value is 9.*
 
@@ -290,7 +290,7 @@ The number of entries of the hash table used by usrloc to store the location rec
 **Example.** 10.
 
 ```opensips
-modparam("usrloc", "hash\_size", 10)
+modparam("usrloc", "hash_size", 10)
 ```
 ### `kv_store_column` (string)
 
@@ -301,40 +301,40 @@ Name of column containing generic key-value data.
 **Example.** json_data.
 
 ```opensips
-modparam("usrloc", "kv\_store\_column", "json\_data")
+modparam("usrloc", "kv_store_column", "json_data")
 ```
 ### `latency_event_min_us` (integer)
 
-Defines a minimal pinging latency threshold, in microseconds, past which contact pinging latency update events will get raised. By default, an event is raised for each ping reply (i.e. latency update). If both [latency\_event\_min\_us](#param_latency_event_min_us "1.5.37.�latency_event_min_us (integer)") and [latency\_event\_min\_us\_delta](#param_latency_event_min_us_delta "1.5.38.�latency_event_min_us_delta (integer)") are set, the event will get raised if either of them is true.
+Defines a minimal pinging latency threshold, in microseconds, past which contact pinging latency update events will get raised. By default, an event is raised for each ping reply (i.e. latency update). If both [latency_event_min_us](#param_latency_event_min_us "1.5.37.latency_event_min_us (integer)") and [latency_event_min_us_delta](#param_latency_event_min_us_delta "1.5.38.latency_event_min_us_delta (integer)") are set, the event will get raised if either of them is true.
 
 *Default value is 0 (no bottom limit set).*
 
 **Example.** Set the `latency_event_min_us` parameter.
 
 ```opensips
-modparam("usrloc", "latency\_event\_min\_us", 425000)
+modparam("usrloc", "latency_event_min_us", 425000)
 ```
 ### `latency_event_min_us_delta` (integer)
 
-Defines a minimal, absolute pinging latency difference, in microseconds, past which contact pinging latency update events will get raised. The difference is computed using the latencies of the last two contact pinging replies. By default, an event is raised for each ping reply (i.e. latency update). If both [latency\_event\_min\_us](#param_latency_event_min_us "1.5.37.�latency_event_min_us (integer)") and [latency\_event\_min\_us\_delta](#param_latency_event_min_us_delta "1.5.38.�latency_event_min_us_delta (integer)") are set, the event will get raised if either of them is true.
+Defines a minimal, absolute pinging latency difference, in microseconds, past which contact pinging latency update events will get raised. The difference is computed using the latencies of the last two contact pinging replies. By default, an event is raised for each ping reply (i.e. latency update). If both [latency_event_min_us](#param_latency_event_min_us "1.5.37.latency_event_min_us (integer)") and [latency_event_min_us_delta](#param_latency_event_min_us_delta "1.5.38.latency_event_min_us_delta (integer)") are set, the event will get raised if either of them is true.
 
 *Default value is 0 (no minimal latency delta set).*
 
 **Example.** Set the `latency_event_min_us_delta` parameter.
 
 ```opensips
-modparam("usrloc", "latency\_event\_min\_us\_delta", 300000)
+modparam("usrloc", "latency_event_min_us_delta", 300000)
 ```
 ### `location_cluster` (integer)
 
-Specifies the cluster ID which this instance will send to and receive from all user-location related information (_addresses-of-record_, _contacts_), organized into specific events (inserts, deletes or updates). This OpenSIPS cluster exposes the **"usrloc-contact-repl"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **"seed"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details. More details on the user location distribution mechanisms are available under [Distributed SIP User Location](#distributed-sip-user-location "1.2.�Distributed SIP User Location").
+Specifies the cluster ID which this instance will send to and receive from all user-location related information (_addresses-of-record_, _contacts_), organized into specific events (inserts, deletes or updates). This OpenSIPS cluster exposes the **"usrloc-contact-repl"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **"seed"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details. More details on the user location distribution mechanisms are available under [Distributed SIP User Location](#distributed-sip-user-location "1.2.Distributed SIP User Location").
 
 *Default value is 0 (replication disabled).*
 
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "location\_cluster", 1)
+modparam("usrloc", "location_cluster", 1)
 ```
 ### `matching_mode` (integer)
 
@@ -356,18 +356,18 @@ The parameter may take the following values:
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "matching\_mode", 1)
+modparam("usrloc", "matching_mode", 1)
 ```
 ### `max_contact_delete` (int)
 
-Relevant only in WRITE\_THROUGH or WRITE\_BACK schemes. The maximum number of contacts to be deleted from the database at once. Will delete all of them, if fewer after passing through all the contacts.
+Relevant only in WRITE_THROUGH or WRITE_BACK schemes. The maximum number of contacts to be deleted from the database at once. Will delete all of them, if fewer after passing through all the contacts.
 
 *Default value is 10.*
 
 **Example.** 10.
 
 ```opensips
-modparam("usrloc", "max\_contact\_delete", 10)
+modparam("usrloc", "max_contact_delete", 10)
 ```
 ### `methods_column` (string)
 
@@ -378,18 +378,18 @@ Name of column containing supported methods.
 **Example.** methods.
 
 ```opensips
-modparam("usrloc", "methods\_column", "methods")
+modparam("usrloc", "methods_column", "methods")
 ```
 ### `mi_dump_kv_store` (integer)
 
-Enable in order to include the "KV-Store" field in all usrloc MI commands which output AoR or Contact representations. This verbose field contains custom data attached to each of these two entities. mid\_registrar makes use of both of these holders, for example.
+Enable in order to include the "KV-Store" field in all usrloc MI commands which output AoR or Contact representations. This verbose field contains custom data attached to each of these two entities. mid_registrar makes use of both of these holders, for example.
 
 *Default value is 0 (disabled).*
 
 **Example.** Set the `mi_dump_kv_store` parameter.
 
 ```opensips
-modparam("usrloc", "mi\_dump\_kv\_store", 1)
+modparam("usrloc", "mi_dump_kv_store", 1)
 ```
 ### `nat_bflag` (string)
 
@@ -411,11 +411,11 @@ Name of column containing the Path header.
 **Example.** path.
 
 ```opensips
-modparam("usrloc", "path\_column", "path")
+modparam("usrloc", "path_column", "path")
 ```
 ### `pinging_mode` (string)
 
-Depending on the [cluster\_mode](#param_cluster_mode "1.5.27.�cluster_mode (string)"), the module can perform contact pinging using one of two possible heuristics: **"ownership"** - this instance will only attempt to ping a contact if it decides it is the logical owner of the contact. If a shared tag is attached to a contact, a node will keep sending pings to that contact as long as it owns the respective tag. If no shared tag has been specified for a given contact, the default is to assume permanent ownership of the contact and ping it upon request. **"cooperation"** - the assumption behind this pinging heuristic is that all user location cluster nodes are symmetrical (possibly front-ended by a SIP traffic balancing entity), such that **either** of them can ping **any** contact. Under this assumption, all currently online user location cluster nodes will cooperate and evenly split the pinging workload between them by hashing AoRs modulo current\_number\_of\_online\_nodes, and only picking the ones that they are responsible for. Notice that only the **"full-sharing"** clustering mode allows some flexibility -- all other modes are logically tied to a single pinging logic. Any unaccepted value, according to the above table, set for those modes will be silently discarded.
+Depending on the [cluster_mode](#param_cluster_mode "1.5.27.cluster_mode (string)"), the module can perform contact pinging using one of two possible heuristics: **"ownership"** - this instance will only attempt to ping a contact if it decides it is the logical owner of the contact. If a shared tag is attached to a contact, a node will keep sending pings to that contact as long as it owns the respective tag. If no shared tag has been specified for a given contact, the default is to assume permanent ownership of the contact and ping it upon request. **"cooperation"** - the assumption behind this pinging heuristic is that all user location cluster nodes are symmetrical (possibly front-ended by a SIP traffic balancing entity), such that **either** of them can ping **any** contact. Under this assumption, all currently online user location cluster nodes will cooperate and evenly split the pinging workload between them by hashing AoRs modulo current_number_of_online_nodes, and only picking the ones that they are responsible for. Notice that only the **"full-sharing"** clustering mode allows some flexibility -- all other modes are logically tied to a single pinging logic. Any unaccepted value, according to the above table, set for those modes will be silently discarded.
 
 **Possible values:**
 
@@ -425,7 +425,7 @@ Depending on the [cluster\_mode](#param_cluster_mode "1.5.27.�cluster_mode (st
 **Example.** Set the `pinging_mode` parameter.
 
 ```opensips
-modparam("usrloc", "pinging\_mode", "ownership")
+modparam("usrloc", "pinging_mode", "ownership")
 ```
 ### `q_column` (string)
 
@@ -436,7 +436,7 @@ Name of column containing q values.
 **Example.** q.
 
 ```opensips
-modparam("usrloc", "q\_column", "q")
+modparam("usrloc", "q_column", "q")
 ```
 ### `received_column` (string)
 
@@ -447,7 +447,7 @@ Name of column containing the source IP, port, and protocol from the REGISTER me
 **Example.** Set the `received_column` parameter.
 
 ```opensips
-modparam("usrloc", "received\_column", "received")
+modparam("usrloc", "received_column", "received")
 ```
 ### `regen_broken_contactid` (integer)
 
@@ -458,7 +458,7 @@ Since version 2.2, **contact_id** concept was introduced. Since this parameter v
 **Example.** Set the `regen_broken_contactid` parameter.
 
 ```opensips
-modparam("usrloc", "regen\_broken\_contactid", 1)
+modparam("usrloc", "regen_broken_contactid", 1)
 ```
 ### `restart_persistency` (string)
 
@@ -485,7 +485,7 @@ This parameter may take the following values:
 **Example.** sync-from-cluster.
 
 ```opensips
-modparam("usrloc", "restart\_persistency", "sync-from-cluster")
+modparam("usrloc", "restart_persistency", "sync-from-cluster")
 ```
 ### `sip_instance_column` (string)
 
@@ -496,18 +496,18 @@ Name of column containing the SIP instance.
 **Example.** sip_instance.
 
 ```opensips
-modparam("usrloc", "sip\_instance\_column", "sip\_instance")
+modparam("usrloc", "sip_instance_column", "sip_instance")
 ```
 ### `skip_replicated_db_ops` (int)
 
-Prevent OpenSIPS from performing any DB-related contact operations when events are received over the _Binary Interface_. This is commonly used to prevent unneeded duplicate operations. More details on the user location replication mechanism are available in [Distributed SIP User Location](#distributed-sip-user-location "1.2.�Distributed SIP User Location")
+Prevent OpenSIPS from performing any DB-related contact operations when events are received over the _Binary Interface_. This is commonly used to prevent unneeded duplicate operations. More details on the user location replication mechanism are available in [Distributed SIP User Location](#distributed-sip-user-location "1.2.Distributed SIP User Location")
 
 *Default value is 0.*
 
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "skip\_replicated\_db\_ops", 1)
+modparam("usrloc", "skip_replicated_db_ops", 1)
 ```
 ### `socket_column` (string)
 
@@ -518,7 +518,7 @@ Name of column containing the received socket information (IP:port) for the REGI
 **Example.** Set the `socket_column` parameter.
 
 ```opensips
-modparam("usrloc", "socket\_column", "socket")
+modparam("usrloc", "socket_column", "socket")
 ```
 ### `sql_write_mode` (string)
 
@@ -545,7 +545,7 @@ This parameter may take the following values:
 **Example.** write-back.
 
 ```opensips
-modparam("usrloc", "sql\_write\_mode", "write-back")
+modparam("usrloc", "sql_write_mode", "write-back")
 ```
 ### `timer_interval` (integer)
 
@@ -559,7 +559,7 @@ Number of seconds between two timer runs. During each run, the module will updat
 
 ```opensips
 ...
-modparam("usrloc", "timer\_interval", 120)
+modparam("usrloc", "timer_interval", 120)
 ...
 ```
 ### `use_domain` (integer)
@@ -571,7 +571,7 @@ If the domain part of the user should be also saved and used for identifing the 
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "use\_domain", 1)
+modparam("usrloc", "use_domain", 1)
 ```
 ### `user_agent_column` (string)
 
@@ -582,7 +582,7 @@ Name of column containing user-agent values.
 **Example.** Set the `user_agent_column` parameter.
 
 ```opensips
-modparam("usrloc", "user\_agent\_column", "user\_agent")
+modparam("usrloc", "user_agent_column", "user_agent")
 ```
 ### `user_column` (string)
 
@@ -630,7 +630,7 @@ Refer to section Distributed SIP User Location for details regarding the cluster
 **Example.** full-sharing-cachedb-cluster.
 
 ```opensips
-modparam("usrloc", "working\_mode\_preset", "full-sharing-cachedb-cluster")
+modparam("usrloc", "working_mode_preset", "full-sharing-cachedb-cluster")
 ```
 
 ## Exported Functions
@@ -719,12 +719,12 @@ Adds a new contact for an user AOR.
 
 **Parameters:**
 
-- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use\_domain option is on).
+- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use_domain option is on).
 - `cflags` *(int, required)* — per branch flags of the contact
 - `contact` *(string, required)* — Contact URI to be added
 - `expires` *(int, required)* — expires value of the contact
 - `flags` *(int, required)* — internal USRLOC flags of the contact
-- `methods` *(int, required)* — bitmask with supported requests of the contact. To whitelist all SIP methods, simply use the value 32767. For a breakdown of each method's value, see the "request\_method" internal enum.
+- `methods` *(int, required)* — bitmask with supported requests of the contact. To whitelist all SIP methods, simply use the value 32767. For a breakdown of each method's value, see the "request_method" internal enum.
 - `q` *(string, required)* — Q value of the contact
 - `table name` *(string, required)* — table where the contact will be added (Ex: "location").
 
@@ -752,7 +752,7 @@ Deletes an entire AOR record (including its contacts).
 
 **Parameters:**
 
-- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use\_domain option is on).
+- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use_domain option is on).
 - `table_name` *(string, required)* — table where the AOR is removed from (Ex: location).
 
 ### `ul_rm_contact`
@@ -761,7 +761,7 @@ Deletes a contact from an AOR record.
 
 **Parameters:**
 
-- `AOR` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use\_domain option is on).
+- `AOR` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use_domain option is on).
 - `contact` *(string, required)* — exact contact to be removed
 - `table name` *(string, required)* — table where the AOR is removed from (Ex: location).
 
@@ -771,18 +771,18 @@ Dumps the contacts of an user AOR.
 
 **Parameters:**
 
-- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use\_domain option is on).
+- `aor` *(string, required)* — user AOR in username\[@domain\] format (domain must be supplied only if use_domain option is on).
 - `table_name` *(string, required)* — table where the AOR resides (Ex: location).
 
 ### `ul_sync`
 
 Empty the location table, then synchronize it with all contacts from memory. Note that this can not be used when no database is specified or with the DB-Only scheme.
 
-Important: make sure that all your contacts are in memory (_ul\_dump_ MI function) before executing this command.
+Important: make sure that all your contacts are in memory (_ul_dump_ MI function) before executing this command.
 
 **Parameters:**
 
-- `AOR` *(string, optional)* — only delete/sync this user AOR, not the whole table. Format: "username\[@domain\]" (_domain_ is required only if use\_domain option is on).
+- `AOR` *(string, optional)* — only delete/sync this user AOR, not the whole table. Format: "username\[@domain\]" (_domain_ is required only if use_domain option is on).
 - `table name` *(string, required)* — table where the AOR resides (Ex: location).
 
 ## Exported Statistics

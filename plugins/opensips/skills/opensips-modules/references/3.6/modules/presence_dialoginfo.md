@@ -124,7 +124,7 @@ If this parameter is set, only the dialog element with the currently most intere
 
 ```opensips
 ...
-modparam("presence\_dialoginfo", "force\_single\_dialog", 1)
+modparam("presence_dialoginfo", "force_single_dialog", 1)
 ...
 ```
 
@@ -136,6 +136,6 @@ Sets the force_single_dialog parameter.
 
 ```opensips
 ...
-modparam("presence\_dialoginfo", "force\_single\_dialog", 1)
+modparam("presence_dialoginfo", "force_single_dialog", 1)
 ...
 ```

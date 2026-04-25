@@ -20,7 +20,7 @@ This module is an implementation of an XMLRPC client used to notify XMLRPC serve
 
 ## How It Works
 
-Basicly, the module executes a remote procedure call when an event is raised from OpenSIPS's script, core or modules using the Event Interface. In order to be notified, an XMLRPC server has to subscribe for a certain event provided by OpenSIPS. This can be done using the generic MI Interface (_event\_subscribe_ function) or from OpenSIPS script (_subscribe\_event_ core function).
+Basicly, the module executes a remote procedure call when an event is raised from OpenSIPS's script, core or modules using the Event Interface. In order to be notified, an XMLRPC server has to subscribe for a certain event provided by OpenSIPS. This can be done using the generic MI Interface (_event_subscribe_ function) or from OpenSIPS script (_subscribe_event_ core function).
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ When raising an event, pack the name and value of the parameters in a XMLRPC str
 **Example.** 1.
 
 ```opensips
-modparam("event\_xmlrpc", "use\_struct\_param", 1)
+modparam("event_xmlrpc", "use_struct_param", 1)
 ```
 
 ## Configuration Examples
@@ -62,10 +62,10 @@ Content-length: 240.
 		.
 <?xml version="1.0"?>
 <methodCall>
-	<methodName>e\_dummy\_h</methodName>
+	<methodName>e_dummy_h</methodName>
 	<params>
 		<param>
-			<value><string>E\_MY\_EVENT</string></value>
+			<value><string>E_MY_EVENT</string></value>
 		</param>
 		<param>
 			<name>ip</name>
@@ -77,6 +77,6 @@ Content-length: 240.
 ### Example 1.3. XMLRPC socket
 
 ```opensips
-	# calls the 'block\_ip' function
-	xmlrpc:127.0.0.1:8080:block\_ip
+	# calls the 'block_ip' function
+	xmlrpc:127.0.0.1:8080:block_ip
 ```

@@ -47,7 +47,7 @@ SL module provides statistics about how many replies were sent ( splitted per co
 **Example.** 0.
 
 ```opensips
-modparam("sl", "enable\_stats", 0)
+modparam("sl", "enable_stats", 0)
 ```
 
 ## Exported Functions
@@ -142,7 +142,7 @@ The number of sent_replies.
 Sets the enable_stats parameter to 0 (disabled).
 
 ```opensips
-modparam("sl", "enable\_stats", 0)
+modparam("sl", "enable_stats", 0)
 ```
 ### sl_send_reply usage
 
@@ -150,9 +150,9 @@ Sends a stateless reply with a given code and reason, using pseudo-variables.
 
 ```opensips
 ...
-sl\_send\_reply(404, "Not found");
+sl_send_reply(404, "Not found");
 ...
-sl\_send\_reply($err.rcode, $err.rreason);
+sl_send_reply($err.rcode, $err.rreason);
 ...
 ```
 ### sl_reply_error usage
@@ -161,6 +161,6 @@ Sends an error reply describing the nature of the last internal error.
 
 ```opensips
 ...
-sl\_reply\_error();
+sl_reply_error();
 ...
 ```

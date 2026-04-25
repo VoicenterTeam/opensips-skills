@@ -22,9 +22,9 @@ Domain module implements checks that based on domain table determine if a host p
 
 ## How It Works
 
-Domain module operates in caching or non-caching mode depending on value of module parameter _`db_mode`_. In caching mode domain module reads the contents of domain table into cache memory when the module is loaded. After that domain table is re-read only when module is given domain\_reload fifo command. Any changes in domain table must thus be followed by “domain\_reload” command in order to reflect them in module behavior. In non-caching mode domain module always queries domain table in the database.
+Domain module operates in caching or non-caching mode depending on value of module parameter _`db_mode`_. In caching mode domain module reads the contents of domain table into cache memory when the module is loaded. After that domain table is re-read only when module is given domain_reload fifo command. Any changes in domain table must thus be followed by “domain_reload” command in order to reflect them in module behavior. In non-caching mode domain module always queries domain table in the database.
 
-Caching is implemented using a hash table. The size of the hash table is given by HASH\_SIZE constant defined in domain\_mod.h. Its “factory default” value is 128.
+Caching is implemented using a hash table. The size of the hash table is given by HASH_SIZE constant defined in domain_mod.h. Its “factory default” value is 128.
 
 ## Dependencies
 
@@ -47,7 +47,7 @@ Name of column containing attributes in domain table.
 **Example.** Set the `attrs_col` parameter.
 
 ```opensips
-modparam("domain", "attrs\_col", "attributes")
+modparam("domain", "attrs_col", "attributes")
 ```
 ### `db_mode` (integer)
 
@@ -63,7 +63,7 @@ Database mode: 0 means non-caching, 1 means caching.
 **Example.** Set the `db_mode` parameter.
 
 ```opensips
-modparam("domain", "db\_mode", 1)   # Use caching
+modparam("domain", "db_mode", 1)   # Use caching
 ```
 ### `db_url` (string)
 
@@ -74,7 +74,7 @@ This is URL of the database to be used.
 **Example.** Set the `db_url` parameter.
 
 ```opensips
-modparam("domain", "db\_url", "mysql://ser:pass@db\_host/ser")
+modparam("domain", "db_url", "mysql://ser:pass@db_host/ser")
 ```
 ### `domain_col` (string)
 
@@ -85,7 +85,7 @@ Name of column containing domains in domain table.
 **Example.** Set the `domain_col` parameter.
 
 ```opensips
-modparam("domain", "domain\_col", "domain\_name")
+modparam("domain", "domain_col", "domain_name")
 ```
 ### `domain_table` (string)
 
@@ -96,7 +96,7 @@ Name of table containing names of local domains that the proxy is responsible fo
 **Example.** Set the `domain_table` parameter.
 
 ```opensips
-modparam("domain", "domain\_table", "new\_name")
+modparam("domain", "domain_table", "new_name")
 ```
 
 ## Exported Functions
@@ -222,35 +222,35 @@ Causes domain module to re-read the contents of domain table into cache memory.
 Sets the database URL for the module.
 
 ```opensips
-modparam("domain", "db\_url", "mysql://ser:pass@db\_host/ser")
+modparam("domain", "db_url", "mysql://ser:pass@db_host/ser")
 ```
 ### db_mode example
 
 Sets the database mode to caching.
 
 ```opensips
-modparam("domain", "db\_mode", 1)   # Use caching
+modparam("domain", "db_mode", 1)   # Use caching
 ```
 ### Setting domain_table parameter
 
 Sets the name of the domain table.
 
 ```opensips
-modparam("domain", "domain\_table", "new\_name")
+modparam("domain", "domain_table", "new_name")
 ```
 ### Setting domain_col parameter
 
 Sets the name of the domain column.
 
 ```opensips
-modparam("domain", "domain\_col", "domain\_name")
+modparam("domain", "domain_col", "domain_name")
 ```
 ### Setting attrs_col parameter
 
 Sets the name of the attributes column.
 
 ```opensips
-modparam("domain", "attrs\_col", "attributes")
+modparam("domain", "attrs_col", "attributes")
 ```
 ### is_from_local usage
 
@@ -258,11 +258,11 @@ Checks if the From header URI host is local.
 
 ```opensips
 ...
-if (is\_from\_local()) {
+if (is_from_local()) {
 	...
 };
 ...
-if (is\_from\_local($var(attrs))) {
+if (is_from_local($var(attrs))) {
 	xlog("Domain attributes are $var(attrs)\\n");
 	...
 };
@@ -274,11 +274,11 @@ Checks if the Request-URI host is local.
 
 ```opensips
 ...
-if (is\_uri\_host\_local()) {
+if (is_uri_host_local()) {
 	...
 };
 ...
-if (is\_uri\_host\_local($var(attrs))) {
+if (is_uri_host_local($var(attrs))) {
 	xlog("Domain attributes are $var(attrs)\\n");
 	...
 };
@@ -290,22 +290,22 @@ Checks if a specific domain is local.
 
 ```opensips
 ...
-if (is\_domain\_local($rd)) {
+if (is_domain_local($rd)) {
 	...
 };
-if (is\_domain\_local($fd)) {
+if (is_domain_local($fd)) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp\_alias))) {
+if (is_domain_local($avp(some_avp_alias))) {
 	...
 };
-if (is\_domain\_local($avp(850))) {
+if (is_domain_local($avp(850))) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp))) {
+if (is_domain_local($avp(some_avp))) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp), $avp(attrs))) {
+if (is_domain_local($avp(some_avp), $avp(attrs))) {
 	xlog("Domain attributes are $avp(attrs)\\n");
 	...
 };

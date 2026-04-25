@@ -22,7 +22,7 @@ Domain module implements checks that based on domain table determine if a host p
 
 ## How It Works
 
-Domain module operates in caching or non-caching mode depending on value of module parameter _`db_mode`_. In caching mode domain module reads the contents of domain table into cache memory when the module is loaded. After that domain table is re-read only when module is given domain\_reload fifo command. Any changes in domain table must thus be followed by “domain\_reload” command in order to reflect them in module behavior. In non-caching mode domain module always queries domain table in the database. Caching is implemented using a hash table. The size of the hash table is given by HASH\_SIZE constant defined in domain\_mod.h. Its “factory default” value is 128.
+Domain module operates in caching or non-caching mode depending on value of module parameter _`db_mode`_. In caching mode domain module reads the contents of domain table into cache memory when the module is loaded. After that domain table is re-read only when module is given domain_reload fifo command. Any changes in domain table must thus be followed by “domain_reload” command in order to reflect them in module behavior. In non-caching mode domain module always queries domain table in the database. Caching is implemented using a hash table. The size of the hash table is given by HASH_SIZE constant defined in domain_mod.h. Its “factory default” value is 128.
 
 ## Dependencies
 
@@ -45,7 +45,7 @@ Name of column containing attributes in domain table.
 **Example.** attributes.
 
 ```opensips
-modparam("domain", "attrs\_col", "attributes")
+modparam("domain", "attrs_col", "attributes")
 ```
 ### `db_mode` (integer)
 
@@ -61,7 +61,7 @@ Database mode: 0 means non-caching, 1 means caching.
 **Example.** 1.
 
 ```opensips
-modparam("domain", "db\_mode", 1)   # Use caching
+modparam("domain", "db_mode", 1)   # Use caching
 ```
 ### `db_url` (string)
 
@@ -69,10 +69,10 @@ This is URL of the database to be used.
 
 *Default value is mysql://opensipsro:opensipsro@localhost/opensips.*
 
-**Example.** mysql://ser:pass@db\_host/ser.
+**Example.** mysql://ser:pass@db_host/ser.
 
 ```opensips
-modparam("domain", "db\_url", "mysql://ser:pass@db\_host/ser")
+modparam("domain", "db_url", "mysql://ser:pass@db_host/ser")
 ```
 ### `domain_col` (string)
 
@@ -80,10 +80,10 @@ Name of column containing domains in domain table.
 
 *Default value is domain.*
 
-**Example.** domain\_name.
+**Example.** domain_name.
 
 ```opensips
-modparam("domain", "domain\_col", "domain\_name")
+modparam("domain", "domain_col", "domain_name")
 ```
 ### `domain_table` (string)
 
@@ -91,10 +91,10 @@ Name of table containing names of local domains that the proxy is responsible fo
 
 *Default value is domain.*
 
-**Example.** new\_name.
+**Example.** new_name.
 
 ```opensips
-modparam("domain", "domain\_table", "new\_name")
+modparam("domain", "domain_table", "new_name")
 ```
 ### `subdomain_col` (string)
 
@@ -102,10 +102,10 @@ Name of the "accept_subdomain" column in the domain table. A positive value for 
 
 *Default value is accept_subdomain.*
 
-**Example.** has\_subdomain.
+**Example.** has_subdomain.
 
 ```opensips
-modparam("domain", "subdomain\_col", "has\_subdomain")
+modparam("domain", "subdomain_col", "has_subdomain")
 ```
 
 ## Exported Functions
@@ -233,42 +233,42 @@ Causes domain module to re-read the contents of domain table into cache memory.
 This is URL of the database to be used.
 
 ```opensips
-modparam("domain", "db\_url", "mysql://ser:pass@db\_host/ser")
+modparam("domain", "db_url", "mysql://ser:pass@db_host/ser")
 ```
 ### db_mode example
 
 Database mode: 0 means non-caching, 1 means caching.
 
 ```opensips
-modparam("domain", "db\_mode", 1)   # Use caching
+modparam("domain", "db_mode", 1)   # Use caching
 ```
 ### Setting domain_table parameter
 
 Name of table containing names of local domains that the proxy is responsible for. Local users must have in their sip uri a host part that is equal to one of these domains.
 
 ```opensips
-modparam("domain", "domain\_table", "new\_name")
+modparam("domain", "domain_table", "new_name")
 ```
 ### Setting domain_col parameter
 
 Name of column containing domains in domain table.
 
 ```opensips
-modparam("domain", "domain\_col", "domain\_name")
+modparam("domain", "domain_col", "domain_name")
 ```
 ### Setting attrs_col parameter
 
 Name of column containing attributes in domain table.
 
 ```opensips
-modparam("domain", "attrs\_col", "attributes")
+modparam("domain", "attrs_col", "attributes")
 ```
 ### Setting subdomain_col parameter
 
-Name of the "accept\_subdomain" column in the domain table. A positive value for the column means the domain accepts subdomains. A 0 value means it does not.
+Name of the "accept_subdomain" column in the domain table. A positive value for the column means the domain accepts subdomains. A 0 value means it does not.
 
 ```opensips
-modparam("domain", "subdomain\_col", "has\_subdomain")
+modparam("domain", "subdomain_col", "has_subdomain")
 ```
 ### is_from_local usage
 
@@ -276,11 +276,11 @@ Checks based on domain table if host part of From header uri is one of the local
 
 ```opensips
 ...
-if (is\_from\_local()) {
+if (is_from_local()) {
 	...
 };
 ...
-if (is\_from\_local($var(attrs))) {
+if (is_from_local($var(attrs))) {
 	xlog("Domain attributes are $var(attrs)\\n");
 	...
 };
@@ -288,41 +288,41 @@ if (is\_from\_local($var(attrs))) {
 ```
 ### is_uri_host_local usage
 
-If called from route or failure route block, checks based on domain table if host part of Request-URI is one of the local domains that the proxy is responsible for. If called from branch route, the test is made on host part of URI of first branch, which thus must have been appended to the transaction before is\_uri\_host\_local() is called. The argument is optional and if present it should contain a writable variable that will be populated with the attributes from the database.
+If called from route or failure route block, checks based on domain table if host part of Request-URI is one of the local domains that the proxy is responsible for. If called from branch route, the test is made on host part of URI of first branch, which thus must have been appended to the transaction before is_uri_host_local() is called. The argument is optional and if present it should contain a writable variable that will be populated with the attributes from the database.
 
 ```opensips
 ...
-if (is\_uri\_host\_local()) {
+if (is_uri_host_local()) {
 	...
 };
 ...
-if (is\_uri\_host\_local($var(attrs))) {
+if (is_uri_host_local($var(attrs))) {
 	xlog("Domain attributes are $var(attrs)\\n");
 	...
 };
 ```
 ### is_domain_local usage
 
-This function checks if the domain contained in the first parameter is local. This function is a generalized form of the is\_from\_local() and is\_uri\_host\_local() functions, being able to completely replace them and also extends them by allowing the domain to be taken from any of the above mentioned sources. The following equivalences exist: is\_domain\_local($rd) is same as is\_uri\_host\_local(); is\_domain\_local($fd) is same as is\_from\_local().
+This function checks if the domain contained in the first parameter is local. This function is a generalized form of the is_from_local() and is_uri_host_local() functions, being able to completely replace them and also extends them by allowing the domain to be taken from any of the above mentioned sources. The following equivalences exist: is_domain_local($rd) is same as is_uri_host_local(); is_domain_local($fd) is same as is_from_local().
 
 ```opensips
 ...
-if (is\_domain\_local($rd)) {
+if (is_domain_local($rd)) {
 	...
 };
-if (is\_domain\_local($fd)) {
+if (is_domain_local($fd)) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp\_alias))) {
+if (is_domain_local($avp(some_avp_alias))) {
 	...
 };
-if (is\_domain\_local($avp(850))) {
+if (is_domain_local($avp(850))) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp))) {
+if (is_domain_local($avp(some_avp))) {
 	...
 };
-if (is\_domain\_local($avp(some\_avp), $avp(attrs))) {
+if (is_domain_local($avp(some_avp), $avp(attrs))) {
 	xlog("Domain attributes are $avp(attrs)\\n");
 	...
 };

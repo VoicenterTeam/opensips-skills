@@ -64,7 +64,7 @@ The append_userphone (integer) parameter instructs the OSP module if to append "
 **Example.** 0.
 
 ```opensips
-modparam("osp","append\_userphone",0)
+modparam("osp","append_userphone",0)
 ```
 ### `ca_certificates` (string)
 
@@ -90,7 +90,7 @@ The cnam_avp (string) parameter instructs the OSP module to use the defined AVP 
 **Example.** Set the `cnam_avp` parameter.
 
 ```opensips
-modparam("osp","cnam\_avp","$avp(cnam)")
+modparam("osp","cnam_avp","$avp(cnam)")
 ```
 ### `custom_info_avp` (string)
 
@@ -101,7 +101,7 @@ The custom_info_avp (string) parameter instructs the OSP module to use the defin
 **Example.** Set the `custom_info_avp` parameter.
 
 ```opensips
-modparam("osp","custom\_info\_avp","$avp(cinfo)")
+modparam("osp","custom_info_avp","$avp(cinfo)")
 ```
 ### `destination_media_avp` (string)
 
@@ -112,7 +112,7 @@ These parameters are used to tell the OSP module which AVPs are used to store me
 **Example.** Set the `destination_media_avp` parameter.
 
 ```opensips
-modparam("osp", "destination\_media\_avp", "$avp(destmedia)")
+modparam("osp", "destination_media_avp", "$avp(destmedia)")
 ```
 ### `device_ip` (string)
 
@@ -146,18 +146,18 @@ The extraheaders_value (string) parameter instructs the OSP module to append the
 **Example.** Set the `extraheaders_value` parameter.
 
 ```opensips
-modparam("osp", "extraheaders\_value", "Source: N")
+modparam("osp", "extraheaders_value", "Source: N")
 ```
 ### `identity_algorithm_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
 *Default value is $avp(_osp_identity_algorithm_).*
 
 **Example.** Set the `identity_algorithm_avp` parameter.
 
 ```opensips
-modparam("osp","identity\_algorithm\_avp","$avp(idalg)")
+modparam("osp","identity_algorithm_avp","$avp(idalg)")
 ```
 ### `identity_canon_avp` (string)
 
@@ -172,25 +172,25 @@ modparam("osp","identity_canon_avp","$avp(idcanon)")
 ```
 ### `identity_information_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
 *Default value is $avp(_osp_identity_information_).*
 
 **Example.** Set the `identity_information_avp` parameter.
 
 ```opensips
-modparam("osp","identity\_information\_avp","$avp(idinfo)")
+modparam("osp","identity_information_avp","$avp(idinfo)")
 ```
 ### `identity_signature_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)". Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
 *Default value is $avp(_osp_identity_signature_).*
 
 **Example.** Set the `identity_signature_avp` parameter.
 
 ```opensips
-modparam("osp","identity\_signature\_avp","$avp(idsign)")
+modparam("osp","identity_signature_avp","$avp(idsign)")
 ```
 ### `identity_type_avp` (string)
 
@@ -246,7 +246,7 @@ The networkid_location (integer) parameter instructs the OSP module where the de
 **Example.** 2.
 
 ```opensips
-modparam("osp","networkid\_location",2)
+modparam("osp","networkid_location",2)
 ```
 ### `networkid_parameter` (string)
 
@@ -257,7 +257,7 @@ The networkid_parameter (string) parameter instructs the OSP module to use which
 **Example.** networkid.
 
 ```opensips
-modparam("osp","networkid\_param","networkid")
+modparam("osp","networkid_param","networkid")
 ```
 ### `parameterstring_location` (integer)
 
@@ -274,7 +274,7 @@ The parameterstring_location (integer) parameter instructs the OSP module where 
 **Example.** 0.
 
 ```opensips
-modparam("osp","parameterstring\_location",0)
+modparam("osp","parameterstring_location",0)
 ```
 ### `parameterstring_value` (string)
 
@@ -283,7 +283,7 @@ The parameterstring_value (string) parameter instructs the OSP module to append 
 **Example.** Set the `parameterstring_value` parameter.
 
 ```opensips
-modparam("osp","parameterstring\_value","")
+modparam("osp","parameterstring_value","")
 ```
 ### `persistence` (integer)
 
@@ -329,14 +329,14 @@ modparam("osp","report_networkid",3)
 ```
 ### `request_date_avp` (string)
 
-The request\_date\_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SIP request Date header values. The default value is "$avp(\_osp\_request\_date\_)". Then the request date can be used by "$avp(\_osp\_request\_date\_)". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+The request_date_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SIP request Date header values. The default value is "$avp(_osp_request_date_)". Then the request date can be used by "$avp(_osp_request_date_)". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
 *Default value is $avp(_osp_request_date_).*
 
 **Example.** Set the `request_date_avp` parameter.
 
 ```opensips
-modparam("osp","request\_date\_avp","$avp(reqdate)")
+modparam("osp","request_date_avp","$avp(reqdate)")
 ```
 ### `retry_delay` (integer)
 
@@ -347,7 +347,7 @@ The retry_delay (integer) parameter defines the time, in seconds, between retryi
 **Example.** 1.
 
 ```opensips
-modparam("osp","retry\_delay",1)
+modparam("osp","retry_delay",1)
 ```
 ### `retry_limit` (integer)
 
@@ -358,18 +358,18 @@ The retry_limit (integer) parameter defines the maximum number of retries for co
 **Example.** 2.
 
 ```opensips
-modparam("osp","retry\_limit",2)
+modparam("osp","retry_limit",2)
 ```
 ### `sdp_fingerprint_avp` (string)
 
-The sdp\_fingerprint\_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SDP fing print attribute values. The default value is "$avp(\_osp\_sdp\_fingerprint\_)". Then the SDP finger print attributes can be used by "$avp(\_osp\_sdp\_fingerprint\_)". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+The sdp_fingerprint_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SDP fing print attribute values. The default value is "$avp(_osp_sdp_fingerprint_)". Then the SDP finger print attributes can be used by "$avp(_osp_sdp_fingerprint_)". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
 *Default value is $avp(_osp_sdp_fingerprint_).*
 
 **Example.** Set the `sdp_fingerprint_avp` parameter.
 
 ```opensips
-modparam("osp","sdp\_fingerprint\_avp","$avp(sdpfp)")
+modparam("osp","sdp_fingerprint_avp","$avp(sdpfp)")
 ```
 ### `service_provider_avp` (string)
 
@@ -397,7 +397,7 @@ The service_type (integer) parameter instructs the OSP module what services it s
 **Example.** 0.
 
 ```opensips
-modparam("osp","service\_type",0)
+modparam("osp","service_type",0)
 ```
 ### `source_device_avp` (string)
 
@@ -408,7 +408,7 @@ The source_device_avp (string) parameter instructs the OSP module to use the def
 **Example.** $avp(srcdev).
 
 ```opensips
-modparam("osp","source\_device\_avp","$avp(srcdev)")
+modparam("osp","source_device_avp","$avp(srcdev)")
 ```
 ### `source_media_avp` (string)
 
@@ -419,7 +419,7 @@ These parameters are used to tell the OSP module which AVPs are used to store me
 **Example.** Set the `source_media_avp` parameter.
 
 ```opensips
-modparam("osp", "source\_media\_avp", "$avp(srcmedia)")
+modparam("osp", "source_media_avp", "$avp(srcmedia)")
 ```
 ### `source_networkid_avp` (string)
 
@@ -430,7 +430,7 @@ The source_networkid_avp (string) parameter instructs the OSP module to use the 
 **Example.** $avp(snid).
 
 ```opensips
-modparam("osp","source\_networkid\_avp","$avp(snid)")
+modparam("osp","source_networkid_avp","$avp(snid)")
 ```
 ### `source_switchid_avp` (string)
 
@@ -441,7 +441,7 @@ The source_switchid_avp (string) parameter instructs the OSP module to use the d
 **Example.** $avp(swid).
 
 ```opensips
-modparam("osp","source\_switchid\_avp","$avp(swid)")
+modparam("osp","source_switchid_avp","$avp(swid)")
 ```
 ### `sp16_uri` (string)
 
@@ -450,8 +450,8 @@ These sp_uri (string) parameters define peering servers to be used for requestin
 **Example.** http://osptestserver.transnexus.com:5045/osp.
 
 ```opensips
-modparam("osp","sp1\_uri","http://osptestserver.transnexus.com:5045/osp")
-modparam("osp","sp2\_uri","https://\[1.2.3.4\]:1443/osp")
+modparam("osp","sp1_uri","http://osptestserver.transnexus.com:5045/osp")
+modparam("osp","sp2_uri","https://\[1.2.3.4\]:1443/osp")
 ```
 ### `sp1_uri` (string)
 
@@ -460,8 +460,8 @@ These sp_uri (string) parameters define peering servers to be used for requestin
 **Example.** http://osptestserver.transnexus.com:5045/osp.
 
 ```opensips
-modparam("osp","sp1\_uri","http://osptestserver.transnexus.com:5045/osp")
-modparam("osp","sp2\_uri","https://\[1.2.3.4\]:1443/osp")
+modparam("osp","sp1_uri","http://osptestserver.transnexus.com:5045/osp")
+modparam("osp","sp2_uri","https://\[1.2.3.4\]:1443/osp")
 ```
 ### `sp1_weight, sp2_weight, ..., sp16_weight` (integer)
 
@@ -481,8 +481,8 @@ These sp_uri (string) parameters define peering servers to be used for requestin
 **Example.** https://\[1.2.3.4\]:1443/osp.
 
 ```opensips
-modparam("osp","sp1\_uri","http://osptestserver.transnexus.com:5045/osp")
-modparam("osp","sp2\_uri","https://\[1.2.3.4\]:1443/osp")
+modparam("osp","sp1_uri","http://osptestserver.transnexus.com:5045/osp")
+modparam("osp","sp2_uri","https://\[1.2.3.4\]:1443/osp")
 ```
 ### `ssl_lifetime` (integer)
 
@@ -493,7 +493,7 @@ The ssl_lifetime (integer) parameter defines the lifetime, in seconds, of a sing
 **Example.** 200.
 
 ```opensips
-modparam("osp","ssl\_lifetime",200)
+modparam("osp","ssl_lifetime",200)
 ```
 ### `support_nonsip_protocol` (integer)
 
@@ -521,7 +521,7 @@ The switchid_location (integer) parameter instructs the OSP module where the des
 **Example.** 2.
 
 ```opensips
-modparam("osp","switchid\_location",2)
+modparam("osp","switchid_location",2)
 ```
 ### `switchid_parameter` (string)
 
@@ -532,7 +532,7 @@ The switchid_parameter (string) parameter instructs the OSP module to use which 
 **Example.** switchid.
 
 ```opensips
-modparam("osp","switchid\_param","switchid")
+modparam("osp","switchid_param","switchid")
 ```
 ### `timeout` (integer)
 
@@ -650,7 +650,7 @@ The work_mode (integer) parameter instructs the OSP module what mode it should w
 **Example.** 0.
 
 ```opensips
-modparam("osp","work\_mode",0)
+modparam("osp","work_mode",0)
 ```
 
 ## Exported Functions
@@ -675,12 +675,12 @@ This function is used to check if the calling number is translated. Before calli
 ```opensips
 ...
 if (checkcallingtranslation()) {
-  # Remove the Remote\_Party-ID from the received message
+  # Remove the Remote_Party-ID from the received message
   # Otherwise it will be forwarded on to the next hop
-  remove\_hf("Remote-Party-ID");
+  remove_hf("Remote-Party-ID");
 
-  # Append a new Remote\_Party
-  append\_rpid\_hf();
+  # Append a new Remote_Party
+  append_rpid_hf();
 }
 ...
 ```
@@ -951,73 +951,73 @@ if (validateospheader()) {
 Instructing the module to work in direct mode
 
 ```opensips
-modparam("osp","work\_mode",0)
+modparam("osp","work_mode",0)
 ```
 ### Instructing the module to provide normal voice service
 
 Instructing the module to provide normal voice service
 
 ```opensips
-modparam("osp","service\_type",0)
+modparam("osp","service_type",0)
 ```
 ### Setting the OSP servers
 
 Setting the OSP servers
 
 ```opensips
-modparam("osp","sp1\_uri","http://osptestserver.transnexus.com:5045/osp")
-modparam("osp","sp2\_uri","https://\[1.2.3.4\]:1443/osp")
+modparam("osp","sp1_uri","http://osptestserver.transnexus.com:5045/osp")
+modparam("osp","sp2_uri","https://\[1.2.3.4\]:1443/osp")
 ```
 ### Setting the OSP server weights
 
 Setting the OSP server weights
 
 ```opensips
-modparam("osp","sp1\_weight",1000)
+modparam("osp","sp1_weight",1000)
 ```
 ### Setting the device IP address
 
 Setting the device IP address
 
 ```opensips
-modparam("osp","device\_ip","\[127.0.0.1\]:5060")
+modparam("osp","device_ip","\[127.0.0.1\]:5060")
 ```
 ### Instructing the module not to use OSP security features
 
 Instructing the module not to use OSP security features
 
 ```opensips
-modparam("osp","use\_security\_features",0)
+modparam("osp","use_security_features",0)
 ```
 ### Setting the token format
 
 Setting the token format
 
 ```opensips
-modparam("osp","token\_format",2)
+modparam("osp","token_format",2)
 ```
 ### Set authorization files
 
 Set authorization files
 
 ```opensips
-modparam("osp","private\_key","/usr/local/etc/opensips/pkey.pem")
-modparam("osp","local\_certificate","/usr/local/etc/opensips/localcert.pem")
-modparam("osp","ca\_certificates","/usr/local/etc/opensips/cacert.pem")
+modparam("osp","private_key","/usr/local/etc/opensips/pkey.pem")
+modparam("osp","local_certificate","/usr/local/etc/opensips/localcert.pem")
+modparam("osp","ca_certificates","/usr/local/etc/opensips/cacert.pem")
 ```
 ### Setting the hardware support
 
 Setting the hardware support
 
 ```opensips
-modparam("osp","enable\_crypto\_hardware\_support",0)
+modparam("osp","enable_crypto_hardware_support",0)
 ```
 ### Setting the ssl lifetime
 
 Setting the ssl lifetime
 
 ```opensips
-modparam("osp","ssl\_lifetime",200)
+modparam("osp","ssl_lifetime",200)
 ```
 ### Setting the persistence
 
@@ -1031,14 +1031,14 @@ modparam("osp","persistence",1000)
 Setting the retry delay
 
 ```opensips
-modparam("osp","retry\_delay",1)
+modparam("osp","retry_delay",1)
 ```
 ### Setting the retry limit
 
 Setting the retry limit
 
 ```opensips
-modparam("osp","retry\_limit",2)
+modparam("osp","retry_limit",2)
 ```
 ### Setting the timeout
 
@@ -1052,180 +1052,180 @@ modparam("osp","timeout",10)
 Setting support non-SIP destination devices
 
 ```opensips
-modparam("osp","support\_nonsip\_protocol",0)
+modparam("osp","support_nonsip_protocol",0)
 ```
 ### Setting the number of destination
 
 Setting the number of destination
 
 ```opensips
-modparam("osp","max\_destinations",12)
+modparam("osp","max_destinations",12)
 ```
 ### Setting report network ID flag
 
 Setting report network ID flag
 
 ```opensips
-modparam("osp","report\_networkid",3)
+modparam("osp","report_networkid",3)
 ```
 ### Instructing the module to validate call id
 
 Instructing the module to validate call id
 
 ```opensips
-modparam("osp","validate\_call\_id",1)
+modparam("osp","validate_call_id",1)
 ```
 ### Instructing the module to use number portability parameters in Request URI
 
 Instructing the module to use number portability parameters in Request URI
 
 ```opensips
-modparam("osp","use\_number\_portablity",1)
+modparam("osp","use_number_portablity",1)
 ```
 ### Append user=phone parameter
 
 Append user=phone parameter
 
 ```opensips
-modparam("osp","append\_userphone",0)
+modparam("osp","append_userphone",0)
 ```
 ### Append networkid location
 
 Append networkid location
 
 ```opensips
-modparam("osp","networkid\_location",2)
+modparam("osp","networkid_location",2)
 ```
 ### Networkid parameter name
 
 Networkid parameter name
 
 ```opensips
-modparam("osp","networkid\_param","networkid")
+modparam("osp","networkid_param","networkid")
 ```
 ### Append switchid location
 
 Append switchid location
 
 ```opensips
-modparam("osp","switchid\_location",2)
+modparam("osp","switchid_location",2)
 ```
 ### Networkid parameter name
 
 Networkid parameter name
 
 ```opensips
-modparam("osp","switchid\_param","switchid")
+modparam("osp","switchid_param","switchid")
 ```
 ### Append parameter string location
 
 Append parameter string location
 
 ```opensips
-modparam("osp","parameterstring\_location",0)
+modparam("osp","parameterstring_location",0)
 ```
 ### Parameter string value
 
 Parameter string value
 
 ```opensips
-modparam("osp","parameterstring\_value","")
+modparam("osp","parameterstring_value","")
 ```
 ### Setting the source device IP AVP
 
 Setting the source device IP AVP
 
 ```opensips
-modparam("osp","source\_device\_avp","$avp(srcdev)")
+modparam("osp","source_device_avp","$avp(srcdev)")
 ```
 ### Setting the source network ID AVP
 
 Setting the source network ID AVP
 
 ```opensips
-modparam("osp","source\_networkid\_avp","$avp(snid)")
+modparam("osp","source_networkid_avp","$avp(snid)")
 ```
 ### Setting the source switch ID AVP
 
 Setting the source switch ID AVP
 
 ```opensips
-modparam("osp","source\_switchid\_avp","$avp(swid)")
+modparam("osp","source_switchid_avp","$avp(swid)")
 ```
 ### Setting the custom info AVP
 
 Setting the custom info AVP
 
 ```opensips
-modparam("osp","custom\_info\_avp","$avp(cinfo)")
+modparam("osp","custom_info_avp","$avp(cinfo)")
 ```
 ### Setting the CNAM AVP
 
 Setting the CNAM AVP
 
 ```opensips
-modparam("osp","cnam\_avp","$avp(cnam)")
+modparam("osp","cnam_avp","$avp(cnam)")
 ```
 ### Setting the NOTIFY extra headers
 
 Setting the NOTIFY extra headers
 
 ```opensips
-modparam("osp", "extraheaders\_value", "Source: N")
+modparam("osp", "extraheaders_value", "Source: N")
 ```
 ### Setting the media address AVPs
 
 Setting the media address AVPs
 
 ```opensips
-modparam("osp", "source\_media\_avp", "$avp(srcmedia)")
-modparam("osp", "destination\_media\_avp", "$avp(destmedia)")
+modparam("osp", "source_media_avp", "$avp(srcmedia)")
+modparam("osp", "destination_media_avp", "$avp(destmedia)")
 ```
 ### Setting the request date AVP
 
 Setting the request date AVP
 
 ```opensips
-modparam("osp","request\_date\_avp","$avp(reqdate)")
+modparam("osp","request_date_avp","$avp(reqdate)")
 ```
 ### Setting the SDP finger print AVP
 
 Setting the SDP finger print AVP
 
 ```opensips
-modparam("osp","sdp\_fingerprint\_avp","$avp(sdpfp)")
+modparam("osp","sdp_fingerprint_avp","$avp(sdpfp)")
 ```
 ### Setting the Identity related AVPs
 
 Setting the Identity related AVPs
 
 ```opensips
-modparam("osp","identity\_signature\_avp","$avp(idsign)")
-modparam("osp","identity\_algorithm\_avp","$avp(idalg)")
-modparam("osp","identity\_information\_avp","$avp(idinfo)")
-modparam("osp","identity\_type\_avp","$avp(idtype)")
-modparam("osp","identity\_canon\_avp","$avp(idcanon)")
+modparam("osp","identity_signature_avp","$avp(idsign)")
+modparam("osp","identity_algorithm_avp","$avp(idalg)")
+modparam("osp","identity_information_avp","$avp(idinfo)")
+modparam("osp","identity_type_avp","$avp(idtype)")
+modparam("osp","identity_canon_avp","$avp(idcanon)")
 ```
 ### Setting the source service provider AVP
 
 Setting the source service provider AVP
 
 ```opensips
-modparam("osp", "service\_provider\_avp", "$avp(sp)")
+modparam("osp", "service_provider_avp", "$avp(sp)")
 ```
 ### Setting the source user group AVP
 
 Setting the source user group AVP
 
 ```opensips
-modparam("osp", "user\_group\_avp", "$avp(groupid)")
+modparam("osp", "user_group_avp", "$avp(groupid)")
 ```
 ### Setting the source user ID AVP
 
 Setting the source user ID AVP
 
 ```opensips
-modparam("osp", "user\_id\_avp", "$avp(userid)")
+modparam("osp", "user_id_avp", "$avp(userid)")
 ```
 ### checkospheader usage
 
@@ -1351,12 +1351,12 @@ checkcallingtranslation usage
 ```opensips
 ...
 if (checkcallingtranslation()) {
-  # Remove the Remote\_Party-ID from the received message
+  # Remove the Remote_Party-ID from the received message
   # Otherwise it will be forwarded on to the next hop
-  remove\_hf("Remote-Party-ID");
+  remove_hf("Remote-Party-ID");
 
-  # Append a new Remote\_Party
-  append\_rpid\_hf();
+  # Append a new Remote_Party
+  append_rpid_hf();
 }
 ...
 ```
@@ -1366,7 +1366,7 @@ reportospusage usage
 
 ```opensips
 ...
-if (is\_direction("downstream")) {
+if (is_direction("downstream")) {
   log(1,"This BYE message is from SOURCE\\n");
   if (!reportospusage(0)) {
     log(1,"This BYE message does not include OSP usage information\\n");
@@ -1385,15 +1385,15 @@ processsubscribe usage
 
 ```opensips
 ...
-if (is\_method("SUBSCRIBE")) {
-    if (($var(sevent) == "calling-name") && (is\_myself("$rd"))) {
+if (is_method("SUBSCRIBE")) {
+    if (($var(sevent) == "calling-name") && (is_myself("$rd"))) {
         if ($var(cnamrecord) != NULL) {
             processsubscribe($(var(cnamrecord){s.b64decode}));
         } else {
-            t\_relay("1.2.3.4", 0x02);
+            t_relay("1.2.3.4", 0x02);
         }
     } else {
-        t\_relay();
+        t_relay();
     }
 }
 ...

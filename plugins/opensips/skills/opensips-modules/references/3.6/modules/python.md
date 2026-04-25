@@ -23,24 +23,24 @@ The module provides the means to load a python module and run its functions. Eac
 
 ## How It Works
 
-In order to run Python functions, one has to load the module that contains them, by specifying the script name using the _script\_name_ parameter. The module has to contain the following components:
+In order to run Python functions, one has to load the module that contains them, by specifying the script name using the _script_name_ parameter. The module has to contain the following components:
 
 *   A class that contains all the methods that can be invoked from the script.
     
-*   A method within the class that is called when a SIP child is created. The method should receive an integer parameter, which represents the rank of the child, and must return 0 or positive in case the function was executed successfully, or negative otherwise. The name of this method is specified by the _child\_init\_method_ parameter.
+*   A method within the class that is called when a SIP child is created. The method should receive an integer parameter, which represents the rank of the child, and must return 0 or positive in case the function was executed successfully, or negative otherwise. The name of this method is specified by the _child_init_method_ parameter.
     
-*   A global function that initializes the Python module and returns an object from the class whose functions will be invoked by the script. The name of the global function is indicated by the _mod\_init\_method_ parameter.
+*   A global function that initializes the Python module and returns an object from the class whose functions will be invoked by the script. The name of the global function is indicated by the _mod_init_method_ parameter.
     
 A minimal example of a Python script that satisfies these requirements is:
 
-	def mod\_init():
+	def mod_init():
 		return SIPMsg()
 
 	class SIPMsg:
-        def child\_init(self, rank):
+        def child_init(self, rank):
 	        return 0
 
-A function from the object returned above can be executed from the script using the _python\_exec()_ script function. The python method has to receive the following parameters:
+A function from the object returned above can be executed from the script using the _python_exec()_ script function. The python method has to receive the following parameters:
 
 *   The SIP message, that has the structure detailed below
     
@@ -48,7 +48,7 @@ A function from the object returned above can be executed from the script using 
     
 The SIP message received as parameter by the function has the following fields and methods:
 
-*   _Type_ - the type of the message, either _SIP\_REQUEST_ or _SIP\_REPLY_
+*   _Type_ - the type of the message, either _SIP_REQUEST_ or _SIP_REPLY_
     
 *   _Method_ - the method of the message
     
@@ -56,23 +56,23 @@ The SIP message received as parameter by the function has the following fields a
     
 *   _RURI_ - the R-URI of the message, available only for requests
     
-*   _src\_address_ - the (IP, port) tuple representing source address of the message
+*   _src_address_ - the (IP, port) tuple representing source address of the message
     
-*   _dst\_address_ - the (IP, port) tuple representing the destination address (OpenSIPS address) of the message
+*   _dst_address_ - the (IP, port) tuple representing the destination address (OpenSIPS address) of the message
     
 *   _copy()_ - copies the current SIP message in a new object
     
-*   _rewrite\_ruri()_ - changes the R-URI of the message; available only for requests
+*   _rewrite_ruri()_ - changes the R-URI of the message; available only for requests
     
-*   _set\_dst\_uri()_ - sets the destination URI of the message; available only for requests
+*   _set_dst_uri()_ - sets the destination URI of the message; available only for requests
     
 *   _getHeader()_ - returns the header of a message
     
-*   _call\_function()_ - calls built-in script function or function exported by other module
+*   _call_function()_ - calls built-in script function or function exported by other module
     
-*   _get\_pseudoVar(name)_ - returns the value of the the pseudo-variable specified by the _name_ as Unicode string.
+*   _get_pseudoVar(name)_ - returns the value of the the pseudo-variable specified by the _name_ as Unicode string.
     
-*   _set\_pseudoVar(name, value)_ - sets pseudo-variable using Unicode string _value_.
+*   _set_pseudoVar(name, value)_ - sets pseudo-variable using Unicode string _value_.
 
 ## Dependencies
 
@@ -95,7 +95,7 @@ The method called for each child process.
 **Example.** child_initializer.
 
 ```opensips
-modparam("python", "child\_init\_method", "child\_initializer")
+modparam("python", "child_init_method", "child_initializer")
 ```
 ### `mod_init_function` (string)
 
@@ -106,7 +106,7 @@ The method used to initialize the Python module and return the object.
 **Example.** module_initializer.
 
 ```opensips
-modparam("python", "mod\_init\_function", "module\_initializer")
+modparam("python", "mod_init_function", "module_initializer")
 ```
 ### `script_name` (string)
 
@@ -117,7 +117,7 @@ The script that contains the Python module.
 **Example.** /usr/local/bin/opensips_handler.py.
 
 ```opensips
-modparam("python", "script\_name", "/usr/local/bin/opensips\_handler.py")
+modparam("python", "script_name", "/usr/local/bin/opensips_handler.py")
 ```
 
 ## Exported Functions
@@ -141,7 +141,7 @@ Sets the script_name parameter to a specific path.
 
 ```opensips
 ...
-modparam("python", "script\_name", "/usr/local/bin/opensips\_handler.py")
+modparam("python", "script_name", "/usr/local/bin/opensips_handler.py")
 ...
 ```
 ### Set `mod_init_function` parameter
@@ -150,7 +150,7 @@ Sets the mod_init_function parameter.
 
 ```opensips
 ...
-modparam("python", "mod\_init\_function", "module\_initializer")
+modparam("python", "mod_init_function", "module_initializer")
 ...
 ```
 ### Set `child_init_method` parameter
@@ -159,6 +159,6 @@ Sets the child_init_method parameter.
 
 ```opensips
 ...
-modparam("python", "child\_init\_method", "child\_initializer")
+modparam("python", "child_init_method", "child_initializer")
 ...
 ```

@@ -49,7 +49,7 @@ This checking is done only when comes to send SIP traffic via TLS and it is appl
 
 ```opensips
 ...
-modparam("proto\_msrp", "cert\_check\_on\_conn\_reusage", 1)
+modparam("proto_msrp", "cert_check_on_conn_reusage", 1)
 ...
 ```
 ### `max_msg_chunks` (integer)
@@ -62,7 +62,7 @@ The maximum number of chunks that a SIP message is expected to arrive via MSRP. 
 
 ```opensips
 ...
-modparam("proto\_msrp", "max\_msg\_chunks", 8)
+modparam("proto_msrp", "max_msg_chunks", 8)
 ...
 ```
 ### `send_timeout` (integer)
@@ -75,7 +75,7 @@ Time in milliseconds after a MSRP connection will be closed if it is not availab
 
 ```opensips
 ...
-modparam("proto\_msrp", "send\_timeout", 200)
+modparam("proto_msrp", "send_timeout", 200)
 ...
 ```
 ### `tls_handshake_timeout` (integer)
@@ -89,13 +89,13 @@ The timeout is invoked during acceptance of a new connection (inbound) and durin
 **Example.** Set the `tls_handshake_timeout` parameter.
 
 ```opensips
-param("proto\_msrp", "tls\_handshake\_timeout", 200) # number of milliseconds
+param("proto_msrp", "tls_handshake_timeout", 200) # number of milliseconds
 ```
 ### `trace_destination` (string)
 
-Trace destination as defined in the tracing module. Currently the only tracing module is **proto\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process.
+Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process.
 
-**WARNING:** A tracing module must be loaded in order for this parameter to work. (for example **proto\_hep**).
+**WARNING:** A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**).
 
 *Default value is none(not defined)..*
 
@@ -103,18 +103,18 @@ Trace destination as defined in the tracing module. Currently the only tracing m
 
 ```opensips
 ...
-modparam("proto\_hep", "hep\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_msrp", "trace\_destination", "hep\_dest")
+modparam("proto_msrp", "trace_destination", "hep_dest")
 ...
 ```
 ### `trace_filter_route` (string)
 
-Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.5, “`trace_destination` (string)”](#trace-destination "1.3.5.�trace_destination (string)") and trace must be on at the time this connection is opened.
+Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.5, “`trace_destination` (string)”](#trace-destination "1.3.5.trace_destination (string)") and trace must be on at the time this connection is opened.
 
-**IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket\_in(ip)** (ip) and **$socket\_in(port)** (port) can be used.
+**IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used.
 
-**WARNING:** IF [Section 1.3.6, “`trace_on` (int)”](#trace-on "1.3.6.�trace_on (int)") is set to 0 or tracing is deactived via the mi command [Section 1.4.1, “ `msrp_trace` ”](#msrp-trace "1.4.1.� msrp_trace") this route won't be called.
+**WARNING:** IF [Section 1.3.6, “`trace_on` (int)”](#trace-on "1.3.6.trace_on (int)") is set to 0 or tracing is deactived via the mi command [Section 1.4.1, “ `msrp_trace` ”](#msrp-trace "1.4.1. msrp_trace") this route won't be called.
 
 *Default value is none(no route is set)..*
 
@@ -122,17 +122,17 @@ Define the name of a route in which you can filter which connections will be tra
 
 ```opensips
 ...
-modparam("proto\_msrp", "trace\_filter\_route", "msrp\_filter")
+modparam("proto_msrp", "trace_filter_route", "msrp_filter")
 ...
 /* all MSRP connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route[msrp\_filter] {
+route[msrp_filter] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;
@@ -141,7 +141,7 @@ route[msrp\_filter] {
 ```
 ### `trace_on` (integer)
 
-This controls whether tracing for MSRP is on or not. You still need to define [Section 1.3.5, “`trace_destination` (string)”](#trace-destination "1.3.5.�trace_destination (string)")in order to work, but this value will be controlled using MI function [Section 1.4.1, “ `msrp_trace` ”](#msrp-trace "1.4.1.� msrp_trace").
+This controls whether tracing for MSRP is on or not. You still need to define [Section 1.3.5, “`trace_destination` (string)”](#trace-destination "1.3.5.trace_destination (string)")in order to work, but this value will be controlled using MI function [Section 1.4.1, “ `msrp_trace` ”](#msrp-trace "1.4.1. msrp_trace").
 
 *Default value is 0(tracing inactive)..*
 
@@ -149,7 +149,7 @@ This controls whether tracing for MSRP is on or not. You still need to define [S
 
 ```opensips
 ...
-modparam("proto\_msrp", "trace\_on", 1)
+modparam("proto_msrp", "trace_on", 1)
 ...
 ```
 
@@ -166,9 +166,9 @@ set MSRP tracing on and off. This parameter can be missing and the command will 
 **Example.** MI FIFO Command Format
 
 ```opensips
-:msrp\_trace:\_reply\_fifo\_file\_
-			trace\_mode
-			\_empty\_line\_
+:msrp_trace:_reply_fifo_file_
+			trace_mode
+			_empty_line_
 ```
 
 ## Configuration Examples
@@ -179,7 +179,7 @@ Time in milliseconds after a MSRP connection will be closed if it is not availab
 
 ```opensips
 ...
-modparam("proto\_msrp", "send\_timeout", 200)
+modparam("proto_msrp", "send_timeout", 200)
 ...
 ```
 ### Set `max_msg_chunks` parameter
@@ -188,7 +188,7 @@ The maximum number of chunks that a SIP message is expected to arrive via MSRP. 
 
 ```opensips
 ...
-modparam("proto\_msrp", "max\_msg\_chunks", 8)
+modparam("proto_msrp", "max_msg_chunks", 8)
 ...
 ```
 ### Set `tls_handshake_timeout` variable
@@ -198,7 +198,7 @@ Sets the timeout (in milliseconds) for the SSL handshake sequence to complete. I
 The timeout is invoked during acceptance of a new connection (inbound) and during the wait period when a new session is being initiated (outbound).
 
 ```opensips
-param("proto\_msrp", "tls\_handshake\_timeout", 200) # number of milliseconds
+param("proto_msrp", "tls_handshake_timeout", 200) # number of milliseconds
 ```
 ### Set `cert_check_on_conn_reusage` parameter
 
@@ -208,7 +208,7 @@ This checking is done only when comes to send SIP traffic via TLS and it is appl
 
 ```opensips
 ...
-modparam("proto\_msrp", "cert\_check\_on\_conn\_reusage", 1)
+modparam("proto_msrp", "cert_check_on_conn_reusage", 1)
 ...
 ```
 ### Set `trace_destination` parameter
@@ -217,9 +217,9 @@ Trace destination as defined in the tracing module. Currently the only tracing m
 
 ```opensips
 ...
-modparam("proto\_hep", "hep\_id", "[hep\_dest]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "[hep_dest]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_msrp", "trace\_destination", "hep\_dest")
+modparam("proto_msrp", "trace_destination", "hep_dest")
 ...
 ```
 ### Set `trace_on` parameter
@@ -228,7 +228,7 @@ This controls whether tracing for MSRP is on or not. You still need to define [S
 
 ```opensips
 ...
-modparam("proto\_msrp", "trace\_on", 1)
+modparam("proto_msrp", "trace_on", 1)
 ...
 ```
 ### Set `trace_filter_route` parameter
@@ -237,17 +237,17 @@ Define the name of a route in which you can filter which connections will be tra
 
 ```opensips
 ...
-modparam("proto\_msrp", "trace\_filter\_route", "msrp\_filter")
+modparam("proto_msrp", "trace_filter_route", "msrp_filter")
 ...
 /* all MSRP connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route[msrp\_filter] {
+route[msrp_filter] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;

@@ -68,5 +68,5 @@ modparam("event_virtual", "failover_timeout", 5)
 The sockets of the subscribers may be separated by any number of spaces or tabs:
 
 ```opensips
-virtual:PARALLEL rabbitmq:guest:guest@127.0.0.1:5672/pike flatstore:/var/log/opensips\_proxy.log
+virtual:PARALLEL rabbitmq:guest:guest@127.0.0.1:5672/pike flatstore:/var/log/opensips_proxy.log
 ```

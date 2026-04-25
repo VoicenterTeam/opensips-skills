@@ -76,12 +76,12 @@ modparam("load_balancer", "cluster_sharing_tag", "vip")
 
 The name of the DB table containing the load-balancing rules.
 
-*Default value is “load\_balancer”.*
+*Default value is “load_balancer”.*
 
 **Example.** lb.
 
 ```opensips
-modparam("load\_balancer", "db\_table", "lb")
+modparam("load_balancer", "db_table", "lb")
 ```
 ### `db_url` (string)
 
@@ -92,7 +92,7 @@ The URL pointing to the database where the load-balancing rules are stored.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("load\_balancer", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("load_balancer", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `fetch_freeswitch_stats` (integer)
 
@@ -162,7 +162,7 @@ The FROM SIP URI to be advertised in the SIP probing requests.
 **Example.** sip:pinger@192.168.2.10.
 
 ```opensips
-modparam("load\_balancer", "probing\_from", "sip:pinger@192.168.2.10")
+modparam("load_balancer", "probing_from", "sip:pinger@192.168.2.10")
 ```
 ### `probing_interval` (integer)
 
@@ -173,7 +173,7 @@ How often (in seconds) the probing of a destination should be done. If set to 0,
 **Example.** 60.
 
 ```opensips
-modparam("load\_balancer", "probing\_interval", 60)
+modparam("load_balancer", "probing_interval", 60)
 ```
 ### `probing_method` (string)
 
@@ -184,7 +184,7 @@ The SIP method to be used for the probing requests.
 **Example.** INFO.
 
 ```opensips
-modparam("load\_balancer", "probing\_method", "INFO")
+modparam("load_balancer", "probing_method", "INFO")
 ```
 ### `probing_reply_codes` (string)
 

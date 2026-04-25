@@ -27,37 +27,37 @@ The stun server will use 4 sockets:
 *   socket3 = ip2 : port1
 *   socket4 = ip2 : port2
 
-where _ip1_ / _port1_ represent an UDP SIP listener and _ip2_ / _port2_ are configured via the [alternate\_ip](#param_alternate_ip "1.3.3.� alternate\_ip (str)") and [alternate\_port](#param_alternate_port "1.3.4.� alternate\_port (str)") parameters.
+where _ip1_ / _port1_ represent an UDP SIP listener and _ip2_ / _port2_ are configured via the [alternate_ip](#param_alternate_ip "1.3.3. alternate_ip (str)") and [alternate_port](#param_alternate_port "1.3.4. alternate_port (str)") parameters.
 
 The sockets come from existing SIP sockets or are created.
 
 Socket1 must allways be a SIP UDP listener from OpenSIPS.
 
-If [use\_listeners\_as\_primary](#param_use_listeners_as_primary "1.3.5.� use\_listeners\_as\_primary (int)") is enabled the STUN server will actually use multiple sets of sockets obtained from the IP/port combinations described above, each set corresponding to a SIP UDP listener from OpenSIPS.
+If [use_listeners_as_primary](#param_use_listeners_as_primary "1.3.5. use_listeners_as_primary (int)") is enabled the STUN server will actually use multiple sets of sockets obtained from the IP/port combinations described above, each set corresponding to a SIP UDP listener from OpenSIPS.
 
 The server will create a separate process. This process will listen for data on created sockets. The server will register a callback function to SIP. This function is called when a specific (stun)header is found.
 
-### 1.1.3.� Supported STUN Attributes
+### 1.1.3. Supported STUN Attributes
 
-This stun implements RFC3489 (and XOR\_MAPPED\_ADDRESS from RFC5389)
+This stun implements RFC3489 (and XOR_MAPPED_ADDRESS from RFC5389)
 
-*   MAPPED\_ADDRESS
-*   RESPONSE\_ADDRESS
-*   CHANGE\_REQUEST
-*   SOURCE\_ADDRESS
-*   CHANGED\_ADDRESS
-*   ERROR\_CODE
-*   UNKNOWN\_ATTRIBUTES
-*   REFLECTED\_FROM
-*   XOR\_MAPPED\_ADDRESS
+*   MAPPED_ADDRESS
+*   RESPONSE_ADDRESS
+*   CHANGE_REQUEST
+*   SOURCE_ADDRESS
+*   CHANGED_ADDRESS
+*   ERROR_CODE
+*   UNKNOWN_ATTRIBUTES
+*   REFLECTED_FROM
+*   XOR_MAPPED_ADDRESS
 
 Not supported attributes:
 
 *   USERNAME
 *   PASSWORD
-*   MESSAGE\_INTEGRITY
+*   MESSAGE_INTEGRITY
 
-and associated ERROR\_CODEs
+and associated ERROR_CODEs
 
 ## Dependencies
 

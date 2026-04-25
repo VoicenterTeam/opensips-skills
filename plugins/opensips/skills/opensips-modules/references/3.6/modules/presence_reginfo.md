@@ -17,9 +17,9 @@ Reference for the OpenSIPs 3.6 presence_reginfo module. Read this file when conf
 
 The module enables the handling of "Event: reg" (as defined in RFC 3680) inside of the presence module. This can be used distribute the registration-info status to the subscribed watchers.
 
-The module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle\_publish() and handle\_subscribe() functions.
+The module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle_publish() and handle_subscribe() functions.
 
-Note: This module only activates the processing of the "reg" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the reg info to the presence module. For example you can use the pua\_reginfo module or any external component. This approach allows to have the presence server and the reg-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.
+Note: This module only activates the processing of the "reg" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the reg info to the presence module. For example you can use the pua_reginfo module or any external component. This approach allows to have the presence server and the reg-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.
 
 ## Dependencies
 
@@ -43,7 +43,7 @@ Whether to aggregate in a single notify body all registration presentities. Usef
 
 ```opensips
 ...
-modparam("presence\_reginfo", "aggregate\_presentities", 1)
+modparam("presence_reginfo", "aggregate_presentities", 1)
 ...
 ```
 ### `default_expires` (integer)
@@ -56,7 +56,7 @@ The default expires value used when missing from SUBSCRIBE message (in seconds).
 
 ```opensips
 ...
-modparam("presence\_reginfo", "default\_expires", 3600)
+modparam("presence_reginfo", "default_expires", 3600)
 ...
 ```
 
@@ -68,7 +68,7 @@ The default expires value used when missing from SUBSCRIBE message (in seconds).
 
 ```opensips
         ...
-        modparam("presence\_reginfo", "default\_expires", 3600)
+        modparam("presence_reginfo", "default_expires", 3600)
         ...
 ```
 ### Set `aggregate_presentities` parameter
@@ -77,6 +77,6 @@ Whether to aggregate in a single notify body all registration presentities. Usef
 
 ```opensips
 				...
-				modparam("presence\_reginfo", "aggregate\_presentities", 1)
+				modparam("presence_reginfo", "aggregate_presentities", 1)
 				...
 ```

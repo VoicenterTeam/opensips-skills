@@ -46,7 +46,7 @@ The database url.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("imc", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("imc", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `hash_size` (integer)
 
@@ -57,7 +57,7 @@ The power of 2 to get the size of the hash table used for storing members and ro
 **Example.** 8.
 
 ```opensips
-modparam("imc", "hash\_size", 8)
+modparam("imc", "hash_size", 8)
 ```
 ### `imc_cmd_start_char` (string)
 
@@ -68,7 +68,7 @@ The character which indicates that the body of the message is a command.
 **Example.** #.
 
 ```opensips
-modparam("imc", "imc\_cmd\_start\_char", "#")
+modparam("imc", "imc_cmd_start_char", "#")
 ```
 ### `members_table` (string)
 
@@ -79,7 +79,7 @@ The name of the table storing IMC members.
 **Example.** members.
 
 ```opensips
-modparam("imc", "rooms\_table", "members")
+modparam("imc", "rooms_table", "members")
 ```
 ### `outbound_proxy` (string)
 
@@ -90,7 +90,7 @@ The SIP address used as next hop when sending the message. Very useful when usin
 **Example.** sip:opensips.org;transport=tcp.
 
 ```opensips
-modparam("imc", "outbound\_proxy", "sip:opensips.org;transport=tcp")
+modparam("imc", "outbound_proxy", "sip:opensips.org;transport=tcp")
 ```
 ### `rooms_table` (string)
 
@@ -101,7 +101,7 @@ The name of the table storing IMC rooms.
 **Example.** rooms.
 
 ```opensips
-modparam("imc", "rooms\_table", "rooms")
+modparam("imc", "rooms_table", "rooms")
 ```
 
 ## Exported Functions
@@ -137,7 +137,7 @@ Listing of the members in IM Conferencing rooms.
 **Example.** MI FIFO Command Format
 
 ```bash
-opensips-cli -x mi imc\_list\_members sip:chat-000@opensips.org
+opensips-cli -x mi imc_list_members sip:chat-000@opensips.org
 ```
 
 ### `imc_list_rooms`
@@ -147,7 +147,7 @@ Lists of the IM Conferencing rooms.
 **Example.** MI FIFO Command Format
 
 ```bash
-opensips-cli -x mi imc\_list\_rooms
+opensips-cli -x mi imc_list_rooms
 ```
 
 ## Exported Statistics
@@ -166,7 +166,7 @@ The database url.
 
 ```opensips
 ...
-modparam("imc", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("imc", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `rooms_table` parameter
@@ -175,7 +175,7 @@ The name of the table storing IMC rooms.
 
 ```opensips
 ...
-modparam("imc", "rooms\_table", "rooms")
+modparam("imc", "rooms_table", "rooms")
 ...
 ```
 ### Set `members_table` parameter
@@ -184,7 +184,7 @@ The name of the table storing IMC members.
 
 ```opensips
 ...
-modparam("imc", "rooms\_table", "members")
+modparam("imc", "rooms_table", "members")
 ...
 ```
 ### Set `hash_size` parameter
@@ -193,7 +193,7 @@ The power of 2 to get the size of the hash table used for storing members and ro
 
 ```opensips
 ...
-modparam("imc", "hash\_size", 8)
+modparam("imc", "hash_size", 8)
 ...
 ```
 ### Set `imc_cmd_start_char` parameter
@@ -202,7 +202,7 @@ The character which indicates that the body of the message is a command.
 
 ```opensips
 ...
-modparam("imc", "imc\_cmd\_start\_char", "#")
+modparam("imc", "imc_cmd_start_char", "#")
 ...
 ```
 ### Set `outbound_proxy` parameter
@@ -211,7 +211,7 @@ The SIP address used as next hop when sending the message. Very useful when usin
 
 ```opensips
 ...
-modparam("imc", "outbound\_proxy", "sip:opensips.org;transport=tcp")
+modparam("imc", "outbound_proxy", "sip:opensips.org;transport=tcp")
 ...
 ```
 ### Usage of `imc_manager()` function
@@ -222,8 +222,8 @@ Handles Message method.It detects if the body of the message is a conference com
 ...
 # the rooms will be named chat-xyz to avoid overlapping
 # with usernames
-if(is\_method("MESSAGE)
+if(is_method("MESSAGE)
         && ($ru=~ "sip:chat-\[0-9\]+@" || ($ru=~ "sip:chat-manager@")
-    imc\_manager();
+    imc_manager();
 ...
 ```

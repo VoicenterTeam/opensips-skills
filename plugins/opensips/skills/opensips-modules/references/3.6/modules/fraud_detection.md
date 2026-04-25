@@ -111,12 +111,12 @@ modparam("fraud_detection", "cpm_thresh_crit_col", "cpm_crit_thresh")
 
 The column's name in the database storing the warning threshold value for calls per minute.
 
-*Default value is cpm\_warning.*
+*Default value is cpm_warning.*
 
-**Example.** cpm\_warn\_thresh.
+**Example.** cpm_warn_thresh.
 
 ```opensips
-modparam("fraud\_detection", "cpm\_thresh\_warn\_col", "cpm\_warn\_thresh")
+modparam("fraud_detection", "cpm_thresh_warn_col", "cpm_warn_thresh")
 ```
 ### `days_col` (string)
 
@@ -129,7 +129,7 @@ The daysoftheweek needs to be specified as a string containing a list of days or
 **Example.** days.
 
 ```opensips
-modparam("fraud\_detection", "days\_col", "days")
+modparam("fraud_detection", "days_col", "days")
 ```
 ### `db_url` (string)
 
@@ -150,12 +150,12 @@ The column's name in the database storing the the end time of the interval in wh
 
 The time needs to be specified as string using the format: “HH:MM”
 
-*Default value is end\_hour.*
+*Default value is end_hour.*
 
-**Example.** the\_end\_time.
+**Example.** the_end_time.
 
 ```opensips
-modparam("fraud\_detection", "end\_h", "the\_end\_time")
+modparam("fraud_detection", "end_h", "the_end_time")
 ```
 ### `pid_col` (string)
 
@@ -179,7 +179,7 @@ The column's name in the database storing the prefix for which the fraud rule wi
 **Example.** myprefix.
 
 ```opensips
-modparam("fraud\_detection", "prefix\_col", "myprefix")
+modparam("fraud_detection", "prefix_col", "myprefix")
 ```
 ### `rid_col` (string)
 
@@ -220,12 +220,12 @@ The column's name in the database storing the the start time of the interval in 
 
 The time needs to be specified as string using the format: “HH:MM”
 
-*Default value is start\_hour.*
+*Default value is start_hour.*
 
-**Example.** the\_start\_time.
+**Example.** the_start_time.
 
 ```opensips
-modparam("fraud\_detection", "start\_h", "the\_start\_time")
+modparam("fraud_detection", "start_h", "the_start_time")
 ```
 ### `table_name` (string)
 
@@ -280,7 +280,7 @@ modparam("fraud_detection", "use_utc_time", 1)
 
 This method should be called each time a given _user_ calls a given _number_. It will try to match a fraud rule within the given fraud profile and update the stats (see above). Furthermore, the stats will be checked against the rule's thresholds. If any of the stats is above its threshold value, the appropriate event will also be raised (see further details below).
 
-Designed to only work with initial INVITE messages! If a dialog is not already present, one will be created (equivalent of create\_dialog()).
+Designed to only work with initial INVITE messages! If a dialog is not already present, one will be created (equivalent of create_dialog()).
 
 **Parameters:**
 
@@ -350,7 +350,7 @@ Database where to load the rules from.
 
 ```opensips
 ...
-modparam("fraud\_detection", "db_url", "mysql://user:passwb@localhost/database")
+modparam("fraud_detection", "db_url", "mysql://user:passwb@localhost/database")
 ...
 ```
 
@@ -361,7 +361,7 @@ Set this parameter to non-zero in order to enable UTC-based interval matching an
 
 ```opensips
 ...
-modparam("fraud\_detection", "use_utc_time", 1)
+modparam("fraud_detection", "use_utc_time", 1)
 ...
 ```
 
@@ -372,7 +372,7 @@ If you want to load the rules from the database you must set this parameter as t
 
 ```opensips
 ...
-modparam("fraud\_detection", "table_name", "my_fraud")
+modparam("fraud_detection", "table_name", "my_fraud")
 ...
 ```
 
@@ -383,7 +383,7 @@ The column's name in the database storing the fraud rule's id.
 
 ```opensips
 ...
-modparam("fraud\_detection", "rid_col", "theruleid")
+modparam("fraud_detection", "rid_col", "theruleid")
 ...
 ```
 
@@ -394,7 +394,7 @@ The column's name in the database storing the fraud profile's id. Please keep in
 
 ```opensips
 ...
-modparam("fraud\_detection", "pid_col", "profile")
+modparam("fraud_detection", "pid_col", "profile")
 ...
 ```
 
@@ -405,7 +405,7 @@ The column's name in the database storing the prefix for which the fraud rule wi
 
 ```opensips
 ...
-modparam("fraud\_detection", "prefix_col", "myprefix")
+modparam("fraud_detection", "prefix_col", "myprefix")
 ...
 ```
 
@@ -416,7 +416,7 @@ The column's name in the database storing the the start time of the interval in 
 
 ```opensips
 ...
-modparam("fraud\_detection", "start_h", "the_start_time")
+modparam("fraud_detection", "start_h", "the_start_time")
 ...
 ```
 
@@ -427,7 +427,7 @@ The column's name in the database storing the the end time of the interval in wh
 
 ```opensips
 ...
-modparam("fraud\_detection", "end_h", "the_end_time")
+modparam("fraud_detection", "end_h", "the_end_time")
 ...
 ```
 
@@ -438,7 +438,7 @@ The column's name in the database storing the week days in which the fraud rule'
 
 ```opensips
 ...
-modparam("fraud\_detection", "days_col", "days")
+modparam("fraud_detection", "days_col", "days")
 ...
 ```
 
@@ -449,7 +449,7 @@ The column's name in the database storing the warning threshold value for calls 
 
 ```opensips
 ...
-modparam("fraud\_detection", "cpm_thresh_warn_col", "cpm_warn_thresh")
+modparam("fraud_detection", "cpm_thresh_warn_col", "cpm_warn_thresh")
 ...
 ```
 
@@ -460,7 +460,7 @@ The column's name in the database storing the critical threshold value for calls
 
 ```opensips
 ...
-modparam("fraud\_detection", "cpm_thresh_crit_col", "cpm_crit_thresh")
+modparam("fraud_detection", "cpm_thresh_crit_col", "cpm_crit_thresh")
 ...
 ```
 
@@ -471,7 +471,7 @@ The column's name in the database storing the warning threshold value for call d
 
 ```opensips
 ...
-modparam("fraud\_detection", "calldur_thresh_warn_col", "calldur_warn_thresh")
+modparam("fraud_detection", "calldur_thresh_warn_col", "calldur_warn_thresh")
 ...
 ```
 
@@ -482,7 +482,7 @@ The column's name in the database storing the critical threshold value for call 
 
 ```opensips
 ...
-modparam("fraud\_detection", "calldur_thresh_crit_col", "calldur_crit_thresh")
+modparam("fraud_detection", "calldur_thresh_crit_col", "calldur_crit_thresh")
 ...
 ```
 
@@ -493,7 +493,7 @@ The column's name in the database storing the warning threshold value for the nu
 
 ```opensips
 ...
-modparam("fraud\_detection", "totalc_thresh_warn_col", "totalc_warn_thresh")
+modparam("fraud_detection", "totalc_thresh_warn_col", "totalc_warn_thresh")
 ...
 ```
 
@@ -504,7 +504,7 @@ The column's name in the database storing the critical threshold value for the n
 
 ```opensips
 ...
-modparam("fraud\_detection", "totalc_thresh_crit_col", "totalc_crit_thresh")
+modparam("fraud_detection", "totalc_thresh_crit_col", "totalc_crit_thresh")
 ...
 ```
 
@@ -515,7 +515,7 @@ The column's name in the database storing the warning threshold value for the nu
 
 ```opensips
 ...
-modparam("fraud\_detection", "concalls_thresh_warn_col", "concalls_warn_thresh")
+modparam("fraud_detection", "concalls_thresh_warn_col", "concalls_warn_thresh")
 ...
 ```
 
@@ -526,7 +526,7 @@ The column's name in the database storing the critical threshold value for the n
 
 ```opensips
 ...
-modparam("fraud\_detection", "concalls_thresh_crit_col", "concalls_crit_thresh")
+modparam("fraud_detection", "concalls_thresh_crit_col", "concalls_crit_thresh")
 ...
 ```
 
@@ -537,7 +537,7 @@ The column's name in the database storing the warning threshold value for the nu
 
 ```opensips
 ...
-modparam("fraud\_detection", "seqcalls_thresh_warn_col", "seqcalls_warn_thresh")
+modparam("fraud_detection", "seqcalls_thresh_warn_col", "seqcalls_warn_thresh")
 ...
 ```
 
@@ -548,7 +548,7 @@ The column's name in the database storing the critical threshold value for the n
 
 ```opensips
 ...
-modparam("fraud\_detection", "seqcalls_thresh_crit_col", "seqcalls_crit_thresh")
+modparam("fraud_detection", "seqcalls_thresh_crit_col", "seqcalls_crit_thresh")
 ...
 ```
 

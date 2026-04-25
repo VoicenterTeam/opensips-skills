@@ -148,7 +148,7 @@ Searches for the first match of re and appends txt after it.
 **Example.** search_append usage.
 
 ```opensips
-search\_append("\[Oo\]pen\[Ss\]er", " SIP Proxy");
+search_append("\[Oo\]pen\[Ss\]er", " SIP Proxy");
 ```
 
 ### `search_append_body(re, txt)`
@@ -165,7 +165,7 @@ Searches for the first match of re in the body of the message and appends txt af
 **Example.** search_append_body usage.
 
 ```opensips
-search\_append\_body("\[Oo\]pen\[Ss\]er", " SIP Proxy");
+search_append_body("\[Oo\]pen\[Ss\]er", " SIP Proxy");
 ```
 
 ### `search_body(re)`
@@ -181,7 +181,7 @@ Searches for the re in the body of the message.
 **Example.** search_body usage.
 
 ```opensips
-if ( search\_body("\[Ss\]\[Ii\]\[Pp\]") ) { /\*....\*/ };
+if ( search_body("\[Ss\]\[Ii\]\[Pp\]") ) { /\*....\*/ };
 ```
 
 ### `subst('/re/repl/flags')`

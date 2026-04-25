@@ -318,9 +318,9 @@ This is a read-only pseudo-variable that provides access to the parsed informati
 
 ...
 	# acquire the certificate to use for the verification process
-	$var(rc) = rest\_get($identity(x5u), $var(cert));
+	$var(rc) = rest_get($identity(x5u), $var(cert));
 	if ($var(rc) < 0) {
-		send\_reply(436, "Bad Identity Info");
+		send_reply(436, "Bad Identity Info");
 		exit;
 	}
 	...
@@ -442,7 +442,7 @@ modparam("stir_shaken", "e164_max_length", 16)
 ```
 ### Set `require_date_hdr` parameter
 
-Specifies whether the Date header is mandatory when doing verification with the [stir\_shaken\_verify()](#func_stir_shaken_verify "1.4.2.� stir_shaken_verify(cert, err_code, err_reason, [orig], [dest])") function.
+Specifies whether the Date header is mandatory when doing verification with the [stir_shaken_verify()](#func_stir_shaken_verify "1.4.2. stir_shaken_verify(cert, err_code, err_reason, [orig], [dest])") function.
 
 ```opensips
 ...

@@ -59,7 +59,7 @@ modparam("sql_cacher", "bigint_to_str", 1)
 
 This parameter can be set multiple times in order to cache multiple SQL tables or even the same table but with a different configuration. The module distinguishes those different entries by an “id” string.
 
-The caching entry is specified via this parameter that has it's own subparameters. Each of those parameters are separated by a delimiter configured by [spec_delimiter](#param_spec_delimiter "1.3.2.�spec_delimiter (string)") and have the following format:
+The caching entry is specified via this parameter that has it's own subparameters. Each of those parameters are separated by a delimiter configured by [spec_delimiter](#param_spec_delimiter "1.3.2.spec_delimiter (string)") and have the following format:
 
 _param_name=param_value_
 
@@ -83,7 +83,7 @@ The parameters are:
 
 If not present, default value is “string”
     
-*   _columns_ : names of the columns to be cached from the SQL database, separated by a delimiter configured by [columns_delimiter](#param_columns_delimiter "1.3.4.�columns_delimiter (string)").
+*   _columns_ : names of the columns to be cached from the SQL database, separated by a delimiter configured by [columns_delimiter](#param_columns_delimiter "1.3.4.columns_delimiter (string)").
     
     If not present, all the columns from the table will be cached
     
@@ -196,7 +196,7 @@ modparam("sql_cacher", "sql_fetch_nr_rows", 1000)
 
 The cached data is available through this read-only PV.The format is the following:
 
-*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter "1.3.3.�pvar_delimiter (string)")
+*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter "1.3.3.pvar_delimiter (string)")
     
 *   _id_ : cache entry id
     
@@ -204,7 +204,7 @@ The cached data is available through this read-only PV.The format is the followi
     
 *   _key_ : value of the “key” column
     
-**Example�1.10.�`sql_cached_value(id{sep}col{sep}key) pseudo-variable` usage**
+**Example1.10.`sql_cached_value(id{sep}col{sep}key) pseudo-variable` usage**
 
 ...
 $avp(a) = $sql_cached_value(caching_name:column_name_1:key1);
@@ -230,13 +230,13 @@ Reloads the given key or invalidates all the keys in cache in _on demand_ mode.
 **Example.** sql_cacher_reload usage
 
 ```bash
-$ opensips-cli -x mi sql\_cacher\_reload subs\_caching
+$ opensips-cli -x mi sql_cacher_reload subs_caching
 ```
 
 **Example.** sql_cacher_reload usage
 
 ```bash
-$ opensips-cli -x mi sql\_cacher\_reload subs\_caching alice@domain.com
+$ opensips-cli -x mi sql_cacher_reload subs_caching alice@domain.com
 ```
 
 ## Configuration Examples

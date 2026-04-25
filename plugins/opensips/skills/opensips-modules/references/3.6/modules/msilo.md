@@ -92,11 +92,11 @@ The value of the Contact header (including header name and ending \r\n) to be ad
 **Example.** Set the `contact_hdr` parameter.
 
 ```opensips
-modparam("msilo", "contact\_hdr", "Contact: <sip:null@example.com>\\r\\n")
+modparam("msilo", "contact_hdr", "Contact: <sip:null@example.com>\\r\\n")
 ```
 ### `content_type_hdr` (string)
 
-The value of the Content-Type header (including header name and ending \r\n) to be added in notification messages. It must reflect what the 'offline\_message' contains. It can contain pseudo-variables.
+The value of the Content-Type header (including header name and ending \r\n) to be added in notification messages. It must reflect what the 'offline_message' contains. It can contain pseudo-variables.
 
 *Default value is NULL.*
 
@@ -114,7 +114,7 @@ The name of table where to store the messages.
 **Example.** Set the `db_table` parameter.
 
 ```opensips
-modparam("msilo", "db\_table", "silo")
+modparam("msilo", "db_table", "silo")
 ```
 ### `db_url` (string)
 
@@ -125,7 +125,7 @@ Database URL.
 **Example.** Set the `db_url` parameter.
 
 ```opensips
-modparam("msilo", "db\_url", "mysql://user:passwd@host.com/dbname")
+modparam("msilo", "db_url", "mysql://user:passwd@host.com/dbname")
 ```
 ### `expire_time` (integer)
 
@@ -147,8 +147,8 @@ The SIP address used to inform users that destination of their message is not on
 **Example.** Set the `from_address` parameter.
 
 ```opensips
-modparam("msilo", "from\_address", "sip:registrar@example.org")
-modparam("msilo", "from\_address", "sip:$rU@example.org")
+modparam("msilo", "from_address", "sip:registrar@example.org")
+modparam("msilo", "from_address", "sip:$rU@example.org")
 ```
 ### `max_messages` (integer)
 
@@ -170,8 +170,8 @@ The body of the notification message. It can contain pseudo-variables.
 **Example.** Set the `offline_message` parameter.
 
 ```opensips
-modparam("msilo", "offline\_message", "\*\*\* User $rU is offline!")
-modparam("msilo", "offline\_message", "<em>I am offline!</em>")
+modparam("msilo", "offline_message", "\*\*\* User $rU is offline!")
+modparam("msilo", "offline_message", "<em>I am offline!</em>")
 ```
 ### `outbound_proxy` (string)
 
@@ -418,61 +418,61 @@ The number of messages stored by msilo.
 
 ## Configuration Examples
 
-### Set the “db\_url” parameter
+### Set the “db_url” parameter
 
-Set the “db\_url” parameter
+Set the “db_url” parameter
 
 ```opensips
 ...
-modparam("msilo", "db\_url", "mysql://user:passwd@host.com/dbname")
+modparam("msilo", "db_url", "mysql://user:passwd@host.com/dbname")
 ...
 ```
-### Set the “db\_table” parameter
+### Set the “db_table” parameter
 
-Set the “db\_table” parameter
+Set the “db_table” parameter
 
 ```opensips
 ...
-modparam("msilo", "db\_table", "silo")
+modparam("msilo", "db_table", "silo")
 ...
 ```
-### Set the “from\_address” parameter
+### Set the “from_address” parameter
 
-Set the “from\_address” parameter
+Set the “from_address” parameter
 
 ```opensips
 ...
-modparam("msilo", "from\_address", "sip:registrar@example.org")
-modparam("msilo", "from\_address", "sip:$rU@example.org")
+modparam("msilo", "from_address", "sip:registrar@example.org")
+modparam("msilo", "from_address", "sip:$rU@example.org")
 ...
 ```
-### Set the “contact\_hdr” parameter
+### Set the “contact_hdr” parameter
 
-Set the “contact\_hdr” parameter
+Set the “contact_hdr” parameter
 
 ```opensips
 ...
-modparam("msilo", "contact\_hdr", "Contact: <sip:null@example.com>\\r\\n")
+modparam("msilo", "contact_hdr", "Contact: <sip:null@example.com>\\r\\n")
 ...
 ```
-### Set the “offline\_message” parameter
+### Set the “offline_message” parameter
 
-Set the “offline\_message” parameter
+Set the “offline_message” parameter
 
 ```opensips
 ...
-modparam("msilo", "offline\_message", "\*\*\* User $rU is offline!")
-modparam("msilo", "offline\_message", "<em>I am offline!</em>")
+modparam("msilo", "offline_message", "\*\*\* User $rU is offline!")
+modparam("msilo", "offline_message", "<em>I am offline!</em>")
 ...
 ```
-### Set the “content\_type\_hdr” parameter
+### Set the “content_type_hdr” parameter
 
-Set the “content\_type\_hdr” parameter
+Set the “content_type_hdr” parameter
 
 ```opensips
 ...
-modparam("msilo", "content\_type\_hdr", "Content-Type: text/plain\\r\\n")
-modparam("msilo", "content\_type\_hdr", "Content-Type: text/html\\r\\n")
+modparam("msilo", "content_type_hdr", "Content-Type: text/plain\\r\\n")
+modparam("msilo", "content_type_hdr", "Content-Type: text/html\\r\\n")
 ...
 ```
 ### Set the “reminder” parameter
@@ -484,196 +484,196 @@ Set the “reminder” parameter
 modparam("msilo", "reminder", "sip:registrar@example.org")
 ...
 ```
-### Set the “outbound\_proxy” parameter
+### Set the “outbound_proxy” parameter
 
-Set the “outbound\_proxy” parameter
+Set the “outbound_proxy” parameter
 
 ```opensips
 ...
-modparam("msilo", "outbound\_proxy", "sip:opensips.org;transport=tcp")
+modparam("msilo", "outbound_proxy", "sip:opensips.org;transport=tcp")
 ...
 ```
-### Set the “expire\_time” parameter
+### Set the “expire_time” parameter
 
-Set the “expire\_time” parameter
+Set the “expire_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "expire\_time", 36000)
+modparam("msilo", "expire_time", 36000)
 ...
 ```
-### Set the “check\_time” parameter
+### Set the “check_time” parameter
 
-Set the “check\_time” parameter
+Set the “check_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "check\_time", 10)
+modparam("msilo", "check_time", 10)
 ...
 ```
-### Set the “send\_time” parameter
+### Set the “send_time” parameter
 
-Set the “send\_time” parameter
+Set the “send_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "send\_time", 60)
+modparam("msilo", "send_time", 60)
 ...
 ```
-### Set the “clean\_period” parameter
+### Set the “clean_period” parameter
 
-Set the “clean\_period” parameter
+Set the “clean_period” parameter
 
 ```opensips
 ...
-modparam("msilo", "clean\_period", 3)
+modparam("msilo", "clean_period", 3)
 ...
 ```
-### Set the “use\_contact” parameter
+### Set the “use_contact” parameter
 
-Set the “use\_contact” parameter
+Set the “use_contact” parameter
 
 ```opensips
 ...
-modparam("msilo", "use\_contact", 0)
+modparam("msilo", "use_contact", 0)
 ...
 ```
-### Set the “sc\_mid” parameter
+### Set the “sc_mid” parameter
 
-Set the “sc\_mid” parameter
+Set the “sc_mid” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_mid", "other\_mid")
+modparam("msilo", "sc_mid", "other_mid")
 ...
 ```
-### Set the “sc\_from” parameter
+### Set the “sc_from” parameter
 
-Set the “sc\_from” parameter
+Set the “sc_from” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_from", "source\_address")
+modparam("msilo", "sc_from", "source_address")
 ...
 ```
-### Set the “sc\_to” parameter
+### Set the “sc_to” parameter
 
-Set the “sc\_to” parameter
+Set the “sc_to” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_to", "destination\_address")
+modparam("msilo", "sc_to", "destination_address")
 ...
 ```
-### Set the “sc\_uri\_user” parameter
+### Set the “sc_uri_user” parameter
 
-Set the “sc\_uri\_user” parameter
+Set the “sc_uri_user” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_uri\_user", "user")
+modparam("msilo", "sc_uri_user", "user")
 ...
 ```
-### Set the “sc\_uri\_host” parameter
+### Set the “sc_uri_host” parameter
 
-Set the “sc\_uri\_host” parameter
+Set the “sc_uri_host” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_uri\_host", "domain")
+modparam("msilo", "sc_uri_host", "domain")
 ...
 ```
-### Set the “sc\_body” parameter
+### Set the “sc_body” parameter
 
-Set the “sc\_body” parameter
+Set the “sc_body” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_body", "message\_body")
+modparam("msilo", "sc_body", "message_body")
 ...
 ```
-### Set the “sc\_ctype” parameter
+### Set the “sc_ctype” parameter
 
-Set the “sc\_ctype” parameter
+Set the “sc_ctype” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_ctype", "content\_type")
+modparam("msilo", "sc_ctype", "content_type")
 ...
 ```
-### Set the “sc\_exp\_time” parameter
+### Set the “sc_exp_time” parameter
 
-Set the “sc\_exp\_time” parameter
+Set the “sc_exp_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_exp\_time", "expire\_time")
+modparam("msilo", "sc_exp_time", "expire_time")
 ...
 ```
-### Set the “sc\_inc\_time” parameter
+### Set the “sc_inc_time” parameter
 
-Set the “sc\_inc\_time” parameter
+Set the “sc_inc_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_inc\_time", "incoming\_time")
+modparam("msilo", "sc_inc_time", "incoming_time")
 ...
 ```
-### Set the “sc\_snd\_time” parameter
+### Set the “sc_snd_time” parameter
 
-Set the “sc\_snd\_time” parameter
+Set the “sc_snd_time” parameter
 
 ```opensips
 ...
-modparam("msilo", "sc\_snd\_time", "send\_reminder\_time")
+modparam("msilo", "sc_snd_time", "send_reminder_time")
 ...
 ```
-### Set the “snd\_time\_avp” parameter
+### Set the “snd_time_avp” parameter
 
-Set the “snd\_time\_avp” parameter
+Set the “snd_time_avp” parameter
 
 ```opensips
 ...
-modparam("msilo", "snd\_time\_avp", "$avp(snd\_time)")
+modparam("msilo", "snd_time_avp", "$avp(snd_time)")
 ...
 ```
-### Set the “add\_date” parameter
+### Set the “add_date” parameter
 
-Set the “add\_date” parameter
+Set the “add_date” parameter
 
 ```opensips
 ...
-modparam("msilo", "add\_date", 0)
+modparam("msilo", "add_date", 0)
 ...
 ```
-### Set the “max\_messages” parameter
+### Set the “max_messages” parameter
 
-Set the “max\_messages” parameter
+Set the “max_messages” parameter
 
 ```opensips
 ...
-modparam("msilo", "max\_messages", 0)
+modparam("msilo", "max_messages", 0)
 ...
 ```
-### `m\_store` usage
+### `m_store` usage
 
-`m\_store` usage
+`m_store` usage
 
 ```opensips
 ...
-m\_store();
-m\_store($tu);
+m_store();
+m_store($tu);
 ...
 ```
-### `m\_dump` usage
+### `m_dump` usage
 
-`m\_dump` usage
+`m_dump` usage
 
 ```opensips
 ...
-m\_dump();
-m\_dump($fu);
-m\_dump($fu, 10);
+m_dump();
+m_dump($fu);
+m_dump($fu, 10);
 ...
 ```
 ### OpenSIPS config script - sample msilo usage
@@ -688,11 +688,11 @@ Next picture displays a sample usage of msilo.
 #
 
 # running in debug mode (log level 4, log to stderr, stay in foreground)
-debug\_mode=yes
+debug_mode=yes
 
-check\_via=no      # (cmd. line: -v)
+check_via=no      # (cmd. line: -v)
 dns=off           # (cmd. line: -r)
-rev\_dns=off       # (cmd. line: -R)
+rev_dns=off       # (cmd. line: -R)
 port=5060
 
 socket=10.0.0.2   # listen address
@@ -714,34 +714,34 @@ loadmodule "usrloc.so"
 
 # -- registrar params --
 
-modparam("registrar", "default\_expires", 120)
+modparam("registrar", "default_expires", 120)
 
 # -- registrar params --
 
-modparam("usrloc", "db\_mode", 0)
+modparam("usrloc", "db_mode", 0)
 
 # -- msilo params --
 
-modparam("msilo","db\_url","mysql://opensips:opensipsrw@localhost/opensips")
-modparam("msilo","from\_address","sip:registrar@opensips.org")
-modparam("msilo","contact\_hdr","Contact: registrar@192.168.1.2:5060;msilo=yes\\r\\n")
-modparam("msilo","content\_type\_hdr","Content-Type: text/plain\\r\\n")
-modparam("msilo","offline\_message","\*\*\* User $rU is offline!")
+modparam("msilo","db_url","mysql://opensips:opensipsrw@localhost/opensips")
+modparam("msilo","from_address","sip:registrar@opensips.org")
+modparam("msilo","contact_hdr","Contact: registrar@192.168.1.2:5060;msilo=yes\\r\\n")
+modparam("msilo","content_type_hdr","Content-Type: text/plain\\r\\n")
+modparam("msilo","offline_message","\*\*\* User $rU is offline!")
 
 # -- tm params --
 
-modparam("tm", "fr\_timer", 10 )
-modparam("tm", "fr\_inv\_timer", 15 )
-modparam("tm", "wt\_timer", 10 )
+modparam("tm", "fr_timer", 10 )
+modparam("tm", "fr_inv_timer", 15 )
+modparam("tm", "wt_timer", 10 )
 
 route{
-    if ( !mf\_process\_maxfwd\_header(10) )
+    if ( !mf_process_maxfwd_header(10) )
     {
-        sl\_send\_reply(483, "Too Many Hops");
+        sl_send_reply(483, "Too Many Hops");
         exit;
     };
 
-if (is\_myself("$rd")) {
+if (is_myself("$rd")) {
     {
         # for testing purposes, simply okay all REGISTERs
         if ($rm=="REGISTER")
@@ -750,7 +750,7 @@ if (is\_myself("$rd")) {
             log("REGISTER received -> dumping messages with MSILO\\n");
 
             # MSILO - dumping user's offline messages
-            if (m\_dump())
+            if (m_dump())
             {
                 log("MSILO: offline messages dumped - if they were\\n");
             }else{
@@ -763,50 +763,50 @@ if (is\_myself("$rd")) {
         
         if(!lookup("location")) 
         {
-            if (! t\_newtran())
+            if (! t_newtran())
             {
-                sl\_reply\_error();
+                sl_reply_error();
                 exit;
             };
             # we do not care about anything else but MESSAGEs
             if (!$rm=="MESSAGE")
             {
-                if (!t\_reply(404, "Not found")) 
+                if (!t_reply(404, "Not found")) 
                 {
-                    sl\_reply\_error();
+                    sl_reply_error();
                 };
                 exit;
             };
             log("MESSAGE received -> storing using MSILO\\n");
             # MSILO - storing as offline message
-            if (m\_store("$ru"))
+            if (m_store("$ru"))
             {
                 log("MSILO: offline message stored\\n");
-                if (!t\_reply(202, "Accepted")) 
+                if (!t_reply(202, "Accepted")) 
                 {
-                    sl\_reply\_error();
+                    sl_reply_error();
                 };
             }else{
                 log("MSILO: offline message NOT stored\\n");
-                if (!t\_reply(503, "Service Unavailable")) 
+                if (!t_reply(503, "Service Unavailable")) 
                 {
-                    sl\_reply\_error();
+                    sl_reply_error();
                 };
             };
             exit;
         };
         # if the downstream UA does not support MESSAGE requests
-        # go to failure\_route\[1\]
-        t\_on\_failure("1");
-        t\_relay();
+        # go to failure_route\[1\]
+        t_on_failure("1");
+        t_relay();
         exit;
     };
 
     # forward anything else
-    t\_relay();
+    t_relay();
 }
 
-failure\_route\[1\] {
+failure_route\[1\] {
     # forwarding failed -- check if the request was a MESSAGE 
     if (!$rm=="MESSAGE")
     {
@@ -815,13 +815,13 @@ failure\_route\[1\] {
     
     log(1,"MSILO:the downstream UA doesn't support MESSAGEs\\n");
     # we have changed the R-URI with the contact address, ignore it now
-    if (m\_store("$ou"))
+    if (m_store("$ou"))
     {
         log("MSILO: offline message stored\\n");
-        t\_reply(202, "Accepted"); 
+        t_reply(202, "Accepted"); 
     }else{
         log("MSILO: offline message NOT stored\\n");
-        t\_reply(503, "Service Unavailable");
+        t_reply(503, "Service Unavailable");
     };
 }
 

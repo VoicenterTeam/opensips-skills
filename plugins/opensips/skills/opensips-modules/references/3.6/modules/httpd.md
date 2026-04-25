@@ -49,7 +49,7 @@ It specifies the maximum length (in bytes) of the buffer used to write in the ht
 
 ```opensips
 ...
-modparam("httpd", "buf\_size", 524288)
+modparam("httpd", "buf_size", 524288)
 ...
 ```
 ### `conn_timeout` (integer)
@@ -64,7 +64,7 @@ Auto-close TCP connections which are idle for more than the designated timeout, 
 
 ```opensips
 ...
-modparam("httpd", "conn\_timeout", 10)
+modparam("httpd", "conn_timeout", 10)
 ...
 ```
 ### `ip` (string)
@@ -107,7 +107,7 @@ It specifies the length (in bytes) of the POST HTTP requests processing buffer. 
 
 ```opensips
 ...
-modparam("httpd", "post\_buf\_size", 4096)
+modparam("httpd", "post_buf_size", 4096)
 ...
 ```
 ### `receive_buf_size` (integer)
@@ -120,7 +120,7 @@ It specifies the maximum length (in bytes) of the received HTTP requests. For re
 
 ```opensips
 ...
-modparam("httpd", "receive\_buf\_size", 4096)
+modparam("httpd", "receive_buf_size", 4096)
 ...
 ```
 ### `tls_cert_file` (string)
@@ -131,7 +131,7 @@ Public certificate file for httpd. It will be used as server-side certificate fo
 
 ```opensips
 ...
-modparam("httpd", "tls\_cert\_file", "/etc/opensips/tls/server.pem")
+modparam("httpd", "tls_cert_file", "/etc/opensips/tls/server.pem")
 ...
 ```
 ### `tls_ciphers` (string)
@@ -146,7 +146,7 @@ You can specify the list of algorithms for authentication and encryption that yo
 
 ```opensips
 ...
-modparam("httpd", "tls\_ciphers", "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2")
+modparam("httpd", "tls_ciphers", "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2")
 ...
 ```
 ### `tls_key_file` (string)
@@ -157,7 +157,7 @@ Private key of the above certificate. I must be kept in a safe place with tight 
 
 ```opensips
 ...
-modparam("httpd", "tls\_key\_file", "/etc/opensips/tls/server.key")
+modparam("httpd", "tls_key_file", "/etc/opensips/tls/server.key")
 ...
 ```
 
@@ -170,7 +170,7 @@ Lists all the registered http root paths into the httpd module. When a request c
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi httpd\_list\_root\_path
+opensips-cli -x mi httpd_list_root_path
 ```
 
 ## Configuration Examples
@@ -201,7 +201,7 @@ Note: the connection auto-close routine only seems to be executed in an "on-dema
 
 ```opensips
 ...
-modparam("httpd", "conn\_timeout", 10)
+modparam("httpd", "conn_timeout", 10)
 ...
 ```
 ### Set `buf_size` parameter
@@ -212,7 +212,7 @@ If the size of the buffer is set to zero, it will be automatically set to a quar
 
 ```opensips
 ...
-modparam("httpd", "buf\_size", 524288)
+modparam("httpd", "buf_size", 524288)
 ...
 ```
 ### Set `post_buf_size` parameter
@@ -221,7 +221,7 @@ It specifies the length (in bytes) of the POST HTTP requests processing buffer. 
 
 ```opensips
 ...
-modparam("httpd", "post\_buf\_size", 4096)
+modparam("httpd", "post_buf_size", 4096)
 ...
 ```
 ### Set `receive_buf_size` parameter
@@ -230,7 +230,7 @@ It specifies the maximum length (in bytes) of the received HTTP requests. For re
 
 ```opensips
 ...
-modparam("httpd", "receive\_buf\_size", 4096)
+modparam("httpd", "receive_buf_size", 4096)
 ...
 ```
 ### Set `tls_cert_file` parameter
@@ -239,7 +239,7 @@ Public certificate file for httpd. It will be used as server-side certificate fo
 
 ```opensips
 ...
-modparam("httpd", "tls\_cert\_file", "/etc/opensips/tls/server.pem")
+modparam("httpd", "tls_cert_file", "/etc/opensips/tls/server.pem")
 ...
 ```
 ### Set `tls_key_file` parameter
@@ -248,7 +248,7 @@ Private key of the above certificate. I must be kept in a safe place with tight 
 
 ```opensips
 ...
-modparam("httpd", "tls\_key\_file", "/etc/opensips/tls/server.key")
+modparam("httpd", "tls_key_file", "/etc/opensips/tls/server.key")
 ...
 ```
 ### Set `tls_key_file` parameter
@@ -259,6 +259,6 @@ You can specify the list of algorithms for authentication and encryption that yo
 
 ```opensips
 ...
-modparam("httpd", "tls\_ciphers", "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2")
+modparam("httpd", "tls_ciphers", "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2")
 ...
 ```

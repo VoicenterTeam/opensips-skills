@@ -41,7 +41,7 @@ First char of this parameter is used as separator for encoding/decoding Contact 
 **Example.** -.
 
 ```opensips
-modparam("mangler", "contact\_flds\_separator", "-")
+modparam("mangler", "contact_flds_separator", "-")
 ```
 
 ## Exported Functions
@@ -155,7 +155,7 @@ Set `contact_flds_separator` parameter
 
 ```opensips
 ...
-modparam("mangler", "contact\_flds\_separator", "-")
+modparam("mangler", "contact_flds_separator", "-")
 ...
 ```
 
@@ -166,7 +166,7 @@ Usage of `sdp_mangle_ip` function
 
 ```opensips
 ...
-sdp\_mangle\_ip("10.0.0.0/8","193.175.135.38");
+sdp_mangle_ip("10.0.0.0/8","193.175.135.38");
 ...
 ```
 ### `sdp_mangle_port` usage
@@ -175,7 +175,7 @@ Usage of `sdp_mangle_port` function
 
 ```opensips
 ...
-sdp\_mangle\_port(-12000);
+sdp_mangle_port(-12000);
 ...
 ```
 ### `encode_contact` usage
@@ -184,7 +184,7 @@ Usage of `encode_contact` function
 
 ```opensips
 ...
-if ($si == 10.0.0.0/8) encode\_contact("enc\_prefix","193.175.135.38"); 
+if ($si == 10.0.0.0/8) encode_contact("enc_prefix","193.175.135.38"); 
 ...
 ```
 ### `decode_contact` usage
@@ -193,7 +193,7 @@ Usage of `decode_contact` function
 
 ```opensips
 ...
-if ($ru =~ "^enc*") { decode\_contact(); }
+if ($ru =~ "^enc*") { decode_contact(); }
 ...
 ```
 ### `decode_contact_header` usage
@@ -202,6 +202,6 @@ Usage of `decode_contact_header` function
 
 ```opensips
 ...
-if ($ru =~ "^enc*") { decode\_contact\_header(); }
+if ($ru =~ "^enc*") { decode_contact_header(); }
 ...
 ```

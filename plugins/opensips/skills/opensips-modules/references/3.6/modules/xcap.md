@@ -39,18 +39,18 @@ The database url.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("xcap", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("xcap", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `integrated_xcap_server` (integer)
 
-This parameter is a flag for the type of XCAP server or servers used. If integrated ones, like OpenXCAP from AG Projects, with direct access to database table, the parameter should be set to a positive value. Apart from updating in xcap table, the integrated server must send an MI command refershWatchers \[pres\_uri\] \[event\] when a user modifies a rules document.
+This parameter is a flag for the type of XCAP server or servers used. If integrated ones, like OpenXCAP from AG Projects, with direct access to database table, the parameter should be set to a positive value. Apart from updating in xcap table, the integrated server must send an MI command refershWatchers \[pres_uri\] \[event\] when a user modifies a rules document.
 
 *Default value is 0.*
 
 **Example.** 1.
 
 ```opensips
-modparam("xcap", "integrated\_xcap\_server", 1)
+modparam("xcap", "integrated_xcap_server", 1)
 ```
 ### `xcap_table` (string)
 
@@ -61,7 +61,7 @@ The name of the db table where XCAP documents are stored.
 **Example.** xcap.
 
 ```opensips
-modparam("xcap", "xcap\_table", "xcap")
+modparam("xcap", "xcap_table", "xcap")
 ```
 
 ## Configuration Examples
@@ -72,7 +72,7 @@ Sets the database url parameter.
 
 ```opensips
 ...
-modparam("xcap", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("xcap", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `xcap_table` parameter
@@ -81,7 +81,7 @@ Sets the name of the db table where XCAP documents are stored.
 
 ```opensips
 ...
-modparam("xcap", "xcap\_table", "xcap")
+modparam("xcap", "xcap_table", "xcap")
 ...
 ```
 ### Set `integrated_xcap_server` parameter
@@ -90,6 +90,6 @@ Sets the flag for the type of XCAP server used.
 
 ```opensips
 ...
-modparam("xcap", "integrated\_xcap\_server", 1)
+modparam("xcap", "integrated_xcap_server", 1)
 ...
 ```

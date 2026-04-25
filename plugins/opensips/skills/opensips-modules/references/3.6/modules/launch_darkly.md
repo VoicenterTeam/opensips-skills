@@ -41,11 +41,11 @@ The time to wait (in miliseconds) when connecting to the LD service. An initial 
 **Example.** 100.
 
 ```opensips
-modparam("launch\_darkly", "connect\_wait", 100)
+modparam("launch_darkly", "connect_wait", 100)
 ```
 ### `ld_log_level` (string)
 
-The LaunchDarkly specific log level to be used by the LD SDK/libray to log its internal messages. Note that these log produced by the LD library (according to this ld\_log\_level) will be further subject to filtering according to the overall OpenSIPS log\_level.
+The LaunchDarkly specific log level to be used by the LD SDK/libray to log its internal messages. Note that these log produced by the LD library (according to this ld_log_level) will be further subject to filtering according to the overall OpenSIPS log_level.
 
 *Default value is LD_LOG_WARNING.*
 
@@ -62,18 +62,18 @@ The LaunchDarkly specific log level to be used by the LD SDK/libray to log its i
 **Example.** LD_LOG_CRITICAL.
 
 ```opensips
-modparam("launch\_darkly", "ld\_log\_level", "LD\_LOG\_CRITICAL")
+modparam("launch_darkly", "ld_log_level", "LD_LOG_CRITICAL")
 ```
 ### `re_init_interval` (integer)
 
-The minimum time interval (in seconds) to try again to init the LD client in the situation when the module was not able to init the LC connection at startup. In case of such failure, the module will automatically re-try to init its LD client on-demand, whnever the feature flag is checked from script, but not sooner than \`re\_init\_interval\`. Note: if there are no flag checkings to be performed, the re-init may be attempted longer than \`re\_init\_interval\`.
+The minimum time interval (in seconds) to try again to init the LD client in the situation when the module was not able to init the LC connection at startup. In case of such failure, the module will automatically re-try to init its LD client on-demand, whnever the feature flag is checked from script, but not sooner than \`re_init_interval\`. Note: if there are no flag checkings to be performed, the re-init may be attempted longer than \`re_init_interval\`.
 
 *Default value is 10.*
 
 **Example.** 30.
 
 ```opensips
-modparam("launch\_darkly", "re\_init\_interval", 30)
+modparam("launch_darkly", "re_init_interval", 30)
 ```
 ### `sdk_key` (string)
 
@@ -84,7 +84,7 @@ The LaunchDarkly SDK key used to connect to the service. This is a mandatory par
 **Example.** sdk-12345678-abcd-12ab-1234-0123456789abc.
 
 ```opensips
-modparam("launch\_darkly", "sdk\_key", "sdk-12345678-abcd-12ab-1234-0123456789abc")
+modparam("launch_darkly", "sdk_key", "sdk-12345678-abcd-12ab-1234-0123456789abc")
 ```
 
 ## Exported Functions
@@ -118,7 +118,7 @@ In case of error, the fallback (TRUE or FALSE) value will be returned In such ca
 ```opensips
 ...
 $avp(extra) = "domainId=123456";
-if (ld\_feature\_enabled("my-flag","opensips", $avp(extra), false))
+if (ld_feature_enabled("my-flag","opensips", $avp(extra), false))
 	xlog("-------TRUE\\n");
 else
 	xlog("-------FALSE\\n");

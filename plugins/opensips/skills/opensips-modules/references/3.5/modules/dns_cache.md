@@ -38,7 +38,7 @@ The number of seconds that a failed DNS query will be kept in cache.
 **Example.** 7200.
 
 ```opensips
-modparam("dns\_cache", "blacklist\_timeout",7200) # 2 hours
+modparam("dns_cache", "blacklist_timeout",7200) # 2 hours
 ```
 ### `cachedb_url` (string)
 
@@ -47,10 +47,10 @@ The url of the key-value back-end that will be used for storing the DNS records.
 **Example.** local://.
 
 ```opensips
-#use internal cachedb\_local module
-modparam("dns\_cache", "cachedb\_url","local://")
-#use cachedb\_memcached module with memcached server at 192.168.2.130
-modparam("dns\_cache", "cachedb\_url","memcached://192.168.2.130:8888/")
+#use internal cachedb_local module
+modparam("dns_cache", "cachedb_url","local://")
+#use cachedb_memcached module with memcached server at 192.168.2.130
+modparam("dns_cache", "cachedb_url","memcached://192.168.2.130:8888/")
 ```
 
 ## Configuration Examples

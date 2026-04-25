@@ -29,13 +29,13 @@ OpenSIPs can capture SIP messages in three mode
     
 *   Monitoring/mirroring port.
     
-*   Homer encapsulation protocl mode (HEP v1/2/3). With version 2.2 comes the new HEPv3 support using the proto \_hep module. Also header manipulation support for HEPv3 has been added. See [hep\_set()](#func_hep_set "1.4.3.� hep_set(chunk_id, chunk_data, [data_type], [vendor_id])") for more details. If you want more information about hep protocol check this [link](https://github.com/sipcapture/HEP/blob/master/docs/HEP3_rev11.pdf).
+*   Homer encapsulation protocl mode (HEP v1/2/3). With version 2.2 comes the new HEPv3 support using the proto _hep module. Also header manipulation support for HEPv3 has been added. See [hep_set()](#func_hep_set "1.4.3. hep_set(chunk_id, chunk_data, [data_type], [vendor_id])") for more details. If you want more information about hep protocol check this [link](https://github.com/sipcapture/HEP/blob/master/docs/HEP3_rev11.pdf).
 
 The capturing can be turned on/off using fifo commad.
 
-opensips-cli -x mi sip\_capture on
+opensips-cli -x mi sip_capture on
 
-opensips-cli -x mi sip\_capture off
+opensips-cli -x mi sip_capture off
 
 ## Dependencies
 
@@ -62,7 +62,7 @@ Name of the capture node.
 **Example.** homer03.
 
 ```opensips
-modparam("sipcapture", "capture\_node", "homer03")
+modparam("sipcapture", "capture_node", "homer03")
 ```
 ### `capture_on` (integer)
 
@@ -78,7 +78,7 @@ Parameter to enable/disable capture globaly (on(1)/off(0))
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "capture\_on", 1)
+modparam("sipcapture", "capture_on", 1)
 ```
 ### `db_url` (string)
 
@@ -87,7 +87,7 @@ Database URL.
 **Example.** mysql://user:passwd@host/dbname.
 
 ```opensips
-modparam("sipcapture", "db\_url", "mysql://user:passwd@host/dbname")
+modparam("sipcapture", "db_url", "mysql://user:passwd@host/dbname")
 ```
 ### `hep_capture_on` (integer)
 
@@ -103,11 +103,11 @@ Parameter to enable/disable capture of HEP (on(1)/off(0))
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "hep\_capture\_on", 1)
+modparam("sipcapture", "hep_capture_on", 1)
 ```
 ### `hep_route` (string)
 
-Specifies what path your hep messages should take. Possible values are the following: * _none_ - don't go through the script; do directly sip\_capture(); * _sip(default)_ - go through the main request route; here the message is parsed and you can do anything you want with it; * _any other string value_ - define a route name through which your hep messages should go; the message is not parsed because of efficiency reasons; from here you can modify the hep chunks(if hep version 3 is used) and relay the hep messages to other hep capture nodes;
+Specifies what path your hep messages should take. Possible values are the following: * _none_ - don't go through the script; do directly sip_capture(); * _sip(default)_ - go through the main request route; here the message is parsed and you can do anything you want with it; * _any other string value_ - define a route name through which your hep messages should go; the message is not parsed because of efficiency reasons; from here you can modify the hep chunks(if hep version 3 is used) and relay the hep messages to other hep capture nodes;
 
 *Default value is sip(going thorugh the main request route)..*
 
@@ -120,9 +120,9 @@ Specifies what path your hep messages should take. Possible values are the follo
 **Example.** my_hep_route.
 
 ```opensips
-modparam("sipcapture", "hep\_route", "my\_hep\_route")
+modparam("sipcapture", "hep_route", "my_hep_route")
 ...
-route[my\_hep\_route] {
+route[my_hep_route] {
 	/* do hep stuff in here */
 	...
 }
@@ -136,7 +136,7 @@ Parameter to set the maximum number of 'INSERT' queries of captured packets to b
 **Example.** 3.
 
 ```opensips
-modparam("sipcapture", "max\_async\_queries", 3)
+modparam("sipcapture", "max_async_queries", 3)
 ```
 ### `promiscuous_on` (integer)
 
@@ -149,7 +149,7 @@ Parameter to enable/disable promiscuous mode on the raw socket. Linux only.
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "promiscuous\_on", 1)
+modparam("sipcapture", "promiscuous_on", 1)
 ```
 ### `raw_interface` (string)
 
@@ -158,7 +158,7 @@ Name of the interface to bind on the raw socket.
 **Example.** eth0.
 
 ```opensips
-modparam("sipcapture", "raw\_interface", "eth0")
+modparam("sipcapture", "raw_interface", "eth0")
 ```
 ### `raw_ipip_capture_on` (integer)
 
@@ -174,11 +174,11 @@ Parameter to enable/disable IPIP capturing (on(1)/off(0))
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "raw\_ipip\_capture\_on", 1)
+modparam("sipcapture", "raw_ipip_capture_on", 1)
 ```
 ### `raw_moni_bpf_on` (integer)
 
-Activate Linux Socket Filter (LSF based on BPF) on the mirroring interface. The structure is defined in linux/filter.h. The default LSF accept a port/portrange from the raw\_socket\_listen param. Currently LSF supported only on Linux.
+Activate Linux Socket Filter (LSF based on BPF) on the mirroring interface. The structure is defined in linux/filter.h. The default LSF accept a port/portrange from the raw_socket_listen param. Currently LSF supported only on Linux.
 
 *Default value is 0.*
 
@@ -187,7 +187,7 @@ Activate Linux Socket Filter (LSF based on BPF) on the mirroring interface. The 
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "raw\_moni\_bpf\_on", 1)
+modparam("sipcapture", "raw_moni_bpf_on", 1)
 ```
 ### `raw_moni_capture_on` (integer)
 
@@ -205,7 +205,7 @@ Parameter to enable/disable monitoring/mirroring port capturing (on(1)/off(0)) O
 **Example.** 1.
 
 ```opensips
-modparam("sipcapture", "raw\_moni\_capture\_on", 1)
+modparam("sipcapture", "raw_moni_capture_on", 1)
 ```
 ### `raw_sock_children` (integer)
 
@@ -216,7 +216,7 @@ Parameter define how much children must be created to listen the raw socket.
 **Example.** 6.
 
 ```opensips
-modparam("sipcapture", "raw\_sock\_children", 6)
+modparam("sipcapture", "raw_sock_children", 6)
 ```
 ### `raw_socket_listen` (string)
 
@@ -231,39 +231,39 @@ The port/portrange must be defined if you are planning to use mirroring capture!
 **Example.** 10.0.0.1:5060-5090.
 
 ```opensips
-modparam("sipcapture", "raw\_socket\_listen", "10.0.0.1:5060-5090")
+modparam("sipcapture", "raw_socket_listen", "10.0.0.1:5060-5090")
 ...
-modparam("sipcapture", "raw\_socket\_listen", "10.0.0.1:5060")
+modparam("sipcapture", "raw_socket_listen", "10.0.0.1:5060")
 ```
 ### `rtcp_table_name` (string)
 
 Name of the table's name where to store packets captured with report_capture function. Since version 2.2 it allows strftime-like suffix for having time formatted table names.
 
-*Default value is rtcp\_capture.*
+*Default value is rtcp_capture.*
 
-**Example.** homer\_capture.
+**Example.** homer_capture.
 
 ```opensips
-modparam("sipcapture", "rtcp\_table\_name", "homer\_capture")
+modparam("sipcapture", "rtcp_table_name", "homer_capture")
 
 /* change table name every hour */
-modparam("sipcapture", "rtcp\_table\_name", "homer\_%m\_%d\_%H")
-/* if today is 13-04-2014 13:05 pm it will exetend to homer\_04\_13\_13 */
+modparam("sipcapture", "rtcp_table_name", "homer_%m_%d_%H")
+/* if today is 13-04-2014 13:05 pm it will exetend to homer_04_13_13 */
 ```
 ### `table_name` (string)
 
 Name of the table's name where to store the SIP messages. Since version 2.2 it allows strftime-like suffix for having time formatted table names.
 
-*Default value is sip\_capture.*
+*Default value is sip_capture.*
 
-**Example.** homer\_capture.
+**Example.** homer_capture.
 
 ```opensips
-modparam("sipcapture", "table\_name", "homer\_capture")
+modparam("sipcapture", "table_name", "homer_capture")
 
 /* change table name every day */
-modparam("sipcapture", "table\_name", "homer\_%m\_%d")
-/* if today is 13-04-2014 it will exetend to homer\_04\_13 */
+modparam("sipcapture", "table_name", "homer_%m_%d")
+/* if today is 13-04-2014 it will exetend to homer_04_13 */
 ```
 
 ## Exported Functions
@@ -604,7 +604,7 @@ Turns on/off SIP message capturing.
 **Example.** Turns off SIP message capturing.
 
 ```opensips-cli
-opensips-cli -x mi sip\_capture off
+opensips-cli -x mi sip_capture off
 ```
 
 ## Configuration Examples
@@ -615,7 +615,7 @@ Database URL.
 
 ```opensips
 ...
-modparam("sipcapture", "db\_url", "mysql://user:passwd@host/dbname")
+modparam("sipcapture", "db_url", "mysql://user:passwd@host/dbname")
 ...
 ```
 ### Set `table_name` parameter
@@ -624,11 +624,11 @@ Name of the table's name where to store the SIP messages. Since version 2.2 it a
 
 ```opensips
 ...
-modparam("sipcapture", "table\_name", "homer\_capture")
+modparam("sipcapture", "table_name", "homer_capture")
 
 /* change table name every day */
-modparam("sipcapture", "table\_name", "homer\_%m\_%d")
-/* if today is 13-04-2014 it will exetend to homer\_04\_13 */
+modparam("sipcapture", "table_name", "homer_%m_%d")
+/* if today is 13-04-2014 it will exetend to homer_04_13 */
 ...
 ```
 ### Set `rtcp_capture` parameter
@@ -637,11 +637,11 @@ Name of the table's name where to store packets captured with report_capture fun
 
 ```opensips
 ...
-modparam("sipcapture", "rtcp\_table\_name", "homer\_capture")
+modparam("sipcapture", "rtcp_table_name", "homer_capture")
 
 /* change table name every hour */
-modparam("sipcapture", "rtcp\_table\_name", "homer\_%m\_%d\_%H")
-/* if today is 13-04-2014 13:05 pm it will exetend to homer\_04\_13\_13 */
+modparam("sipcapture", "rtcp_table_name", "homer_%m_%d_%H")
+/* if today is 13-04-2014 13:05 pm it will exetend to homer_04_13_13 */
 ...
 ```
 ### Set `capture_on` parameter
@@ -650,7 +650,7 @@ Parameter to enable/disable capture globaly (on(1)/off(0))
 
 ```opensips
 ...
-modparam("sipcapture", "capture\_on", 1)
+modparam("sipcapture", "capture_on", 1)
 ...
 ```
 ### Set `hep_capture_on` parameter
@@ -659,7 +659,7 @@ Parameter to enable/disable capture of HEP (on(1)/off(0))
 
 ```opensips
 ...
-modparam("sipcapture", "hep\_capture\_on", 1)
+modparam("sipcapture", "hep_capture_on", 1)
 ...
 ```
 ### Set `max_async_queries` parameter
@@ -668,7 +668,7 @@ Parameter to set the maximum number of 'INSERT' queries of captured packets to b
 
 ```opensips
 ...
-modparam("sipcapture", "max\_async\_queries", 3)
+modparam("sipcapture", "max_async_queries", 3)
 ...
 ```
 ### Set `raw_ipip_capture_on` parameter
@@ -677,7 +677,7 @@ Parameter to enable/disable IPIP capturing (on(1)/off(0))
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_ipip\_capture\_on", 1)
+modparam("sipcapture", "raw_ipip_capture_on", 1)
 ...
 ```
 ### Set `raw_moni_capture_on` parameter
@@ -686,7 +686,7 @@ Parameter to enable/disable monitoring/mirroring port capturing (on(1)/off(0)) O
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_moni\_capture\_on", 1)
+modparam("sipcapture", "raw_moni_capture_on", 1)
 ...
 ```
 ### Set `raw_socket_listen` parameter
@@ -695,9 +695,9 @@ Parameter indicate an listen IP address of RAW socket for IPIP capturing. You ca
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_socket\_listen", "10.0.0.1:5060-5090")
+modparam("sipcapture", "raw_socket_listen", "10.0.0.1:5060-5090")
 ...
-modparam("sipcapture", "raw\_socket\_listen", "10.0.0.1:5060")
+modparam("sipcapture", "raw_socket_listen", "10.0.0.1:5060")
 ...
 ```
 ### Set `raw_socket_listen` parameter
@@ -706,7 +706,7 @@ Name of the interface to bind on the raw socket.
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_interface", "eth0")
+modparam("sipcapture", "raw_interface", "eth0")
 ...
 ```
 ### Set `raw_socket_listen` parameter
@@ -715,7 +715,7 @@ Parameter define how much children must be created to listen the raw socket.
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_sock\_children", 6)
+modparam("sipcapture", "raw_sock_children", 6)
 ...
 ```
 ### Set `promiscuous_on` parameter
@@ -724,7 +724,7 @@ Parameter to enable/disable promiscuous mode on the raw socket. Linux only.
 
 ```opensips
 ...
-modparam("sipcapture", "promiscuous\_on", 1)
+modparam("sipcapture", "promiscuous_on", 1)
 ...
 ```
 ### Set `raw_moni_bpf_on` parameter
@@ -733,7 +733,7 @@ Activate Linux Socket Filter (LSF based on BPF) on the mirroring interface. The 
 
 ```opensips
 ...
-modparam("sipcapture", "raw\_moni\_bpf\_on", 1)
+modparam("sipcapture", "raw_moni_bpf_on", 1)
 ...
 ```
 ### Set `capture_node` parameter
@@ -742,7 +742,7 @@ Name of the capture node.
 
 ```opensips
 ...
-modparam("sipcapture", "capture\_node", "homer03")
+modparam("sipcapture", "capture_node", "homer03")
 ...
 ```
 ### Set `hep_route` parameter
@@ -751,10 +751,10 @@ Specifies what path your hep messages should take.
 
 ```opensips
 ...
-modparam("sipcapture", "hep\_route", "my\_hep\_route")
+modparam("sipcapture", "hep_route", "my_hep_route")
 ...
 
-route[my\_hep\_route] {
+route[my_hep_route] {
 	/* do hep stuff in here */
 	...
 }
@@ -766,32 +766,32 @@ Save the message into the database.
 
 ```opensips
 ...
-if (is\_method("REGISTER"))
-	sip\_capture();
+if (is_method("REGISTER"))
+	sip_capture();
 	...
 	/* table name will change every day */
-	sip\_capture("homer\_%m\_%d");
-	sip\_capture("homer\_%m\_%d", , $hdr(P-Asserted-Identity));
+	sip_capture("homer_%m_%d");
+	sip_capture("homer_%m_%d", , $hdr(P-Asserted-Identity));
 ...
 ```
 ### `sip_capture` usage
 
-Save the message into the database. If you want set the protocol type you have to define the table name, even if you pass over it(report\_capture($var(cor\_id),,$var(proto\_type))).
+Save the message into the database. If you want set the protocol type you have to define the table name, even if you pass over it(report_capture($var(cor_id),,$var(proto_type))).
 
 ```opensips
 ...
-	hep\_get("0x0011", "utf8-string", , $var(correlation\_id));
-	if ($var(correlation\_id) == null) {
+	hep_get("0x0011", "utf8-string", , $var(correlation_id));
+	if ($var(correlation_id) == null) {
 		xlog("NO CORRELATION ID! SET SOMETHING OR DROP");
-		$var(correlation\_id) = "absdcef";
+		$var(correlation_id) = "absdcef";
 	}
 
-	$var(proto\_type) = "3"; /* 0x03 - SDP protocol */
+	$var(proto_type) = "3"; /* 0x03 - SDP protocol */
 
-	report\_capture($var(correlation\_id), "rtcp\_log");
+	report_capture($var(correlation_id), "rtcp_log");
 	/* setting the 2nd parameter, even if setting it to null, is mandatory in order to be able to set proto type */
-	report\_capture($var(correlation\_id), , $var(proto\_type));
-	report\_capture($var(correlation\_id), "rtcp\_log", $var(proto\_type));
+	report_capture($var(correlation_id), , $var(proto_type));
+	report_capture($var(correlation_id), "rtcp_log", $var(proto_type));
 ...
 ```
 ### `hep_set` usage
@@ -801,13 +801,13 @@ Set a hep chunk. If not exists, it shall be added.
 ```opensips
 ...
 /* modify/add a generic chunk */
-hep\_set("proto\_type", "H321");
+hep_set("proto_type", "H321");
 
 /* add a custom chunk - int */
-hep\_set("31", "132", "uint32", "3")
+hep_set("31", "132", "uint32", "3")
 
 /* add a custom chunk - IPv4 address */
-hep\_set("32", "192.168.5.14", "inet4-addr", "3")
+hep_set("32", "192.168.5.14", "inet4-addr", "3")
 ...
 ```
 ### `hep_set` usage
@@ -817,10 +817,10 @@ Get a hep chunk.
 ```opensips
 ...
 /* get a generic chunk */
-hep\_get("proto\_type", , $var(data), $var(vid));
+hep_get("proto_type", , $var(data), $var(vid));
 
 /* get custom chunk - you must know what kind of data is there */
-hep\_set("31", "uint32", $var(data), $var(vid))
+hep_set("31", "uint32", $var(data), $var(vid))
 ...
 ```
 ### `hep_set` usage
@@ -830,7 +830,7 @@ Removes a hep chunk.
 ```opensips
 ...
 /* get a generic chunk */
-hep\_del("25"); /* removes chunk with chunk id 25 */
+hep_del("25"); /* removes chunk with chunk id 25 */
 ...
 ```
 ### `hep_relay` usage
@@ -840,7 +840,7 @@ Relay a message statefully to destination indicated in current URI.
 ```opensips
 ...
 $du="sip:192.168.153.157";
-if (!hep\_relay()) {
+if (!hep_relay()) {
 	xlog("Hep proxying failed!\\n");
 	exit;
 }
@@ -853,13 +853,13 @@ Break hep route execution and resume into the main request route.
 
 ```opensips
 ...
-modparam("sipcapture", "hep\_route", "my\_hep\_route")
+modparam("sipcapture", "hep_route", "my_hep_route")
 
-route[my\_hep\_route] {
+route[my_hep_route] {
 	...
 
 	/* resume execution in the main request route */
-	hep\_resume\_sip();
+	hep_resume_sip();
 }
 
 ...
@@ -871,10 +871,10 @@ Save the message inside the database. The query is being done asnychronously onl
 ```opensips
 ...
 {
-	async(sip\_capture(), capture\_resume);
+	async(sip_capture(), capture_resume);
 }
 
-route[capture\_resume] {
+route[capture_resume] {
 	xlog("insert executed\\n");
 	/*continuing logic here */
 }
@@ -887,12 +887,12 @@ Holds layer 3 and 4 information(IP addresses and ports) about the node from wher
 ```opensips
 ...
 	/* received this hep packet on interface 192.168.2.5*/
-	if ($hep\_net(dst\_ip) == "192.168.2.5") {
+	if ($hep_net(dst_ip) == "192.168.2.5") {
 		/* received this on 192.168.2.5:6060 interface */
-		if ($hep\_net(dst\_port) == 6060) {
+		if ($hep_net(dst_port) == 6060) {
 			...
 		/* received this on 192.168.2.5:6061 interface */
-		} else if ($hep\_net(dst\_port) == 6061) {
+		} else if ($hep_net(dst_port) == 6061) {
 			...
 		}
 	}

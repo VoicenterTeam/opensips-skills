@@ -55,7 +55,7 @@ There are some situations when the server needs to insert two Path header fields
 
 ```opensips
 ...
-modparam("path", "enable\_double\_path", 0)
+modparam("path", "enable_double_path", 0)
 ...
 ```
 ### `use_received` (int)
@@ -68,7 +68,7 @@ If set to 1, the “received” parameter of the first Route URI is evaluated an
 
 ```opensips
 ...
-modparam("path", "use\_received", 1)
+modparam("path", "use_received", 1)
 ...
 ```
 
@@ -88,8 +88,8 @@ This function adds a Path header in the form “Path: <sip:user@1.2.3.4;lr>”.
 
 ```opensips
 ...
-if (!add\_path("loadbalancer")) {
-	sl\_send\_reply(503, "Internal Path Error");
+if (!add_path("loadbalancer")) {
+	sl_send_reply(503, "Internal Path Error");
 	...
 };
 ...
@@ -109,8 +109,8 @@ This function adds a Path header in the form “Path: <sip:user@1.2.3.4;received
 
 ```opensips
 ...
-if (!add\_path\_received("inbound")) {
-	sl\_send\_reply(503, "Internal Path Error");
+if (!add_path_received("inbound")) {
+	sl_send_reply(503, "Internal Path Error");
 	...
 };
 ...
@@ -124,7 +124,7 @@ Demonstrates setting the `use_received` module parameter to 1.
 
 ```opensips
 ...
-modparam("path", "use\_received", 1)
+modparam("path", "use_received", 1)
 ...
 ```
 ### Set `enable_double_path` parameter
@@ -133,7 +133,7 @@ Demonstrates setting the `enable_double_path` module parameter to 0.
 
 ```opensips
 ...
-modparam("path", "enable\_double\_path", 0)
+modparam("path", "enable_double_path", 0)
 ...
 ```
 ### `add_path(user)` usage
@@ -142,8 +142,8 @@ Demonstrates using the `add_path` function with the username "loadbalancer".
 
 ```opensips
 ...
-if (!add\_path("loadbalancer")) {
-	sl\_send\_reply(503, "Internal Path Error");
+if (!add_path("loadbalancer")) {
+	sl_send_reply(503, "Internal Path Error");
 	...
 };
 ...
@@ -154,8 +154,8 @@ Demonstrates using the `add_path_received` function with the username "inbound".
 
 ```opensips
 ...
-if (!add\_path\_received("inbound")) {
-	sl\_send\_reply(503, "Internal Path Error");
+if (!add_path_received("inbound")) {
+	sl_send_reply(503, "Internal Path Error");
 	...
 };
 ...

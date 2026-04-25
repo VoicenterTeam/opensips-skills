@@ -62,7 +62,7 @@ Adds a new report/log to a Status/Report group.This must have been defined via t
 
 ```opensips
 ...
-sr\_add\_report("security","IP $si detected as attacker");
+sr_add_report("security","IP $si detected as attacker");
 ...
 ```
 
@@ -82,7 +82,7 @@ Sets a new status (and details) for a Status/Report group.
 
 ```opensips
 ...
-sr\_set\_status( "script\_caching", 1, "completed");
+sr_set_status( "script_caching", 1, "completed");
 ...
 ```
 
@@ -93,8 +93,8 @@ sr\_set\_status( "script\_caching", 1, "completed");
 Name of a new Status/Report group to be created and later used from script level. This parameter may be defined multiple times, in order to define multiple groups.
 
 ```opensips
-modparam("status\_report", "script\_sr\_group", "security")
-modparam("status\_report", "script\_sr\_group", "alarms")
+modparam("status_report", "script_sr_group", "security")
+modparam("status_report", "script_sr_group", "alarms")
 ```
 ### `sr_set_status` usage
 
@@ -102,7 +102,7 @@ Sets a new status (and details) for a Status/Report group.
 
 ```opensips
 ...
-sr\_set\_status( "script\_caching", 1, "completed");
+sr_set_status( "script_caching", 1, "completed");
 ...
 ```
 ### `sr_add_report` usage
@@ -111,6 +111,6 @@ Adds a new report/log to a Status/Report group.
 
 ```opensips
 ...
-sr\_add\_report("security","IP $si detected as attacker");
+sr_add_report("security","IP $si detected as attacker");
 ...
 ```

@@ -39,14 +39,14 @@ It relies on two DB tables, one containing JWT profiles ( a profile name and it'
 
 ### `db_mode` (integer)
 
-If set to 0, the module won't connect to the Database for reading the Keys for decoding JWTs - only jwt\_script\_authorize will be usable from the script.
+If set to 0, the module won't connect to the Database for reading the Keys for decoding JWTs - only jwt_script_authorize will be usable from the script.
 
 *Default value is 0.*
 
 **Example.** 0.
 
 ```opensips
-modparam("auth\_jwt", "db\_mode", 0)
+modparam("auth_jwt", "db_mode", 0)
 ```
 ### `db_url` (string)
 
@@ -57,7 +57,7 @@ This is URL of the database to be used. Value of the parameter depends on the da
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("auth\_jwt", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("auth_jwt", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `end_ts_column` (string)
 
@@ -96,12 +96,12 @@ modparam("auth_jwt", "load_credentials", "$avp(extra_jwt_info)=my_extra_column")
 
 Name of the DB table containing the jwt profiles
 
-*Default value is jwt\_profiles.*
+*Default value is jwt_profiles.*
 
-**Example.** my\_profiles.
+**Example.** my_profiles.
 
 ```opensips
-modparam("auth\_jwt", "profiles\_table", "my\_profiles")
+modparam("auth_jwt", "profiles_table", "my_profiles")
 ```
 ### `secret_column` (string)
 
@@ -133,12 +133,12 @@ modparam("auth_jwt", "secret_tag_column", "my_secret_tag_column")
 
 Name of the DB table containing the jwt secrets
 
-*Default value is jwt\_secrets.*
+*Default value is jwt_secrets.*
 
-**Example.** my\_secrets.
+**Example.** my_secrets.
 
 ```opensips
-modparam("auth\_jwt", "secrets\_table", "my\_secrets")
+modparam("auth_jwt", "secrets_table", "my_secrets")
 ```
 ### `start_ts_column` (string)
 
@@ -172,11 +172,11 @@ Column holding the JWT profile tag.
 
 *Default value is tag.*
 
-**Example.** my\_tag\_column.
+**Example.** my_tag_column.
 
 ```opensips
 ...
-modparam("auth\_jwt", "tag\_column", "my\_tag\_column")
+modparam("auth_jwt", "tag_column", "my_tag_column")
 ...
 ```
 ### `username_column` (string)
@@ -297,28 +297,28 @@ if (!jwt_script_authorize("$avp(my_jwt_token)",$avp(pub_key), $avp(decoded_token
 Sets the db_mode parameter to 0.
 
 ```opensips
-modparam("auth\_jwt", "db\_mode", 0)
+modparam("auth_jwt", "db_mode", 0)
 ```
 ### `db_url` parameter usage
 
 Sets the db_url parameter.
 
 ```opensips
-modparam("auth\_jwt", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("auth_jwt", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `profiles_table` parameter usage
 
 Sets the profiles_table parameter.
 
 ```opensips
-modparam("auth\_jwt", "profiles\_table", "my\_profiles")
+modparam("auth_jwt", "profiles_table", "my_profiles")
 ```
 ### `secrets_table` parameter usage
 
 Sets the secrets_table parameter.
 
 ```opensips
-modparam("auth\_jwt", "secrets\_table", "my\_secrets")
+modparam("auth_jwt", "secrets_table", "my_secrets")
 ```
 ### Set `tag_column` parameter
 
@@ -326,7 +326,7 @@ Sets the tag_column parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "tag\_column", "my\_tag\_column")
+modparam("auth_jwt", "tag_column", "my_tag_column")
 ...
 ```
 ### Set `username_column` parameter
@@ -335,7 +335,7 @@ Sets the username_column parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "username\_column", "my\_username\_column")
+modparam("auth_jwt", "username_column", "my_username_column")
 ...
 ```
 ### Set `secret_tag_column` parameter
@@ -344,7 +344,7 @@ Sets the secret_tag_column parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "secret\_tag\_column", "my\_secret\_tag\_column")
+modparam("auth_jwt", "secret_tag_column", "my_secret_tag_column")
 ...
 ```
 ### set `secret_column` parameter
@@ -353,7 +353,7 @@ Sets the secret_column parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "secret\_column", "my\_secret\_column")
+modparam("auth_jwt", "secret_column", "my_secret_column")
 ...
 ```
 ### set `start_ts` parameter
@@ -362,7 +362,7 @@ Sets the start_ts parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "start\_ts", "my\_start\_ts\_column")
+modparam("auth_jwt", "start_ts", "my_start_ts_column")
 ...
 ```
 ### set `end_ts` parameter
@@ -371,7 +371,7 @@ Sets the end_ts parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "end\_ts", "my\_end\_ts\_column")
+modparam("auth_jwt", "end_ts", "my_end_ts_column")
 ...
 ```
 ### set `tag_claim` parameter
@@ -380,7 +380,7 @@ Sets the tag_claim parameter.
 
 ```opensips
 ...
-modparam("auth\_jwt", "tag\_claim", "my\_tag\_claim")
+modparam("auth_jwt", "tag_claim", "my_tag_claim")
 ...
 ```
 ### `load_credentials` parameter usage
@@ -388,8 +388,8 @@ modparam("auth\_jwt", "tag\_claim", "my\_tag\_claim")
 Sets the load_credentials parameter.
 
 ```opensips
-# load my\_extra\_column into $avp(extra\_jwt\_info)
-modparam("auth\_jwt", "load\_credentials", "$avp(extra\_jwt\_info)=my\_extra\_column")
+# load my_extra_column into $avp(extra_jwt_info)
+modparam("auth_jwt", "load_credentials", "$avp(extra_jwt_info)=my_extra_column")
 ```
 ### `jwt_db_authorize` usage
 
@@ -397,13 +397,13 @@ Uses the jwt_db_authorize function.
 
 ```opensips
 ...
-if (!jwt\_db\_authorize("$avp(my\_jwt\_token)", $avp(decoded\_token), $avp(sip\_username) )) {
-	send\_reply(401,"Unauthorized");
+if (!jwt_db_authorize("$avp(my_jwt_token)", $avp(decoded_token), $avp(sip_username) )) {
+	send_reply(401,"Unauthorized");
 	exit;
 } else {
-	xlog("Succesful JWT auth - $avp(decoded\_token) \\n");
-	if ($fU != $avp(sip\_username)) {
-		send\_reply(403,"Forbidden AUTH ID");
+	xlog("Succesful JWT auth - $avp(decoded_token) \\n");
+	if ($fU != $avp(sip_username)) {
+		send_reply(403,"Forbidden AUTH ID");
 		exit;
 	}	
 }
@@ -415,11 +415,11 @@ Uses the jwt_script_authorize function.
 
 ```opensips
 ...
-if (!jwt\_script\_authorize("$avp(my\_jwt\_token)",$avp(pub\_key), $avp(decoded\_token))) {
-	send\_reply(401,"Unauthorized");
+if (!jwt_script_authorize("$avp(my_jwt_token)",$avp(pub_key), $avp(decoded_token))) {
+	send_reply(401,"Unauthorized");
 	exit;
 } else {
-	xlog("Succesful JWT auth - $avp(decoded\_token) \\n");
+	xlog("Succesful JWT auth - $avp(decoded_token) \\n");
 }
 ...
 ```
@@ -429,8 +429,8 @@ Uses the extract_pub_key_from_cert function.
 
 ```opensips
 ...
-if (extract\_pub\_key\_from\_cert("$avp(my\_certificate)",$avp(my\_pub\_key))) {
-    xlog("Succesfully extracted public key - $avp(my\_pub\_key) \\n");
+if (extract_pub_key_from_cert("$avp(my_certificate)",$avp(my_pub_key))) {
+    xlog("Succesfully extracted public key - $avp(my_pub_key) \\n");
 }
 ...
 ```

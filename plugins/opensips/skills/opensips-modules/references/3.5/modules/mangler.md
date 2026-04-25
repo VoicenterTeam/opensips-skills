@@ -42,7 +42,7 @@ First char of this parameter is used as separator for encoding/decoding Contact 
 
 ```opensips
 ...
-modparam("mangler", "contact\_flds\_separator", "-")
+modparam("mangler", "contact_flds_separator", "-")
 ...
 ```
 

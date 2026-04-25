@@ -101,7 +101,7 @@ modparam("auth", "password_spec", "$var(password)")
 ```
 ### `realm_prefix` (string)
 
-Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm\_prefix “sip.”, at authentication, sip.mydomain.net will be equivalent to mydomain.net .
+Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm_prefix “sip.”, at authentication, sip.mydomain.net will be equivalent to mydomain.net .
 
 *Default value is empty string.*
 
@@ -383,63 +383,63 @@ modparam("auth", "secret", "johndoessecretphrase")
 Nonces have limited lifetime. After a given period of time nonces will be considered invalid. This is to protect replay attacks. Credentials containing a stale nonce will be not authorized, but the user agent will be challenged again. This time the challenge will contain `stale` parameter which will indicate to the client that it doesn't have to disturb user by asking for username and password, it can recalculate credentials using existing username and password. The value is in seconds and default value is 30 seconds.
 
 ```opensips
-modparam("auth", "nonce\_expire", 15)   # Set nonce\_expire to 15s
+modparam("auth", "nonce_expire", 15)   # Set nonce_expire to 15s
 ```
 ### rpid_prefix parameter example
 
 Prefix to be added to Remote-Party-ID header field just before the URI returned from either radius or database. Default value is “”.
 
 ```opensips
-modparam("auth", "rpid\_prefix", "Whatever <")
+modparam("auth", "rpid_prefix", "Whatever <")
 ```
 ### rpid_suffix parameter example
 
 Suffix to be added to Remote-Party-ID header field after the URI returned from either radius or database. Default value is “;party=calling;id-type=subscriber;screen=yes”.
 
 ```opensips
-modparam("auth", "rpid\_suffix", "@1.2.3.4>")
+modparam("auth", "rpid_suffix", "@1.2.3.4>")
 ```
 ### realm_prefix parameter example
 
-Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm\_prefix “sip.”, at authentication, sip.mydomain.net will be equivalent to mydomain.net . Default value is empty string.
+Prefix to be automatically strip from realm. As an alternative to SRV records (not all SIP clients support SRV lookup), a subdomain of the master domain can be defined for SIP purposes (like sip.mydomain.net pointing to same IP address as the SRV record for mydomain.net). By ignoring the realm_prefix “sip.”, at authentication, sip.mydomain.net will be equivalent to mydomain.net . Default value is empty string.
 
 ```opensips
-modparam("auth", "realm\_prefix", "sip.")
+modparam("auth", "realm_prefix", "sip.")
 ```
 ### rpid_avp parameter example
 
-Full AVP specification for the AVP which stores the RPID value. It used to transport the RPID value from authentication backend modules (auth\_db or auth\_radius) or from script to the auth function append\_rpid\_hf and is\_rpid\_user\_e164. If defined to NULL string, all RPID functions will fail at runtime. Default value is “$avp(rpid)”.
+Full AVP specification for the AVP which stores the RPID value. It used to transport the RPID value from authentication backend modules (auth_db or auth_radius) or from script to the auth function append_rpid_hf and is_rpid_user_e164. If defined to NULL string, all RPID functions will fail at runtime. Default value is “$avp(rpid)”.
 
 ```opensips
-modparam("auth", "rpid\_avp", "$avp(caller\_rpid)")
+modparam("auth", "rpid_avp", "$avp(caller_rpid)")
 ```
 ### `username_spec` parameter usage
 
 This name of the pseudo-variable that will hold the username. Default value is “NULL”.
 
 ```opensips
-modparam("auth", "username\_spec", "$var(username)")
+modparam("auth", "username_spec", "$var(username)")
 ```
 ### `password_spec` parameter usage
 
 This name of the pseudo-variable that will hold the password. Default value is “NULL”.
 
 ```opensips
-modparam("auth", "password\_spec", "$var(password)")
+modparam("auth", "password_spec", "$var(password)")
 ```
 ### `calculate_ha1` parameter usage
 
-This parameter tells the server whether it should expect plaintext passwords in the pseudo-variable or a pre-calculated HA1 string. If the parameter is set to 1 then the server will assume that the “password\_spec” pseudo-variable contains plaintext passwords and it will calculate HA1 strings on the fly. If the parameter is set to 0 then the server assumes the pseudo-variable contains the HA1 strings directly and will not calculate them. Default value of this parameter is 0.
+This parameter tells the server whether it should expect plaintext passwords in the pseudo-variable or a pre-calculated HA1 string. If the parameter is set to 1 then the server will assume that the “password_spec” pseudo-variable contains plaintext passwords and it will calculate HA1 strings on the fly. If the parameter is set to 0 then the server assumes the pseudo-variable contains the HA1 strings directly and will not calculate them. Default value of this parameter is 0.
 
 ```opensips
-modparam("auth", "calculate\_ha1", 1)
+modparam("auth", "calculate_ha1", 1)
 ```
 ### `disable_nonce_check` parameter usage
 
 By setting this parameter you disable the security mechanism that protects against intrusion sniffing and does not allow nonces to be reused. But, because of the current implementation, having this enabled breaks auth for an architecture where load is balanced by having more servers with the same dns name. This parameter has to be set in this case. Default value is “0” (enabled).
 
 ```opensips
-modparam("auth", "disable\_nonce\_check", 1)
+modparam("auth", "disable_nonce_check", 1)
 ```
 ### www_challenge usage
 
@@ -447,8 +447,8 @@ The function challenges a user agent. It will generate one or more WWW-Authorize
 
 ```opensips
 ...
-if (!www\_authorize("siphub.net", "subscriber")) {
-	www\_challenge("siphub.net", "auth,auth-int", "MD5,SHA-512-256");
+if (!www_authorize("siphub.net", "subscriber")) {
+	www_challenge("siphub.net", "auth,auth-int", "MD5,SHA-512-256");
 }
 ...
 ```
@@ -458,11 +458,11 @@ The function challenges a user agent. It will generate a Proxy-Authorize header 
 
 ```opensips
 ...
-$var(secure\_algorithms) = "sha-256,sha-512-256";
+$var(secure_algorithms) = "sha-256,sha-512-256";
 ...
-if (!proxy\_authorize("", "subscriber")) {
+if (!proxy_authorize("", "subscriber")) {
 ...
-	proxy\_challenge("", "auth", $var(secure\_algorithms));  # Realm will be autogenerated
+	proxy_challenge("", "auth", $var(secure_algorithms));  # Realm will be autogenerated
 						       # MD5 won't be allowed
 }
 ...
@@ -473,8 +473,8 @@ This function removes previously authorized credentials from the message being p
 
 ```opensips
 ...
-if (www\_authorize("", "subscriber")) {
-    consume\_credentials();
+if (www_authorize("", "subscriber")) {
+    consume_credentials();
 }
 ...
 ```
@@ -484,28 +484,28 @@ The function checks if the SIP URI received from the database or radius server a
 
 ```opensips
 ...
-if (is\_rpid\_user\_e164()) {
+if (is_rpid_user_e164()) {
     # do something here
 }
 ...
 ```
 ### append_rpid_hf usage
 
-Appends to the message a Remote-Party-ID header that contains header 'Remote-Party-ID: ' followed by the saved value of the SIP URI received from the database or radius server followed by the value of module parameter radius\_rpid\_suffix. The function does nothing if no saved SIP URI exists.
+Appends to the message a Remote-Party-ID header that contains header 'Remote-Party-ID: ' followed by the saved value of the SIP URI received from the database or radius server followed by the value of module parameter radius_rpid_suffix. The function does nothing if no saved SIP URI exists.
 
 ```opensips
 ...
-append\_rpid\_hf();  # Append Remote-Party-ID header field
+append_rpid_hf();  # Append Remote-Party-ID header field
 ...
 ```
 ### append_rpid_hf(prefix, suffix) usage
 
-This function is the same as [append\_rpid\_hf()](#func_append_rpid_hf_no_params "1.5.5.� append_rpid_hf()"). The only difference is that it accepts two parameters--prefix and suffix to be added to Remote-Party-ID header field. This function ignores rpid\_prefix and rpid\_suffix parameters, instead of that allows to set them in every call.
+This function is the same as [append_rpid_hf()](#func_append_rpid_hf_no_params "1.5.5. append_rpid_hf()"). The only difference is that it accepts two parameters--prefix and suffix to be added to Remote-Party-ID header field. This function ignores rpid_prefix and rpid_suffix parameters, instead of that allows to set them in every call.
 
 ```opensips
 ...
 # Append Remote-Party-ID header field
-append\_rpid\_hf("", ";party=calling;id-type=subscriber;screen=yes");
+append_rpid_hf("", ";party=calling;id-type=subscriber;screen=yes");
 ...
 ```
 ### `pv_www_authorize` usage
@@ -516,8 +516,8 @@ The function verifies credentials according to [RFC2617](http://www.ietf.org/rfc
 ...
 $var(username)="abc";
 $var(password)="xyz";
-if (!pv\_www\_authorize("opensips.org")) {
-	www\_challenge("opensips.org", "auth");
+if (!pv_www_authorize("opensips.org")) {
+	www_challenge("opensips.org", "auth");
 }
 ...
 ```
@@ -529,8 +529,8 @@ The function verifies credentials according to [RFC2617](http://www.ietf.org/rfc
 ...
 $var(username)="abc";
 $var(password)="xyz";
-if (!pv\_proxy\_authorize("")) {
-	proxy\_challenge("", "auth");  # Realm will be autogenerated
+if (!pv_proxy_authorize("")) {
+	proxy_challenge("", "auth");  # Realm will be autogenerated
 }
 ...
 ```

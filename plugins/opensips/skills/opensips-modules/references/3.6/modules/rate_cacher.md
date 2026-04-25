@@ -17,7 +17,7 @@ Reference for the OpenSIPs 3.6 rate_cacher module. Read this file when configuri
 
 ## Overview
 
-The _rate\_cacher_ module provides a means of caching and real-time querying of the ratesheets assigned to your clients and / or vendors. It also allows for real-time cost-based routing and cost-based filtering.
+The _rate_cacher_ module provides a means of caching and real-time querying of the ratesheets assigned to your clients and / or vendors. It also allows for real-time cost-based routing and cost-based filtering.
 
 ## Dependencies
 
@@ -40,7 +40,7 @@ The DB Table for querying the Clients used by the module
 **Example.** my_clients_view.
 
 ```opensips
-modparam("rate\_cacher", "clients\_db\_table", "my\_clients\_view")
+modparam("rate_cacher", "clients_db_table", "my_clients_view")
 ```
 ### `clients_db_url` (string)
 
@@ -51,7 +51,7 @@ The DB URL for querying the Clients used by the module
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("rate\_cacher", "clients\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "clients_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### `clients_hash_size` (integer)
 
@@ -64,7 +64,7 @@ The size of the hash table internally used to keep the clients. A larger table i
 **Example.** 1024.
 
 ```opensips
-modparam("rate\_cacher", "clients\_hash\_size", 1024)
+modparam("rate_cacher", "clients_hash_size", 1024)
 ```
 ### `rates_db_table` (string)
 
@@ -75,7 +75,7 @@ The DB Table for querying the Ratesheets used by the module
 **Example.** my_clients_view.
 
 ```opensips
-modparam("rate\_cacher", "rates\_db\_table", "my\_clients\_view")
+modparam("rate_cacher", "rates_db_table", "my_clients_view")
 ```
 ### `rates_db_url` (string)
 
@@ -86,7 +86,7 @@ The DB URL for querying the Ratesheets used by the module
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("rate\_cacher", "rates\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "rates_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### `vendors_db_table` (string)
 
@@ -97,7 +97,7 @@ The DB Table for querying the Vendors used by the module
 **Example.** my_vendors_view.
 
 ```opensips
-modparam("rate\_cacher", "vendors\_db\_table", "my\_vendors\_view")
+modparam("rate_cacher", "vendors_db_table", "my_vendors_view")
 ```
 ### `vendors_db_url` (string)
 
@@ -108,7 +108,7 @@ The DB URL for querying the Vendors used by the module
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("rate\_cacher", "vendors\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "vendors_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### `vendors_hash_size` (integer)
 
@@ -121,7 +121,7 @@ The size of the hash table internally used to keep the vendors. A larger table i
 **Example.** 1024.
 
 ```opensips
-modparam("rate\_cacher", "vendors\_hash\_size", 1024)
+modparam("rate_cacher", "vendors_hash_size", 1024)
 ```
 
 ## Exported Functions
@@ -151,17 +151,17 @@ For a call originating from the provided Client ID, on a wholesale or retail qua
 # going to number 40720018124, and we have to pick from the list 
 # of vendors 'testVendor,testVendor2' based on a a profit margin 
 # of 0 ( we do not want to lose money on this call ),
-# then $avp(out\_vendor\_csv) will have the vendors that we need 
+# then $avp(out_vendor_csv) will have the vendors that we need 
 # to use based on the above call characteristics, the order of the
 # vendors that was provided in $avp(carrierlist) and the desired margin
-$avp(client\_id)="testClient";
-$avp(is\_ws)=1;  
+$avp(client_id)="testClient";
+$avp(is_ws)=1;  
 $avp(carrierlist)="testVendor,testVendor2";
 $avp(dnis)="40720018124";
-$avp(profit\_margin)=0;
+$avp(profit_margin)=0;
 
-if (cost\_based\_filtering("$avp(client\_id)","$avp(is\_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit\_margin)","$avp(out\_vendor\_result)")) {
-	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out\_vendor\_result) \\n");
+if (cost_based_filtering("$avp(client_id)","$avp(is_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit_margin)","$avp(out_vendor_result)")) {
+	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out_vendor_result) \\n");
 ...
 
 ```
@@ -191,18 +191,18 @@ For a call originating from the provided Client ID, on a wholesale or retail qua
 # going to number 40720018124, and we have to pick from the list 
 # of vendors 'testVendor,testVendor2' based on a a profit margin 
 # of 0 ( we do not want to lose money on this call ),
-# then $avp(out\_vendor\_csv) will have the vendors that we need 
+# then $avp(out_vendor_csv) will have the vendors that we need 
 # to use based on the above call characteristics, and the desired margin
 # The order in $avp(carrierlist) does not matter, the vendors will be
 # ordered from most profitable to least profitable
-$avp(client\_id)="testClient";
-$avp(is\_ws)=1;  
+$avp(client_id)="testClient";
+$avp(is_ws)=1;  
 $avp(carrierlist)="testVendor,testVendor2";
 $avp(dnis)="40720018124";
-$avp(profit\_margin)=0;
+$avp(profit_margin)=0;
 
-if (cost\_based\_ordering("$avp(client\_id)","$avp(is\_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit\_margin)","$avp(out\_vendor\_result)")) {
-	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out\_vendor\_result) , in the provided order\\n");
+if (cost_based_ordering("$avp(client_id)","$avp(is_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit_margin)","$avp(out_vendor_result)")) {
+	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out_vendor_result) , in the provided order\\n");
 
 ```
 
@@ -229,7 +229,7 @@ For a call originating from the provided Client ID, on a wholesale or retail qua
 
 ```opensips
 ...
-if (get\_client\_price("my\_client",1,"4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
+if (get_client_price("my_client",1,"4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
                         xlog("We matched $var(prefix) , $var(dest) , $var(price) , $var(min) , $var(inc) for the client's ratesheet\\n");
                 }
 
@@ -257,7 +257,7 @@ For a call originating going to the provided vendor ID, going to dialled_no, the
 
 ```opensips
 ...
-if (get\_vendor\_price("my\_vendor","4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
+if (get_vendor_price("my_vendor","4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
                         xlog("We matched $var(prefix) , $var(dest) , $var(price) , $var(min) , $var(inc) for the vendor's ratesheet\\n");
                 }
 
@@ -442,7 +442,7 @@ The DB URL for querying the Vendors used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "vendors\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "vendors_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
 ### Setting the `vendors_db_table` parameter
@@ -451,7 +451,7 @@ The DB Table for querying the Vendors used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "vendors\_db\_table", "my\_vendors\_view")
+modparam("rate_cacher", "vendors_db_table", "my_vendors_view")
 ...
 ```
 ### Setting the `vendors_hash_size` parameter
@@ -460,7 +460,7 @@ The size of the hash table internally used to keep the vendors. A larger table i
 
 ```opensips
 ...
-modparam("rate\_cacher", "vendors\_hash\_size", 1024)
+modparam("rate_cacher", "vendors_hash_size", 1024)
 ...
 ```
 ### Setting the `clients_db_url` parameter
@@ -469,7 +469,7 @@ The DB URL for querying the Clients used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "clients\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "clients_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
 ### Setting the `clients_db_table` parameter
@@ -478,7 +478,7 @@ The DB Table for querying the Clients used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "clients\_db\_table", "my\_clients\_view")
+modparam("rate_cacher", "clients_db_table", "my_clients_view")
 ...
 ```
 ### Setting the `vendors_hash_size` parameter
@@ -487,7 +487,7 @@ The size of the hash table internally used to keep the clients. A larger table i
 
 ```opensips
 ...
-modparam("rate\_cacher", "clients\_hash\_size", 1024)
+modparam("rate_cacher", "clients_hash_size", 1024)
 ...
 ```
 ### Setting the `rates_db_url` parameter
@@ -496,7 +496,7 @@ The DB URL for querying the Ratesheets used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "rates\_db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("rate_cacher", "rates_db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
 ### Setting the `rates_db_table` parameter
@@ -505,16 +505,16 @@ The DB Table for querying the Ratesheets used by the module
 
 ```opensips
 ...
-modparam("rate\_cacher", "rates\_db\_table", "my\_clients\_view")
+modparam("rate_cacher", "rates_db_table", "my_clients_view")
 ...
 ```
 ### `get_client_price` usage
 
-For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled\_no, the function will matched the dialled number against the client's ratesheet and return the matched prefix, destination, price, minimum and increment.
+For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled_no, the function will matched the dialled number against the client's ratesheet and return the matched prefix, destination, price, minimum and increment.
 
 ```opensips
 ...
-if (get\_client\_price("my\_client",1,"4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
+if (get_client_price("my_client",1,"4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
                         xlog("We matched $var(prefix) , $var(dest) , $var(price) , $var(min) , $var(inc) for the client's ratesheet\\n");
                 }
 
@@ -522,11 +522,11 @@ if (get\_client\_price("my\_client",1,"4072794242",$var(prefix),$var(dest),$var(
 ```
 ### `get_vendor_price` usage
 
-For a call originating going to the provided vendor ID, going to dialled\_no, the function will matched the dialled number against the vendor's ratesheet and return the matched prefix, destination, price, minimum and increment.
+For a call originating going to the provided vendor ID, going to dialled_no, the function will matched the dialled number against the vendor's ratesheet and return the matched prefix, destination, price, minimum and increment.
 
 ```opensips
 ...
-if (get\_vendor\_price("my\_vendor","4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
+if (get_vendor_price("my_vendor","4072794242",$var(prefix),$var(dest),$var(price),$var(min),$var(inc))) {
                         xlog("We matched $var(prefix) , $var(dest) , $var(price) , $var(min) , $var(inc) for the vendor's ratesheet\\n");
                 }
 
@@ -534,7 +534,7 @@ if (get\_vendor\_price("my\_vendor","4072794242",$var(prefix),$var(dest),$var(pr
 ```
 ### `cost_based_filtering` usage
 
-For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled\_no, the function removes the Vendors ( from the vendor\_csv list ) which do not pass the desired\_margin condition, and sets the out\_vendor\_csv variable to the list of Vendor that meet the margin condition, while maintaining the initial order provided in the vendor\_csv variable.
+For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled_no, the function removes the Vendors ( from the vendor_csv list ) which do not pass the desired_margin condition, and sets the out_vendor_csv variable to the list of Vendor that meet the margin condition, while maintaining the initial order provided in the vendor_csv variable.
 
 ```opensips
 ...
@@ -543,22 +543,22 @@ For a call originating from the provided Client ID, on a wholesale or retail qua
 # going to number 40720018124, and we have to pick from the list 
 # of vendors 'testVendor,testVendor2' based on a a profit margin 
 # of 0 ( we do not want to lose money on this call ),
-# then $avp(out\_vendor\_csv) will have the vendors that we need 
+# then $avp(out_vendor_csv) will have the vendors that we need 
 # to use based on the above call characteristics, the order of the
 # vendors that was provided in $avp(carrierlist) and the desired margin
-$avp(client\_id)="testClient";
-$avp(is\_ws)=1;  
+$avp(client_id)="testClient";
+$avp(is_ws)=1;  
 $avp(carrierlist)="testVendor,testVendor2";
 $avp(dnis)="40720018124";
-$avp(profit\_margin)=0;
+$avp(profit_margin)=0;
 
-if (cost\_based\_filtering("$avp(client\_id)","$avp(is\_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit\_margin)","$avp(out\_vendor\_result)")) {
-	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out\_vendor\_result) \\n");
+if (cost_based_filtering("$avp(client_id)","$avp(is_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit_margin)","$avp(out_vendor_result)")) {
+	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out_vendor_result) \\n");
 ...
 ```
 ### `cost_based_ordering` usage
 
-For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled\_no, the function removes the Vendors ( from the vendor\_csv list ) which do not pass the desired\_margin condition, and sets th out\_vendor\_csv variable to the list of Vendor that meet the margin condition, in descending order of their margin ( from most profitable Vendor to least profitable Vendor that still meets the margin condition )
+For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled_no, the function removes the Vendors ( from the vendor_csv list ) which do not pass the desired_margin condition, and sets th out_vendor_csv variable to the list of Vendor that meet the margin condition, in descending order of their margin ( from most profitable Vendor to least profitable Vendor that still meets the margin condition )
 
 ```opensips
 ...
@@ -566,18 +566,18 @@ For a call originating from the provided Client ID, on a wholesale or retail qua
 # going to number 40720018124, and we have to pick from the list 
 # of vendors 'testVendor,testVendor2' based on a a profit margin 
 # of 0 ( we do not want to lose money on this call ),
-# then $avp(out\_vendor\_csv) will have the vendors that we need 
+# then $avp(out_vendor_csv) will have the vendors that we need 
 # to use based on the above call characteristics, and the desired margin
 # The order in $avp(carrierlist) does not matter, the vendors will be
 # ordered from most profitable to least profitable
-$avp(client\_id)="testClient";
-$avp(is\_ws)=1;  
+$avp(client_id)="testClient";
+$avp(is_ws)=1;  
 $avp(carrierlist)="testVendor,testVendor2";
 $avp(dnis)="40720018124";
-$avp(profit\_margin)=0;
+$avp(profit_margin)=0;
 
-if (cost\_based\_ordering("$avp(client\_id)","$avp(is\_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit\_margin)","$avp(out\_vendor\_result)")) {
-	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out\_vendor\_result) , in the provided order\\n");
+if (cost_based_ordering("$avp(client_id)","$avp(is_ws)","$avp(carrierlist)","$avp(dnis)","$avp(profit_margin)","$avp(out_vendor_result)")) {
+	xlog("XXX - Out of the $avp(carrierlist) carriers, we should only use $avp(out_vendor_result) , in the provided order\\n");
 
 ...
 ```

@@ -16,11 +16,11 @@ Reference for the OpenSIPs 3.6 aka_av_diameter module. Read this file when confi
 
 ## Overview
 
-This module is an extension to the _AKA\_AUTH_ module providing a Diameter AKA AV Manager that implements the Multimedia-Auth-Request and Multimedia-Auth-Answer Diameter commands defined in the _Cx_ interface of the _ETSI TS 129 229_ specifications in order to fetch a set of authentication vectors and feed them in the AKA authentication process.
+This module is an extension to the _AKA_AUTH_ module providing a Diameter AKA AV Manager that implements the Multimedia-Auth-Request and Multimedia-Auth-Answer Diameter commands defined in the _Cx_ interface of the _ETSI TS 129 229_ specifications in order to fetch a set of authentication vectors and feed them in the AKA authentication process.
 
 ## How It Works
 
-When the _AKA\_AUTH_ module needs a new authentication vector to do an _aka\_challenge()_, it may require this module to fetch a set of authentication vectors for the purpose. The module packs the query in a _MAR_ (Multimedia-Auth-Request) command and sends it to an _HSS_ Diameter server. When an _MAA_ (Multimedia-Auth-Answer) command is received in response, the corresponding authentication vectors are gathered and fed back to the _AUTH\_AKA_ engine. It uses the _AAA\_Diameter_ module to perform the Diameter requests. It may run in both a synchronous and asynchronous mode, depending on how the _AUTH\_AKA_ module performs the query.
+When the _AKA_AUTH_ module needs a new authentication vector to do an _aka_challenge()_, it may require this module to fetch a set of authentication vectors for the purpose. The module packs the query in a _MAR_ (Multimedia-Auth-Request) command and sends it to an _HSS_ Diameter server. When an _MAA_ (Multimedia-Auth-Answer) command is received in response, the corresponding authentication vectors are gathered and fed back to the _AUTH_AKA_ engine. It uses the _AAA_Diameter_ module to perform the Diameter requests. It may run in both a synchronous and asynchronous mode, depending on how the _AUTH_AKA_ module performs the query.
 
 ## Dependencies
 
@@ -76,25 +76,25 @@ modparam("aka_av_diameter", "server_uri", "sip:scscf.ims.mnc001.mcc001.3gppnetwo
 This is the url representing the connection to the AAA server.
 
 ```opensips
-modparam("auth\_aaa", "aaa\_url", "diameter:freeDiameter.conf;extra-avps-file:/etc/freeDiameter/aka\_av\_diameter.dictionary")
+modparam("auth_aaa", "aaa_url", "diameter:freeDiameter.conf;extra-avps-file:/etc/freeDiameter/aka_av_diameter.dictionary")
 ```
 ### `realm` parameter usage
 
 The Realm used in the Origin Diameter commands.
 
 ```opensips
-modparam("aka\_av\_diameter", "realm", "scscf.ims.mnc001.mcc001.3gppnetwork.org")
+modparam("aka_av_diameter", "realm", "scscf.ims.mnc001.mcc001.3gppnetwork.org")
 ```
 ### `server_uri` parameter usage
 
 The Server-URI used in the Diameter commands.
 
 ```opensips
-modparam("aka\_av\_diameter", "server\_uri", "sip:scscf.ims.mnc001.mcc001.3gppnetwork.org")
+modparam("aka_av_diameter", "server_uri", "sip:scscf.ims.mnc001.mcc001.3gppnetwork.org")
 ```
 ### Diameter Commands File Example
 
-File that should be provided to the _aaa\_diameter_ connection.
+File that should be provided to the _aaa_diameter_ connection.
 
 ```opensips
 VENDOR 10415 TGPP

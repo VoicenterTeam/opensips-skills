@@ -18,7 +18,7 @@ Reference for the OpenSIPs 3.5 auth_db module. Read this file when configuring o
 
 This module contains all authentication related functions that need the access to the database. This module should be used together with auth module, it cannot be used independently because it depends on the module. Select this module if you want to use database to store authentication information like subscriber usernames and passwords. If you want to use radius authentication, then use auth_radius instead.
 
-### 1.1.1.�RFC 8760 Support (Strenghtened Authentication)
+### 1.1.1.RFC 8760 Support (Strenghtened Authentication)
 
 Starting with OpenSIPS 3.2, the [auth](auth), [auth_db](auth_db) and [uac_auth](uac_auth) modules include support for two new digest authentication algorithms ("SHA-256" and "SHA-512-256"), according to the [RFC 8760](https://datatracker.ietf.org/doc/html/rfc8760) specs.
 
@@ -37,7 +37,7 @@ None.
 
 ### `calculate_ha1` (integer)
 
-This parameter tells the server whether it should considered the loaded password (for authentification) as plaintext passwords or a pre-calculated HA1 string. Possible meanings of this parameter are: * 1 (calculate HA1) - the loaded password is a plaintext password, so OpenSIPS will internally calculate the HA1. As the passwords will be loaded from the column specified in the [password\_column](#param_password_column "1.3.8.�password_column (string)") parameter, be sure this parameter points to a column holding a plaintext password (by default, this parameter points to the “ha1” column); * 0 (do **not** calculate HA1) - the loaded password is a pre-computed HA1 hash (no calculation needed). The module will load all hashes stored in the [password\_column](#param_password_column "1.3.8.�password_column (string)"), [hash\_column\_sha256](#param_hash_column_sha256 "1.3.9.�hash_column_sha256 (string)") and [hash\_column\_sha512t256](#param_hash_column_sha512t256 "1.3.10.�hash_column_sha512t256 (string)") columns, then use the hash corresponding to the hashing algorithm selected for a given digest authentication challenge. The content of the hash columns can be generated as follows: * password\_column: MD5(username:realm:password) * hash\_column\_sha256: SHA-256(username:realm:password) * hash\_column\_sha512t256: SHA-512-256(username:realm:password)
+This parameter tells the server whether it should considered the loaded password (for authentification) as plaintext passwords or a pre-calculated HA1 string. Possible meanings of this parameter are: * 1 (calculate HA1) - the loaded password is a plaintext password, so OpenSIPS will internally calculate the HA1. As the passwords will be loaded from the column specified in the [password_column](#param_password_column "1.3.8.password_column (string)") parameter, be sure this parameter points to a column holding a plaintext password (by default, this parameter points to the “ha1” column); * 0 (do **not** calculate HA1) - the loaded password is a pre-computed HA1 hash (no calculation needed). The module will load all hashes stored in the [password_column](#param_password_column "1.3.8.password_column (string)"), [hash_column_sha256](#param_hash_column_sha256 "1.3.9.hash_column_sha256 (string)") and [hash_column_sha512t256](#param_hash_column_sha512t256 "1.3.10.hash_column_sha512t256 (string)") columns, then use the hash corresponding to the hashing algorithm selected for a given digest authentication challenge. The content of the hash columns can be generated as follows: * password_column: MD5(username:realm:password) * hash_column_sha256: SHA-256(username:realm:password) * hash_column_sha512t256: SHA-512-256(username:realm:password)
 
 *Default value is 0 (use hashed passwords).*
 
@@ -49,7 +49,7 @@ This parameter tells the server whether it should considered the loaded password
 **Example.** 1.
 
 ```opensips
-modparam("auth\_db", "calculate\_ha1", 1)
+modparam("auth_db", "calculate_ha1", 1)
 ```
 ### `db_url` (string)
 
@@ -60,7 +60,7 @@ This is URL of the database to be used. Value of the parameter depends on the da
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("auth\_db", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("auth_db", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `domain_column` (string)
 
@@ -97,14 +97,14 @@ modparam("auth_db", "hash_column_sha512t256", "ha1_sha512t256")
 ```
 ### `load_credentials` (string)
 
-This parameter specifies credentials to be fetched from database when the authentication is performed. The loaded credentials will be stored in AVPs. If the AVP name is not specificaly given, it will be used a NAME AVP with the same name as the column name. Parameter syntax: * load\_credentials = credential (';' credential)\* * credential = (avp\_specification '=' column\_name) | (column\_name) * avp\_specification = '$avp(' + NAME + ')'
+This parameter specifies credentials to be fetched from database when the authentication is performed. The loaded credentials will be stored in AVPs. If the AVP name is not specificaly given, it will be used a NAME AVP with the same name as the column name. Parameter syntax: * load_credentials = credential (';' credential)\* * credential = (avp_specification '=' column_name) | (column_name) * avp_specification = '$avp(' + NAME + ')'
 
 *Default value is rpid.*
 
-**Example.** $avp(13)=rpid;email\_address.
+**Example.** $avp(13)=rpid;email_address.
 
 ```opensips
-modparam("auth\_db", "load\_credentials", "$avp(13)=rpid;email\_address")
+modparam("auth_db", "load_credentials", "$avp(13)=rpid;email_address")
 ```
 ### `password_column` (string)
 
@@ -126,7 +126,7 @@ This parameter specifies not to check the auth table version. This parameter sho
 **Example.** 1.
 
 ```opensips
-modparam("auth\_db", "skip\_version\_check", 1)
+modparam("auth_db", "skip_version_check", 1)
 ```
 ### `uri_domain_column` (string)
 
@@ -138,7 +138,7 @@ Column holding domain in an 'URI' like table.
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_domain\_column", "domain")
+modparam("auth_db", "uri_domain_column", "domain")
 ...
 ```
 ### `uri_uriuser_column` (string)
@@ -151,7 +151,7 @@ Column holding URI username in an 'URI' like table.
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_uriuser\_column", "uri\_user")
+modparam("auth_db", "uri_uriuser_column", "uri_user")
 ...
 ```
 ### `uri_user_column` (string)
@@ -164,7 +164,7 @@ Column holding usernames in an 'URI' like table.
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_user\_column", "username")
+modparam("auth_db", "uri_user_column", "username")
 ...
 ```
 ### `use_domain` (integer)
@@ -176,7 +176,7 @@ If true (not 0), domain will be also used when looking up in the subscriber tabl
 **Example.** 1.
 
 ```opensips
-modparam("auth\_db", "use\_domain", 1)
+modparam("auth_db", "use_domain", 1)
 ```
 ### `user_column` (string)
 
@@ -343,72 +343,72 @@ if (!www_authorize("siphub.net", "subscriber"))
 `db_url` parameter usage
 
 ```opensips
-modparam("auth\_db", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("auth_db", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `calculate_ha1` parameter usage
 
 `calculate_ha1` parameter usage
 
 ```opensips
-modparam("auth\_db", "calculate\_ha1", 1)
+modparam("auth_db", "calculate_ha1", 1)
 ```
 ### `use_domain` parameter usage
 
 `use_domain` parameter usage
 
 ```opensips
-modparam("auth\_db", "use\_domain", 1)
+modparam("auth_db", "use_domain", 1)
 ```
 ### `load_credentials` parameter usage
 
 `load_credentials` parameter usage
 
 ```opensips
-\# load rpid column into $avp(13) and email\_address column
-# into $avp(email\_address)
-modparam("auth\_db", "load\_credentials", "$avp(13)=rpid;email\_address")
+\# load rpid column into $avp(13) and email_address column
+# into $avp(email_address)
+modparam("auth_db", "load_credentials", "$avp(13)=rpid;email_address")
 ```
 ### `skip_version_check` parameter usage
 
 `skip_version_check` parameter usage
 
 ```opensips
-modparam("auth\_db", "skip\_version\_check", 1)
+modparam("auth_db", "skip_version_check", 1)
 ```
 ### `user_column` parameter usage
 
 `user_column` parameter usage
 
 ```opensips
-modparam("auth\_db", "user\_column", "user")
+modparam("auth_db", "user_column", "user")
 ```
 ### `domain_column` parameter usage
 
 `domain_column` parameter usage
 
 ```opensips
-modparam("auth\_db", "domain\_column", "domain")
+modparam("auth_db", "domain_column", "domain")
 ```
 ### `password_column` parameter usage
 
 `password_column` parameter usage
 
 ```opensips
-modparam("auth\_db", "password\_column", "password")
+modparam("auth_db", "password_column", "password")
 ```
 ### `password_column` parameter usage
 
 `password_column` parameter usage
 
 ```opensips
-modparam("auth\_db", "hash\_column\_sha256", "ha1\_sha256")
+modparam("auth_db", "hash_column_sha256", "ha1_sha256")
 ```
 ### `password_column` parameter usage
 
 `password_column` parameter usage
 
 ```opensips
-modparam("auth\_db", "hash\_column\_sha512t256", "ha1\_sha512t256")
+modparam("auth_db", "hash_column_sha512t256", "ha1_sha512t256")
 ```
 ### Set `uri_user_column` parameter
 
@@ -416,7 +416,7 @@ Set `uri_user_column` parameter
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_user\_column", "username")
+modparam("auth_db", "uri_user_column", "username")
 ...
 ```
 ### Set `uri_domain_column` parameter
@@ -425,7 +425,7 @@ Set `uri_domain_column` parameter
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_domain\_column", "domain")
+modparam("auth_db", "uri_domain_column", "domain")
 ...
 ```
 ### Set `uriuser_column` parameter
@@ -434,7 +434,7 @@ Set `uriuser_column` parameter
 
 ```opensips
 ...
-modparam("auth\_db", "uri\_uriuser\_column", "uri\_user")
+modparam("auth_db", "uri_uriuser_column", "uri_user")
 ...
 ```
 ### `www_authorize` usage
@@ -443,18 +443,18 @@ modparam("auth\_db", "uri\_uriuser\_column", "uri\_user")
 
 ```opensips
 ...
-if (!www\_authorize("siphub.net", "subscriber"))
-	www\_challenge("siphub.net", "auth");
+if (!www_authorize("siphub.net", "subscriber"))
+	www_challenge("siphub.net", "auth");
 ...
 ```
-### proxy\_authorize usage
+### proxy_authorize usage
 
-proxy\_authorize usage
+proxy_authorize usage
 
 ```opensips
 ...
-if (!proxy\_authorize("", "subscriber"))
-	proxy\_challenge("", "auth");  # Realm will be autogenerated
+if (!proxy_authorize("", "subscriber"))
+	proxy_challenge("", "auth");  # Realm will be autogenerated
 ...
 ```
 ### `db_is_to_authorized` usage
@@ -463,7 +463,7 @@ if (!proxy\_authorize("", "subscriber"))
 
 ```opensips
 ...
-if (!db\_is\_to\_authorized("uri")) {
+if (!db_is_to_authorized("uri")) {
 	xlog("User $tu is not authorized to authenticate with $au credential\\n");
 }
 ...
@@ -474,7 +474,7 @@ if (!db\_is\_to\_authorized("uri")) {
 
 ```opensips
 ...
-if (db\_does\_uri\_exist($ru, "subscriber")) {
+if (db_does_uri_exist($ru, "subscriber")) {
 	...
 }
 ...
@@ -485,7 +485,7 @@ if (db\_does\_uri\_exist($ru, "subscriber")) {
 
 ```opensips
 ...
-if (db\_get\_auth\_id("uri", $ru, $avp(auth\_id), $avp(auth\_realm))) {
+if (db_get_auth_id("uri", $ru, $avp(auth_id), $avp(auth_realm))) {
 	...
 }
 ...

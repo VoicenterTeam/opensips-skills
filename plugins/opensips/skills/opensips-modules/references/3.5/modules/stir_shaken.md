@@ -369,7 +369,7 @@ The maximum number of seconds that the value in the Date header field can be old
 
 ```opensips
 ...
-modparam("stir\_shaken", "auth\_date\_freshness", 300)
+modparam("stir_shaken", "auth_date_freshness", 300)
 ...
 ```
 ### Set `verify_date_freshness` parameter
@@ -378,7 +378,7 @@ The maximum number of seconds that the value in the Date header field can be old
 
 ```opensips
 ...
-modparam("stir\_shaken", "verify\_date\_freshness", 300)
+modparam("stir_shaken", "verify_date_freshness", 300)
 ...
 ```
 ### Set `ca_list` parameter
@@ -387,7 +387,7 @@ Path to a file containing trusted CA certificates for the verifier. The certific
 
 ```opensips
 ...
-modparam("stir\_shaken", "ca\_list", "/stir\_certs/ca\_list.pem")
+modparam("stir_shaken", "ca_list", "/stir_certs/ca_list.pem")
 ...
 ```
 ### Set `ca_dir` parameter
@@ -396,7 +396,7 @@ Path to a directory containing trusted CA certificates for the verifier. The cer
 
 ```opensips
 ...
-modparam("stir\_shaken", "ca\_dir", "/stir\_certs/cas")
+modparam("stir_shaken", "ca_dir", "/stir_certs/cas")
 ...
 ```
 ### Set `crl_list` parameter
@@ -405,7 +405,7 @@ Path to a file containing certificate revocation lists (CRLs) for the verifier.
 
 ```opensips
 ...
-modparam("stir\_shaken", "crl\_list", "/stir\_certs/crl\_list.pem")
+modparam("stir_shaken", "crl_list", "/stir_certs/crl_list.pem")
 ...
 ```
 ### Set `crl_dir` parameter
@@ -414,7 +414,7 @@ Path to a directory containing certificate revocation lists (CRLs) for the verif
 
 ```opensips
 ...
-modparam("stir\_shaken", "crl\_dir", "/stir\_certs/crls")
+modparam("stir_shaken", "crl_dir", "/stir_certs/crls")
 ...
 ```
 ### Set `e164_strict_mode` parameter
@@ -423,7 +423,7 @@ Require a leading "+" to be present in the originating/destination SHAKEN identi
 
 ```opensips
 ...
-modparam("stir\_shaken", "e164\_strict\_mode", 1)
+modparam("stir_shaken", "e164_strict_mode", 1)
 ...
 ```
 ### Set `e164_max_length` parameter
@@ -432,7 +432,7 @@ This parameter allows the 15-digit number length restriction of the E.164 format
 
 ```opensips
 ...
-modparam("stir\_shaken", "e164\_max\_length", 16)
+modparam("stir_shaken", "e164_max_length", 16)
 ...
 ```
 ### Set `require_date_hdr` parameter
@@ -441,7 +441,7 @@ Specifies whether the Date header is mandatory when doing verification with the 
 
 ```opensips
 ...
-modparam("stir\_shaken", "require\_date\_hdr", 0)
+modparam("stir_shaken", "require_date_hdr", 0)
 ...
 ```
 ### `stir_shaken_auth()` usage
@@ -450,7 +450,7 @@ This function performs the steps of an authentication service. Before calling th
 
 ```opensips
 ...
-stir\_shaken\_auth("A", "4437c7eb-8f7a-4f0e-a863-f53a0e60251a",
+stir_shaken_auth("A", "4437c7eb-8f7a-4f0e-a863-f53a0e60251a",
 	$var(cert), $var(privKey), "https://certs.example.org/cert.pem");
 ...
 ```
@@ -460,9 +460,9 @@ This function performs the steps of an verification service.
 
 ```opensips
 ...
-$var(rc) = stir\_shaken\_verify($var(cert), $var(err\_code), $var(err\_reason));
+$var(rc) = stir_shaken_verify($var(cert), $var(err_code), $var(err_reason));
 if ($var(rc) < -1) {
-	send\_reply($var(err\_sip\_code), $var(err\_sip\_reason));
+	send_reply($var(err_sip_code), $var(err_sip_reason));
 	exit;
 }
 ...
@@ -473,7 +473,7 @@ This function checks the Identity header in order to validate the STIR/SHAKEN in
 
 ```opensips
 ...
-if (stir\_shaken\_check()) {
+if (stir_shaken_check()) {
 	xlog("forwarding call to stir/shaken verification service\\n");
 	...
 }
@@ -486,10 +486,10 @@ This function checks if the current time falls within the given certificate's va
 ```opensips
 ...
 # update expired cached certificates
-cache\_fetch("local", $identity(x5u), $var(cert));
-if (!stir\_shaken\_check\_cert($var(cert))) {
-	rest\_get($identity(x5u), $var(cert));
-	cache\_store("local", $identity(x5u), $var(cert));
+cache_fetch("local", $identity(x5u), $var(cert));
+if (!stir_shaken_check_cert($var(cert))) {
+	rest_get($identity(x5u), $var(cert));
+	cache_store("local", $identity(x5u), $var(cert));
 }
 ...
 ```
@@ -499,9 +499,9 @@ This function add P-Identity-Bypass header with token value at the end of SIP he
 
 ```opensips
 ...
-if ( is\_method("INVITE") && !has\_totag()) {
-	# equivalent to sipmsgops module: append\_hf("P-Identity-Bypass: OSIP99-1234567890ABCDEF\\r\\n");
-	stir\_shaken\_disengagement("OSIP99-1234567890ABCDEF");
+if ( is_method("INVITE") && !has_totag()) {
+	# equivalent to sipmsgops module: append_hf("P-Identity-Bypass: OSIP99-1234567890ABCDEF\\r\\n");
+	stir_shaken_disengagement("OSIP99-1234567890ABCDEF");
 }
 ...
 ```
@@ -512,9 +512,9 @@ This is a read-only pseudo-variable that provides access to the parsed informati
 ```opensips
 ...
 	# acquire the certificate to use for the verification process
-	$var(rc) = rest\_get($identity(x5u), $var(cert));
+	$var(rc) = rest_get($identity(x5u), $var(cert));
 	if ($var(rc) < 0) {
-		send\_reply(436, "Bad Identity Info");
+		send_reply(436, "Bad Identity Info");
 		exit;
 	}
 	...

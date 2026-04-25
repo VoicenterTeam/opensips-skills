@@ -65,7 +65,7 @@ The dynamic routing implementation for OpenSIPS is designed with the following p
 
 DR engine uses several concepts in order to define how the routing should be done (describing all the dependencies between destinations and routing rules).
 
-#### 1.1.4.1.�Destination/Gateways
+#### 1.1.4.1.Destination/Gateways
 
 These are the end SIP entities where actually the traffic needs to be sent after routing. They are stored in a table called “dr_gateways”. Gateway addresses are stored in a separate table because of the need to access them independent of Dynamic Routing processing (e.g., adding/ removing gateway PRI prefix before/after performing other operation -- receiving/relaying to gateway).
 
@@ -87,7 +87,7 @@ In DR, a gateway is defined by:
     
 The Gateways are to be used from the routing rule or from the carrier definition. They are all the time referred by their ID.
 
-#### 1.1.4.2.�Carriers
+#### 1.1.4.2.Carriers
 
 The carrier concept is used if you need to group gateways in order to have a better control on how the GWs will be used by DR rules; like in what order the GWs will be used.
 
@@ -107,7 +107,7 @@ In DR, a carrier is defined by:
     
 The Carriers are to be used only from the routing rule definition. They are all the time referred by their ID.
 
-#### 1.1.4.3.�Routing Rules
+#### 1.1.4.3.Routing Rules
 
 These are the actual rules which control the routing. Using different criterias (prefix, time, priority, etc), they will decide to which gateways the call will be sent.
 
@@ -137,7 +137,7 @@ More on time recurrence:
     
 *   When an attribute is not specified, the corresponding place must be left empty, whenever another attribute that follows in the list has to be specified.
     
-### 1.1.5.�Routing Rule Processing
+### 1.1.5.Routing Rule Processing
 
 The module can be used to find out which is the best gateway to use for new calls terminated to PSTN. The algorithm to select the rule is as follows:
 
@@ -155,7 +155,7 @@ The module can be used to find out which is the best gateway to use for new call
     
 If no rule is found to match the selection criteria an default action must be taken (e.g., error response sent back). If the gateway in the chain has no prefix the request is forwarded without adding any prefix to the request URI.
 
-### 1.1.6.�Probing and Disabling destinations
+### 1.1.6.Probing and Disabling destinations
 
 The module has the capability to monitor the status of the destinations by doing SIP probing (sending SIP requests like OPTIONS).
 
@@ -199,7 +199,7 @@ AVP to be populate with the ID string for the carrier the current GW belongs to.
 
 ```opensips
 ...
-modparam("drouting", "carrier\_id\_avp", '$avp(carrier_id)')
+modparam("drouting", "carrier_id_avp", '$avp(carrier_id)')
 ...
 ```
 ### `cluster_id` (integer)
@@ -267,7 +267,7 @@ The name of the table containing partition definitions. To be used with `use_par
 
 ```opensips
 ...
-modparam("drouting", "db\_partitions\_table", "partition\_defs")
+modparam("drouting", "db_partitions_table", "partition_defs")
 ...
 ```
 ### `db_partitions_url` (string)
@@ -280,7 +280,7 @@ The url to the database containing partition-specific information. (partition-sp
 
 ```opensips
 ...
-modparam("drouting", "db\_partitions\_url", "mysql://user:password@localhost/opensips\_partitions")
+modparam("drouting", "db_partitions_url", "mysql://user:password@localhost/opensips_partitions")
 ...
 ```
 ### `db_url` (string)
@@ -293,7 +293,7 @@ The database url.
 
 ```opensips
 ...
-modparam("drouting", "db\_url",
+modparam("drouting", "db_url",
 	"mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
@@ -307,7 +307,7 @@ Group to be used if the caller (FROM user) is not found in the GROUP table.
 
 ```opensips
 ...
-modparam("drouting", "default\_group", 4)
+modparam("drouting", "default_group", 4)
 ...
 ```
 ### `define_blacklist` (string)
@@ -326,10 +326,10 @@ Multiple instances of this param are allowed.
 
 ```opensips
 ...
-modparam("drouting", "define\_blacklist", 'bl\_name= 3,5,25,23')
-modparam("drouting", "define\_blacklist", 'list= 4,2')
-modparam("drouting", "define\_blacklist", 'pstn:list2 = 5,6')
-modparam("drouting", "define\_blacklist", 'pstn:list3 = 7,8')
+modparam("drouting", "define_blacklist", 'bl_name= 3,5,25,23')
+modparam("drouting", "define_blacklist", 'list= 4,2')
+modparam("drouting", "define_blacklist", 'pstn:list2 = 5,6')
+modparam("drouting", "define_blacklist", 'pstn:list3 = 7,8')
 ...
 ```
 ### `drc_table` (string)
@@ -342,7 +342,7 @@ The name of the db table storing definitions of the carriers that will be used d
 
 ```opensips
 ...
-modparam("drouting", "drc\_table", "my\_dr\_carriers")
+modparam("drouting", "drc_table", "my_dr_carriers")
 ...
 ```
 ### `drd_table` (string)
@@ -355,7 +355,7 @@ The name of the db table storing gateway addresses.
 
 ```opensips
 ...
-modparam("drouting", "drd\_table", "dr\_gateways")
+modparam("drouting", "drd_table", "dr_gateways")
 ...
 ```
 ### `drg_domain_col` (string)
@@ -390,7 +390,7 @@ The name of the db table storing groups.
 
 ```opensips
 ...
-modparam("drouting", "drg\_table", "groups")
+modparam("drouting", "drg_table", "groups")
 ...
 ```
 ### `drg_user_col` (string)
@@ -414,7 +414,7 @@ The name of the db table storing routing rules.
 
 ```opensips
 ...
-modparam("drouting", "drr\_table", "rules")
+modparam("drouting", "drr_table", "rules")
 ...
 ```
 ### `enable_restart_persistency` (integer)
@@ -431,20 +431,20 @@ NOTE: A reload will update the cached data.
 
 ```opensips
 ...
-modparam("drouting", "enable\_restart\_persistency", yes)
+modparam("drouting", "enable_restart_persistency", yes)
 ...
 ```
 ### `extra_id_chars` (string)
 
 A set of extra characters to be allowed in both Gateway and Carrier unique string identifiers, on top of alphanumeric characters.
 
-*Default value is \_-..*
+*Default value is _-..*
 
 **Example.** Set the `extra_id_chars` parameter.
 
 ```opensips
 ...
-modparam("drouting", "extra\_id\_chars", ":\_-.")
+modparam("drouting", "extra_id_chars", ":_-.")
 ...
 ```
 ### `extra_prefix_chars` (string)
@@ -457,7 +457,7 @@ List of ASCII (0-127) characters to be additionally accepted in the prefixes. By
 
 ```opensips
 ...
-modparam("drouting", "extra\_prefix\_chars", "#-%")
+modparam("drouting", "extra_prefix_chars", "#-%")
 ...
 ```
 ### `force_dns` (integer)
@@ -470,7 +470,7 @@ Force DNS resolving of GW/destination names (if not IPs) during startup. If not 
 
 ```opensips
 ...
-modparam("drouting", "force\_dns", 0)
+modparam("drouting", "force_dns", 0)
 ...
 ```
 ### `generate_data_checksum` (integer)
@@ -481,7 +481,7 @@ If enabled, it will generate a checksum ( MD5 ) for drouting loaded data, attach
 
 ```opensips
 ...
-modparam("drouting", "generate\_data\_checksum", 1)
+modparam("drouting", "generate_data_checksum", 1)
 ...
 ```
 ### `gw_id_avp` (string)
@@ -521,8 +521,8 @@ The name of the avp for storing sockets for alternative destinations defined by 
 
 ```opensips
 ...
-modparam("drouting", "gw\_sock\_avp", '$avp(dr_sock)')
-modparam("drouting", "gw\_sock\_avp", '$avp(77)')
+modparam("drouting", "gw_sock_avp", '$avp(dr_sock)')
+modparam("drouting", "gw_sock_avp", '$avp(77)')
 ...
 ```
 ### `gw_socket_filter_mode` (string)
@@ -562,7 +562,7 @@ modparam("drouting", "no_concurrent_reload", 1)
 ```
 ### `partition_id_pvar` (pvar)
 
-Variable which will store the name of the name partition when _wildcard(\*)_ operatior is used. _Use\_partitions_ must be set in order to use this parameter.
+Variable which will store the name of the name partition when _wildcard(\*)_ operatior is used. _Use_partitions_ must be set in order to use this parameter.
 
 *Default value is null(not used).*
 
@@ -572,7 +572,7 @@ Variable which will store the name of the name partition when _wildcard(\*)_ ope
 
 ```opensips
 ...
-modparam("drouting", "partition\_id\_pvar", "$var(matched\_partition)")
+modparam("drouting", "partition_id_pvar", "$var(matched_partition)")
 ...
 ```
 ### `persistent_state` (integer)
@@ -683,14 +683,14 @@ This parameter may be set multiple times (each definition creates a new mapping)
 
 ```opensips
 ...
-# first, set the "dr\_rules" table name to the name of your query
-modparam("drouting", "drr\_table", "MY\_RULES\_QUERY")
+# first, set the "dr_rules" table name to the name of your query
+modparam("drouting", "drr_table", "MY_RULES_QUERY")
 
-# next, instruct drouting to load both 'dr\_rules\_a' and 'dr\_rules\_b',
+# next, instruct drouting to load both 'dr_rules_a' and 'dr_rules_b',
 # then merge all of their rules
-modparam("drouting", "rule\_tables\_query", "
-	MY\_RULES\_QUERY:
-		SELECT 'dr\_rules\_a' UNION SELECT 'dr\_rules\_b'")
+modparam("drouting", "rule_tables_query", "
+	MY_RULES_QUERY:
+		SELECT 'dr_rules_a' UNION SELECT 'dr_rules_b'")
 ...
 ```
 ### `ruri_avp` (string)
@@ -728,7 +728,7 @@ Flag to configure whether to use partitions for routing. If this flag is set the
 
 ```opensips
 ...
-modparam("drouting", "use\_partitions", 1)
+modparam("drouting", "use_partitions", 1)
 ...
 ```
 
@@ -1387,7 +1387,7 @@ modparam("drouting", "cluster_id", 9)
 ```
 ### Example 1.25. Set `cluster_sharing_tag` parameter
 
-The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform the self-triggered actions in the module. Such actions may be the gateway probing (see also the [cluster_probing_mode](#param_cluster_probing_mode "1.3.26.�cluster_probing_mode (string)") parameter) or sharing the gateway/carrier status changes. If defined, only the node with active status of this tag will perform the actions (pinging and sharing status). The [cluster_id](#param_cluster_id "1.3.24.�cluster_id (integer)") must be defined for this option to work. This is an optional parameter. If not set, all the nodes in the cluster will share the status changes.
+The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform the self-triggered actions in the module. Such actions may be the gateway probing (see also the [cluster_probing_mode](#param_cluster_probing_mode "1.3.26.cluster_probing_mode (string)") parameter) or sharing the gateway/carrier status changes. If defined, only the node with active status of this tag will perform the actions (pinging and sharing status). The [cluster_id](#param_cluster_id "1.3.24.cluster_id (integer)") must be defined for this option to work. This is an optional parameter. If not set, all the nodes in the cluster will share the status changes.
 
 ```opensips
 # only the node with the active "vip" sharing tag will perform pinging
@@ -1397,7 +1397,7 @@ modparam("drouting", "cluster_sharing_tag", "vip")
 ```
 ### Example 1.26. Set `cluster_probing_mode` parameter
 
-This paramter controls how the probing/pinging should be done when using the clustering support. It is about which node in the cluster pings which gateway/destination. The [cluster_id](#param_cluster_id "1.3.24.�cluster_id (integer)") must be defined for this option to work.
+This paramter controls how the probing/pinging should be done when using the clustering support. It is about which node in the cluster pings which gateway/destination. The [cluster_id](#param_cluster_id "1.3.24.cluster_id (integer)") must be defined for this option to work.
 
 ```opensips
 # only the node with the active "vip" sharing tag will perform pinging

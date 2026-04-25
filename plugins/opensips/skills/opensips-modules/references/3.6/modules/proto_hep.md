@@ -16,15 +16,15 @@ Reference for the OpenSIPs 3.6 proto_hep module. Read this file when configuring
 
 ## Overview
 
-The **proto\_hep** module is a transport module which implements hepV1 and hepV2 UDP-based communication and hepV3 TCP-based communication. It also offers an API with which you can register callbacks which are called after the HEP header is parsed and also can pack sip messages to HEP messages.The unpacking part is done internally.
+The **proto_hep** module is a transport module which implements hepV1 and hepV2 UDP-based communication and hepV3 TCP-based communication. It also offers an API with which you can register callbacks which are called after the HEP header is parsed and also can pack sip messages to HEP messages.The unpacking part is done internally.
 
 Once loaded, you will be able to define HEP listeners in your configuration file by adding their IP and, optionally, a listening port. You can define both TCP, UDP, and TLS listeners. On UDP you will be able to receive HEP v1, v2 and v3 packets, on TCP and TLS only HEPv3.
 
 ...
 #HEPv3 listener
-socket= hep\_tcp:127.0.0.1:6061 		# change the listening IP
+socket= hep_tcp:127.0.0.1:6061 		# change the listening IP
 #HEPv1, v2, v3 listener
-socket= hep\_udp:127.0.0.1:6061 		# change the listening IP
+socket= hep_udp:127.0.0.1:6061 		# change the listening IP
 ...
 
 ## Dependencies
@@ -100,7 +100,7 @@ modparam("proto_hep", "hep_capture_id", 234)
 ```
 ### `hep_id` (string)
 
-Specify a destination for HEP packets and the version of HEP protocol used. All parameters inside **hep\_id** must be separated by **;**. The parameters are given in key-value format, the possible keys being **uri**, **transport** and **version**, except destiantion's URI which doesn't have a key and is in **host:port** . **transport** key can be **TCP**, **UDP** or **TLS**. **TCP** and **TLS** works only for HEP version 3. **Version** is the hep protocol version and can be **1**, **2** or **3**. HEPv1 and HEPv2 can use only UDP. HEPv3 can use TCP, UDP and TLS having the default set to TCP. If no hep version defined, the default is version 3 with TCP and TLS.
+Specify a destination for HEP packets and the version of HEP protocol used. All parameters inside **hep_id** must be separated by **;**. The parameters are given in key-value format, the possible keys being **uri**, **transport** and **version**, except destiantion's URI which doesn't have a key and is in **host:port** . **transport** key can be **TCP**, **UDP** or **TLS**. **TCP** and **TLS** works only for HEP version 3. **Version** is the hep protocol version and can be **1**, **2** or **3**. HEPv1 and HEPv2 can use only UDP. HEPv3 can use TCP, UDP and TLS having the default set to TCP. If no hep version defined, the default is version 3 with TCP and TLS.
 
 *Default value is NO default value.*
 
@@ -181,7 +181,7 @@ modparam("proto_hep", "hep_send_timeout", 200)
 ```
 ### `homer5_delim` (string)
 
-In case **homer5\_on** is set (different than 0), with this parameter you will be able to set the delmiter between different payload parts.
+In case **homer5_on** is set (different than 0), with this parameter you will be able to set the delmiter between different payload parts.
 
 *Default value is :.*
 
@@ -192,7 +192,7 @@ modparam("proto_hep", "homer5_delim", "##")
 ```
 ### `homer5_on` (integer)
 
-Specify how the data should be encapsulated in the HEP packet. If set to _0_, then the JSON based HOMER 6 format will be used. Otherwise, if set to anything different than _0_, the plain text HOMER 5 format will be used for encapsulation. On the capturing node, this parameter affects the behavior of the _report\_capture_ function from the [sipcapture](sipcapture#func_report_capture) module.
+Specify how the data should be encapsulated in the HEP packet. If set to _0_, then the JSON based HOMER 6 format will be used. Otherwise, if set to anything different than _0_, the plain text HOMER 5 format will be used for encapsulation. On the capturing node, this parameter affects the behavior of the _report_capture_ function from the [sipcapture](sipcapture#func_report_capture) module.
 
 *Default value is 1.*
 

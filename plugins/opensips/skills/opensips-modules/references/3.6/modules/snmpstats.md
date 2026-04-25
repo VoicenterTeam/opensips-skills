@@ -123,7 +123,7 @@ The SNMPStats module monitors the number of active dialogs. If the number of act
 
 ```opensips
 ...
-  modparam("snmpstats", "dlg\_major\_threshold", 750)
+  modparam("snmpstats", "dlg_major_threshold", 750)
 ...
 ```
 ### `dlg_minor_threshold` (integer)
@@ -136,7 +136,7 @@ The SNMPStats module monitors the number of active dialogs. If the number of act
 
 ```opensips
 ...
-  modparam("snmpstats", "dlg\_minor\_threshold", 500)
+  modparam("snmpstats", "dlg_minor_threshold", 500)
 ...
 ```
 ### `sipEntityType` (string)
@@ -343,22 +343,22 @@ modparam("snmpstats", "MsgQueueMajorThreshold", 5000)
 If this parameter is not set, then there will be no major alarm monitoring.
 ### Setting the `dlg_minor_threshold` parameter
 
-The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a minor threshold, the SNMPStats module will send out an openserDialogLimitMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the dlg\_minor\_threshold parameter.
+The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a minor threshold, the SNMPStats module will send out an openserDialogLimitMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the dlg_minor_threshold parameter.
 
 ```opensips
 ...
-  modparam("snmpstats", "dlg\_minor\_threshold", 500)
+  modparam("snmpstats", "dlg_minor_threshold", 500)
 ...
 ```
 
 If this parameter is not set, then there will be no minor alarm monitoring.
 ### Setting the `dlg_major_threshold` parameter
 
-The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a major threshold, the SNMPStats module will send out an openserDialogLimitMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the dlg\_major\_threshold parameter.
+The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a major threshold, the SNMPStats module will send out an openserDialogLimitMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the dlg_major_threshold parameter.
 
 ```opensips
 ...
-  modparam("snmpstats", "dlg\_major\_threshold", 750)
+  modparam("snmpstats", "dlg_major_threshold", 750)
 ...
 ```
 

@@ -16,7 +16,7 @@ Reference for the OpenSIPs 3.6 uuid module. Read this file when configuring or d
 
 ## Overview
 
-This module provides a way to generate universally unique identifiers (UUID) as specified in RFC 4122. The UUID is provided as a string representation by reading the [$uuid](#pv_uuid "1.4.1.�$uuid") pseudo-variable or calling the [uuid()](#func_uuid "1.5.1.� uuid(out_var, [version], [namespace], [name])") script function.
+This module provides a way to generate universally unique identifiers (UUID) as specified in RFC 4122. The UUID is provided as a string representation by reading the [$uuid](#pv_uuid "1.4.1.$uuid") pseudo-variable or calling the [uuid()](#func_uuid "1.5.1. uuid(out_var, [version], [namespace], [name])") script function.
 
 ## Dependencies
 

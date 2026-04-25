@@ -27,9 +27,9 @@ The module does not implement any actions on blocking - it just simply reports t
 
 There are 2 ways of using this module (as detecting flood attacks and as taking the right action to limit the impact on the system):
 
-*   _manual_ - from routing script you can force the check of the source IP of an incoming requests, using "pike\_check\_req" function. Note that this checking works only for SIP requests and you can decide (based on scripting logic) what source IPs to be monitored and what action to be taken when a flood is detected.
+*   _manual_ - from routing script you can force the check of the source IP of an incoming requests, using "pike_check_req" function. Note that this checking works only for SIP requests and you can decide (based on scripting logic) what source IPs to be monitored and what action to be taken when a flood is detected.
     
-*   _automatic_ - the module will install internal hooks to catch all incoming requests and replies (even if not well formed from SIP point of view) - more or less the module will monitor all incoming packages (from the network) on the SIP sockets. Each time the source IP of a package needs to be analyse (to see if trusted or not), the module will run a script route - see "check\_route" module parameter -, where, based on custom logic, you can decide if that IP needs to be monitored for flooding or not. As action, when flood is detected, the module will automatically drop the packages.
+*   _automatic_ - the module will install internal hooks to catch all incoming requests and replies (even if not well formed from SIP point of view) - more or less the module will monitor all incoming packages (from the network) on the SIP sockets. Each time the source IP of a package needs to be analyse (to see if trusted or not), the module will run a script route - see "check_route" module parameter -, where, based on custom logic, you can decide if that IP needs to be monitored for flooding or not. As action, when flood is detected, the module will automatically drop the packages.
 
 ## Dependencies
 
@@ -53,7 +53,7 @@ The name of the script route to be triggers (in automatic way) when a package is
 
 ```opensips
 ...
-modparam("pike", "check\_route", "pike")
+modparam("pike", "check_route", "pike")
 ...
 route[pike]{
     if ($si==111.222.111.222)  /*trusted, do not check it*/
@@ -72,7 +72,7 @@ Log level to be used by module to auto report the blocking (only first time) and
 
 ```opensips
 ...
-modparam("pike", "pike\_log\_level", -1)
+modparam("pike", "pike_log_level", -1)
 ...
 ```
 ### `remove_latency` (integer)
@@ -81,18 +81,18 @@ For how long the IP address will be kept in memory after the last request from t
 
 *Default value is 120.*
 
-**Notes:** Note: If the _remove\_latency_ value is lower than _sampling\_time\_unit_ value, nodes might expire before being unblocked, therefore losing some UNBLOCK events. In order to prevent this, if the _remove\_latency_ is lower, OpenSIPS internally forces its value to _sampling\_time\_unit + 1_.
+**Notes:** Note: If the _remove_latency_ value is lower than _sampling_time_unit_ value, nodes might expire before being unblocked, therefore losing some UNBLOCK events. In order to prevent this, if the _remove_latency_ is lower, OpenSIPS internally forces its value to _sampling_time_unit + 1_.
 
 **Example.** 130.
 
 ```opensips
 ...
-modparam("pike", "remove\_latency", 130)
+modparam("pike", "remove_latency", 130)
 ...
 ```
 ### `reqs_density_per_unit` (integer)
 
-How many requests should be allowed per sampling\_time\_unit before blocking all the incoming request from that IP. Practically, the blocking limit is between ( let's have x=reqs\_density\_per\_unit) x and 3\*x for IPv4 addresses and between x and 8\*x for ipv6 addresses.
+How many requests should be allowed per sampling_time_unit before blocking all the incoming request from that IP. Practically, the blocking limit is between ( let's have x=reqs_density_per_unit) x and 3\*x for IPv4 addresses and between x and 8\*x for ipv6 addresses.
 
 *Default value is 30.*
 
@@ -100,7 +100,7 @@ How many requests should be allowed per sampling\_time\_unit before blocking all
 
 ```opensips
 ...
-modparam("pike", "reqs\_density\_per\_unit", 30)
+modparam("pike", "reqs_density_per_unit", 30)
 ...
 ```
 ### `sampling_time_unit` (integer)
@@ -115,7 +115,7 @@ Time period used for sampling (or the sampling accuracy ;-) ). The smaller the b
 
 ```opensips
 ...
-modparam("pike", "sampling\_time\_unit", 10)
+modparam("pike", "sampling_time_unit", 10)
 ...
 ```
 
@@ -137,7 +137,7 @@ Process the source IP of the current request and returns false if the IP was exc
 
 ```opensips
 ...
-if (!pike\_check\_req()) { exit; };
+if (!pike_check_req()) { exit; };
 ...
 ```
 
@@ -185,7 +185,7 @@ Set `sampling_time_unit` parameter
 
 ```opensips
 ...
-modparam("pike", "sampling\_time\_unit", 10)
+modparam("pike", "sampling_time_unit", 10)
 ...
 ```
 ### Set `reqs_density_per_unit` parameter
@@ -194,7 +194,7 @@ Set `reqs_density_per_unit` parameter
 
 ```opensips
 ...
-modparam("pike", "reqs\_density\_per\_unit", 30)
+modparam("pike", "reqs_density_per_unit", 30)
 ...
 ```
 ### Set `remove_latency` parameter
@@ -203,7 +203,7 @@ Set `remove_latency` parameter
 
 ```opensips
 ...
-modparam("pike", "remove\_latency", 130)
+modparam("pike", "remove_latency", 130)
 ...
 ```
 ### Set `check_route` parameter
@@ -212,7 +212,7 @@ Set `check_route` parameter
 
 ```opensips
 ...
-modparam("pike", "check\_route", "pike")
+modparam("pike", "check_route", "pike")
 ...
 route\[pike\]{
     if ($si==111.222.111.222)  /*trusted, do not check it*/
@@ -227,7 +227,7 @@ Set `pike_log_level` parameter
 
 ```opensips
 ...
-modparam("pike", "pike\_log\_level", -1)
+modparam("pike", "pike_log_level", -1)
 ...
 ```
 ### `pike_check_req` usage
@@ -236,6 +236,6 @@ modparam("pike", "pike\_log\_level", -1)
 
 ```opensips
 ...
-if (!pike\_check\_req()) { exit; };
+if (!pike_check_req()) { exit; };
 ...
 ```

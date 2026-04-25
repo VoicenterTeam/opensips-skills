@@ -44,7 +44,7 @@ Country Code that the first part of the number from P-Asserted-Identity is teste
 **Example.** +4.
 
 ```opensips
-modparam("sip\_i", "country\_code", "+4")
+modparam("sip_i", "country_code", "+4")
 ```
 ### `default_part_headers` (string)
 
@@ -55,7 +55,7 @@ The default set of headers (fully defined, including the header termination) to 
 **Example.** Content-Disposition:signal;handling=required\r\n.
 
 ```opensips
-modparam("sip\_i", "default\_part\_headers", "Content-Disposition:signal;handling=required\r\n")
+modparam("sip_i", "default_part_headers", "Content-Disposition:signal;handling=required\r\n")
 ```
 ### `isup_mime_str` (string)
 
@@ -66,18 +66,18 @@ The string to be used for the Content-Type header field of the ISUP MIME body wh
 **Example.** application/ISUP;base=itu-t92+;version=itu-t.
 
 ```opensips
-modparam("sip\_i", "isup\_mime\_str", "application/ISUP;base=itu-t92+;version=itu-t")
+modparam("sip_i", "isup_mime_str", "application/ISUP;base=itu-t92+;version=itu-t")
 ```
 ### `param_subfield_separator` (string)
 
-The character to be used as separator in the subname of the _$isup\_param_ and _$isup\_param\_str_ pseudovariables between the ISUP parameter name and subfield name.
+The character to be used as separator in the subname of the _$isup_param_ and _$isup_param_str_ pseudovariables between the ISUP parameter name and subfield name.
 
 *Default value is |.*
 
 **Example.** :.
 
 ```opensips
-modparam("sip\_i", "param\_subfield\_separator", ":")
+modparam("sip_i", "param_subfield_separator", ":")
 ```
 
 ## Exported Functions

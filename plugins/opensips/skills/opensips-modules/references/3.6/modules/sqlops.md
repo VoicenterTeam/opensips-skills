@@ -39,7 +39,7 @@ Name of column containing the attribute name (AVP name).
 **Example.** attribute.
 
 ```opensips
-modparam("sqlops","attribute\_column","attribute")
+modparam("sqlops","attribute_column","attribute")
 ```
 ### `bigint_to_str` (integer)
 
@@ -51,19 +51,19 @@ Controls bigint conversion. By default bigint values are returned as int. If the
 
 ```opensips
 # Return bigint as string
-modparam("sqlops","bigint\_to\_str",1)
+modparam("sqlops","bigint_to_str",1)
 ```
 ### `db_scheme` (string)
 
-Definition of a DB scheme to be used for accessing a non-standard User Preference -like table. Definition of a DB scheme. Scheme syntax is: *db\_scheme = name':'element\[';'element\]\* *element* = 'uuid\_col='string 'username\_col='string 'domain\_col='string 'value\_col='string 'value\_type='('integer'|'string') 'table='string
+Definition of a DB scheme to be used for accessing a non-standard User Preference -like table. Definition of a DB scheme. Scheme syntax is: *db_scheme = name':'element\[';'element\]\* *element* = 'uuid_col='string 'username_col='string 'domain_col='string 'value_col='string 'value_type='('integer'|'string') 'table='string
 
 *Default value is NULL.*
 
-**Example.** scheme1:table=subscriber;uuid\_col=uuid;value\_col=first\_name.
+**Example.** scheme1:table=subscriber;uuid_col=uuid;value_col=first_name.
 
 ```opensips
-modparam("sqlops","db\_scheme",
-"scheme1:table=subscriber;uuid\_col=uuid;value\_col=first\_name")
+modparam("sqlops","db_scheme",
+"scheme1:table=subscriber;uuid_col=uuid;value_col=first_name")
 ```
 ### `db_url` (string)
 
@@ -77,9 +77,9 @@ DB URL for database connection. As the module allows the usage of multiple DBs (
 
 ```opensips
 # default URL
-modparam("sqlops","db\_url","mysql://user:passwd@host/database")
+modparam("sqlops","db_url","mysql://user:passwd@host/database")
 # an additional DB URL
-modparam("sqlops","db\_url","1 postgres://user:passwd@host2/opensips")
+modparam("sqlops","db_url","1 postgres://user:passwd@host2/opensips")
 ```
 ### `domain_column` (string)
 
@@ -90,18 +90,18 @@ Name of column containing the domain name.
 **Example.** domain.
 
 ```opensips
-modparam("sqlops","domain\_column","domain")
+modparam("sqlops","domain_column","domain")
 ```
 ### `ps_id_max_buf_len` (integer)
 
-The maximum size of the buffer used to build the query IDs which are used for managing the Prepare Statements when comes to the "sql\_select|update|insert|replace|delete()" functions If the size is exceeded (when trying to build the PS query ID), the PS support will be dropped for the query. If set to 0, the PS support will be completly disabled.
+The maximum size of the buffer used to build the query IDs which are used for managing the Prepare Statements when comes to the "sql_select|update|insert|replace|delete()" functions If the size is exceeded (when trying to build the PS query ID), the PS support will be dropped for the query. If set to 0, the PS support will be completly disabled.
 
 *Default value is 1024.*
 
 **Example.** 2048.
 
 ```opensips
-modparam("sqlops","ps\_id\_max\_buf\_len", 2048)
+modparam("sqlops","ps_id_max_buf_len", 2048)
 ```
 ### `type_column` (string)
 
@@ -128,7 +128,7 @@ If the domain part of the a SIP URI should be used for identifying an AVP in DB 
 **Example.** 1.
 
 ```opensips
-modparam("sqlops","use\_domain",1)
+modparam("sqlops","use_domain",1)
 ```
 ### `username_column` (string)
 
@@ -139,7 +139,7 @@ Name of column containing the username.
 **Example.** username.
 
 ```opensips
-modparam("sqlops","username\_column","username")
+modparam("sqlops","username_column","username")
 ```
 ### `usr_table` (string)
 
@@ -147,12 +147,12 @@ DB table to be used for user preferences (AVPs)
 
 *Default value is usr_preferences.*
 
-**Notes:** This parameter is optional, it's default value being “usr\_preferences”.
+**Notes:** This parameter is optional, it's default value being “usr_preferences”.
 
 **Example.** avptable.
 
 ```opensips
-modparam("sqlops","usr\_table","avptable")
+modparam("sqlops","usr_table","avptable")
 ```
 ### `uuid_column` (string)
 
@@ -163,7 +163,7 @@ Name of column containing the uuid (unique user id).
 **Example.** uuid.
 
 ```opensips
-modparam("sqlops","uuid\_column","uuid")
+modparam("sqlops","uuid_column","uuid")
 ```
 ### `value_column` (string)
 
@@ -347,13 +347,13 @@ Make a database query and store the result in AVPs.
 
 ```opensips
 ...
-sql\_query("SELECT password, ha1 FROM subscriber WHERE username='$tu'",
+sql_query("SELECT password, ha1 FROM subscriber WHERE username='$tu'",
 	"$avp(pass);$avp(hash)");
-sql\_query("DELETE FROM subscriber");
-sql\_query("DELETE FROM subscriber", , 2);
+sql_query("DELETE FROM subscriber");
+sql_query("DELETE FROM subscriber", , 2);
 
 $avp(id) = 2;
-sql\_query("DELETE FROM subscriber", , $avp(id));
+sql_query("DELETE FROM subscriber", , $avp(id));
 ...
 ```
 
@@ -377,13 +377,13 @@ Similar to sql_query(), it makes a generic raw database query and returns the re
 
 ```opensips
 ...
-sql\_query\_one("SELECT password, ha1 FROM subscriber WHERE username='$tU'",
+sql_query_one("SELECT password, ha1 FROM subscriber WHERE username='$tU'",
 	"$var(pass);$var(hash)");
 # $var(pass) or $var(hash) may be NULL if the corresponding columns
 # are not populated
 ...
-sql\_query\_one("SELECT value, type FROM usr\_preferences WHERE username='$fU' and attribute='cfna'",
-	"$var(cf\_uri);$var(type)");
+sql_query_one("SELECT value, type FROM usr_preferences WHERE username='$fU' and attribute='cfna'",
+	"$var(cf_uri);$var(type)");
 # the above query will return only one row, even if there are multiple `cfna`
 # attributes for the user
 ...
@@ -437,7 +437,7 @@ Function to perform a structured (not raw) SQL SELECT operation. The query is pe
 
 ```opensips
 ...
-sql\_select('["password","ha1"]', 'subscriber',
+sql_select('["password","ha1"]', 'subscriber',
 	'[ {"username": "$tu"}, {"domain": {"!=", null}}]', ,
 	'$avp(pass);$avp(hash)');
 ...
@@ -471,9 +471,9 @@ Similar to sql_select(), it makes a SELECT SQL query and returns the results, bu
 
 ```opensips
 ...
-sql\_select\_one('["value","type"]', 'usr\_preferences',
+sql_select_one('["value","type"]', 'usr_preferences',
 	'[ {"username": "$tu"}, {"attribute": "cfna"}]', ,
-	'$var(cf\_uri);$var(type)');
+	'$var(cf_uri);$var(type)');
 # the above query will return only one row, even if there are multiple `cfna`
 # attributes for the user
 ...
@@ -509,7 +509,7 @@ Function to perform a structured (not raw) SQL UPDATE operation. IMPORTANT: plea
 
 ```opensips
 ...
-sql\_update( '[{"password":"my\_secret"}]', 'subscriber',
+sql_update( '[{"password":"my_secret"}]', 'subscriber',
 	'[{"username": "$tu"}]');
 ...
 ```
@@ -523,9 +523,9 @@ Set `db_url` parameter
 ```opensips
 ...
 # default URL
-modparam("sqlops","db\_url","mysql://user:passwd@host/database")
+modparam("sqlops","db_url","mysql://user:passwd@host/database")
 # an additional DB URL
-modparam("sqlops","db\_url","1 postgres://user:passwd@host2/opensips")
+modparam("sqlops","db_url","1 postgres://user:passwd@host2/opensips")
 ...
 ```
 ### Set `usr_table` parameter
@@ -534,7 +534,7 @@ Set `usr_table` parameter
 
 ```opensips
 ...
-modparam("sqlops","usr\_table","avptable")
+modparam("sqlops","usr_table","avptable")
 ...
 ```
 ### Set `db_scheme` parameter
@@ -543,8 +543,8 @@ Set `db_scheme` parameter
 
 ```opensips
 ...
-modparam("sqlops","db\_scheme",
-"scheme1:table=subscriber;uuid\_col=uuid;value\_col=first\_name")
+modparam("sqlops","db_scheme",
+"scheme1:table=subscriber;uuid_col=uuid;value_col=first_name")
 ...
 ```
 ### Set `use_domain` parameter
@@ -553,7 +553,7 @@ Set `use_domain` parameter
 
 ```opensips
 ...
-modparam("sqlops","use\_domain",1)
+modparam("sqlops","use_domain",1)
 ...
 ```
 ### Set `ps_id_max_buf_len` parameter
@@ -562,7 +562,7 @@ Set `ps_id_max_buf_len` parameter
 
 ```opensips
 ...
-modparam("sqlops","ps\_id\_max\_buf\_len", 2048)
+modparam("sqlops","ps_id_max_buf_len", 2048)
 ...
 ```
 ### Set `bigint_to_str` parameter
@@ -572,7 +572,7 @@ Set `bigint_to_str` parameter
 ```opensips
 ...
 # Return bigint as string
-modparam("sqlops","bigint\_to\_str",1)
+modparam("sqlops","bigint_to_str",1)
 ...
 ```
 ### Set `uuid_column` parameter
@@ -581,7 +581,7 @@ Set `uuid_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","uuid\_column","uuid")
+modparam("sqlops","uuid_column","uuid")
 ...
 ```
 ### Set `username_column` parameter
@@ -590,7 +590,7 @@ Set `username_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","username\_column","username")
+modparam("sqlops","username_column","username")
 ...
 ```
 ### Set `domain_column` parameter
@@ -599,7 +599,7 @@ Set `domain_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","domain\_column","domain")
+modparam("sqlops","domain_column","domain")
 ...
 ```
 ### Set `attribute_column` parameter
@@ -608,7 +608,7 @@ Set `attribute_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","attribute\_column","attribute")
+modparam("sqlops","attribute_column","attribute")
 ...
 ```
 ### Set `value_column` parameter
@@ -617,7 +617,7 @@ Set `value_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","value\_column","value")
+modparam("sqlops","value_column","value")
 ...
 ```
 ### Set `type_column` parameter
@@ -626,7 +626,7 @@ Set `type_column` parameter
 
 ```opensips
 ...
-modparam("sqlops","type\_column","type")
+modparam("sqlops","type_column","type")
 ...
 ```
 ### `sql_query` usage
@@ -635,13 +635,13 @@ modparam("sqlops","type\_column","type")
 
 ```opensips
 ...
-sql\_query("SELECT password, ha1 FROM subscriber WHERE username='$tu'",
+sql_query("SELECT password, ha1 FROM subscriber WHERE username='$tu'",
 	"$avp(pass);$avp(hash)");
-sql\_query("DELETE FROM subscriber");
-sql\_query("DELETE FROM subscriber", , 2);
+sql_query("DELETE FROM subscriber");
+sql_query("DELETE FROM subscriber", , 2);
 
 $avp(id) = 2;
-sql\_query("DELETE FROM subscriber", , $avp(id));
+sql_query("DELETE FROM subscriber", , $avp(id));
 ...
 ```
 ### `sql_query_one` usage
@@ -650,13 +650,13 @@ sql\_query("DELETE FROM subscriber", , $avp(id));
 
 ```opensips
 ...
-sql\_query\_one("SELECT password, ha1 FROM subscriber WHERE username='$tU'",
+sql_query_one("SELECT password, ha1 FROM subscriber WHERE username='$tU'",
 	"$var(pass);$var(hash)");
 # $var(pass) or $var(hash) may be NULL if the corresponding columns
 # are not populated
 ...
-sql\_query\_one("SELECT value, type FROM usr\_preferences WHERE username='$fU' and attribute='cfna'",
-	"$var(cf\_uri);$var(type)");
+sql_query_one("SELECT value, type FROM usr_preferences WHERE username='$fU' and attribute='cfna'",
+	"$var(cf_uri);$var(type)");
 # the above query will return only one row, even if there are multiple \`cfna\`
 # attributes for the user
 ...
@@ -667,7 +667,7 @@ sql\_query\_one("SELECT value, type FROM usr\_preferences WHERE username='$fU' a
 
 ```opensips
 ...
-sql\_select('\["password","ha1"\]', 'subscriber',
+sql_select('\["password","ha1"\]', 'subscriber',
 	'\[ {"username": "$tu"}, {"domain": {"!=", null}}\]', ,
 	'$avp(pass);$avp(hash)');
 ...
@@ -678,9 +678,9 @@ sql\_select('\["password","ha1"\]', 'subscriber',
 
 ```opensips
 ...
-sql\_select\_one('\["value","type"\]', 'usr\_preferences',
+sql_select_one('\["value","type"\]', 'usr_preferences',
 	'\[ {"username": "$tu"}, {"attribute": "cfna"}\]', ,
-	'$var(cf\_uri);$var(type)');
+	'$var(cf_uri);$var(type)');
 # the above query will return only one row, even if there are multiple \`cfna\`
 # attributes for the user
 ...
@@ -691,7 +691,7 @@ sql\_select\_one('\["value","type"\]', 'usr\_preferences',
 
 ```opensips
 ...
-sql\_update( '\[{"password":"my\_secret"}\]', 'subscriber',
+sql_update( '\[{"password":"my_secret"}\]', 'subscriber',
 	'\[{"username": "$tu"}\]');
 ...
 ```
@@ -701,7 +701,7 @@ sql\_update( '\[{"password":"my\_secret"}\]', 'subscriber',
 
 ```opensips
 ...
-sql\_insert( 'cc\_agents', '\[{"agentid":"agentX"},{"skills":"info"},{"location":null},{"msrp\_location":"sip:agentX@opensips.com"},{"msrp\_max\_sessions":2}\]' );
+sql_insert( 'cc_agents', '\[{"agentid":"agentX"},{"skills":"info"},{"location":null},{"msrp_location":"sip:agentX@opensips.com"},{"msrp_max_sessions":2}\]' );
 ...
 ```
 ### `sql_delete` usage
@@ -710,7 +710,7 @@ sql\_insert( 'cc\_agents', '\[{"agentid":"agentX"},{"skills":"info"},{"location"
 
 ```opensips
 ...
-sql\_delete( 'subscriber', '\[{"username": "$tu"}\]');
+sql_delete( 'subscriber', '\[{"username": "$tu"}\]');
 ...
 ```
 ### `sql_avp_load` usage
@@ -719,17 +719,17 @@ sql\_delete( 'subscriber', '\[{"username": "$tu"}\]');
 
 ```opensips
 ...
-sql\_avp\_load("$fu", "$avp(678)");
-sql\_avp\_load("$ru/domain", "i/domain\_preferences");
-sql\_avp\_load("$avp(uuid)", "$avp(404fwd)/fwd\_table");
-sql\_avp\_load("$ru", "$avp(123)/$some\_scheme");
+sql_avp_load("$fu", "$avp(678)");
+sql_avp_load("$ru/domain", "i/domain_preferences");
+sql_avp_load("$avp(uuid)", "$avp(404fwd)/fwd_table");
+sql_avp_load("$ru", "$avp(123)/$some_scheme");
 
 # use DB URL id 3
-sql\_avp\_load("$ru", "$avp(1)", 3);
+sql_avp_load("$ru", "$avp(1)", 3);
 
-# precede all loaded AVPs by the "caller\_" prefix
-sql\_avp\_load("$ru", "$avp(100)", , "caller\_");
-xlog("Loaded: $avp(caller\_100)\\n");
+# precede all loaded AVPs by the "caller_" prefix
+sql_avp_load("$ru", "$avp(100)", , "caller_");
+xlog("Loaded: $avp(caller_100)\\n");
 
 ...
 ```
@@ -739,10 +739,10 @@ xlog("Loaded: $avp(caller\_100)\\n");
 
 ```opensips
 ...
-sql\_avp\_store("$tu", "$avp(678)");
-sql\_avp\_store("$ru/username", "$avp(email)");
+sql_avp_store("$tu", "$avp(678)");
+sql_avp_store("$ru/username", "$avp(email)");
 # use DB URL id 3
-sql\_avp\_store("$ru", "$avp(1)", 3);
+sql_avp_store("$ru", "$avp(1)", 3);
 ...
 ```
 ### `sql_avp_delete` usage
@@ -751,11 +751,11 @@ sql\_avp\_store("$ru", "$avp(1)", 3);
 
 ```opensips
 ...
-sql\_avp\_delete("$tu", "$avp(678)");
-sql\_avp\_delete("$ru/username", "$avp(email)");
-sql\_avp\_delete("$avp(uuid)", "$avp(404fwd)/fwd\_table");
+sql_avp_delete("$tu", "$avp(678)");
+sql_avp_delete("$ru/username", "$avp(email)");
+sql_avp_delete("$avp(uuid)", "$avp(404fwd)/fwd_table");
 # use DB URL id 3
-sql\_avp\_delete("$ru", "$avp(1)", 3);
+sql_avp_delete("$ru", "$avp(1)", 3);
 ...
 ```
 ### `async sql_query` usage
@@ -768,18 +768,18 @@ sql\_avp\_delete("$ru", "$avp(1)", 3);
 ...
 /* Example of a slow MySQL query - it should take around 5 seconds */
 async(
-	sql\_query(
-		"SELECT table\_name, table\_version, SLEEP(0.1) from version",
-		"$avp(tb\_name); $avp(tb\_ver); $avp(retcode)"),
-	my\_resume\_route);
+	sql_query(
+		"SELECT table_name, table_version, SLEEP(0.1) from version",
+		"$avp(tb_name); $avp(tb_ver); $avp(retcode)"),
+	my_resume_route);
 /* script execution is halted right after the async() call */
 }
 
 /* We will be called when data is ready - meanwhile, the worker is free */
-route \[my\_resume\_route\]
+route \[my_resume_route\]
 {
-	xlog("Results: \\n$(avp(tb\_name)\[\*\])\\n
--------------------\\n$(avp(tb\_ver)\[\*\])\\n
+	xlog("Results: \\n$(avp(tb_name)\[\*\])\\n
+-------------------\\n$(avp(tb_ver)\[\*\])\\n
 -------------------\\n$(avp(retcode)\[\*\])\\n");
 }
 ...
@@ -794,17 +794,17 @@ route \[my\_resume\_route\]
 ...
 /* Example of a slow MySQL query - it should take around 5 seconds */
 async(
-	sql\_query\_one(
-		"SELECT table\_name, table\_version, SLEEP(0.1) from version",
-		"$var(tb\_name); $var(tb\_ver); $var(retcode)"),
-	my\_resume\_route);
+	sql_query_one(
+		"SELECT table_name, table_version, SLEEP(0.1) from version",
+		"$var(tb_name); $var(tb_ver); $var(retcode)"),
+	my_resume_route);
 /* script execution is halted right after the async() call */
 }
 
 /* We will be called when data is ready - meanwhile, the worker is free */
-route \[my\_resume\_route\]
+route \[my_resume_route\]
 {
-	xlog("Result: $var(tb\_name) | $var(tb\_ver) | $(var(retcode)\\n");
+	xlog("Result: $var(tb_name) | $var(tb_ver) | $(var(retcode)\\n");
 }
 ...
 ```

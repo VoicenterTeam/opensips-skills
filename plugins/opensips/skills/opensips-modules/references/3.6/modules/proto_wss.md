@@ -27,7 +27,7 @@ socket=wss:10.0.0.1			# change with the listening IP
 socket=wss:10.0.0.1:5060	# change with the listening IP and port
 ...
 
-Besides that, you need to define the TLS parameters for securing the connection. This is done through the _tls\_mgm_ module interface, similar to the _proto\_tls_ module:
+Besides that, you need to define the TLS parameters for securing the connection. This is done through the _tls_mgm_ module interface, similar to the _proto_tls_ module:
 
 modparam("tls_mgm", "certificate", "/certs/biloxy.com/cert.pem")
 modparam("tls_mgm", "private_key", "/certs/biloxy.com/privkey.pem")
@@ -36,7 +36,7 @@ modparam("tls_mgm", "tls_method", "tlsv1")
 modparam("tls_mgm", "verify_cert", "1")
 modparam("tls_mgm", "require_cert", "1")
 
-Check the _tls\_mgm_ module documentation for more info.
+Check the _tls_mgm_ module documentation for more info.
 
 ## Dependencies
 
@@ -67,7 +67,7 @@ This checking is done only when comes to send SIP traffic via TLS and it is appl
 **Example.** 1.
 
 ```opensips
-modparam("proto\_wss", "cert\_check\_on\_conn\_reusage", 1)
+modparam("proto_wss", "cert_check_on_conn_reusage", 1)
 ```
 ### `listen` (string)
 
@@ -87,47 +87,47 @@ Controls whether the module should require the Origin header or not.
 **Example.** no.
 
 ```opensips
-modparam("proto\_wss", "require\_origin", no)
+modparam("proto_wss", "require_origin", no)
 ```
 ### `trace_destination` (string)
 
-Trace destination as defined in the tracing module. Currently the only tracing module is **proto\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about the client and server certificate, master key, http request and reply belonging to web socket protocol handshake and network layer information shall be sent.
+Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about the client and server certificate, master key, http request and reply belonging to web socket protocol handshake and network layer information shall be sent.
 
 *Default value is none(not defined).*
 
-**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\_hep**).
+**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**).
 
-**Example.** hep\_dest.
+**Example.** hep_dest.
 
 ```opensips
-modparam("proto\_hep", "hep\_id", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "hep_id", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("proto\_wss", "trace\_destination", "hep\_dest")
+modparam("proto_wss", "trace_destination", "hep_dest")
 ```
 ### `trace_filter_route` (string)
 
-Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace\_destination](#param_trace_destination "1.3.7.�trace_destination (string)") and trace must be on at the time this connection is opened).
+Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace_destination](#param_trace_destination "1.3.7.trace_destination (string)") and trace must be on at the time this connection is opened).
 
 *Default value is none(no route is set).*
 
-**Notes:** IMPORTANT: Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket\_in(ip)** (ip) and **$socket\_in(port)** (port) can be used.
+**Notes:** IMPORTANT: Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used.
 
-WARNING: IF [trace\_on](#param_trace_on "1.3.8.�trace\_on (int)") is set to 0 or tracing is deactived via the mi command [wss\_trace](#mi_wss_trace "1.4.1.� wss\_trace") this route won't be called.
+WARNING: IF [trace_on](#param_trace_on "1.3.8.trace_on (int)") is set to 0 or tracing is deactived via the mi command [wss_trace](#mi_wss_trace "1.4.1. wss_trace") this route won't be called.
 
-**Example.** wss\_filter.
+**Example.** wss_filter.
 
 ```opensips
-modparam("proto\_wss", "trace\_filter\_route", "wss\_filter")
+modparam("proto_wss", "trace_filter_route", "wss_filter")
 ... 
 /* all wss connections will go through this route if tracing is activated
  * and a trace destination is defined */
-route[wss\_filter] {
+route[wss_filter] {
 	...
 	/* all connections opened from/by ip 1.1.1.1:8000 will be traced
 	   on interface 1.1.1.10:5060(opensips listener)
 	   all the other connections won't be */
 	 if ( $si == "1.1.1.1" && $sp == 8000 &&
-		$socket\_in(ip) == "1.1.1.10"  && $socket\_in(port) == 5060)
+		$socket_in(ip) == "1.1.1.10"  && $socket_in(port) == 5060)
 		exit;
 	else
 		drop;
@@ -136,14 +136,14 @@ route[wss\_filter] {
 ```
 ### `trace_on` (int)
 
-This controls whether tracing for wss is on or not. You still need to define [trace\_destination](#param_trace_destination "1.3.7.�trace_destination (string)")in order to work, but this value will be controlled using mi function [wss\_trace](#mi_wss_trace "1.4.1.� wss\_trace").
+This controls whether tracing for wss is on or not. You still need to define [trace_destination](#param_trace_destination "1.3.7.trace_destination (string)")in order to work, but this value will be controlled using mi function [wss_trace](#mi_wss_trace "1.4.1. wss_trace").
 
 *Default value is 0(tracing inactive).*
 
 **Example.** 1.
 
 ```opensips
-modparam("proto\_wss", "trace\_on", 1)
+modparam("proto_wss", "trace_on", 1)
 ```
 ### `wss_handshake_timeout` (integer)
 
@@ -154,7 +154,7 @@ This parameter specifies the time in milliseconds the proto_wss module waits for
 **Example.** 300.
 
 ```opensips
-modparam("proto\_wss", "wss\_handshake\_timeout", 300)
+modparam("proto_wss", "wss_handshake_timeout", 300)
 ```
 ### `wss_max_msg_chunks` (integer)
 
@@ -165,7 +165,7 @@ The maximum number of chunks in which a SIP message is expected to arrive via WS
 **Example.** 8.
 
 ```opensips
-modparam("proto\_wss", "wss\_max\_msg\_chunks", 8)
+modparam("proto_wss", "wss_max_msg_chunks", 8)
 ```
 ### `wss_port` (integer)
 
@@ -176,7 +176,7 @@ The default port to be used for all WSS related operation. Be careful as the def
 **Example.** 44344.
 
 ```opensips
-modparam("proto\_wss", "wss\_port", 44344)
+modparam("proto_wss", "wss_port", 44344)
 ```
 ### `wss_resource` (string)
 
@@ -187,7 +187,7 @@ The resource queried for when a WebSocket handshake is initiated.
 **Example.** /wss.
 
 ```opensips
-modparam("proto\_wss", "wss\_resource", "/wss")
+modparam("proto_wss", "wss_resource", "/wss")
 ```
 ### `wss_send_timeout` (integer)
 
@@ -200,7 +200,7 @@ The send timeout is invoked for all TLS write operations, excluding the handshak
 **Example.** 200.
 
 ```opensips
-modparam("proto\_wss", "wss\_send\_timeout", 200) # number of milliseconds
+modparam("proto_wss", "wss_send_timeout", 200) # number of milliseconds
 ```
 ### `wss_tls_handshake_timeout` (integer)
 
@@ -213,7 +213,7 @@ The timeout is invoked during acceptance of a new connection (inbound) and durin
 **Example.** 200.
 
 ```opensips
-param("proto\_wss", "wss\_tls\_handshake\_timeout", 200) # number of milliseconds
+param("proto_wss", "wss_tls_handshake_timeout", 200) # number of milliseconds
 ```
 
 ## Exported MI Functions
@@ -227,7 +227,7 @@ param("proto\_wss", "wss\_tls\_handshake\_timeout", 200) # number of millisecond
 **Example.** MI FIFO Command Format
 
 ```bash
-opensips-cli -x mi wss\_trace on
+opensips-cli -x mi wss_trace on
 ```
 
 ## Configuration Examples

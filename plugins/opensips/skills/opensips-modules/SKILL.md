@@ -117,7 +117,7 @@ The table covers the modules available in the build's primary version. Module se
 | `aaa_diameter` | This module provides an RFC 6733 Diameter peer implementation, being able to ac… | `references/{version}/modules/aaa_diameter.md` |
 | `aaa_radius` | This module provides a Radius implementation for the AAA API from the core | `references/{version}/modules/aaa_radius.md` |
 | `acc` | The ACC module is used to account transaction information to different backends… | `references/{version}/modules/acc.md` |
-| `aka_av_diameter` | This module is an extension to the _AKA\_AUTH_ module providing a Diameter AKA… | `references/{version}/modules/aka_av_diameter.md` |
+| `aka_av_diameter` | This module is an extension to the _AKA_AUTH_ module providing a Diameter AKA A… | `references/{version}/modules/aka_av_diameter.md` |
 | `alias_db` | ALIAS_DB module can be used as an alternative for user aliases via usrloc | `references/{version}/modules/alias_db.md` |
 | `auth` | This is a module that provides common functions that are needed by other authen… | `references/{version}/modules/auth.md` |
 | `auth_aaa` | This module contains functions that are used to perform digest authentication a… | `references/{version}/modules/auth_aaa.md` |
@@ -182,7 +182,7 @@ The table covers the modules available in the build's primary version. Module se
 | `exec` | The Exec module enables the execution of external commands from the OpenSIPS sc… | `references/{version}/modules/exec.md` |
 | `fraud_detection` | This module provides a way to prevent some basic fraud attacks | `references/{version}/modules/fraud_detection.md` |
 | `freeswitch` | The _"freeswitch"_ module is a C driver for the FreeSWITCH Event Socket Layer i… | `references/{version}/modules/freeswitch.md` |
-| `freeswitch_scripting` | _freeswitch\_scripting_ is a helper module that exposes full control over the F… | `references/{version}/modules/freeswitch_scripting.md` |
+| `freeswitch_scripting` | _freeswitch_scripting_ is a helper module that exposes full control over the Fr… | `references/{version}/modules/freeswitch_scripting.md` |
 | `gflags` | gflags module (global flags) keeps a bitmap of flags in shared memory and may b… | `references/{version}/modules/gflags.md` |
 | `group` | This module provides functionalities for different methods of group membership… | `references/{version}/modules/group.md` |
 | `h350` | The OpenSIPS H350 module enables an OpenSIPS SIP proxy server to access SIP acc… | `references/{version}/modules/h350.md` |
@@ -235,21 +235,21 @@ The table covers the modules available in the build's primary version. Module se
 | `presence_xcapdiff` | The presence_xcapdiff is an OpenSIPS module that adds support for the "xcap-dif… | `references/{version}/modules/presence_xcapdiff.md` |
 | `presence_xml` | The module does specific handling for notify-subscribe events using xml bodies | `references/{version}/modules/presence_xml.md` |
 | `prometheus` | This module provides a HTTP interface for the [Prometheus](https://prometheus.i… | `references/{version}/modules/prometheus.md` |
-| `proto_bin` | The **proto\_bin** module is a transport module which implements Binary Interfa… | `references/{version}/modules/proto_bin.md` |
+| `proto_bin` | The **proto_bin** module is a transport module which implements Binary Interfac… | `references/{version}/modules/proto_bin.md` |
 | `proto_bins` | This module implements a secure Binary communication protocol over TLS, to be u… | `references/{version}/modules/proto_bins.md` |
-| `proto_hep` | The **proto\_hep** module is a transport module which implements hepV1 and hepV… | `references/{version}/modules/proto_hep.md` |
-| `proto_ipsec` | The **proto\_ipsec** module provides IPSec sockets for establishing secure comm… | `references/{version}/modules/proto_ipsec.md` |
+| `proto_hep` | The **proto_hep** module is a transport module which implements hepV1 and hepV2… | `references/{version}/modules/proto_hep.md` |
+| `proto_ipsec` | The **proto_ipsec** module provides IPSec sockets for establishing secure commu… | `references/{version}/modules/proto_ipsec.md` |
 | `proto_msrp` | The **proto_msrp** module provides the MSRP protocol stack, meaning the network… | `references/{version}/modules/proto_msrp.md` |
 | `proto_sctp` | The proto_sctp module is an optional transport module (shared library) which ex… | `references/{version}/modules/proto_sctp.md` |
 | `proto_smpp` | This module offers interoperability between SIP and SMPP (Short Message Peer-to… | `references/{version}/modules/proto_smpp.md` |
-| `proto_tcp` | The **proto\_tcp** module is a built-in transport module which implements SIP T… | `references/{version}/modules/proto_tcp.md` |
+| `proto_tcp` | The **proto_tcp** module is a built-in transport module which implements SIP TC… | `references/{version}/modules/proto_tcp.md` |
 | `proto_tls` | TLS, as defined in SIP RFC 3261, is a mandatory feature for proxies and can be… | `references/{version}/modules/proto_tls.md` |
-| `proto_udp` | The **proto\_udp** module is a built-in transport module which exports the requ… | `references/{version}/modules/proto_udp.md` |
+| `proto_udp` | The **proto_udp** module is a built-in transport module which exports the requi… | `references/{version}/modules/proto_udp.md` |
 | `proto_ws` | The WebSocket protocol ([RFC 6455](http://tools.ietf.org/html/rfc6455)) provide… | `references/{version}/modules/proto_ws.md` |
 | `proto_wss` | The WSS (Secure WebSocket) module provides the ability to communicate with a We… | `references/{version}/modules/proto_wss.md` |
 | `pua` | This module offer the internal support for OpenSIPS to act as a Presence User A… | `references/{version}/modules/pua.md` |
 | `pua_bla` | The pua_bla module enables Bridged Line Appearances support according to the sp… | `references/{version}/modules/pua_bla.md` |
-| `pua_dialoginfo` | The pua\_dialoginfo retrieves dialog state information from the dialog module a… | `references/{version}/modules/pua_dialoginfo.md` |
+| `pua_dialoginfo` | The pua_dialoginfo retrieves dialog state information from the dialog module an… | `references/{version}/modules/pua_dialoginfo.md` |
 | `pua_mi` | The pua_mi offers the possibility to publish presence information and subscribe… | `references/{version}/modules/pua_mi.md` |
 | `pua_reginfo` | This module publishes information about "reg"-events according to to RFC 3680 | `references/{version}/modules/pua_reginfo.md` |
 | `pua_usrloc` | The pua_usrloc is the connector between usrloc and pua modules | `references/{version}/modules/pua_usrloc.md` |
@@ -259,7 +259,7 @@ The table covers the modules available in the build's primary version. Module se
 | `qrouting` | _qrouting_ is a module which sits on top of [drouting](../drouting/doc/drouting… | `references/{version}/modules/qrouting.md` |
 | `rabbitmq` | _RabbitMQ_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open so… | `references/{version}/modules/rabbitmq.md` |
 | `rabbitmq_consumer` | RabbitMQ Consumer (http://www.rabbitmq.com/) is an open source messaging server | `references/{version}/modules/rabbitmq_consumer.md` |
-| `rate_cacher` | The _rate\_cacher_ module provides a means of caching and real-time querying of… | `references/{version}/modules/rate_cacher.md` |
+| `rate_cacher` | The _rate_cacher_ module provides a means of caching and real-time querying of… | `references/{version}/modules/rate_cacher.md` |
 | `ratelimit` | This module implements rate limiting for SIP requests | `references/{version}/modules/ratelimit.md` |
 | `regex` | This module offers matching operations against regular expressions using the po… | `references/{version}/modules/regex.md` |
 | `registrar` | The module contains SIP REGISTER request processing logic, per RFC 3261 | `references/{version}/modules/registrar.md` |

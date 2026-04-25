@@ -15,7 +15,7 @@ Reference for the OpenSIPs 3.6 proto_udp module. Read this file when configuring
 
 ## Overview
 
-The **proto\_udp** module is a built-in transport module which exports the required logic in order to handle UDP-based communication. (socket initialization and send/recv primitives to be used by higher-level network layers)
+The **proto_udp** module is a built-in transport module which exports the required logic in order to handle UDP-based communication. (socket initialization and send/recv primitives to be used by higher-level network layers)
 
 Once loaded, you will be able to define _"udp:"_ listeners in your script.
 
@@ -42,7 +42,7 @@ If you want to change only the listening port for UDP, use the port option in th
 **Example.** 5070.
 
 ```opensips
-modparam("proto\_udp", "udp\_port", 5070)
+modparam("proto_udp", "udp_port", 5070)
 ```
 
 ## Configuration Examples
@@ -53,6 +53,6 @@ Set `udp_port` parameter
 
 ```opensips
 ...
-modparam("proto\_udp", "udp\_port", 5070)
+modparam("proto_udp", "udp_port", 5070)
 ...
 ```

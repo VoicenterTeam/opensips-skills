@@ -39,7 +39,7 @@ The the address of the presence server. If set, it will be used as outbound prox
 **Example.** sip:pa@opensips.org:5075.
 
 ```opensips
-modparam("pua\_mi", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_mi", "presence_server", "sip:pa@opensips.org:5075")
 ```
 
 ## Exported MI Functions
@@ -85,7 +85,7 @@ Demonstrates setting the `presence_server` parameter.
 
 ```opensips
 ...
-modparam("pua\_mi", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_mi", "presence_server", "sip:pa@opensips.org:5075")
 ...
 ```
 ### `pua_publish` FIFO example
@@ -94,7 +94,7 @@ Demonstrates using the `pua_publish` MI command via FIFO.
 
 ```opensips
 ...
-opensips-cli -x mi pua\_publish sip:system@opensips.org 3600 presence application/pidf+xml <?xml version='1.0'?><presence xmlns='urn:ietf:params:xml:ns:pidf' xmlns:dm='urn:ietf:params:xml:ns:pidf:data-model' xmlns:rpid='urn:ietf:params:xml:ns:pidf:rpid' xmlns:c='urn:ietf:params:xml:ns:pidf:cipid' entity='system@opensips.org'><tuple id='0x81475a0'><status><basic>open</basic></status></tuple><dm:person id='pdd748945'><rpid:activities><rpid:away/>away</rpid:activities><dm:note>CPU:16 MEM:476</dm:note></dm:person></presence>
+opensips-cli -x mi pua_publish sip:system@opensips.org 3600 presence application/pidf+xml <?xml version='1.0'?><presence xmlns='urn:ietf:params:xml:ns:pidf' xmlns:dm='urn:ietf:params:xml:ns:pidf:data-model' xmlns:rpid='urn:ietf:params:xml:ns:pidf:rpid' xmlns:c='urn:ietf:params:xml:ns:pidf:cipid' entity='system@opensips.org'><tuple id='0x81475a0'><status><basic>open</basic></status></tuple><dm:person id='pdd748945'><rpid:activities><rpid:away/>away</rpid:activities><dm:note>CPU:16 MEM:476</dm:note></dm:person></presence>
 ```
 ### `pua_subscribe` FIFO example
 
@@ -102,5 +102,5 @@ Demonstrates using the `pua_subscribe` MI command via FIFO.
 
 ```opensips
 ...
-opensips-cli -x mi pua\_subscribe sip:system@opensips.org sip:400@opensips.org presence 3600
+opensips-cli -x mi pua_subscribe sip:system@opensips.org sip:400@opensips.org presence 3600
 ```

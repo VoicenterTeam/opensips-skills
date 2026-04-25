@@ -277,7 +277,7 @@ MI command that has the same behavior as media_exchange_from_uri(), only that th
 
 ```opensips-cli
 # start playing back an annoucement to caller
-opensips-cli -x mi media\_exchange\_from\_call\_to\_uri \
+opensips-cli -x mi media_exchange_from_call_to_uri \
 	callid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \
 	uri=sip:announcement@127.0.0.1:5080 \
 	leg=caller
@@ -312,7 +312,7 @@ MI command that has the same behavior as media_fork_to_uri(), only that the trig
 
 ```opensips-cli
 # start streaming a callid to record media server
-opensips-cli -x mi media\_fork\_from\_call\_to\_uri \
+opensips-cli -x mi media_fork_from_call_to_uri \
 	callid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \
 	uri=sip:record@127.0.0.1:5080
 ```
@@ -331,7 +331,7 @@ MI command to terminate an ongoing media exchange.
 
 ```opensips-cli
 # terminate a caller announcement
-opensips-cli -x mi media\_terminate \
+opensips-cli -x mi media_terminate \
 	callid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \
 	leg=caller
 ```

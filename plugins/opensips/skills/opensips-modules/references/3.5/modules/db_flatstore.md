@@ -82,7 +82,7 @@ Delimiter used to separate the values.
 **Example.** ;.
 
 ```opensips
-modparam("db\_flatstore", "delimiter", ";")
+modparam("db_flatstore", "delimiter", ";")
 ```
 ### `flush` (integer)
 
@@ -93,7 +93,7 @@ Enable or disable flushing after each write.
 **Example.** 0.
 
 ```opensips
-modparam("db\_flatstore", "flush", 0)
+modparam("db_flatstore", "flush", 0)
 ```
 ### `prefix` (string)
 
@@ -104,7 +104,7 @@ The table name prefix. Can be a pseudo variable.
 **Example.** $time(%H).
 
 ```opensips
-modparam("db\_flatstore", "prefix", "$time(%H)")
+modparam("db_flatstore", "prefix", "$time(%H)")
 ```
 ### `single_file` (integer)
 
@@ -115,7 +115,7 @@ Specifies if all the processes should dump the data into a single file.
 **Example.** 1.
 
 ```opensips
-modparam("db\_flatstore", "single\_file", 1)
+modparam("db_flatstore", "single_file", 1)
 ```
 ### `suffix` (string)
 
@@ -126,7 +126,7 @@ The suffix appended to the table name. Can be a pseudo variable.
 **Example.** $time(%H).
 
 ```opensips
-modparam("db\_flatstore", "suffix", "$time(%H)")
+modparam("db_flatstore", "suffix", "$time(%H)")
 ```
 
 ## Exported MI Functions
@@ -138,7 +138,7 @@ It changes the name of the files where it is written.
 **Example.** MI FIFO Command Format
 
 ```opensips
-opensips-cli -x mi flat\_rotate
+opensips-cli -x mi flat_rotate
 ```
 
 ## Configuration Examples

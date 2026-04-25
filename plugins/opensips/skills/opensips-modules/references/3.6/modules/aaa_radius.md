@@ -71,7 +71,7 @@ Sets of Radius AVPs to be used when building custom RADIUS requests (set of inpu
 
 The format for a set definition is the following:
 
-*   " set\_name = ( attribute\_name1 = var1 \[, attribute\_name2 = var2 \]\* ) "
+*   " set_name = ( attribute_name1 = var1 \[, attribute_name2 = var2 \]\* ) "
 
 The left-hand side of the assignment must be an attribute name known by the RADIUS dictionary.
 

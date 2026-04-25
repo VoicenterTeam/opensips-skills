@@ -95,9 +95,9 @@ The check for the request method and the missing username is optional because it
 
 ```opensips
 ...
-if (is\_myself("$rd")) {
-	if (is\_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
-		options\_reply();
+if (is_myself("$rd")) {
+	if (is_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
+		options_reply();
 	}
 }
 ...
@@ -120,7 +120,7 @@ This parameter is the content of the Accept-Encoding header field. If “”, th
 
 ```opensips
 ...
-modparam("options", "accept\_encoding", "gzip")
+modparam("options", "accept_encoding", "gzip")
 ...
 ```
 ### Set `accept_language` parameter
@@ -129,7 +129,7 @@ This parameter is the content of the Accept-Language header field. If “”, th
 
 ```opensips
 ...
-modparam("options", "accept\_language", "de")
+modparam("options", "accept_language", "de")
 ...
 ```
 ### Set `support` parameter
@@ -147,9 +147,9 @@ This function checks if the request method is OPTIONS and if the request URI doe
 
 ```opensips
 ...
-if (is\_myself("$rd")) {
-	if (is\_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
-		options\_reply();
+if (is_myself("$rd")) {
+	if (is_method("OPTIONS") && (! $ru=~"sip:.\*\[@\]+.\*")) {
+		options_reply();
 	}
 }
 ...

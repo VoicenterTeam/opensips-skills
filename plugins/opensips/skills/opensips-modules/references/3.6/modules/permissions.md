@@ -46,14 +46,14 @@ None.
 
 ### `address_table` (string)
 
-Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table\_name' setting.
+Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table_name' setting.
 
 *Default value is address.*
 
 **Example.** pbx.
 
 ```opensips
-modparam("permissions", "address\_table", "pbx")
+modparam("permissions", "address_table", "pbx")
 ```
 ### `allow_suffix` (string)
 
@@ -66,7 +66,7 @@ Suffix to be appended to basename to create filename of the allow file when vers
 **Example.** .allow.
 
 ```opensips
-modparam("permissions", "allow\_suffix", ".allow")
+modparam("permissions", "allow_suffix", ".allow")
 ```
 ### `check_all_branches` (integer)
 
@@ -79,22 +79,22 @@ If set then allow_routing functions will check Request-URI of all branches (defa
 **Example.** 0.
 
 ```opensips
-modparam("permissions", "check\_all\_branches", 0)
+modparam("permissions", "check_all_branches", 0)
 ```
 ### `db_url` (string)
 
 The URL of the database to be used for loading the data related to IP-based checking (“address” table).
 
-This parameter is optional and it is needed only if you use functions related to IP-based checking. If you do so, you need to explicitly set this parameter (it will not inherit from “db\_default\_url”)
+This parameter is optional and it is needed only if you use functions related to IP-based checking. If you do so, you need to explicitly set this parameter (it will not inherit from “db_default_url”)
 
-Since version 2.2, this URL represents the db\_url for the “default” partition.
+Since version 2.2, this URL represents the db_url for the “default” partition.
 
 *Default value is NULL.*
 
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("permissions", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("permissions", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `default_allow_file` (string)
 
@@ -105,7 +105,7 @@ Default allow file used by functions without parameters. If you don't specify fu
 **Example.** /etc/permissions.allow.
 
 ```opensips
-modparam("permissions", "default\_allow\_file", "/etc/permissions.allow")
+modparam("permissions", "default_allow_file", "/etc/permissions.allow")
 ```
 ### `default_deny_file` (string)
 
@@ -116,7 +116,7 @@ Default file containing deny rules. The file is used by functions without parame
 **Example.** /etc/permissions.deny.
 
 ```opensips
-modparam("permissions", "default\_deny\_file", "/etc/permissions.deny")
+modparam("permissions", "default_deny_file", "/etc/permissions.deny")
 ```
 ### `deny_suffix` (string)
 
@@ -129,7 +129,7 @@ Suffix to be appended to basename to create filename of the deny file when versi
 **Example.** .deny.
 
 ```opensips
-modparam("permissions", "deny\_suffix", ".deny")
+modparam("permissions", "deny_suffix", ".deny")
 ```
 ### `grp_col` (string)
 
@@ -137,10 +137,10 @@ Name of address table column containing group identifier of the address.
 
 *Default value is grp.*
 
-**Example.** group\_id.
+**Example.** group_id.
 
 ```opensips
-modparam("permissions", "grp\_col", "group\_id")
+modparam("permissions", "grp_col", "group_id")
 ```
 ### `info_col` (string)
 
@@ -162,7 +162,7 @@ Name of address table column containing IP address part of the address.
 **Example.** ipess.
 
 ```opensips
-modparam("permissions", "ip\_col", "ipess")
+modparam("permissions", "ip_col", "ipess")
 ```
 ### `mask_col` (string)
 
@@ -179,18 +179,18 @@ modparam("permissions", "mask_col", "subnet_length")
 ```
 ### `partition` (string)
 
-Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific "db\_url" and "table\_name". If not specified, these values will be inherited from [db\_url](#param_db_url "1.3.6.�db_url (string)"), db\_default\_url or [address\_table](#param_address_table "1.3.7.�address\_table (string)"), respectively. The name of the default partition is 'default'.
+Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific "db_url" and "table_name". If not specified, these values will be inherited from [db_url](#param_db_url "1.3.6.db_url (string)"), db_default_url or [address_table](#param_address_table "1.3.7.address_table (string)"), respectively. The name of the default partition is 'default'.
 
 **Example.** 
 	inbound:
-		db\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
-		table\_name = address.
+		db_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
+		table_name = address.
 
 ```opensips
 modparam("permissions", "partition", "
 	inbound:
-		db\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
-		table\_name = address")
+		db_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
+		table_name = address")
 ```
 ### `pattern_col` (string)
 
@@ -484,7 +484,7 @@ Default allow file used by functions without parameters. If you don't specify fu
 
 ```opensips
 ...
-modparam("permissions", "default\_allow\_file", "/etc/permissions.allow")
+modparam("permissions", "default_allow_file", "/etc/permissions.allow")
 ...
 ```
 ### Set `default_deny_file` parameter
@@ -493,16 +493,16 @@ Default file containing deny rules. The file is used by functions without parame
 
 ```opensips
 ...
-modparam("permissions", "default\_deny\_file", "/etc/permissions.deny")
+modparam("permissions", "default_deny_file", "/etc/permissions.deny")
 ...
 ```
 ### Set `check_all_branches` parameter
 
-If set then allow\_routing functions will check Request-URI of all branches (default). If disabled then only Request-URI of the first branch will be checked.
+If set then allow_routing functions will check Request-URI of all branches (default). If disabled then only Request-URI of the first branch will be checked.
 
 ```opensips
 ...
-modparam("permissions", "check\_all\_branches", 0)
+modparam("permissions", "check_all_branches", 0)
 ...
 ```
 ### Set `allow_suffix` parameter
@@ -511,7 +511,7 @@ Suffix to be appended to basename to create filename of the allow file when vers
 
 ```opensips
 ...
-modparam("permissions", "allow\_suffix", ".allow")
+modparam("permissions", "allow_suffix", ".allow")
 ...
 ```
 ### Set `deny_suffix` parameter
@@ -520,7 +520,7 @@ Suffix to be appended to basename to create filename of the deny file when versi
 
 ```opensips
 ...
-modparam("permissions", "deny\_suffix", ".deny")
+modparam("permissions", "deny_suffix", ".deny")
 ...
 ```
 ### Set `db_url` parameter
@@ -529,28 +529,28 @@ The URL of the database to be used for loading the data related to IP-based chec
 
 ```opensips
 ...
-modparam("permissions", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("permissions", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `address_table` parameter
 
-Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table\_name' setting.
+Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table_name' setting.
 
 ```opensips
 ...
-modparam("permissions", "address\_table", "pbx")
+modparam("permissions", "address_table", "pbx")
 ...
 ```
 ### Set `partition` parameter
 
-Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific "db\_url" and "table\_name". If not specified, these values will be inherited from db\_url, db\_default\_url or address\_table, respectively. The name of the default partition is 'default'.
+Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific "db_url" and "table_name". If not specified, these values will be inherited from db_url, db_default_url or address_table, respectively. The name of the default partition is 'default'.
 
 ```opensips
 ...
 modparam("permissions", "partition", "
 	inbound:
-		db\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
-		table\_name = address")
+		db_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;
+		table_name = address")
 ...
 ```
 ### Set `grp_col` parameter
@@ -559,7 +559,7 @@ Name of address table column containing group identifier of the address.
 
 ```opensips
 ...
-modparam("permissions", "grp\_col", "group\_id")
+modparam("permissions", "grp_col", "group_id")
 ...
 ```
 ### Set `ip_col` parameter
@@ -568,7 +568,7 @@ Name of address table column containing IP address part of the address.
 
 ```opensips
 ...
-modparam("permissions", "ip\_col", "ipess")
+modparam("permissions", "ip_col", "ipess")
 ...
 ```
 ### Set `mask_col` parameter
@@ -577,7 +577,7 @@ Name of address table column containing network mask of the address. Possible va
 
 ```opensips
 ...
-modparam("permissions", "mask\_col", "subnet\_length")
+modparam("permissions", "mask_col", "subnet_length")
 ...
 ```
 ### Set `port_col` parameter
@@ -586,16 +586,16 @@ Name of address table column containing port part of the address.
 
 ```opensips
 ...
-modparam("permissions", "port\_col", "prt")
+modparam("permissions", "port_col", "prt")
 ...
 ```
 ### Set `proto_col` parameter
 
-Name of address table column containing transport protocol that is matched against transport protocol of received request. Possible values that can be stored in proto\_col are “any”, “udp”, “tcp”, “tls”, “sctp”, and “none”. Value “any” matches always and value “none” never.
+Name of address table column containing transport protocol that is matched against transport protocol of received request. Possible values that can be stored in proto_col are “any”, “udp”, “tcp”, “tls”, “sctp”, and “none”. Value “any” matches always and value “none” never.
 
 ```opensips
 ...
-modparam("permissions", "proto\_col", "transport")
+modparam("permissions", "proto_col", "transport")
 ...
 ```
 ### Set `pattern_col` parameter
@@ -604,7 +604,7 @@ Name of address table column containinga a pattern (a shell wildcard pattern, li
 
 ```opensips
 ...
-modparam("permissions", "pattern\_col", "wildcard\_col")
+modparam("permissions", "pattern_col", "wildcard_col")
 ...
 ```
 ### Set `info_col` parameter
@@ -613,7 +613,7 @@ Name of address table column containing a string that is added as value to a pva
 
 ```opensips
 ...
-modparam("permissions", "info\_col", "info\_col")
+modparam("permissions", "info_col", "info_col")
 ...
 ```
 ### `check_address()` usage
@@ -627,20 +627,20 @@ Returns 1 if group id, IP address, port and protocol given as arguments match an
 // (given as pvar), belongs to group 4, verifies if the string "texttest"
 // matches the wildcard pattern field in the database table and stores the
 // context information in $avp(ctx)
-if (check\_address( 4, "192.168.2.135", 5700, "$socket\_in(proto)", $avp(ctx), "texttest")) {
-	t\_relay();
+if (check_address( 4, "192.168.2.135", 5700, "$socket_in(proto)", $avp(ctx), "texttest")) {
+	t_relay();
 	xlog("$avp(ctx)\\n");
 }
 
-if (check\_address( 4, "192.168.2.135", 5700, "$socket\_in(proto)", , , "my\_part")) {
-	t\_relay();
+if (check_address( 4, "192.168.2.135", 5700, "$socket_in(proto)", , , "my_part")) {
+	t_relay();
 	xlog("$avp(ctx)\\n");
 }
 ...
 
 // Checks if the tuple IP address/port/protocol of the source message is in group 4
-if (check\_address( 4, "$si", "$sp", "$socket\_in(proto)")) {
-	t\_relay();
+if (check_address( 4, "$si", "$sp", "$socket_in(proto)")) {
+	t_relay();
 }
 
 ...
@@ -650,9 +650,9 @@ if (check\_address( 4, "$si", "$sp", "$socket\_in(proto)")) {
 $avp(ip) = "192.168.2.135";
 $avp(port) = 5061;
 $avp(proto) = "any";
-$avp(partition)="my\_part";
-if (check\_address( 4, $avp(ip), $avp(port), $avp(proto), $avp(ctx), , $avp(partition))) {
-	t\_relay();
+$avp(partition)="my_part";
+if (check_address( 4, $avp(ip), $avp(port), $avp(proto), $avp(ctx), , $avp(partition))) {
+	t_relay();
 	xlog("$avp(ctx)\\n");
 }
 
@@ -662,24 +662,24 @@ if (check\_address( 4, $avp(ip), $avp(port), $avp(proto), $avp(ctx), , $avp(part
 // (given as pvar) is in group 4, verifies if string the "texttest" matches
 // the wildcard pattern field in the database table, without storing any
 // context information
-if (check\_address( 4,$si, 5700, $socket\_in(proto), ,"texttest")) {
-	t\_relay();
+if (check_address( 4,$si, 5700, $socket_in(proto), ,"texttest")) {
+	t_relay();
 }
 
 ...
 ```
 ### `check_source_address()` usage
 
-Equivalent to check\_address(group\_id, "$si", "$sp", "$socket\_in(proto)", context\_info, pattern, partition).
+Equivalent to check_address(group_id, "$si", "$sp", "$socket_in(proto)", context_info, pattern, partition).
 
 ```opensips
 ...
 // Check if source address/port/proto is in group 4 and stores
 // context information in $avp(ctx)
-if (check\_source\_address( 4,$avp(ctx), , , $avp(my\_partition))) {
+if (check_source_address( 4,$avp(ctx), , , $avp(my_partition))) {
 	xlog("$avp(ctx)\\n");
 }else {
-	sl\_send\_reply(403, "Forbidden");
+	sl_send_reply(403, "Forbidden");
 }
 ...
 ```
@@ -690,7 +690,7 @@ Checks if an entry with the source ip/port/protocol is found in cached address o
 ```opensips
 ...
 
-if ( get\_source\_group( $var(group)) ) {
+if ( get_source_group( $var(group)) ) {
    # do something with $var(group)
    xlog("group is $var(group)\\n");
 };
@@ -702,8 +702,8 @@ Returns true if all pairs constructed as described in Section 1.1.1, “Call Rou
 
 ```opensips
 ...
-if (allow\_routing()) {
-	t\_relay();
+if (allow_routing()) {
+	t_relay();
 };
 ...
 ```
@@ -713,8 +713,8 @@ Returns true if all pairs constructed as described in Section 1.1.1, “Call Rou
 
 ```opensips
 ...
-if (allow\_routing("basename")) {
-	t\_relay();
+if (allow_routing("basename")) {
+	t_relay();
 };
 ...
 ```
@@ -725,11 +725,11 @@ The function returns true if all pairs constructed as described in Section 1.1.2
 ```opensips
 ...
 if ($rm=="REGISTER") {
-	if (allow\_register("register")) {
+	if (allow_register("register")) {
 		save("location");
 		exit;
 	} else {
-		sl\_send\_reply(403, "Forbidden");
+		sl_send_reply(403, "Forbidden");
 	};
 };
 ...
@@ -740,11 +740,11 @@ Returns true if the pair constructed as described in Section 1.1.3, “URI Permi
 
 ```opensips
 ...
-if (allow\_uri("basename", $rt)) {  // Check Refer-To URI
-	t\_relay();
+if (allow_uri("basename", $rt)) {  // Check Refer-To URI
+	t_relay();
 };
-if (allow\_uri("basename", $avp(uri)) {  // Check URI stored in $avp(uri)
-	t\_relay();
+if (allow_uri("basename", $avp(uri)) {  // Check URI stored in $avp(uri)
+	t_relay();
 };
 ...
 ```

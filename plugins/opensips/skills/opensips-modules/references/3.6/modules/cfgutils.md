@@ -20,17 +20,17 @@ Reference for the OpenSIPs 3.6 cfgutils module. Read this file when configuring 
 
 Useful extensions for the server configuration.
 
-The cfgutils module can be used to introduce randomness to the behaviour of the server. It provides setup functions and the “rand\_event” function. This function return either true or false, depending on a random value and a specified probability. E.g. if you set via fifo or script a probability value of 5%, then 5% of all calls to rand\_event will return false. The pseudovariable “$RANDOM” could be used to introduce random values e.g. into a SIP reply.
+The cfgutils module can be used to introduce randomness to the behaviour of the server. It provides setup functions and the “rand_event” function. This function return either true or false, depending on a random value and a specified probability. E.g. if you set via fifo or script a probability value of 5%, then 5% of all calls to rand_event will return false. The pseudovariable “$RANDOM” could be used to introduce random values e.g. into a SIP reply.
 
 The benefit of this module is the probability of the decision can be manipulated by external applications such as web interface or command line tools. The probability must be specified as percent value, ranging from 0 to 100.
 
-The module exports commands to FIFO server that can be used to change the global settings via FIFO interface. The FIFO commands are: “set\_prob”, “reset\_prob” and “get\_prob”.
+The module exports commands to FIFO server that can be used to change the global settings via FIFO interface. The FIFO commands are: “set_prob”, “reset_prob” and “get_prob”.
 
 This module can be used for simple load-shedding, e.g. reply 5% of the Invites with a 503 error and a adequate random Retry-After value.
 
 The module provides as well functions to delay the execution of the server. The functions “sleep” and “usleep” could be used to let the server wait a specific time interval.
 
-It can also hash the config file used from the server with a (weak) cryptographic hash function on startup. This value is saved and can be later compared to the actual hash, to detect modifications of this file after the server start. This functions are available as the FIFO commands “check\_config\_hash” and “get\_config\_hash”.
+It can also hash the config file used from the server with a (weak) cryptographic hash function on startup. This value is saved and can be later compared to the actual hash, to detect modifications of this file after the server start. This functions are available as the FIFO commands “check_config_hash” and “get_config_hash”.
 
 ## Dependencies
 
@@ -53,7 +53,7 @@ There is no default value, is no parameter is given the hash functionality is di
 **Example.** /etc/opensips/opensips.cfg.
 
 ```opensips
-modparam("cfgutils", "hash\_file", "/etc/opensips/opensips.cfg")
+modparam("cfgutils", "hash_file", "/etc/opensips/opensips.cfg")
 ```
 ### `initial_probability` (string)
 
@@ -64,7 +64,7 @@ The initial value of the probability.
 **Example.** 15.
 
 ```opensips
-modparam("cfgutils", "initial\_probability", 15)
+modparam("cfgutils", "initial_probability", 15)
 ```
 ### `lock_pool_size` (integer)
 
@@ -83,12 +83,12 @@ The number of dynamic script locks to be allocated at OpenSIPS startup. This num
 - 64
 - ...
 
-**Notes:** Note that the _lock\_pool\_size_ parameter only affects the number of dynamic locks created at startup. The pool of static locks only depends on the number of unique static strings supplied throughout the script to the set of static lock functions.
+**Notes:** Note that the _lock_pool_size_ parameter only affects the number of dynamic locks created at startup. The pool of static locks only depends on the number of unique static strings supplied throughout the script to the set of static lock functions.
 
 **Example.** 64.
 
 ```opensips
-modparam("cfgutils", "lock\_pool\_size", 64)
+modparam("cfgutils", "lock_pool_size", 64)
 ```
 ### `shv_hash_size` (integer)
 
@@ -99,7 +99,7 @@ The size of the hash table used to store the shared variables ($shv).
 **Example.** 1024.
 
 ```opensips
-modparam("cfgutils", "shv\_hash\_size", 1024)
+modparam("cfgutils", "shv_hash_size", 1024)
 ```
 ### `shvset` (string)
 
@@ -628,7 +628,7 @@ Check if the actual config file hash is identical to the stored one.
 **Example.** check_config_hash usage
 
 ```opensips-cli
-$ opensips-cli -x mi check\_config\_hash
+$ opensips-cli -x mi check_config_hash
 The actual config file hash is identical to the stored one.
 ```
 
@@ -641,7 +641,7 @@ Return the stored config file hash.
 **Example.** get_config_hash usage
 
 ```opensips-cli
-$ opensips-cli -x mi get\_config\_hash
+$ opensips-cli -x mi get_config_hash
 1580a37104eb4de69ab9f31ce8d6e3e0
 ```
 
@@ -654,7 +654,7 @@ Return the actual probability setting. The function return the actual probabilit
 **Example.** rand_get_prob usage
 
 ```opensips-cli
-$ opensips-cli -x mi get\_prob
+$ opensips-cli -x mi get_prob
 The actual probability is 50 percent.
 ```
 
@@ -665,7 +665,7 @@ Reset the probability value to the inital start value. This command don't need a
 **Example.** rand_reset_prob usage
 
 ```opensips-cli
-$ opensips-cli -x mi rand\_reset\_prob
+$ opensips-cli -x mi rand_reset_prob
 ```
 
 ### `rand_set_prop`
@@ -679,7 +679,7 @@ Set the probability value to the given parameter.
 **Example.** rand_set_prob usage
 
 ```opensips-cli
-$ opensips-cli -x mi rand\_set\_prob 10
+$ opensips-cli -x mi rand_set_prob 10
 ```
 
 ### `shv_get`
@@ -693,13 +693,13 @@ Get the value of a shared variable ($shv(name)).
 **Example.** shv_get usage
 
 ```opensips-cli
-$ opensips-cli -x mi shv\_get debug
+$ opensips-cli -x mi shv_get debug
 ```
 
 **Example.** shv_get usage
 
 ```opensips-cli
-$ opensips-cli -x mi shv\_get
+$ opensips-cli -x mi shv_get
 ```
 
 ### `shv_set`
@@ -715,7 +715,7 @@ Set the value of a shared variable ($shv(name)).
 **Example.** shv_set usage
 
 ```opensips-cli
-$ opensips-cli -x mi shv\_set debug int 0
+$ opensips-cli -x mi shv_set debug int 0
 ```
 
 ## Configuration Examples

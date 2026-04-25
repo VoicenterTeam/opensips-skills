@@ -48,7 +48,7 @@ This parameter ranges from 1 to 9 and it specifies the level of compression you 
 **Example.** 3.
 
 ```opensips
-modparam("mc", "mc\_level", "3")
+modparam("mc", "mc_level", "3")
 ```
 
 ## Exported Functions

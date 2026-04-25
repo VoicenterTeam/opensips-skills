@@ -19,7 +19,7 @@ Reference for the OpenSIPs 3.5 event_virtual module. Read this file when configu
 The _event_virtual_ module provides the possibility to have multiple external applications, using different transport protocols, subscribed to the OpenSIPS Event Interface as a single virtual subscriber, for a specific event. When an event is triggered, the event_virtual module notifies the specified transport modules using one of the following policies:
 
 * _PARALLEL_ - all subscribers (applications) are notified at once
-* _FAILOVER_ - for every event raised, try to notify the subscribers, in the order in which they are given, until the first successful notification. A failed subscriber is skipped for further notifications until the [failover_timeout](#param_failover_timeout "1.5.1.�failover_timeout (integer)") passes.
+* _FAILOVER_ - for every event raised, try to notify the subscribers, in the order in which they are given, until the first successful notification. A failed subscriber is skipped for further notifications until the [failover_timeout](#param_failover_timeout "1.5.1.failover_timeout (integer)") passes.
 * _ROUND-ROBIN_ - for every event raised, notify the subscribers alternatively, in the order in which they are given (for each raised event notify a different subscriber)
 
 Only one expire value can be used (for the whole virtual subscription), and not one for each individual subscriber.
@@ -56,7 +56,7 @@ The minimum duration in seconds that a failed subscriber is skipped for further 
 **Example.** 5.
 
 ```opensips
-modparam("event\_virtual", "failover\_timeout", 5)
+modparam("event_virtual", "failover_timeout", 5)
 ```
 
 ## Configuration Examples
@@ -66,5 +66,5 @@ modparam("event\_virtual", "failover\_timeout", 5)
 The sockets of the subscribers may be separated by any number of spaces or tabs:
 
 ```opensips
-	virtual:PARALLEL rabbitmq:guest:guest@127.0.0.1:5672/pike flatstore:/var/log/opensips\_proxy.log
+	virtual:PARALLEL rabbitmq:guest:guest@127.0.0.1:5672/pike flatstore:/var/log/opensips_proxy.log
 ```

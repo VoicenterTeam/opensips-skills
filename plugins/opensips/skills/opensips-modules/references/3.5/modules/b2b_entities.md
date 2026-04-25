@@ -43,13 +43,13 @@ None.
 
 ### `advertised_contact` (str)
 
-Contact to use in generated messages for UA session started with the [ua\_session\_client\_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function.
+Contact to use in generated messages for UA session started with the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function.
 
 **Example.** opensips@10.10.10.10:5060.
 
 ```opensips
 ...
-modparam("b2b\_entities", "advertised\_contact", "opensips@10.10.10.10:5060")
+modparam("b2b_entities", "advertised_contact", "opensips@10.10.10.10:5060")
 ...
 ```
 ### `b2b_key_prefix` (string)
@@ -61,7 +61,7 @@ The string to use when generating the key ( it is inserted in the SIP messages a
 **Example.** B2B1.
 
 ```opensips
-modparam("b2b\_entities", "b2b\_key\_prefix", "B2B1")
+modparam("b2b_entities", "b2b_key_prefix", "B2B1")
 ```
 ### `cachedb_key_prefix` (string)
 
@@ -72,7 +72,7 @@ Prefix to use for every key set in the NoSQL database.
 **Example.** b2b.
 
 ```opensips
-modparam("b2b\_entities", "cachedb\_key\_prefix", "b2b")
+modparam("b2b_entities", "cachedb_key_prefix", "b2b")
 ```
 ### `cachedb_url` (string)
 
@@ -81,7 +81,7 @@ URL of a NoSQL database to be used. Only Redis is supported at the moment.
 **Example.** redis://localhost:6379/.
 
 ```opensips
-modparam("b2b\_entities", "cachedb\_url", "redis://localhost:6379/")
+modparam("b2b_entities", "cachedb_url", "redis://localhost:6379/")
 ```
 ### `client_hsize` (integer)
 
@@ -104,7 +104,7 @@ The ID of the cluster this instance belongs to. Setting this parameter enables c
 
 ```opensips
 ...
-modparam("b2b\_entities", "cluster\_id", 10)
+modparam("b2b_entities", "cluster_id", 10)
 ...
 ```
 ### `db_mode` (integer)
@@ -122,7 +122,7 @@ The B2B modules have support for the 3 type of database storage
 **Example.** 1.
 
 ```opensips
-modparam("b2b\_entities", "db\_mode", 1)
+modparam("b2b_entities", "db_mode", 1)
 ```
 ### `db_table` (str)
 
@@ -134,7 +134,7 @@ The name of the table that will be used for storing B2B entities
 
 ```opensips
 ...
-modparam("b2b\_entities", "db\_table", "some table name")
+modparam("b2b_entities", "db_table", "some table name")
 ...
 ```
 ### `db_url` (string)
@@ -161,7 +161,7 @@ This parameter allows to control, whether a PRACK should be generated locally (=
 
 ```opensips
 ...
-modparam("b2b\_entities", "passthru\_prack", 1)
+modparam("b2b_entities", "passthru_prack", 1)
 ...
 ```
 ### `script_reply_route` (string)
@@ -195,7 +195,7 @@ The size of the hash table that stores the b2b server entities. It is the 2 loga
 ```
 ### `ua_default_timeout` (str)
 
-Default timeout, in seconds, for UA session started with the [ua\_session\_server\_init()](#func_ua_session_server_init "1.4.1.� ua_session_server_init([key], [flags])") function or the [ua\_session\_client\_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function. After this interval a BYE will be sent and the session will be deleted.
+Default timeout, in seconds, for UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1. ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function. After this interval a BYE will be sent and the session will be deleted.
 
 *Default value is 43200.*
 
@@ -203,7 +203,7 @@ Default timeout, in seconds, for UA session started with the [ua\_session\_serve
 
 ```opensips
 ...
-modparam("b2b\_entities", "ua\_default\_timeout", 7200)
+modparam("b2b_entities", "ua_default_timeout", 7200)
 ...
 ```
 ### `update_period` (integer)
@@ -215,7 +215,7 @@ The time interval at which to update the info in database.
 **Example.** 60.
 
 ```opensips
-modparam("b2b\_entities", "update\_period", 60)
+modparam("b2b_entities", "update_period", 60)
 ```
 
 ## Exported Functions
@@ -343,7 +343,7 @@ opensips-cli -x mi b2be_list
 
 ### `ua_session_client_start`
 
-This command starts a new UAC session by sending an initial INVITE. Further requests/replies received belonging to this session will only be handled via the [E_UA_SESSION](#event_E_UA_SESSION "1.6.1.� E_UA_SESSION") event.
+This command starts a new UAC session by sending an initial INVITE. Further requests/replies received belonging to this session will only be handled via the [E_UA_SESSION](#event_E_UA_SESSION "1.6.1. E_UA_SESSION") event.
 
 **Parameters:**
 
@@ -366,7 +366,7 @@ to=sip:bob@opensips.org from=sip:alice@opensips.org flags=arhb
 
 ### `ua_session_list`
 
-List information about UA sessions started with [ua_session_server_init()](#func_ua_session_server_init "1.4.1.� ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function.
+List information about UA sessions started with [ua_session_server_init()](#func_ua_session_server_init "1.4.1. ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function.
 
 **Parameters:**
 
@@ -380,7 +380,7 @@ opensips-cli -x mi ua_session_list
 
 ### `ua_session_reply`
 
-Sends a reply for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1.� ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function.
+Sends a reply for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1. ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function.
 
 **Parameters:**
 
@@ -400,7 +400,7 @@ opensips-cli -x mi ua_session_reply key=B2B.436.1925389.1649338095 method=OPTION
 
 ### `ua_session_terminate`
 
-Terminate a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1.� ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function.
+Terminate a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1. ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function.
 
 **Parameters:**
 
@@ -415,7 +415,7 @@ opensips-cli -x mi ua_session_terminate key=B2B.436.1925389.1649338095
 
 ### `ua_session_update`
 
-Sends a sequential request for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1.� ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2.� ua_session_client_start") MI function.
+Sends a sequential request for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init "1.4.1. ua_session_server_init([key], [flags])") function or the [ua_session_client_start](#mi_ua_session_client_start "1.5.2. ua_session_client_start") MI function.
 
 **Parameters:**
 

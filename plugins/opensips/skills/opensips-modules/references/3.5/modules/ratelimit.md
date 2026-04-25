@@ -23,7 +23,7 @@ This module implements rate limiting for SIP requests. In contrast to the PIKE m
 
 This module is integrated with the OpenSIPS Key-Value Interface, providing support for distributed rate limiting using Redis or Memcached CacheDB backends. The internal limiting data will no longer be kept on each OpenSIPS instance. It will be stored in the distributed Key-Value database and queried by each instance before deciding if a SIP message should be blocked or not.
 
-To achieve a distributed ratelimit feature, the module can also replicate its pipes counters to different OpenSIPS instances using the clusterer module. To do that, define the _pipe\_replication\_cluster_ parameter in your configuration script.
+To achieve a distributed ratelimit feature, the module can also replicate its pipes counters to different OpenSIPS instances using the clusterer module. To do that, define the _pipe_replication_cluster_ parameter in your configuration script.
 
 Starting with OpenSIPS 3.2, choosing whether to replicate a pipe over CacheDB backends or bin replication is triggered by the flags specified when the pipe is created: adding the _/r_ suffix to the pipe's name will replicate through CacheDB, and adding _/b_ will replicate through bin/clusterer.
 
@@ -38,13 +38,13 @@ NOTE: that this behavior only makes sense when the pipe algorithm used is TAILDR
 A sample configuration snippet might look like this:
 
 ...
-	if (!rl\_check($rU, 50, "TAILDROP")) {
-		sl\_send\_reply(503, "Server Unavailable");
+	if (!rl_check($rU, 50, "TAILDROP")) {
+		sl_send_reply(503, "Server Unavailable");
 		exit;
 	};
 ...
 
-Upon every incoming request listed above rl\_check is invoked and the entity identified by the R-URI user is checked. It returns an OK code if the current per request load is below the configured threshold. If the load is exceeded the function returns an error and an administrator can discard requests with a stateless response.
+Upon every incoming request listed above rl_check is invoked and the entity identified by the R-URI user is checked. It returns an OK code if the current per request load is below the configured threshold. If the load is exceeded the function returns an error and an administrator can discard requests with a stateless response.
 
 ## Dependencies
 
@@ -67,29 +67,29 @@ Enables distributed rate limiting and specifies the backend that should be used 
 **Example.** redis://root:root@127.0.0.1/.
 
 ```opensips
-modparam("ratelimit", "cachedb\_url", "redis://root:root@127.0.0.1/")
+modparam("ratelimit", "cachedb_url", "redis://root:root@127.0.0.1/")
 ```
 ### `db_prefix` (string)
 
 Specifies what prefix should be added to the pipe name. This is only used when distributed rate limiting is enabled.
 
-*Default value is rl\_pipe\_.*
+*Default value is rl_pipe_.*
 
-**Example.** ratelimit\_.
+**Example.** ratelimit_.
 
 ```opensips
-modparam("ratelimit", "db\_prefix", "ratelimit\_")
+modparam("ratelimit", "db_prefix", "ratelimit_")
 ```
 ### `default_algorithm` (string)
 
-Specifies which algorithm should be assumed in case it isn't explicitly specified in the _rl\_check_ function.
+Specifies which algorithm should be assumed in case it isn't explicitly specified in the _rl_check_ function.
 
 *Default value is TAILDROP.*
 
 **Example.** RED.
 
 ```opensips
-modparam("ratelimit", "default\_algorithm", "RED")
+modparam("ratelimit", "default_algorithm", "RED")
 ```
 ### `expire_time` (integer)
 
@@ -100,7 +100,7 @@ This parameter specifies how long a pipe should be kept in memory after it becom
 **Example.** 1800.
 
 ```opensips
-modparam("ratelimit", "expire\_time", 1800)
+modparam("ratelimit", "expire_time", 1800)
 ```
 ### `hash_size` (integer)
 
@@ -113,11 +113,11 @@ The size of the hash table internally used to keep the pipes. A larger table is 
 **Example.** 512.
 
 ```opensips
-modparam("ratelimit", "hash\_size", 512)
+modparam("ratelimit", "hash_size", 512)
 ```
 ### `limit_per_interval` (integer)
 
-This parameter configures the way that a pipe's limit is specified in the _rl\_check_ function and only affects the Taildrop and RED algorithms. A value of 1 means that the limit is set per-_timer\_interval_ while a value of 0 means per-second.
+This parameter configures the way that a pipe's limit is specified in the _rl_check_ function and only affects the Taildrop and RED algorithms. A value of 1 means that the limit is set per-_timer_interval_ while a value of 0 means per-second.
 
 *Default value is 0.*
 
@@ -129,7 +129,7 @@ This parameter configures the way that a pipe's limit is specified in the _rl\_c
 **Example.** 1.
 
 ```opensips
-modparam("ratelimit", "limit\_per\_interval", 1)
+modparam("ratelimit", "limit_per_interval", 1)
 ```
 ### `pipe_replication_cluster` (integer)
 
@@ -140,7 +140,7 @@ Specifies the cluster ID where pipes will be replicated to and received from.
 **Example.** 1.
 
 ```opensips
-modparam("ratelimit", "pipe\_replication\_cluster", 1)
+modparam("ratelimit", "pipe_replication_cluster", 1)
 ```
 ### `repl_buffer_threshold` (string)
 
@@ -151,7 +151,7 @@ Used to specify the length of the buffer used by the binary replication, in byte
 **Example.** 500.
 
 ```opensips
-modparam("ratelimit", "repl\_buffer\_threshold", 500)
+modparam("ratelimit", "repl_buffer_threshold", 500)
 ```
 ### `repl_timer_expire` (string)
 
@@ -162,7 +162,7 @@ Timer in seconds, used to specify when the counter received from a different ins
 **Example.** 10.
 
 ```opensips
-modparam("ratelimit", "repl\_timer\_expire", 10)
+modparam("ratelimit", "repl_timer_expire", 10)
 ```
 ### `repl_timer_interval` (string)
 
@@ -173,20 +173,20 @@ Timer in milliseconds, used to specify how often the module should replicate its
 **Example.** 100.
 
 ```opensips
-modparam("ratelimit", "repl\_timer\_interval", 100)
+modparam("ratelimit", "repl_timer_interval", 100)
 ```
 ### `slot_period` (int)
 
-Value of one slot in milliseconds. This parameter determines how granular the algorithm should be. The number of slots will be determined by window\_size/slot\_period.
+Value of one slot in milliseconds. This parameter determines how granular the algorithm should be. The number of slots will be determined by window_size/slot_period.
 
 *Default value is 200.*
 
 **Example.** 100.
 
 ```opensips
-modparam("ratelimit", "window\_size", 5)
+modparam("ratelimit", "window_size", 5)
 #we will have 50 slots of 100 milliseconds
-modparam("ratelimit", "slot\_period", 100)
+modparam("ratelimit", "slot_period", 100)
 ```
 ### `timer_interval` (integer)
 
@@ -199,7 +199,7 @@ The timer interval in seconds when the Network and Feedback algorithms run their
 **Example.** 5.
 
 ```opensips
-modparam("ratelimit", "timer\_interval", 5)
+modparam("ratelimit", "timer_interval", 5)
 ```
 ### `window_size` (int)
 
@@ -210,7 +210,7 @@ How long the history in SBT should be in seconds.
 **Example.** 5.
 
 ```opensips
-modparam("ratelimit", "window\_size", 5)
+modparam("ratelimit", "window_size", 5)
 ```
 
 ## Exported Functions
@@ -340,7 +340,7 @@ Dumps each destination used for replication, as well as the timestamp of the las
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_bin\_status
+opensips-cli -x mi rl_bin_status
 ```
 
 ### `rl_dump_pipe`
@@ -354,7 +354,7 @@ Exposes all the details about the current runtime data (specific to the pipe's a
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_dump\_pipe gw\_10.0.0.1
+opensips-cli -x mi rl_dump_pipe gw_10.0.0.1
 ```
 
 ### `rl_get_pid`
@@ -364,7 +364,7 @@ Gets the list of in use PID Controller parameters.
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_get\_pid
+opensips-cli -x mi rl_get_pid
 ```
 
 ### `rl_list`
@@ -384,13 +384,13 @@ If no parameter are passed to the function, all the active pipes are listed.
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_list pipe=gw\_10.0.0.1
+opensips-cli -x mi rl_list pipe=gw_10.0.0.1
 ```
 
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_list filter=gw\_*
+opensips-cli -x mi rl_list filter=gw_*
 ```
 
 ### `rl_reset_pipe`
@@ -404,7 +404,7 @@ Resets the counter of a specified pipe.
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_reset\_pipe gw\_10.0.0.1
+opensips-cli -x mi rl_reset_pipe gw_10.0.0.1
 ```
 
 ### `rl_set_pid`
@@ -420,7 +420,7 @@ Sets the PID Controller parameters for the Feedback Algorithm.
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi rl\_set\_pid 0.5 0.5 0.5
+opensips-cli -x mi rl_set_pid 0.5 0.5 0.5
 ```
 
 ## Configuration Examples
@@ -435,7 +435,7 @@ Default value is 10.
 
 ```opensips
 ...
-modparam("ratelimit", "timer\_interval", 5)
+modparam("ratelimit", "timer_interval", 5)
 ...
 ```
 ### Set `limit_per_interval` parameter
@@ -446,7 +446,7 @@ Default value is 0(limit per-second).
 
 ```opensips
 ...
-modparam("ratelimit", "limit\_per\_interval", 1)
+modparam("ratelimit", "limit_per_interval", 1)
 ...
 ```
 ### Set `expire_time` parameter
@@ -457,7 +457,7 @@ Default value is 3600.
 
 ```opensips
 ...
-modparam("ratelimit", "expire\_time", 1800)
+modparam("ratelimit", "expire_time", 1800)
 ...
 ```
 ### Set `hash_size` parameter
@@ -468,7 +468,7 @@ Default value is 1024.
 
 ```opensips
 ...
-modparam("ratelimit", "hash\_size", 512)
+modparam("ratelimit", "hash_size", 512)
 ...
 ```
 ### Set `default_algorithm` parameter
@@ -479,7 +479,7 @@ Default value is "TAILDROP".
 
 ```opensips
 ...
-modparam("ratelimit", "default\_algorithm", "RED")
+modparam("ratelimit", "default_algorithm", "RED")
 ...
 ```
 ### Set `cachedb_url` parameter
@@ -490,7 +490,7 @@ Default value is "disabled".
 
 ```opensips
 ...
-modparam("ratelimit", "cachedb\_url", "redis://root:root@127.0.0.1/")
+modparam("ratelimit", "cachedb_url", "redis://root:root@127.0.0.1/")
 ...
 ```
 ### Set `db_prefix` parameter
@@ -501,7 +501,7 @@ Default value is "rl_pipe_".
 
 ```opensips
 ...
-modparam("ratelimit", "db\_prefix", "ratelimit\_")
+modparam("ratelimit", "db_prefix", "ratelimit_")
 ...
 ```
 ### Set `repl_buffer_threshold` parameter
@@ -512,7 +512,7 @@ Default value is 32767 bytes.
 
 ```opensips
 ...
-modparam("ratelimit", "repl\_buffer\_threshold", 500)
+modparam("ratelimit", "repl_buffer_threshold", 500)
 ...
 ```
 ### Set `repl_timer_interval` parameter
@@ -523,7 +523,7 @@ Default value is 200 ms.
 
 ```opensips
 ...
-modparam("ratelimit", "repl\_timer\_interval", 100)
+modparam("ratelimit", "repl_timer_interval", 100)
 ...
 ```
 ### Set `repl_timer_expire` parameter
@@ -534,7 +534,7 @@ Default value is 10 s.
 
 ```opensips
 ...
-modparam("ratelimit", "repl\_timer\_expire", 10)
+modparam("ratelimit", "repl_timer_expire", 10)
 ...
 ```
 ### Set `pipe_replication_cluster` parameter
@@ -545,7 +545,7 @@ Default value is 0. (no replication)
 
 ```opensips
 ...
-modparam("ratelimit", "pipe\_replication\_cluster", 1)
+modparam("ratelimit", "pipe_replication_cluster", 1)
 ...
 ```
 ### Set `window_size` parameter
@@ -556,7 +556,7 @@ Default value is “10”.
 
 ```opensips
 ...
-modparam("ratelimit", "window\_size", 5)
+modparam("ratelimit", "window_size", 5)
 ...
 ```
 ### Set `slot_period` parameter
@@ -567,9 +567,9 @@ Default value is “200”.
 
 ```opensips
 ...
-modparam("ratelimit", "window\_size", 5)
+modparam("ratelimit", "window_size", 5)
 #we will have 50 slots of 100 milliseconds
-modparam("ratelimit", "slot\_period", 100)
+modparam("ratelimit", "slot_period", 100)
 ...
 ```
 ### `rl_check` usage
@@ -593,24 +593,24 @@ This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, ONREPLY_ROUTE, BRAN
 ```opensips
 ...
 	# perform a pipe match for all INVITE methods using RED algorithm
-	if (is\_method("INVITE")) {
-		if (!rl\_check("pipe\_INVITE", 100, "RED")) {
-			sl\_send\_reply(503, "Server Unavailable");
+	if (is_method("INVITE")) {
+		if (!rl_check("pipe_INVITE", 100, "RED")) {
+			sl_send_reply(503, "Server Unavailable");
 			exit;
 		};
 	};
 ...
 	# use default algorithm for each different gateway
 	$var(limit) = 10;
-	if (!rl\_check("gw\_$ru", $var(limit))) {
-		sl\_send\_reply(503, "Server Unavailable");
+	if (!rl_check("gw_$ru", $var(limit))) {
+		sl_send_reply(503, "Server Unavailable");
 		exit;
 	};
 ...
 	# count only successful calls
-	if (!rl\_check("gw\_$ru", 100)) {
-		rl\_dec\_count("gw\_$ru");
-		sl\_send\_reply(503, "Server Unavailable");
+	if (!rl_check("gw_$ru", 100)) {
+		rl_dec_count("gw_$ru");
+		sl_send_reply(503, "Server Unavailable");
 		exit;
 	};
 ...
@@ -627,10 +627,10 @@ This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, ONREPLY_ROUTE, BRAN
 
 ```opensips
 ...
-	if (!rl\_check("gw\_$ru", 100, "TAILDROP")) {
+	if (!rl_check("gw_$ru", 100, "TAILDROP")) {
 		exit;
 	} else {
-		rl\_dec\_count("gw\_$ru");
+		rl_dec_count("gw_$ru");
 	};
 ...
 ```
@@ -646,10 +646,10 @@ This function can be used from REQUEST_ROUTE, FAILURE_ROUTE, ONREPLY_ROUTE, BRAN
 
 ```opensips
 ...
-	if (!rl\_check("gw\_$ru", 100, "TAILDROP")) {
+	if (!rl_check("gw_$ru", 100, "TAILDROP")) {
 		exit;
 	} else {
-		rl\_reset\_count("gw\_$ru");
+		rl_reset_count("gw_$ru");
 	};
 ...
 ```

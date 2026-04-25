@@ -121,13 +121,13 @@ This function logs the timer with the given ID. The following data are logged:
 
 *   _Last sum_ is the accumulated duration in the current logging interval (i.e. for the last “granularity” calls).
 
-*   _Last min_ is the minimum duration between start/log\_timer calls during the last interval.
+*   _Last min_ is the minimum duration between start/log_timer calls during the last interval.
 
 *   _Last max_ - maximum duration.
 
-*   _Last average_ is the average duration between bm\_start\_timer() and bm\_log\_timer() since the last logging.
+*   _Last average_ is the average duration between bm_start_timer() and bm_log_timer() since the last logging.
 
-*   _Global msgs_ number of calls to log\_timer.
+*   _Global msgs_ number of calls to log_timer.
 
 *   _Global sum_ total duration in microseconds.
 
@@ -149,13 +149,13 @@ This function logs the timer with the given ID. The following data are logged:
 
 ```opensips
 ...
-bm\_log\_timer("test");
+bm_log_timer("test");
 ...
 ```
 
 ### `bm_start_timer(name)`
 
-Start timer “name”. A later call to “bm\_log\_timer()” logs this timer..
+Start timer “name”. A later call to “bm_log_timer()” logs this timer..
 
 **Parameters:**
 
@@ -169,7 +169,7 @@ Start timer “name”. A later call to “bm\_log\_timer()” logs this timer..
 
 ```opensips
 ...
-bm\_start\_timer("test");
+bm_start_timer("test");
 ...
 ```
 
@@ -196,7 +196,7 @@ Enables/disables the module.
 **Example.**
 
 ```opensips
-opensips-cli -x mi bm\_enable\_global 1
+opensips-cli -x mi bm_enable_global 1
 ```
 
 ### `bm_enable_timer`
@@ -211,7 +211,7 @@ Enable or disable a single timer.
 **Example.** Enabling a timer
 
 ```opensips
-opensips-cli -x mi bm\_enable\_timer test 1
+opensips-cli -x mi bm_enable_timer test 1
 ```
 
 ### `bm_granularity`
@@ -246,7 +246,7 @@ opensips-cli -x mi bm_loglevel 4
 
 Returns the current and global results for each timer. This command is only available if the "granularity" variable is set to 0. It can be used to get results in stable time intervals instead of every N messages. Each timer will have 2 nodes - the local and the global values. Format of the values is the same as the one normally used in logfile. This way of getting the results allows to interface with external graphing applications like Munin.
 
-If there were no new calls to _bm\_log\_timer_ since last check, then all current values of a timer will be equal 0. Each call to _bm\_poll\_results_ will reset current values (but not global ones).
+If there were no new calls to _bm_log_timer_ since last check, then all current values of a timer will be equal 0. Each call to _bm_poll_results_ will reset current values (but not global ones).
 
 **Returns:** Returns the current and global results for each timer.
 
@@ -299,7 +299,7 @@ This will set the logging level to L_DBG.
 
 ```opensips
 ...
-bm\_start\_timer("test");
+bm_start_timer("test");
 ...
 ```
 ### `bm_log_timer` usage
@@ -308,7 +308,7 @@ bm\_start\_timer("test");
 
 ```opensips
 ...
-bm\_log\_timer("test");
+bm_log_timer("test");
 ...
 ```
 ### Enabling a timer
@@ -317,7 +317,7 @@ Enabling a timer
 
 ```opensips
 ...
-opensips-cli -x mi bm\_enable\_timer test 1
+opensips-cli -x mi bm_enable_timer test 1
 ...
 ```
 ### Getting the results via FIFO interface
@@ -326,11 +326,11 @@ Getting the results via FIFO interface
 
 ```opensips
 ...
-opensips-cli -x mi bm\_poll\_results
-register\_timer
+opensips-cli -x mi bm_poll_results
+register_timer
 	3/40/12/14/13.333333
 	9/204/12/97/22.666667
-security\_check\_timer
+security_check_timer
 	3/21/7/7/7.000000
 	9/98/7/41/10.888889
 ...
@@ -341,9 +341,9 @@ Measure the duration of user location lookup.
 
 ```opensips
 ...
-bm\_start\_timer("usrloc-lookup");
+bm_start_timer("usrloc-lookup");
 lookup("location");
-bm\_log\_timer("usrloc-lookup");
+bm_log_timer("usrloc-lookup");
 ...
 ```
 ### Using the benchmark module's API from another module
@@ -354,20 +354,20 @@ Using the benchmark module's API from another module
 ...
 #include "../benchmark/benchmark.h"
 ...
-struct bm\_binds bmb;
+struct bm_binds bmb;
 ...
 ...
 /* load the benchmarking API */
-if (load\_bm\_api( &bmb )!=0) {
-    LM\_ERR("can't load benchmark API\\n");
+if (load_bm_api( &bmb )!=0) {
+    LM_ERR("can't load benchmark API\\n");
     goto error;
 }
 ...
 ...
 /* Start/log timers during a (usually user-exported) module function */
-bmb.bm\_register("test", 1, &id)
-bmb.bm\_start(id);
-do\_something();
-bmb.bm\_log(id);
+bmb.bm_register("test", 1, &id)
+bmb.bm_start(id);
+do_something();
+bmb.bm_log(id);
 ...
 ```

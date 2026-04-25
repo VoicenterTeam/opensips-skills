@@ -42,7 +42,7 @@ The default domain for the registered users to be used when constructing the uri
 
 ```opensips
 ...
-modparam("pua\_bla", "default\_domain", "opensips.org")
+modparam("pua_bla", "default_domain", "opensips.org")
 ...
 ```
 ### `header_name` (string)
@@ -55,12 +55,12 @@ The name of the header to be added to Publish requests. It will contain the uri 
 
 ```opensips
 ...
-modparam("pua\_bla", "header\_name", "Sender")
+modparam("pua_bla", "header_name", "Sender")
 ...
 ```
 ### `outbound_proxy` (string)
 
-The outbound\_proxy uri to be used when sending Subscribe requests.
+The outbound_proxy uri to be used when sending Subscribe requests.
 
 *Default value is NULL.*
 
@@ -68,7 +68,7 @@ The outbound\_proxy uri to be used when sending Subscribe requests.
 
 ```opensips
 ...
-modparam("pua\_bla", "outbound\_proxy", "sip:proxy@opensips.org")
+modparam("pua_bla", "outbound_proxy", "sip:proxy@opensips.org")
 ...
 ```
 ### `presence_server` (string)
@@ -81,7 +81,7 @@ The address of the presence server - will be used as an outbound proxy when send
 
 ```opensips
 ...
-modparam("pua\_bla", "presence\_server", "sip:pa@opensips.org")
+modparam("pua_bla", "presence_server", "sip:pa@opensips.org")
 ...
 ```
 ### `server_address` (string)
@@ -92,7 +92,7 @@ The IP address of the server.
 
 ```opensips
 ...
-modparam("pua\_bla", "server\_address", "sip:bla@160.34.23.12")
+modparam("pua_bla", "server_address", "sip:bla@160.34.23.12")
 ...
 ```
 
@@ -108,10 +108,10 @@ The function handles Notify requests sent from phones on the same BLA to the ser
 
 ```opensips
 ...
-if(is\_method("NOTIFY") && $tu=~"bla\_aor@opensips.org") 
+if(is_method("NOTIFY") && $tu=~"bla_aor@opensips.org") 
 {
-		if( bla\_handle\_notify() ) 
-			t\_reply(200, "OK");
+		if( bla_handle_notify() ) 
+			t_reply(200, "OK");
 }	
 ...
 ```
@@ -126,8 +126,8 @@ The function is used to mark REGISTER requests made to a BLA AOR. The modules su
 
 ```opensips
 ...
-if(is\_method("REGISTER") && $tu=~"bla\_aor@opensips.org") 
-	bla\_set\_flag();		
+if(is_method("REGISTER") && $tu=~"bla_aor@opensips.org") 
+	bla_set_flag();		
 ...
 ```
 

@@ -64,7 +64,7 @@ Cache time of a Jabber connection.
 **Example.** 600.
 
 ```opensips
-modparam("jabber", "cache\_time", 600)
+modparam("jabber", "cache_time", 600)
 ```
 ### `check_time` (integer)
 
@@ -75,7 +75,7 @@ Time between checking the status of JabberGW workers (in seconds).
 **Example.** 20.
 
 ```opensips
-modparam("jabber", "check\_time", 20)
+modparam("jabber", "check_time", 20)
 ```
 ### `db_url` (string)
 
@@ -97,7 +97,7 @@ Time to keep a SIP message (in seconds).
 **Example.** 90.
 
 ```opensips
-modparam("jabber", "delay\_time", 90)
+modparam("jabber", "delay_time", 90)
 ```
 ### `jaddress` (string)
 
@@ -143,7 +143,7 @@ Maximum jobs per worker.
 **Example.** 10.
 
 ```opensips
-modparam("jabber", "max\_jobs", 10)
+modparam("jabber", "max_jobs", 10)
 ```
 ### `priority` (string)
 
@@ -175,12 +175,12 @@ modparam("jabber", "proxy", "10.0.0.1:5060 sipserver.com:5060")
 
 The address in whose behalf the INFO and ERROR messages are sent.
 
-*Default value is jabber\_gateway@127.0.0.1.*
+*Default value is jabber_gateway@127.0.0.1.*
 
-**Example.** jabber\_gateway@127.0.0.1.
+**Example.** jabber_gateway@127.0.0.1.
 
 ```opensips
-modparam("jabber", "registrar", "jabber\_gateway@127.0.0.1")
+modparam("jabber", "registrar", "jabber_gateway@127.0.0.1")
 ```
 ### `sleep_time` (integer)
 
@@ -191,7 +191,7 @@ Time between expired Jabber connections checking (in seconds).
 **Example.** 20.
 
 ```opensips
-modparam("jabber", "sleep\_time", 20)
+modparam("jabber", "sleep_time", 20)
 ```
 ### `workers` (integer)
 
@@ -209,7 +209,7 @@ modparam("jabber", "workers", 2)
 
 ### `jab_exit_jconf()`
 
-Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\_server@jdomain .
+Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference_server@jdomain .
 
 **Usable from:** REQUEST_ROUTE
 
@@ -217,7 +217,7 @@ Leave a Jabber conference--the nickname, room name and conference server address
 
 ```opensips
 ...
-jab\_exit\_jconf();
+jab_exit_jconf();
 ...
 ```
 
@@ -231,7 +231,7 @@ Log off from Jabber server the associated Jabber ID of the SIP user.
 
 ```opensips
 ...
-jab\_go\_offline();
+jab_go_offline();
 ...
 ```
 
@@ -245,13 +245,13 @@ Register to the Jabber server with associated Jabber ID of the SIP user.
 
 ```opensips
 ...
-jab\_go\_online();
+jab_go_online();
 ...
 ```
 
 ### `jab_join_jconf()`
 
-Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\_server@jdomain . If the nickname is missing, then the SIP username is used.
+Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference_server@jdomain . If the nickname is missing, then the SIP username is used.
 
 **Usable from:** REQUEST_ROUTE
 
@@ -259,7 +259,7 @@ Join a Jabber conference--the nickname, room name and conference server address 
 
 ```opensips
 ...
-jab\_join\_jconf();
+jab_join_jconf();
 ...
 ```
 
@@ -273,7 +273,7 @@ Converts SIP MESSAGE message to a Jabber message and sends it to Jabber server.
 
 ```opensips
 ...
-jab\_send\_message();
+jab_send_message();
 ...
 ```
 
@@ -285,7 +285,7 @@ Sets the SQL URL of the database.
 
 ```opensips
 ...
-modparam("jabber", "db\_url", "mysql://username:password@host/sip\_jab")
+modparam("jabber", "db_url", "mysql://username:password@host/sip_jab")
 ...
 ```
 ### Set `jaddress` parameter
@@ -339,7 +339,7 @@ Sets the address in whose behalf the INFO and ERROR messages are sent.
 
 ```opensips
 ...
-modparam("jabber", "registrar", "jabber\_gateway@127.0.0.1")
+modparam("jabber", "registrar", "jabber_gateway@127.0.0.1")
 ...
 ```
 ### Set `workers` parameter
@@ -357,7 +357,7 @@ Sets the maximum jobs per worker.
 
 ```opensips
 ...
-modparam("jabber", "max\_jobs", 10)
+modparam("jabber", "max_jobs", 10)
 ...
 ```
 ### Set `cache_time` parameter
@@ -366,7 +366,7 @@ Sets the cache time of a Jabber connection.
 
 ```opensips
 ...
-modparam("jabber", "cache\_time", 600)
+modparam("jabber", "cache_time", 600)
 ...
 ```
 ### Set `delay_time` parameter
@@ -375,7 +375,7 @@ Sets the time to keep a SIP message.
 
 ```opensips
 ...
-modparam("jabber", "delay\_time", 90)
+modparam("jabber", "delay_time", 90)
 ...
 ```
 ### Set `sleep_time` parameter
@@ -384,7 +384,7 @@ Sets the time between expired Jabber connections checking.
 
 ```opensips
 ...
-modparam("jabber", "sleep\_time", 20)
+modparam("jabber", "sleep_time", 20)
 ...
 ```
 ### Set `check_time` parameter
@@ -393,7 +393,7 @@ Sets the time between checking the status of JabberGW workers.
 
 ```opensips
 ...
-modparam("jabber", "check\_time", 20)
+modparam("jabber", "check_time", 20)
 ...
 ```
 ### Set `priority` parameter
@@ -411,7 +411,7 @@ Converts a SIP MESSAGE message to a Jabber message and sends it to the Jabber se
 
 ```opensips
 ...
-jab\_send\_message();
+jab_send_message();
 ...
 ```
 ### `jab_join_jconf()` usage
@@ -420,7 +420,7 @@ Joins a Jabber conference.
 
 ```opensips
 ...
-jab\_join\_jconf();
+jab_join_jconf();
 ...
 ```
 ### `jab_exit_jconf()` usage
@@ -429,7 +429,7 @@ Leaves a Jabber conference.
 
 ```opensips
 ...
-jab\_exit\_jconf();
+jab_exit_jconf();
 ...
 ```
 ### `jab_go_online()` usage
@@ -438,7 +438,7 @@ Registers to the Jabber server.
 
 ```opensips
 ...
-jab\_go\_online();
+jab_go_online();
 ...
 ```
 ### `jab_go_offline()` usage
@@ -447,6 +447,6 @@ Logs off from the Jabber server.
 
 ```opensips
 ...
-jab\_go\_offline();
+jab_go_offline();
 ...
 ```

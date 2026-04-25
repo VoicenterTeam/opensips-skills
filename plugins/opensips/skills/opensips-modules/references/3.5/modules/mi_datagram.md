@@ -50,7 +50,7 @@ The number of child processes to be created. Each child process will be a datagr
 
 ```opensips
 ...
-modparam("mi\_datagram", "children\_count", 3)
+modparam("mi_datagram", "children_count", 3)
 ...
 ```
 ### `pretty_printing` (integer)
@@ -63,7 +63,7 @@ Indicates whether the JSONRPC responses sent through MI should be pretty-printed
 
 ```opensips
 ...
-modparam("mi\_fifo", "pretty\_printing", 1)
+modparam("mi_fifo", "pretty_printing", 1)
 ...
 ```
 ### `socket_name` (string)
@@ -76,14 +76,14 @@ The name of a UNIX SOCKET or an IP address. The UNIX datagram or UDP socket will
 
 ```opensips
 ...
-modparam("mi\_datagram", "socket\_name", "/tmp/opensips.sock")
+modparam("mi_datagram", "socket_name", "/tmp/opensips.sock")
 ...
-modparam("mi\_datagram", "socket\_name", "udp:192.168.2.133:8080")
+modparam("mi_datagram", "socket_name", "udp:192.168.2.133:8080")
 ...
 ```
 ### `socket_timeout` (integer)
 
-The reply will expire after trying to sent it for socket\_timeout milliseconds.
+The reply will expire after trying to sent it for socket_timeout milliseconds.
 
 *Default value is 2000.*
 
@@ -91,18 +91,18 @@ The reply will expire after trying to sent it for socket\_timeout milliseconds.
 
 ```opensips
 ...
-modparam("mi\_datagram", "socket\_timeout", 2000)
+modparam("mi_datagram", "socket_timeout", 2000)
 ...
 ```
 ### `trace_bwlist` (string)
 
-Filter traced mi commands based on a blacklist or a whitelist. **trace\_destination** must be defined for this parameter to have any purpose. Whitelists can be defined using 'w' or 'W', blacklists using 'b' or 'B'. The type is separate by the actual blacklist by ':'. The mi commands in the list must be separated by ','.
+Filter traced mi commands based on a blacklist or a whitelist. **trace_destination** must be defined for this parameter to have any purpose. Whitelists can be defined using 'w' or 'W', blacklists using 'b' or 'B'. The type is separate by the actual blacklist by ':'. The mi commands in the list must be separated by ','.
 
 Defining a blacklists means all the commands that are not blacklisted will be traced. Defining a whitelist means all the commands that are not whitelisted will not be traced. **WARNING:** One can't define both a whitelist and a blacklist. Only one of them is allowed. Defining the parameter a second time will just overwrite the first one.
 
 *Default value is none(not defined).*
 
-**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\_hep)**.
+**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep)**.
 
 **Example.** b: ps, which.
 
@@ -110,28 +110,28 @@ Defining a blacklists means all the commands that are not blacklisted will be tr
 ...
 ## blacklist ps and which mi commands
 ## all the other commands shall be traced
-modparam("mi\_datagram", "trace\_bwlist", "b: ps, which")
+modparam("mi_datagram", "trace_bwlist", "b: ps, which")
 ...
-## allow only sip\_trace mi command
+## allow only sip_trace mi command
 ## all the other commands will not be traced
-modparam("mi\_datagram", "trace\_bwlist", "w: sip\_trace")
+modparam("mi_datagram", "trace_bwlist", "w: sip_trace")
 ...
 ```
 ### `trace_destination` (string)
 
-Trace destination as defined in the tracing module. Currently the only tracing module is **proto\_hep**. This is where traced mi messages will go.
+Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. This is where traced mi messages will go.
 
 *Default value is none(not defined).*
 
-**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\_hep**).
+**Notes:** WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**).
 
 **Example.** hep_dest.
 
 ```opensips
 ...
-modparam("proto\_hep", "trace\_destination", "\[hep\_dest\]10.0.0.2;transport=tcp;version=3")
+modparam("proto_hep", "trace_destination", "\[hep_dest\]10.0.0.2;transport=tcp;version=3")
 
-modparam("mi\_datagram", "trace\_destination", "hep\_dest")
+modparam("mi_datagram", "trace_destination", "hep_dest")
 ...
 ```
 ### `unix_socket_group` (integer, string)
@@ -144,8 +144,8 @@ Group to be used for creating the listening UNIX socket.
 
 ```opensips
 ...
-modparam("mi\_datagram", "unix\_socket\_group", 0)
-modparam("mi\_datagram", "unix\_socket\_group", "root")
+modparam("mi_datagram", "unix_socket_group", 0)
+modparam("mi_datagram", "unix_socket_group", "root")
 ...
 ```
 ### `unix_socket_mode` (integer)
@@ -158,7 +158,7 @@ Permission to be used for creating the listening UNIX datagram socket. Not neces
 
 ```opensips
 ...
-modparam("mi\_datagram", "unix\_socket\_mode", 0600)
+modparam("mi_datagram", "unix_socket_mode", 0600)
 ...
 ```
 ### `unix_socket_user` (integer, string)
@@ -171,8 +171,8 @@ User to be used for creating the listening UNIX socket.
 
 ```opensips
 ...
-modparam("mi\_datagram", "unix\_socket\_user", 0)
-modparam("mi\_datagram", "unix\_socket\_user", "root")
+modparam("mi_datagram", "unix_socket_user", 0)
+modparam("mi_datagram", "unix_socket_user", "root")
 ...
 ```
 
@@ -180,8 +180,8 @@ modparam("mi\_datagram", "unix\_socket\_user", "root")
 
 ### Example 1.10. DATAGRAM request
 
-This is an example showing the DATAGRAM format for the “get\_statistics dialog: tm:” MI commad: request.
+This is an example showing the DATAGRAM format for the “get_statistics dialog: tm:” MI commad: request.
 
 ```opensips
-{"jsonrpc":"2.0","method":"get\_statistics","id":"1065","params":\[\["dialog:","tm:"\]\]}
+{"jsonrpc":"2.0","method":"get_statistics","id":"1065","params":\[\["dialog:","tm:"\]\]}
 ```

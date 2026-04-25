@@ -47,7 +47,7 @@ This parameter ranges from 1 to 9 and it specifies the level of compression you 
 
 ```opensips
 ...
-modparam("mc", "mc\_level", "3")
+modparam("mc", "mc_level", "3")
 ...
 ```
 
@@ -126,14 +126,14 @@ if (!mc_decompress())
 
 ```opensips
 ...
-modparam("mc", "mc\_level", "3")
+modparam("mc", "mc_level", "3")
 ...
 ```
 ### `mc_compress` usage
 
 ```opensips
 ...
-if (!mc\_compress(0, "bhs", "Max-Forwards|Subject|P-Asserted-Identity"))
+if (!mc_compress(0, "bhs", "Max-Forwards|Subject|P-Asserted-Identity"))
 	xlog("compression failed\\n");
 ...
 ```
@@ -144,7 +144,7 @@ if (!mc\_compress(0, "bhs", "Max-Forwards|Subject|P-Asserted-Identity"))
 $avp(algo) = 1;
 $var(flags) = "bs";
 $var(list) = "Max-Forwards | Contact";
-mc\_compres($avp(algo), $var(flags), $var(list);
+mc_compres($avp(algo), $var(flags), $var(list);
 xlog("compression registered\\n");
 ...
 ```
@@ -152,7 +152,7 @@ xlog("compression registered\\n");
 
 ```opensips
 ...
-if (!mc\_compact("Max-Forwards|P-Asserted-Identity"))
+if (!mc_compact("Max-Forwards|P-Asserted-Identity"))
 	xlog("compaction failed\\n");
 ...
 ```
@@ -160,7 +160,7 @@ if (!mc\_compact("Max-Forwards|P-Asserted-Identity"))
 
 ```opensips
 ...
-if (!mc\_decompress())
+if (!mc_decompress())
 	xlog("decompression failed\\n");
 ...
 ```

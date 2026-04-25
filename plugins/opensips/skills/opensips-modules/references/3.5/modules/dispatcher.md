@@ -18,7 +18,7 @@ Reference for the OpenSIPs 3.5 dispatcher module. Read this file when configurin
 
 ## Overview
 
-This modules implements a dispatcher for destination addresses. It computes hashes over various parts of the request and selects an address from a destination set. The selected address may then either overwrite the R-URI of a SIP request or be used as an outbound proxy. The module can be used as a stateless load balancer, having no guarantee of fair distribution. For the distribution algorithm, the module allows the definition of weights for the destination. This is useful in order to get a different ratio of traffic between destinations. Starting with version 2.1, the dispatcher module keeps its destination sets into different partitions. Each partition is described by its own "db_url", "table_name", "dst_avp", "grp_avp", "cnt_avp", "sock_avp", "attr_avp", "blacklists", "ping_from", "ping_method" and "persistent_state" set of attributes. Setting any of these module parameters will only alter the "default" partition's properties. In order to create a new partition, the [partition](#param_partition "1.3.26.�partition (string)") parameter can be used. If none of the 8 partition specific parameters are defined for the "default" partition, then this partition will not be created. Once the "default" partition is created, any undefined parameter from other partitions will inherit the value of the corresponding parameter of the "default" partition. If there is no "default" partition, the default value specified in the parameter's description will be used. Finally, note that each dispatcher table specified using the "table_name" partition attribute requires a corresponding "version" table record within the partition's database, specified through "db_url". Since version 2.1, the "flags" parameter has been moved to ds_select_dst() and ds_select_domain() along with "force_dst" and "use_default" flags.
+This modules implements a dispatcher for destination addresses. It computes hashes over various parts of the request and selects an address from a destination set. The selected address may then either overwrite the R-URI of a SIP request or be used as an outbound proxy. The module can be used as a stateless load balancer, having no guarantee of fair distribution. For the distribution algorithm, the module allows the definition of weights for the destination. This is useful in order to get a different ratio of traffic between destinations. Starting with version 2.1, the dispatcher module keeps its destination sets into different partitions. Each partition is described by its own "db_url", "table_name", "dst_avp", "grp_avp", "cnt_avp", "sock_avp", "attr_avp", "blacklists", "ping_from", "ping_method" and "persistent_state" set of attributes. Setting any of these module parameters will only alter the "default" partition's properties. In order to create a new partition, the [partition](#param_partition "1.3.26.partition (string)") parameter can be used. If none of the 8 partition specific parameters are defined for the "default" partition, then this partition will not be created. Once the "default" partition is created, any undefined parameter from other partitions will inherit the value of the corresponding parameter of the "default" partition. If there is no "default" partition, the default value specified in the parameter's description will be used. Finally, note that each dispatcher table specified using the "table_name" partition attribute requires a corresponding "version" table record within the partition's database, specified through "db_url". Since version 2.1, the "flags" parameter has been moved to ds_select_dst() and ds_select_domain() along with "force_dst" and "use_default" flags.
 
 ## Dependencies
 
@@ -40,25 +40,25 @@ None.
 
 ### `algo_route` (str)
 
-Name of the route to be called when using algo 10. The route will get as param the dst\_uri, attrs and script\_attrs for the dispatcher entry that currently needs to be evaluated ( available via $param(1), $param(2) and $param(3) or via $param(dst\_uri), $param(attrs) and $param(script\_attrs) when the route gets called ). The return value of the route is considered by the dispatcher module to be the current weight of the dispatcher entry, and when using the 10 algo, the dispatcher entries are sorted in ascending weight order. If the returned value from the algo route is negative, the current dispatcher entry will be automatically skipped from usage
+Name of the route to be called when using algo 10. The route will get as param the dst_uri, attrs and script_attrs for the dispatcher entry that currently needs to be evaluated ( available via $param(1), $param(2) and $param(3) or via $param(dst_uri), $param(attrs) and $param(script_attrs) when the route gets called ). The return value of the route is considered by the dispatcher module to be the current weight of the dispatcher entry, and when using the 10 algo, the dispatcher entries are sorted in ascending weight order. If the returned value from the algo route is negative, the current dispatcher entry will be automatically skipped from usage
 
 *Default value is “null” - disabled..*
 
-**Example.** my\_dispatcher\_logic).
+**Example.** my_dispatcher_logic).
 
 ```opensips
-modparam("dispatcher", "algo\_route", "my\_dispatcher\_logic)")
+modparam("dispatcher", "algo_route", "my_dispatcher_logic)")
 ```
 ### `attrs_avp` (str)
 
-The name of the avp to contain the attributes string of the current destination. When a destination is selected, automatically, this AVP will provide the attributes string - this is an opaque string (from OpenSIPS point of view) : it is loaded from destination definition ( via DB) and blindly provided in the script. Setting this parameter will only change the default partition's attrs\_avp. Use the partition parameter to create and alter other partitions.
+The name of the avp to contain the attributes string of the current destination. When a destination is selected, automatically, this AVP will provide the attributes string - this is an opaque string (from OpenSIPS point of view) : it is loaded from destination definition ( via DB) and blindly provided in the script. Setting this parameter will only change the default partition's attrs_avp. Use the partition parameter to create and alter other partitions.
 
 *Default value is “null” - don't provide ATTRIBUTEs..*
 
 **Example.** $avp(272).
 
 ```opensips
-modparam("dispatcher", "attrs\_avp", "$avp(272)")
+modparam("dispatcher", "attrs_avp", "$avp(272)")
 ```
 ### `attrs_col` (string)
 
@@ -123,14 +123,14 @@ modparam("dispatcher", "cnt_avp", "$avp(274)")
 ```
 ### `db_url` (string)
 
-The default DB connection of the module, overriding the global 'db\_default\_url' setting. Once specified, partitions which are missing the 'db\_url' property will inherit their URL from this value.
+The default DB connection of the module, overriding the global 'db_default_url' setting. Once specified, partitions which are missing the 'db_url' property will inherit their URL from this value.
 
 *Default value is “NULL”.*
 
 **Example.** mysql://user:passwb@localhost/database.
 
 ```opensips
-modparam("dispatcher", "db\_url", "mysql://user:passwb@localhost/database")
+modparam("dispatcher", "db_url", "mysql://user:passwb@localhost/database")
 ```
 ### `destination_col` (string)
 
@@ -308,7 +308,7 @@ String with PVs used for the hashing algorithm 7.
 **Example.** $avp(273).
 
 ```opensips
-modparam("dispatcher", "hash\_pvar", "$avp(273)")
+modparam("dispatcher", "hash_pvar", "$avp(273)")
 ```
 ### `max_freeswitch_weight` (integer)
 
@@ -398,14 +398,14 @@ modparam("dispatcher", "pvar_algo_pattern", "$stat(load_%u)")
 ```
 ### `script_attrs_avp` (str)
 
-Name of the avp to contain the script attributes string of the current destination. When a destination is selected, automatically, this AVP will provide the attributes string - this is an opaque string (from OpenSIPS point of view) : it is provided via the ds\_push\_script\_attrs MI or SCRIPT function.
+Name of the avp to contain the script attributes string of the current destination. When a destination is selected, automatically, this AVP will provide the attributes string - this is an opaque string (from OpenSIPS point of view) : it is provided via the ds_push_script_attrs MI or SCRIPT function.
 
 *Default value is “null” - don't provide SCRIPT ATTRIBUTEs..*
 
-**Example.** $avp(script\_attrs).
+**Example.** $avp(script_attrs).
 
 ```opensips
-modparam("dispatcher", "attrs\_avp", "$avp(script\_attrs)")
+modparam("dispatcher", "attrs_avp", "$avp(script_attrs)")
 ```
 ### `setid_col` (string)
 

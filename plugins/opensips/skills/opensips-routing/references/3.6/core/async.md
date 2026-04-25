@@ -36,20 +36,20 @@ route
 {
     /* preparation code */
     ...
-    async(avp\_db\_query("SELECT credit FROM users WHERE uid='$avp(uid)'", "$avp(credit)"), resume\_credit);
+    async(avp_db_query("SELECT credit FROM users WHERE uid='$avp(uid)'", "$avp(credit)"), resume_credit);
     /* script execution is paused right away! */
 }
 
-route \[resume\_credit\]
+route \[resume_credit\]
 {
     if ($rc < 0) {
-        xlog("error $rc in avp\_db\_query()\n");
+        xlog("error $rc in avp_db_query()\n");
         exit;
     }
 
     xlog("Credit of user $avp(uid) is $avp(credit)\n");
     ...
-    t\_relay();
+    t_relay();
 }
 ```
 
@@ -80,18 +80,18 @@ route
     ...
 
     # send a push notification asynchronously, in parallel
-    launch(exec("/usr/local/bin/send-google-pn.py"), pn\_counter);
-    t\_relay();
+    launch(exec("/usr/local/bin/send-google-pn.py"), pn_counter);
+    t_relay();
 }
 
-route \[pn\_counter\]
+route \[pn_counter\]
 {
     if ($rc < 0) {
         xlog("error $rc in pn script!\n");
-        update\_stat("pn-failure", "1");
+        update_stat("pn-failure", "1");
         exit;
     }
 
-    update\_stat("pn-success", "1");
+    update_stat("pn-success", "1");
 }
 ```

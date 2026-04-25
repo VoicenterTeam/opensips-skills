@@ -48,29 +48,29 @@ If the parameter is set to empty string, the AAA accounting support will be disa
 **Example.** radius:/etc/radiusclient-ng/radiusclient.conf.
 
 ```opensips
-modparam("peering", "aaa\_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
+modparam("peering", "aaa_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
 ```
 ### `verify_destination_service_type` (integer)
 
-This is the value of the Service-Type AAA attribute to be used, when sender of SIP Request verifies request's destination using verify\_destination() function.
+This is the value of the Service-Type AAA attribute to be used, when sender of SIP Request verifies request's destination using verify_destination() function.
 
 *Default value is dictionary value of “Sip-Verify-Destination” Service-Type.*
 
 **Example.** 21.
 
 ```opensips
-modparam("peering", "verify\_destination\_service\_type", 21)
+modparam("peering", "verify_destination_service_type", 21)
 ```
 ### `verify_source_service_type` (integer)
 
-This is the value of the Service-Type AAA attribute to be used, when receiver of SIP Request verifies request's source using verify\_source() function.
+This is the value of the Service-Type AAA attribute to be used, when receiver of SIP Request verifies request's source using verify_source() function.
 
 *Default value is dictionary value of “Sip-Verify-Source” Service-Type.*
 
 **Example.** 22.
 
 ```opensips
-modparam("peering", "verify\_source\_service\_type", 22)
+modparam("peering", "verify_source_service_type", 22)
 ```
 
 ## Exported Functions
@@ -110,8 +110,8 @@ AVP names used in reply attributes are assigned by the broker.
 
 ```opensips
 ...
-if (verify\_destination()) {
-   append\_hf("P-Request-Hash: $avp(prh)\\r\\n");
+if (verify_destination()) {
+   append_hf("P-Request-Hash: $avp(prh)\\r\\n");
 }
 ...
 ```
@@ -151,9 +151,9 @@ AVP names used in reply attributes are assigned by the broker.
 
 ```opensips
 ...
-if (is\_present\_hf("P-Request-Hash")) {
-   if (verify\_source()) {
-      xlog("L\_INFO", "Request came from trusted peer\\n")
+if (is_present_hf("P-Request-Hash")) {
+   if (verify_source()) {
+      xlog("L_INFO", "Request came from trusted peer\\n")
    }
 }
 ...
@@ -167,7 +167,7 @@ Sets the aaa_url parameter.
 
 ```opensips
 ...
-modparam("peering", "aaa\_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
+modparam("peering", "aaa_url", "radius:/etc/radiusclient-ng/radiusclient.conf")
 ...
 ```
 ### `verify_destination_service_type` parameter usage
@@ -176,7 +176,7 @@ Sets the verify_destination_service_type parameter.
 
 ```opensips
 ...
-modparam("peering", "verify\_destination\_service\_type", 21)
+modparam("peering", "verify_destination_service_type", 21)
 ...
 ```
 ### `verify_source_service_type` parameter usage
@@ -185,7 +185,7 @@ Sets the verify_source_service_type parameter.
 
 ```opensips
 ...
-modparam("peering", "verify\_source\_service\_type", 22)
+modparam("peering", "verify_source_service_type", 22)
 ...
 ```
 ### `verify_destination()` usage
@@ -194,8 +194,8 @@ Demonstrates usage of the verify_destination() function.
 
 ```opensips
 ...
-if (verify\_destination()) {
-   append\_hf("P-Request-Hash: $avp(prh)\\r\\n");
+if (verify_destination()) {
+   append_hf("P-Request-Hash: $avp(prh)\\r\\n");
 }
 ...
 ```
@@ -205,9 +205,9 @@ Demonstrates usage of the verify_source() function.
 
 ```opensips
 ...
-if (is\_present\_hf("P-Request-Hash")) {
-   if (verify\_source()) {
-      xlog("L\_INFO", "Request came from trusted peer\\n")
+if (is_present_hf("P-Request-Hash")) {
+   if (verify_source()) {
+      xlog("L_INFO", "Request came from trusted peer\\n")
    }
 }
 ...

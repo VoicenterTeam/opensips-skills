@@ -50,7 +50,7 @@ The name of the script route to be run in order to retrieve the status of a feat
 
 ```opensips
 ...
-modparam("presence\_dfks", "get\_route", "dfks\_get")
+modparam("presence_dfks", "get_route", "dfks_get")
 ...
 ```
 ### `set_route` (string)
@@ -63,7 +63,7 @@ The name of the script route to be run when a feature status update from a SIP p
 
 ```opensips
 ...
-modparam("presence\_dfks", "set\_route", "dfks\_set")
+modparam("presence_dfks", "set_route", "dfks_set")
 ...
 ```
 
@@ -91,7 +91,7 @@ This pseudo-variable can be used in the routes triggered by the module to handle
 
 *   _status_ - read or write the feature status. A value of _1_ means enabled and _0_ disabled.
     
-*   _param_ - returns the parameter passed by the _mi\_dfks\_set\_feature_ MI function. This field will be _NULL_ if the parameter was not specified, or if the _set\_route_ is not triggered by an MI command, but by SIP signalling.
+*   _param_ - returns the parameter passed by the _mi_dfks_set_feature_ MI function. This field will be _NULL_ if the parameter was not specified, or if the _set_route_ is not triggered by an MI command, but by SIP signalling.
     
 *   _value/field_ - read or write extra feature values. _field_ can be one of:
     
@@ -152,7 +152,7 @@ Note: calling this MI function also triggers the set_route run. One can determin
 **Example.**
 
 ```opensips-cli
-opensips-cli -x mi dfks\_set\_feature sip:alice@10.0.0.11 CallForwardingNoAnswer 1 1 \
+opensips-cli -x mi dfks_set_feature sip:alice@10.0.0.11 CallForwardingNoAnswer 1 1 \
 ringCount/4 forwardTo/sip:bob@10.0.0.11
 ```
 

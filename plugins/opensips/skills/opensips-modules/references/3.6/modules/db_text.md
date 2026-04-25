@@ -52,7 +52,7 @@ Size of the buffer used to read the text file.
 **Example.** 8192.
 
 ```opensips
-modparam("db\_text", "buffer\_size", 8192)
+modparam("db_text", "buffer_size", 8192)
 ```
 ### `db_mode` (integer)
 
@@ -68,7 +68,7 @@ Set caching mode (0) or non-caching mode (1). In caching mode, data is loaded at
 **Example.** 1.
 
 ```opensips
-modparam("db\_text", "db\_mode", 1)
+modparam("db_text", "db_mode", 1)
 ```
 
 ## Exported MI Functions

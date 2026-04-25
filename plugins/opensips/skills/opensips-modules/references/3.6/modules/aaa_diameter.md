@@ -30,13 +30,13 @@ Any module that wishes to use it has to do the following:
 
 The module implements the core AAA OpenSIPS interface, thus offering an alternative client implementation to the [aaa_radius](aaa_radius) module which can be useful, for example, when performing billing and accounting for the live SIP calls.
 
-In addition to the RADIUS client's auth and accounting features, the Diameter client includes support for sending _arbitrary_ Diameter requests, further opening up the scope of applications which can be achieved through OpenSIPS scripting. Such Diameter requests can be sent using the [dm_send_request()](#func_dm_send_request "1.6.1.� dm_send_request(app_id, cmd_code, avps_json, [rpl_avps_pv])") function.
+In addition to the RADIUS client's auth and accounting features, the Diameter client includes support for sending _arbitrary_ Diameter requests, further opening up the scope of applications which can be achieved through OpenSIPS scripting. Such Diameter requests can be sent using the [dm_send_request()](#func_dm_send_request "1.6.1. dm_send_request(app_id, cmd_code, avps_json, [rpl_avps_pv])") function.
 
 Starting with OpenSIPS **3.5**, the Diameter module includes _server-side_ support as well.
 
-First, the [event_route](event_route) module must be loaded in order to be able to process [E_DM_REQUEST](#event_dm_request "1.8.1.� E_DM_REQUEST") events in the OpenSIPS configuration file. These events will contain all necessary information on the incoming Diameter request.
+First, the [event_route](event_route) module must be loaded in order to be able to process [E_DM_REQUEST](#event_dm_request "1.8.1. E_DM_REQUEST") events in the OpenSIPS configuration file. These events will contain all necessary information on the incoming Diameter request.
 
-Finally, once the request information is processed and the answer AVPs are prepared, script writers should use the [dm_send_answer()](#func_dm_send_answer "1.6.2.� dm_send_answer(avps_json, [is_error])") function in order to reply with a Diameter answer message.
+Finally, once the request information is processed and the answer AVPs are prepared, script writers should use the [dm_send_answer()](#func_dm_send_answer "1.6.2. dm_send_answer(avps_json, [is_error])") function in order to reply with a Diameter answer message.
 
 _Recommendation:_ When possible, always load the **dict_sip.fdx** freeDiameter extension module inside your _freeDiameter.conf_ configuration file, as it contains hundreds of well-known AVP definitions which may be good to have when inter-operating with other Diameter peer implementations.
 
@@ -64,9 +64,9 @@ URL of the diameter client: the configuration file, with an optional extra-avps-
 **Example.** Set the `aaa_url` parameter.
 
 ```opensips
-modparam("aaa\_diameter", "aaa\_url", "diameter:freeDiameter-client.conf")
+modparam("aaa_diameter", "aaa_url", "diameter:freeDiameter-client.conf")
 
-modparam("aaa\_diameter", "aaa\_url", "diameter:freeDiameter-client.conf;extra-avps-file:dictionary.opensips")
+modparam("aaa_diameter", "aaa_url", "diameter:freeDiameter-client.conf;extra-avps-file:dictionary.opensips")
 ```
 ### `answer_timeout` (integer)
 
@@ -77,7 +77,7 @@ Time, in milliseconds, after which a dm_send_request() function call with no rec
 **Example.** Set the `answer_timeout` parameter.
 
 ```opensips
-modparam("aaa\_diameter", "answer\_timeout", 5000)
+modparam("aaa_diameter", "answer_timeout", 5000)
 ```
 ### `fd_log_level` (integer)
 
@@ -98,7 +98,7 @@ This parameter measures the quietness of the logging done by the freeDiameter li
 **Example.** Set the `fd_log_level` parameter.
 
 ```opensips
-modparam("aaa\_diameter", "fd\_log\_level", 0)
+modparam("aaa_diameter", "fd_log_level", 0)
 ```
 ### `peer_identity` (string)
 
@@ -109,7 +109,7 @@ The identity (realm subdomain) of the Diameter server peer, to which the OpenSIP
 **Example.** Set the `peer_identity` parameter.
 
 ```opensips
-modparam("aaa\_diameter", "peer\_identity", "server")
+modparam("aaa_diameter", "peer_identity", "server")
 ```
 ### `realm` (string)
 
@@ -120,7 +120,7 @@ The unique realm to be used by all participating Diameter peers.
 **Example.** Set the `realm` parameter.
 
 ```opensips
-modparam("aaa\_diameter", "realm", "opensips.org")
+modparam("aaa_diameter", "realm", "opensips.org")
 ```
 
 ## Exported Functions
@@ -312,42 +312,42 @@ This event is raised whenever the aaa_diameter module is loaded and OpenSIPS rec
 Setting the `fd_log_level` parameter
 
 ```opensips
-modparam("aaa\_diameter", "fd\_log\_level", 0)
+modparam("aaa_diameter", "fd_log_level", 0)
 ```
 ### Setting the `realm` parameter
 
 Setting the `realm` parameter
 
 ```opensips
-modparam("aaa\_diameter", "realm", "opensips.org")
+modparam("aaa_diameter", "realm", "opensips.org")
 ```
 ### Setting the `peer_identity` parameter
 
 Setting the `peer_identity` parameter
 
 ```opensips
-modparam("aaa\_diameter", "peer\_identity", "server")
+modparam("aaa_diameter", "peer_identity", "server")
 ```
 ### Setting the `aaa_url` parameter
 
 Setting the `aaa_url` parameter
 
 ```opensips
-modparam("aaa\_diameter", "aaa\_url", "diameter:freeDiameter-client.conf")
+modparam("aaa_diameter", "aaa_url", "diameter:freeDiameter-client.conf")
 ```
 ### Setting the `aaa_url` parameter
 
 Setting the `aaa_url` parameter with an extra AVPs file.
 
 ```opensips
-modparam("aaa\_diameter", "aaa\_url", "diameter:freeDiameter-client.conf;extra-avps-file:dictionary.opensips")
+modparam("aaa_diameter", "aaa_url", "diameter:freeDiameter-client.conf;extra-avps-file:dictionary.opensips")
 ```
 ### Setting the `answer_timeout` parameter
 
 Setting the `answer_timeout` parameter
 
 ```opensips
-modparam("aaa\_diameter", "answer\_timeout", 5000)
+modparam("aaa_diameter", "answer_timeout", 5000)
 ```
 ### `dictionary.opensips` extended syntax
 
@@ -357,11 +357,11 @@ Example of defining custom Diameter AVPs, Application IDs, Requests and Replies 
 # Example of defining custom Diameter AVPs, Application IDs,
 # Requests and Replies in the "dictionary.opensips" file
 
-ATTRIBUTE out\_gw            232 string
-ATTRIBUTE trunk\_id          233 string
+ATTRIBUTE out_gw            232 string
+ATTRIBUTE trunk_id          233 string
 
-ATTRIBUTE rated\_duration    234 integer
-ATTRIBUTE call\_cost         235 integer
+ATTRIBUTE rated_duration    234 integer
+ATTRIBUTE call_cost         235 integer
 
 ATTRIBUTE Exponent          429 integer32
 ATTRIBUTE Value-Digits      447 integer64
@@ -402,8 +402,8 @@ REQUEST 92001 My-Custom-Request
 	Sip-Call-Setuptime | REQUIRED | 1
 	Sip-Call-Created | REQUIRED | 1
 	Sip-Call-MSDuration | REQUIRED | 1
-	out\_gw | REQUIRED | 1
-	call\_cost | REQUIRED | 1
+	out_gw | REQUIRED | 1
+	call_cost | REQUIRED | 1
 	Cost-Information | OPTIONAL | 1
 }
 
@@ -434,7 +434,7 @@ $var(payload) = "\[
 	{ \"Sip-Call-Setuptime\": 1 },
 	{ \"Sip-Call-Created\": 1652372541 },
 	{ \"Sip-Call-MSDuration\": 5850 },
-	{ \"out\_gw\": \"GW-774\" },
+	{ \"out_gw\": \"GW-774\" },
 	{ \"cost\": \"10.84\" },
 	{ \"Cost-Information\": \[
 		{\"Unit-Value\": \[{\"Value-Digits\": 1000}\]},
@@ -442,9 +442,9 @@ $var(payload) = "\[
 		\]}
 ]";
 
-$var(rc) = dm\_send\_request(42, 92001, $var(payload), $var(rpl\_avps));
-xlog("rc: $var(rc), AVPs: $var(rpl\_avps)\\n");
-$json(avps) := $var(rpl\_avps);
+$var(rc) = dm_send_request(42, 92001, $var(payload), $var(rpl_avps));
+xlog("rc: $var(rc), AVPs: $var(rpl_avps)\\n");
+$json(avps) := $var(rpl_avps);
 ```
 ### `dm_send_answer()` usage
 
@@ -493,7 +493,7 @@ $var(payload) = "\[
 	{ \"Sip-Call-Setuptime\": 1 },
 	{ \"Sip-Call-Created\": 1652372541 },
 	{ \"Sip-Call-MSDuration\": 5850 },
-	{ \"out\_gw\": \"GW-774\" },
+	{ \"out_gw\": \"GW-774\" },
 	{ \"cost\": \"10.84\" },
 	{ \"Cost-Information\": \[
 		{\"Unit-Value\": \[{\"Value-Digits\": 1000}\]},
@@ -501,7 +501,7 @@ $var(payload) = "\[
 		\]}
 ]";
 
-async(dm\_send\_request(42, 92001, $var(payload), $var(rpl_avps), dm_reply);
+async(dm_send_request(42, 92001, $var(payload), $var(rpl_avps), dm_reply);
 
 route[dm_reply] {
 	xlog("rc: $retcode, AVPs: $var(rpl_avps)\\n");

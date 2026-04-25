@@ -98,18 +98,18 @@ In some cases(configurations) however this is not desirable, so this parameter w
 **Example.** Set the `bla_fix_remote_target` parameter.
 
 ```opensips
-modparam("presence", "bla\_fix\_remote\_target", 0)
+modparam("presence", "bla_fix_remote_target", 0)
 ```
 ### `bla_presentity_spec` (string)
 
-By default the presentity uri for BLA subscribes (event=dialog;sla) is computed from contact username + from domain. In some cases though, this way of computing the presentity might not be right (for example if you have a SBC in front that masquerades the contact). So we added this parameter that allows defining a custom uri to be used as presentity uri for BLA subscribes. You should set this parameter to the name of a pseudovariable and then set this pseudovariable to the desired URI before calling the [handle\_subscribe()](#func_handle_subscribe "1.5.2.� handle_subscribe([force_active] [,sharing_tag])") function.
+By default the presentity uri for BLA subscribes (event=dialog;sla) is computed from contact username + from domain. In some cases though, this way of computing the presentity might not be right (for example if you have a SBC in front that masquerades the contact). So we added this parameter that allows defining a custom uri to be used as presentity uri for BLA subscribes. You should set this parameter to the name of a pseudovariable and then set this pseudovariable to the desired URI before calling the [handle_subscribe()](#func_handle_subscribe "1.5.2. handle_subscribe([force_active] [,sharing_tag])") function.
 
 *Default value is NULL.*
 
 **Example.** Set the `bla_presentity_spec` parameter.
 
 ```opensips
-modparam("presence", "bla\_presentity\_spec", "$var(bla\_pres)")
+modparam("presence", "bla_presentity_spec", "$var(bla_pres)")
 ```
 ### `clean_period` (integer)
 
@@ -122,7 +122,7 @@ The period at which to clean the expired subscription dialogs.
 **Example.** Set the `clean_period` parameter.
 
 ```opensips
-modparam("presence", "clean\_period", 100)
+modparam("presence", "clean_period", 100)
 ```
 ### `cluster_be_active_shtag` (string)
 
@@ -133,15 +133,15 @@ The name of a cluster sharing tag to be used to indicate when this node (as part
 **Example.** local_ha.
 
 ```opensips
-modparam("presence", "cluster\_be\_active\_shtag" ,"local\_ha")
+modparam("presence", "cluster_be_active_shtag" ,"local_ha")
 ```
 ### `cluster_federation_mode` (string)
 
 When enabling the federation mode, nodes inside the presence cluster will start broadcasting the data to other nodes via the clustering support.
 
-If you don't want to use a shared database (via [fallback2db](#param_fallback2db "1.4.2.�fallback2db (int)"), but still want a complete data set everywhere, you may choose mode _full-sharing_. This mode allows you to switch PUBLISH endpoints, even for already published Event States, thus allowing you to add and remove presence servers without losing state.
+If you don't want to use a shared database (via [fallback2db](#param_fallback2db "1.4.2.fallback2db (int)"), but still want a complete data set everywhere, you may choose mode _full-sharing_. This mode allows you to switch PUBLISH endpoints, even for already published Event States, thus allowing you to add and remove presence servers without losing state.
 
-For more on presence clustering see the [Section�1.2, “Presence clustering”](#presence_clustering "1.2.�Presence clustering") chapter.
+For more on presence clustering see the [Section1.2, “Presence clustering”](#presence_clustering "1.2.Presence clustering") chapter.
 
 *Default value is disabled.*
 
@@ -162,7 +162,7 @@ The ID of the cluster this presence server belongs to. This parameter is to be u
 
 This OpenSIPS cluster exposes the **"presence"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **"seed"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.
 
-For more on presence clustering see the [Section�1.2, “Presence clustering”](#presence_clustering "1.2.�Presence clustering") chapter.
+For more on presence clustering see the [Section1.2, “Presence clustering”](#presence_clustering "1.2.Presence clustering") chapter.
 
 *Default value is None.*
 
@@ -175,7 +175,7 @@ modparam("presence", "cluster_id", 2)
 
 Comma Separated Value (CSV) list with the events to considered by the federated cluster - only presentities advertising one of these events will be broadcasted via the cluster.
 
-For more on presence clustering see the [Section�1.2, “Presence clustering”](#presence_clustering "1.2.�Presence clustering") chapter.
+For more on presence clustering see the [Section1.2, “Presence clustering”](#presence_clustering "1.2.Presence clustering") chapter.
 
 *Default value is empty (meaning all).*
 
@@ -193,7 +193,7 @@ This is the username that will be used in the Contact header for the 200 OK repl
 **Example.** presence.
 
 ```opensips
-modparam("presence", "contact\_user", "presence")
+modparam("presence", "contact_user", "presence")
 ```
 ### `db_update_period` (integer)
 
@@ -206,7 +206,7 @@ The period at which to synchronize cached subscriber info with the database.
 **Example.** Set the `db_update_period` parameter.
 
 ```opensips
-modparam("presence", "db\_update\_period", 100)
+modparam("presence", "db_update_period", 100)
 ```
 ### `db_url` (string)
 
@@ -229,7 +229,7 @@ This parameter is a flag that should be set if permission rules include sphere c
 **Example.** Set the `enable_sphere_check` parameter.
 
 ```opensips
-modparam("presence", "enable\_sphere\_check", 1)
+modparam("presence", "enable_sphere_check", 1)
 ```
 ### `end_sub_on_timeout` (integer)
 
@@ -240,7 +240,7 @@ If a presence subscription should be automatically terminated (destroyed) when r
 **Example.** Set the `end_sub_on_timeout` parameter.
 
 ```opensips
-modparam("presence", "end\_sub\_on\_timeout", 0)
+modparam("presence", "end_sub_on_timeout", 0)
 ```
 ### `expires_offset` (integer)
 
@@ -251,7 +251,7 @@ The extra time to store a subscription/publication.
 **Example.** 10.
 
 ```opensips
-modparam("presence", "expires\_offset", 10)
+modparam("presence", "expires_offset", 10)
 ```
 ### `fallback2db` (integer)
 
@@ -271,7 +271,7 @@ The the maximum admissible expires value for PUBLISH messages.
 **Example.** 3600.
 
 ```opensips
-modparam("presence", "max\_expires\_publish", 3600)
+modparam("presence", "max_expires_publish", 3600)
 ```
 ### `max_expires_subscribe` (integer)
 
@@ -282,18 +282,18 @@ The the maximum admissible expires value for SUBSCRIBE messages.
 **Example.** 3600.
 
 ```opensips
-modparam("presence", "max\_expires\_subscribe", 3600)
+modparam("presence", "max_expires_subscribe", 3600)
 ```
 ### `mix_dialog_presence` (integer)
 
-This module parameter enables a very nice feature in the presence server - generating presence information from dialogs state. If this parameter is set, the presence server will tell you if a buddy is in a call even if his phone did not send a presence Publish with this information. You will need to load the dialoginfo modules, presence\_dialoginfo, pua\_dialoginfo, dialog and pua.
+This module parameter enables a very nice feature in the presence server - generating presence information from dialogs state. If this parameter is set, the presence server will tell you if a buddy is in a call even if his phone did not send a presence Publish with this information. You will need to load the dialoginfo modules, presence_dialoginfo, pua_dialoginfo, dialog and pua.
 
 *Default value is 0.*
 
 **Example.** Set the `mix_dialog_presence` parameter.
 
 ```opensips
-modparam("presence", "mix\_dialog\_presence", 1)
+modparam("presence", "mix_dialog_presence", 1)
 ```
 ### `notify_offline_body` (integer)
 
@@ -304,7 +304,7 @@ If this parameter is set, when no published info is found for a user, the presen
 **Example.** Set the `notify_offline_body` parameter.
 
 ```opensips
-modparam("presence", "notify\_offline\_body", 1)
+modparam("presence", "notify_offline_body", 1)
 ```
 ### `pres_htable_size` (integer)
 
@@ -328,7 +328,7 @@ The name of the db table where Publish information are stored.
 **Example.** Set the `presentity_table` parameter.
 
 ```opensips
-modparam("presence", "presentity\_table", "presentity")
+modparam("presence", "presentity_table", "presentity")
 ```
 ### `subs_htable_size` (integer)
 
@@ -354,7 +354,7 @@ The number of days to keep the record of a subscription in server database if th
 **Example.** Set the `waiting_subs_daysno` parameter.
 
 ```opensips
-modparam("presence", "waiting\_subs\_daysno", 2)
+modparam("presence", "waiting_subs_daysno", 2)
 ```
 ### `watchers_table` (string)
 
@@ -438,7 +438,7 @@ if($rm=="SUBSCRIBE")
 
 ### `E_PRESENCE_EXPOSED`
 
-This event is raised for each presentity exposeed by the _pres\_expose_.
+This event is raised for each presentity exposeed by the _pres_expose_.
 
 **Parameters:**
 
@@ -471,7 +471,7 @@ Set `db_url` parameter
 
 ```opensips
 ...
-modparam("presence", "db\_url", 
+modparam("presence", "db_url", 
 	"mysql://opensips:opensipsrw@192.168.2.132/opensips")
 ...
 ```
@@ -490,7 +490,7 @@ Set `cluster_id` parameter
 
 ```opensips
 ...
-modparam("presence", "cluster\_id", 2)
+modparam("presence", "cluster_id", 2)
 ...
 ```
 ### Set `cluster_federation_mode` parameter
@@ -499,7 +499,7 @@ Set `cluster_federation_mode` parameter
 
 ```opensips
 ...
-modparam("presence", "cluster\_federation\_mode", "full-sharing")
+modparam("presence", "cluster_federation_mode", "full-sharing")
 ...
 ```
 ### Set `cluster_pres_events` parameter
@@ -508,7 +508,7 @@ Set `cluster_pres_events` parameter
 
 ```opensips
 ...
-modparam("presence", "cluster\_pres\_events" ,"presence, dialog;sla, message-summary")
+modparam("presence", "cluster_pres_events" ,"presence, dialog;sla, message-summary")
 ...
 ```
 ### Set `cluster_be_active_shtag` parameter
@@ -517,7 +517,7 @@ Set `cluster_be_active_shtag` parameter
 
 ```opensips
 ...
-modparam("presence", "cluster\_be\_active\_shtag" ,"local\_ha")
+modparam("presence", "cluster_be_active_shtag" ,"local_ha")
 ...
 ```
 ### Set `expires_offset` parameter
@@ -526,7 +526,7 @@ Set `expires_offset` parameter
 
 ```opensips
 ...
-modparam("presence", "expires\_offset", 10)
+modparam("presence", "expires_offset", 10)
 ...
 ```
 ### Set `max_expires_subscribe` parameter
@@ -535,7 +535,7 @@ Set `max_expires_subscribe` parameter
 
 ```opensips
 ...
-modparam("presence", "max\_expires\_subscribe", 3600)
+modparam("presence", "max_expires_subscribe", 3600)
 ...
 ```
 ### Set `max_expires_publish` parameter
@@ -544,7 +544,7 @@ Set `max_expires_publish` parameter
 
 ```opensips
 ...
-modparam("presence", "max\_expires\_publish", 3600)
+modparam("presence", "max_expires_publish", 3600)
 ...
 ```
 ### Set `contact_user` parameter
@@ -553,7 +553,7 @@ Set `contact_user` parameter
 
 ```opensips
 ...
-modparam("presence", "contact\_user", "presence")
+modparam("presence", "contact_user", "presence")
 ...
 ```
 ### Set `enable_sphere_check` parameter
@@ -562,7 +562,7 @@ Set `enable_sphere_check` parameter
 
 ```opensips
 ...
-modparam("presence", "enable\_sphere\_check", 1)
+modparam("presence", "enable_sphere_check", 1)
 ...
 ```
 ### Set `waiting_subs_daysno` parameter
@@ -571,7 +571,7 @@ Set `waiting_subs_daysno` parameter
 
 ```opensips
 ...
-modparam("presence", "waiting\_subs\_daysno", 2)
+modparam("presence", "waiting_subs_daysno", 2)
 ...
 ```
 ### Set `mix_dialog_presence` parameter
@@ -580,7 +580,7 @@ Set `mix_dialog_presence` parameter
 
 ```opensips
 ...
-modparam("presence", "mix\_dialog\_presence", 1)
+modparam("presence", "mix_dialog_presence", 1)
 ...
 ```
 ### Set `bla_presentity_spec` parameter
@@ -589,7 +589,7 @@ Set `bla_presentity_spec` parameter
 
 ```opensips
 ...
-modparam("presence", "bla\_presentity\_spec", "$var(bla\_pres)")
+modparam("presence", "bla_presentity_spec", "$var(bla_pres)")
 ...
 ```
 ### Set `bla_fix_remote_target` parameter
@@ -598,7 +598,7 @@ Set `bla_fix_remote_target` parameter
 
 ```opensips
 ...
-modparam("presence", "bla\_fix\_remote\_target", 0)
+modparam("presence", "bla_fix_remote_target", 0)
 ...
 ```
 ### Set `notify_offline_body` parameter
@@ -607,7 +607,7 @@ Set `notify_offline_body` parameter
 
 ```opensips
 ...
-modparam("presence", "notify\_offline\_body", 1)
+modparam("presence", "notify_offline_body", 1)
 ...
 ```
 ### Set `end_sub_on_timeout` parameter
@@ -616,7 +616,7 @@ Set `end_sub_on_timeout` parameter
 
 ```opensips
 ...
-modparam("presence", "end\_sub\_on\_timeout", 0)
+modparam("presence", "end_sub_on_timeout", 0)
 ...
 ```
 ### Set `clean_period` parameter
@@ -643,7 +643,7 @@ Set `presentity_table` parameter
 
 ```opensips
 ...
-modparam("presence", "presentity\_table", "presentity")
+modparam("presence", "presentity_table", "presentity")
 ...
 ```
 ### Set `active_watchers_table` parameter
@@ -652,7 +652,7 @@ Set `active_watchers_table` parameter
 
 ```opensips
 ...
-modparam("presence", "active\_watchers\_table", "active\_watchers")
+modparam("presence", "active_watchers_table", "active_watchers")
 ...
 ```
 ### Set `watchers_table` parameter
@@ -661,7 +661,7 @@ Set `watchers_table` parameter
 
 ```opensips
 ...
-modparam("presence", "watchers\_table", "watchers")
+modparam("presence", "watchers_table", "watchers")
 ...
 ```
 ### Set `subs_htable_size` parameter
@@ -670,7 +670,7 @@ Set `subs_htable_size` parameter
 
 ```opensips
 ...
-modparam("presence", "subs\_htable\_size", 11)
+modparam("presence", "subs_htable_size", 11)
 ...
 ```
 ### Set `pres_htable_size` parameter
@@ -679,7 +679,7 @@ Set `pres_htable_size` parameter
 
 ```opensips
 ...
-modparam("presence", "pres\_htable\_size", 11)
+modparam("presence", "pres_htable_size", 11)
 ...
 ```
 ### `handle_publish` usage
@@ -688,12 +688,12 @@ modparam("presence", "pres\_htable\_size", 11)
 
 ```opensips
 ...
-	if(is\_method("PUBLISH"))
+	if(is_method("PUBLISH"))
 	{
 		if($hdr(Sender)!= NULL)
-			handle\_publish($hdr(Sender));
+			handle_publish($hdr(Sender));
 		else
-			handle\_publish();
+			handle_publish();
 	} 
 ...
 ```
@@ -704,6 +704,6 @@ modparam("presence", "pres\_htable\_size", 11)
 ```opensips
 ...
 if($rm=="SUBSCRIBE")
-    handle\_subscribe();
+    handle_subscribe();
 ...
 ```

@@ -49,7 +49,7 @@ Force create dialog if it is not created from the configuration script.
 **Example.** yes.
 
 ```opensips
-modparam("uac", "force\_dialog", yes)
+modparam("uac", "force_dialog", yes)
 ```
 ### `restore_mode` (string)
 
@@ -74,7 +74,7 @@ There are 3 mode of restoring the original headers (FROM/TO) URI:
 **Example.** auto.
 
 ```opensips
-modparam("uac","restore\_mode","auto")
+modparam("uac","restore_mode","auto")
 ```
 ### `restore_passwd` (string)
 
@@ -84,10 +84,10 @@ String password to be used to encrypt the RR storing parameter (when replacing t
 
 **Notes:** Default value of this parameter is empty.
 
-**Example.** my\_secret\_passwd.
+**Example.** my_secret_passwd.
 
 ```opensips
-modparam("uac","restore\_passwd","my\_secret\_passwd")
+modparam("uac","restore_passwd","my_secret_passwd")
 ```
 ### `rr_from_store_param` (string)
 
@@ -97,10 +97,10 @@ Name of Record-Route header parameter that will be used to store (encoded) the o
 
 **Notes:** This parameter is optional, it's default value being “vsf”.
 
-**Example.** my\_Fparam.
+**Example.** my_Fparam.
 
 ```opensips
-modparam("uac","rr\_from\_store\_param","my\_Fparam")
+modparam("uac","rr_from_store_param","my_Fparam")
 ```
 ### `rr_to_store_param` (string)
 
@@ -110,10 +110,10 @@ Name of Record-Route header parameter that will be used to store (encoded) the o
 
 **Notes:** This parameter is optional, it's default value being “vst”.
 
-**Example.** my\_Tparam.
+**Example.** my_Tparam.
 
 ```opensips
-modparam("uac","rr\_to\_store\_param","my\_Tparam")
+modparam("uac","rr_to_store_param","my_Tparam")
 ```
 
 ## Exported Functions
@@ -138,14 +138,14 @@ This function can be called only from failure route and will build the authentic
 
 ```opensips
 ...
-uac\_auth();
+uac_auth();
 ...
-failure\_route[check\_auth] {
+failure_route[check_auth] {
     ...
-    if ($T\_reply\_code==407) {
-        if (uac\_auth("MD5,MD5-sess")) {
+    if ($T_reply_code==407) {
+        if (uac_auth("MD5,MD5-sess")) {
             # auth is succesful, just relay
-            t\_relay();
+            t_relay();
             exit;
         }
         # auth failed (no credentials maybe)
@@ -170,7 +170,7 @@ This function can be called to increase the CSeq of an ongoing request. It recei
 
 ```opensips
 ...
-uac\_inc\_cseq(1);
+uac_inc_cseq(1);
 ...
 ```
 
@@ -190,15 +190,15 @@ Replace in FROM header the display name or/and the URI part. Both parameters are
 ```opensips
 ...
 # replace both display and uri
-uac\_replace\_from($avp(display),$avp(uri));
+uac_replace_from($avp(display),$avp(uri));
 # replace only display and do not touch uri
-uac\_replace\_from("batman","");
+uac_replace_from("batman","");
 # remove display and replace uri
-uac\_replace\_from("","sip:robin@gotham.org");
+uac_replace_from("","sip:robin@gotham.org");
 # remove display and do not touch uri
-uac\_replace\_from("","");
+uac_replace_from("","");
 # replace the URI without touching the display
-uac\_replace\_from( , "sip:batman@gotham.org");
+uac_replace_from( , "sip:batman@gotham.org");
 ...
 ```
 
@@ -218,15 +218,15 @@ Replace in TO header the display name or/and the URI part. Both parameters are s
 ```opensips
 ...
 # replace both display and uri
-uac\_replace\_from($avp(display),$avp(uri));
+uac_replace_from($avp(display),$avp(uri));
 # replace only display and do not touch uri
-uac\_replace\_from("batman","");
+uac_replace_from("batman","");
 # remove display and replace uri
-uac\_replace\_from("","sip:robin@gotham.org");
+uac_replace_from("","sip:robin@gotham.org");
 # remove display and do not touch uri
-uac\_replace\_from("","");
+uac_replace_from("","");
 # replace the URI without touching the display
-uac\_replace\_from( , "sip:batman@gotham.org");
+uac_replace_from( , "sip:batman@gotham.org");
 ...
 ```
 
@@ -240,7 +240,7 @@ This function will check if the FROM URI was modified and will use the informati
 
 ```opensips
 ...
-uac\_restore\_from();
+uac_restore_from();
 ...
 ```
 
@@ -254,7 +254,7 @@ This function will check if the TO URI was modified and will use the information
 
 ```opensips
 ...
-uac\_restore\_from();
+uac_restore_from();
 ...
 ```
 
@@ -266,7 +266,7 @@ Sets the restore_mode parameter to 'auto'.
 
 ```opensips
 ...
-modparam("uac","restore\_mode","auto")
+modparam("uac","restore_mode","auto")
 ...
 ```
 ### Set `restore_passwd` parameter
@@ -275,7 +275,7 @@ Sets the restore_passwd parameter to 'my_secret_passwd'.
 
 ```opensips
 ...
-modparam("uac","restore\_passwd","my\_secret\_passwd")
+modparam("uac","restore_passwd","my_secret_passwd")
 ...
 ```
 ### Set `rr_from_store_param` parameter
@@ -284,7 +284,7 @@ Sets the rr_from_store_param parameter to 'my_Fparam'.
 
 ```opensips
 ...
-modparam("uac","rr\_from\_store\_param","my\_Fparam")
+modparam("uac","rr_from_store_param","my_Fparam")
 ...
 ```
 ### Set `rr_to_store_param` parameter
@@ -293,7 +293,7 @@ Sets the rr_to_store_param parameter to 'my_Tparam'.
 
 ```opensips
 ...
-modparam("uac","rr\_to\_store\_param","my\_Tparam")
+modparam("uac","rr_to_store_param","my_Tparam")
 ...
 ```
 ### Set `force_dialog` parameter
@@ -302,7 +302,7 @@ Sets the force_dialog parameter to 'yes'.
 
 ```opensips
 ...
-modparam("uac", "force\_dialog", yes)
+modparam("uac", "force_dialog", yes)
 ...
 ```
 ### `uac_replace_from`/`uac_replace_to` usage
@@ -312,15 +312,15 @@ Demonstrates various ways to replace display names and URIs in FROM/TO headers.
 ```opensips
 ...
 # replace both display and uri
-uac\_replace\_from($avp(display),$avp(uri));
+uac_replace_from($avp(display),$avp(uri));
 # replace only display and do not touch uri
-uac\_replace\_from("batman","");
+uac_replace_from("batman","");
 # remove display and replace uri
-uac\_replace\_from("","sip:robin@gotham.org");
+uac_replace_from("","sip:robin@gotham.org");
 # remove display and do not touch uri
-uac\_replace\_from("","");
+uac_replace_from("","");
 # replace the URI without touching the display
-uac\_replace\_from( , "sip:batman@gotham.org");
+uac_replace_from( , "sip:batman@gotham.org");
 ...
 ```
 ### `uac_restore_from`/`uac_restore_to` usage
@@ -329,7 +329,7 @@ Demonstrates restoring the original FROM URI.
 
 ```opensips
 ...
-uac\_restore\_from();
+uac_restore_from();
 ...
 ```
 ### `uac_auth` usage
@@ -338,14 +338,14 @@ Demonstrates using uac_auth in a failure route with specific algorithms.
 
 ```opensips
 ...
-uac\_auth();
+uac_auth();
 ...
-failure\_route\[check\_auth\] {
+failure_route\[check_auth\] {
     ...
-    if ($T\_reply\_code==407) {
-        if (uac\_auth("MD5,MD5-sess")) {
+    if ($T_reply_code==407) {
+        if (uac_auth("MD5,MD5-sess")) {
             # auth is succesful, just relay
-            t\_relay();
+            t_relay();
             exit;
         }
         # auth failed (no credentials maybe)
@@ -361,6 +361,6 @@ Demonstrates incrementing the CSeq.
 
 ```opensips
 ...
-uac\_inc\_cseq(1);
+uac_inc_cseq(1);
 ...
 ```

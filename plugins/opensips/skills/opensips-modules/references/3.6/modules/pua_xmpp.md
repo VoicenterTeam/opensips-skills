@@ -44,7 +44,7 @@ The the address of the presence server. If set, it will be used as outbound prox
 **Example.** Set the `presence_server` parameter.
 
 ```opensips
-modparam("pua\_xmpp", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_xmpp", "presence_server", "sip:pa@opensips.org:5075")
 ```
 ### `server_address` (string)
 
@@ -53,7 +53,7 @@ The IP address of the server.
 **Example.** Set the `server_address` parameter.
 
 ```opensips
-modparam("pua\_xmpp", "server\_address", "sip:sa@opensips.org:5060")
+modparam("pua_xmpp", "server_address", "sip:sa@opensips.org:5060")
 ```
 
 ## Exported Functions
@@ -68,10 +68,10 @@ Function that handles Notify messages addressed to a user from an xmpp domain. I
 
 ```opensips
 ...
-	if( is\_method("NOTIFY") && $ru=~"sip:.+@sip-xmpp.siphub.ro")
+	if( is_method("NOTIFY") && $ru=~"sip:.+@sip-xmpp.siphub.ro")
 	{
 		if(Notify2Xmpp())
-			t\_reply(200, "OK");
+			t_reply(200, "OK");
 		exit;
 	}
 ...
@@ -92,14 +92,14 @@ Function called when a Subscribe addressed to a user from a xmpp domain is recei
 
 ```opensips
 ...
-	if( is\_method("SUBSCRIBE"))
+	if( is_method("SUBSCRIBE"))
 	{
-		handle\_subscribe();
+		handle_subscribe();
 		if($ru=~"sip:.+@sip-xmpp.siphub.ro" && $hdr(Event)== "presence")
 		{
-			pua\_xmpp\_req\_winfo($ruri, $hdr(Expires));
+			pua_xmpp_req_winfo($ruri, $hdr(Expires));
 		}
-		t\_release();
+		t_release();
 	}
 ...
 ```
@@ -112,7 +112,7 @@ Set `server_address` parameter
 
 ```opensips
 ...
-modparam("pua\_xmpp", "server\_address", "sip:sa@opensips.org:5060")
+modparam("pua_xmpp", "server_address", "sip:sa@opensips.org:5060")
 ...
 ```
 ### Set `presence_server` parameter
@@ -121,7 +121,7 @@ Set `presence_server` parameter
 
 ```opensips
 ...
-modparam("pua\_xmpp", "presence\_server", "sip:pa@opensips.org:5075")
+modparam("pua_xmpp", "presence_server", "sip:pa@opensips.org:5075")
 ...
 ```
 ### `Notify2Xmpp` usage
@@ -130,10 +130,10 @@ modparam("pua\_xmpp", "presence\_server", "sip:pa@opensips.org:5075")
 
 ```opensips
 ...
-	if( is\_method("NOTIFY") && $ru=~"sip:.+@sip-xmpp.siphub.ro")
+	if( is_method("NOTIFY") && $ru=~"sip:.+@sip-xmpp.siphub.ro")
 	{
 		if(Notify2Xmpp())
-			t\_reply(200, "OK");
+			t_reply(200, "OK");
 		exit;
 	}
 ...
@@ -144,14 +144,14 @@ modparam("pua\_xmpp", "presence\_server", "sip:pa@opensips.org:5075")
 
 ```opensips
 ...
-	if( is\_method("SUBSCRIBE"))
+	if( is_method("SUBSCRIBE"))
 	{
-		handle\_subscribe();
+		handle_subscribe();
 		if($ru=~"sip:.+@sip-xmpp.siphub.ro" && $hdr(Event)== "presence")
 		{
-			pua\_xmpp\_req\_winfo($ruri, $hdr(Expires));
+			pua_xmpp_req_winfo($ruri, $hdr(Expires));
 		}
-		t\_release();
+		t_release();
 	}
 
 ...

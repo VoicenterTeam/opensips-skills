@@ -41,12 +41,12 @@ Sets the separator between the parameters of the event in the logging file.
 
 ```opensips
 ...
-modparam("event\_flatstore", "delimiter", ";")
+modparam("event_flatstore", "delimiter", ";")
 ...
 ```
 ### `escape_delimiter` (string)
 
-Optional replacement sequence that will be written _instead of_ the [`delimiter`](#param_delimiter "1.5.2.�delimiter (string)") whenever this character (or sequence) occurs inside a string parameter. This allows you to keep the log file parse-friendly even when user data itself may contain delimiter symbols.
+Optional replacement sequence that will be written _instead of_ the [`delimiter`](#param_delimiter "1.5.2.delimiter (string)") whenever this character (or sequence) occurs inside a string parameter. This allows you to keep the log file parse-friendly even when user data itself may contain delimiter symbols.
 
 *Default value is “"” (escaping disabled).*
 
@@ -56,8 +56,8 @@ Optional replacement sequence that will be written _instead of_ the [`delimiter`
 
 ```opensips
 ...
-modparam("event\_flatstore", "delimiter", ",")
-modparam("event\_flatstore", "escape\_delimiter", "|")
+modparam("event_flatstore", "delimiter", ",")
+modparam("event_flatstore", "escape_delimiter", "|")
 ...
 ```
 ### `file_permissions` (string)
@@ -70,7 +70,7 @@ Sets the permissions for the newly created logs. It expects a string representat
 
 ```opensips
 ...
-modparam("event\_flatstore", "file\_permissions", "664")
+modparam("event_flatstore", "file_permissions", "664")
 ...
 ```
 ### `max_open_sockets` (integer)
@@ -83,7 +83,7 @@ Defines the maximum number of simultaneously opened files by the module. If the 
 
 ```opensips
 ...
-modparam("event\_flatstore", "max\_open\_sockets", 200)
+modparam("event_flatstore", "max_open_sockets", 200)
 ...
 ```
 ### `rotate_count` (int|string)
@@ -96,7 +96,7 @@ Defines after how many written lines the log file is rotated. The value may exce
 
 ```opensips
 ...
-modparam("event\_flatstore", "rotate\_count", "5000000000")
+modparam("event_flatstore", "rotate_count", "5000000000")
 ...
 ```
 ### `rotate_period` (int)
@@ -109,8 +109,8 @@ When used, it triggers a file auto-rotate. The period is matched against the abs
 
 ```opensips
 ...
-modparam("event\_flatstore", "rotate\_period", 60) # rotate every minute
-modparam("event\_flatstore", "rotate\_period", 3660) # rotate every hour
+modparam("event_flatstore", "rotate_period", 60) # rotate every minute
+modparam("event_flatstore", "rotate_period", 3660) # rotate every hour
 ...
 ```
 ### `rotate_size` (int|string)
@@ -123,12 +123,12 @@ Sets the maximum size of a file before it is rotated. A size suffix of “k”, 
 
 ```opensips
 ...
-modparam("event\_flatstore", "rotate\_size", "2g")
+modparam("event_flatstore", "rotate_size", "2g")
 ...
 ```
 ### `suffix` (string)
 
-Modifies the file that OpenSIPS writes events into by appending a suffix to the the file specified in the flatstore _socket_. The suffix can contain string formats (i.e. variables mixed with strings). The path of the resulted file is evaluated when the first event is raised/written in the file after a reload happend, or when the _rotate\_period_, if specified, triggers a rotate. This parameter does not affect the matching of the event socket - the matching will be done exclusively using the flatstore _socket_ registered.
+Modifies the file that OpenSIPS writes events into by appending a suffix to the the file specified in the flatstore _socket_. The suffix can contain string formats (i.e. variables mixed with strings). The path of the resulted file is evaluated when the first event is raised/written in the file after a reload happend, or when the _rotate_period_, if specified, triggers a rotate. This parameter does not affect the matching of the event socket - the matching will be done exclusively using the flatstore _socket_ registered.
 
 *Default value is “"” (no suffix is added).*
 
@@ -136,7 +136,7 @@ Modifies the file that OpenSIPS writes events into by appending a suffix to the 
 
 ```opensips
 ...
-modparam("event\_flatstore", "suffix", "$time(%Y)")
+modparam("event_flatstore", "suffix", "$time(%Y)")
 ...
 ```
 ### `suppress_event_name` (int)
@@ -149,7 +149,7 @@ Suppresses the name of the event in the log file.
 
 ```opensips
 ...
-modparam("event\_flatstore", "suppress\_event\_name", 1)
+modparam("event_flatstore", "suppress_event_name", 1)
 ...
 ```
 
@@ -173,7 +173,7 @@ opensips-cli -x mi evi_flat_rotate _path_to_log_file_
 
 ### `E_FLATSTORE_ROTATION`
 
-The event is raised every time _event\_flatstore_ opens a new log file (manual **evi\_flat\_rotate**, auto-rotate by `rotate_period`, or thresholds `rotate_count`/`rotate_size`). External apps can subscribe to monitor log-rotation activity.
+The event is raised every time _event_flatstore_ opens a new log file (manual **evi_flat_rotate**, auto-rotate by `rotate_period`, or thresholds `rotate_count`/`rotate_size`). External apps can subscribe to monitor log-rotation activity.
 
 **Parameters:**
 

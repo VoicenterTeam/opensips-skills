@@ -60,7 +60,7 @@ The amount of milliseconds an asynchronous call should wait for getting an authe
 **Example.** 2000.
 
 ```opensips
-modparam("auth\_aka", "async\_timeout", 2000)
+modparam("auth_aka", "async_timeout", 2000)
 ```
 ### `default_algorithm` (string)
 
@@ -73,7 +73,7 @@ The default algorithm to be advertise during challenge, if the functions do not 
 **Example.** AKAv2-MD5.
 
 ```opensips
-modparam("auth\_aka", "default\_algorithm", "AKAv2-MD5")
+modparam("auth_aka", "default_algorithm", "AKAv2-MD5")
 ```
 ### `default_av_mgm` (string)
 
@@ -82,7 +82,7 @@ The default AV Manager used in case the functions do not provide them explicitly
 **Example.** diameter.
 
 ```opensips
-modparam("auth\_aka", "default\_av\_mgm", "diameter") # fetch AVs through the Cx interface
+modparam("auth_aka", "default_av_mgm", "diameter") # fetch AVs through the Cx interface
 ```
 ### `default_qop` (string)
 
@@ -93,7 +93,7 @@ The default qop parameter used during challenge, if the functions do not provide
 **Example.** auth,auth-int.
 
 ```opensips
-modparam("auth\_aka", "default\_qop", "auth,auth-int")
+modparam("auth_aka", "default_qop", "auth,auth-int")
 ```
 ### `hash_size` (integer)
 
@@ -106,7 +106,7 @@ The size of the hash that stores the AVs for each user. Must be a power of 2 num
 **Example.** 1024.
 
 ```opensips
-modparam("auth\_aka", "hash\_size", 1024)
+modparam("auth_aka", "hash_size", 1024)
 ```
 ### `pending_timeout` (integer)
 
@@ -119,7 +119,7 @@ The amount of seconds an authentication vector that is being used in the authent
 **Example.** 10.
 
 ```opensips
-modparam("auth\_aka", "pending\_timeout", 10)
+modparam("auth_aka", "pending_timeout", 10)
 ```
 ### `sync_timeout` (integer)
 
@@ -134,7 +134,7 @@ The amount of milliseconds a synchronous call should wait for getting an authent
 **Example.** 200.
 
 ```opensips
-modparam("auth\_aka", "sync\_timeout", 200)
+modparam("auth_aka", "sync_timeout", 200)
 ```
 ### `unused_timeout` (integer)
 
@@ -147,7 +147,7 @@ The amount of seconds an authentication vector that has not been used can stay i
 **Example.** 120.
 
 ```opensips
-modparam("auth\_aka", "unused\_timeout", 120)
+modparam("auth_aka", "unused_timeout", 120)
 ```
 
 ## Exported Functions
@@ -498,7 +498,7 @@ The default AV Manager used in case the functions do not provide them explicitly
 
 ```opensips
 		
-modparam("auth\_aka", "default\_av\_mgm", "diameter") # fetch AVs through the Cx interface
+modparam("auth_aka", "default_av_mgm", "diameter") # fetch AVs through the Cx interface
 
 ```
 ### `default_qop` parameter usage
@@ -507,7 +507,7 @@ The default qop parameter used during challenge, if the functions do not provide
 
 ```opensips
 		
-modparam("auth\_aka", "default\_qop", "auth,auth-int")
+modparam("auth_aka", "default_qop", "auth,auth-int")
 
 ```
 ### `default_algorithm` parameter usage
@@ -516,7 +516,7 @@ The default algorithm to be advertise during challenge, if the functions do not 
 
 ```opensips
 		
-modparam("auth\_aka", "default\_algorithm", "AKAv2-MD5")
+modparam("auth_aka", "default_algorithm", "AKAv2-MD5")
 
 ```
 ### `hash_size` parameter usage
@@ -525,7 +525,7 @@ The size of the hash that stores the AVs for each user. Must be a power of 2 num
 
 ```opensips
 		
-modparam("auth\_aka", "hash\_size", 1024)
+modparam("auth_aka", "hash_size", 1024)
 
 ```
 ### `sync_timeout` parameter usage
@@ -534,7 +534,7 @@ The amount of milliseconds a synchronous call should wait for getting an authent
 
 ```opensips
 		
-modparam("auth\_aka", "sync\_timeout", 200)
+modparam("auth_aka", "sync_timeout", 200)
 
 ```
 ### `async_timeout` parameter usage
@@ -542,7 +542,7 @@ modparam("auth\_aka", "sync\_timeout", 200)
 The amount of milliseconds an asynchronous call should wait for getting an authentication vector.
 
 ```opensips
-modparam("auth\_aka", "async\_timeout", 2000)
+modparam("auth_aka", "async_timeout", 2000)
 
 ```
 ### `unused_timeout` parameter usage
@@ -550,7 +550,7 @@ modparam("auth\_aka", "async\_timeout", 2000)
 The amount of seconds an authentication vector that has not been used can stay in memory. Once this timeout is reached, the authentication vector is removed.
 
 ```opensips
-modparam("auth\_aka", "unused\_timeout", 120)
+modparam("auth_aka", "unused_timeout", 120)
 
 ```
 ### `pending_timeout` parameter usage
@@ -558,65 +558,65 @@ modparam("auth\_aka", "unused\_timeout", 120)
 The amount of seconds an authentication vector that is being used in the authentication process shall stay in memory. Once this timeout is reached, the authentication vector is removed, and the authentication using it will fail.
 
 ```opensips
-modparam("auth\_aka", "pending\_timeout", 10)
+modparam("auth_aka", "pending_timeout", 10)
 
 ```
 ### `aka_www_authorize` usage
 
-The function verifies credentials according to RFC3310, by using an authentication vector priorly allocated by an `aka_www_challenge()` call, using the _av\_mgm_ manager. If the credentials are verified successfully the function will succeed, otherwise it will fail with an appropriate error code, as follows: * _\-6 (sync request)_ - the _auts_ parameter was was present, thus a sync was requested; * _\-5 (generic error)_ - some generic error occurred and no reply was sent out; * _\-4 (no credentials)_ - credentials were not found in request; * _\-3 (unknown nonce)_ - authentication vector with the corresponding nonce was not found; * _\-2 (invalid password)_ - password does not match the authentication vector; * _\-1 (invalid username)_ - no username found in the Authorize header; In case the function succeeds, the _WWW-Authenticate_ header is being added to the reply, containing the challenge information, as well as the _Integrity-Key_ and the _Confidentiality-Key_ values associated to the AV being used.
+The function verifies credentials according to RFC3310, by using an authentication vector priorly allocated by an `aka_www_challenge()` call, using the _av_mgm_ manager. If the credentials are verified successfully the function will succeed, otherwise it will fail with an appropriate error code, as follows: * _\-6 (sync request)_ - the _auts_ parameter was was present, thus a sync was requested; * _\-5 (generic error)_ - some generic error occurred and no reply was sent out; * _\-4 (no credentials)_ - credentials were not found in request; * _\-3 (unknown nonce)_ - authentication vector with the corresponding nonce was not found; * _\-2 (invalid password)_ - password does not match the authentication vector; * _\-1 (invalid username)_ - no username found in the Authorize header; In case the function succeeds, the _WWW-Authenticate_ header is being added to the reply, containing the challenge information, as well as the _Integrity-Key_ and the _Confidentiality-Key_ values associated to the AV being used.
 
 ```opensips
 		
 ...
-if (!aka\_www\_authorize("diameter", "siphub.com"))
-	aka\_www\_challenge("diameter", "siphub.com", "auth");
+if (!aka_www_authorize("diameter", "siphub.com"))
+	aka_www_challenge("diameter", "siphub.com", "auth");
 ...
   
 ```
 ### `aka_proxy_authorize` usage
 
-The function behaves the same as aka\_www\_authorize(), but it authenticates the user from a proxy perspective. It receives the same parameters, with the same meaning, and returns the same values.
+The function behaves the same as aka_www_authorize(), but it authenticates the user from a proxy perspective. It receives the same parameters, with the same meaning, and returns the same values.
 
 ```opensips
 		
 ...
-if (!aka\_proxy\_authorize("siphub.com"))
-	aka\_proxy\_challenge("diameter", "siphub.com", "auth");
+if (!aka_proxy_authorize("siphub.com"))
+	aka_proxy_challenge("diameter", "siphub.com", "auth");
 ...
   
 ```
-### aka\_www\_challenge usage
+### aka_www_challenge usage
 
-The function challenges a user agent. It fetches an authentication vector for each algorigthm used through the _av\_mgm_ Manager and generate one or more WWW-Authenticate header fields containing digest challenges. It will put the header field(s) into a response generated from the request the server is processing and will send the reply. Upon reception of such a reply the user agent should compute credentials using the used authentication vector annd retry the request. For more information regarding digest authentication see RFC2617, RFC3261, RFC3310 and RFC8760.
+The function challenges a user agent. It fetches an authentication vector for each algorigthm used through the _av_mgm_ Manager and generate one or more WWW-Authenticate header fields containing digest challenges. It will put the header field(s) into a response generated from the request the server is processing and will send the reply. Upon reception of such a reply the user agent should compute credentials using the used authentication vector annd retry the request. For more information regarding digest authentication see RFC2617, RFC3261, RFC3310 and RFC8760.
 
 ```opensips
 ...
-if (!aka\_www\_authorize("siphub.com")) {
-	aka\_www\_challenge(,"siphub.com", "auth-int", "AKAv1-MD5");
+if (!aka_www_authorize("siphub.com")) {
+	aka_www_challenge(,"siphub.com", "auth-int", "AKAv1-MD5");
 }
 ...
   
 ```
 ### `aka_proxy_challenge` usage
 
-The function behaves the same as aka\_www\_challenge(), but it challenges the user from a proxy perspective. It receives the same parameters, with the same meaning, the only difference being that in case of the _realm_ is missing, then it is taken from the the _To domain_, rather than from _From domain_. The header added is _Proxy-Authenticate_, rather than _WWW-Authenticate_ The rest of the parameters, behavior, as well as return values are the same.
+The function behaves the same as aka_www_challenge(), but it challenges the user from a proxy perspective. It receives the same parameters, with the same meaning, the only difference being that in case of the _realm_ is missing, then it is taken from the the _To domain_, rather than from _From domain_. The header added is _Proxy-Authenticate_, rather than _WWW-Authenticate_ The rest of the parameters, behavior, as well as return values are the same.
 
 ```opensips
 		
 ...
-if (!aka\_proxy\_authorize("siphub.com"))
-	aka\_proxy\_challenge(,"siphub.com", "auth");
+if (!aka_proxy_authorize("siphub.com"))
+	aka_proxy_challenge(,"siphub.com", "auth");
 ...
   
 ```
 ### `aka_av_add` usage
 
-Adds an authentication vector for the user identitied by _public\_identity_ and _private\_identity_.
+Adds an authentication vector for the user identitied by _public_identity_ and _private_identity_.
 
 ```opensips
 		
 ...
-aka\_av\_add("sip:test@siphub.com", "test@siphub.com",
+aka_av_add("sip:test@siphub.com", "test@siphub.com",
 			"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=", /\* authenticate \*/
 			"00000262c0000014000028af2d6398cbe26eea69", /\* authorize \*/
 			"db7f8c4a58e17083974bba3b936d34c4", /\* ck \*/
@@ -626,24 +626,24 @@ aka\_av\_add("sip:test@siphub.com", "test@siphub.com",
 ```
 ### `aka_av_drop` usage
 
-Drops the authentication vector corresponding to the _authenticate/nonce_ value for an user identitied by _public\_identity_ and _private\_identity_.
+Drops the authentication vector corresponding to the _authenticate/nonce_ value for an user identitied by _public_identity_ and _private_identity_.
 
 ```opensips
 		
 ...
-aka\_av\_drop("sip:test@siphub.com", "test@siphub.com",
+aka_av_drop("sip:test@siphub.com", "test@siphub.com",
 			"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=");
 ...
   
 ```
 ### `aka_av_drop_all` usage
 
-Drops all authentication vectors for an user identitied by _public\_identity_ and _private\_identity_. This function is useful when a synchronization must be done.
+Drops all authentication vectors for an user identitied by _public_identity_ and _private_identity_. This function is useful when a synchronization must be done.
 
 ```opensips
 		
 ...
-aka\_av\_drop\_all("sip:test@siphub.com", "test@siphub.com", $var(count));
+aka_av_drop_all("sip:test@siphub.com", "test@siphub.com", $var(count));
 ...
   
 ```
@@ -653,7 +653,7 @@ Marks the engine that an authentication vector query for a user has failed, unlo
 
 ```opensips
 ...
-aka\_av\_fail("sip:test@siphub.com", "test@siphub.com", 3);
+aka_av_fail("sip:test@siphub.com", "test@siphub.com", 3);
 ...
   
 ```
@@ -664,7 +664,7 @@ Adds an Authentication Vector through the MI interface.
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_add \\
+$ opensips-cli -x mi aka_av_add \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -681,7 +681,7 @@ Invalidates an Authentication Vector of an user identified by its authenticate v
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -695,7 +695,7 @@ Invalidates all Authentication Vectors of an user through the MI interface.
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop\_all \\
+$ opensips-cli -x mi aka_av_drop_all \\
 				sip:test@siphub.com
 				test@siphub.com
 ...
@@ -708,7 +708,7 @@ Indicates the fact that the fetching of an authentication vector has failed, unl
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=

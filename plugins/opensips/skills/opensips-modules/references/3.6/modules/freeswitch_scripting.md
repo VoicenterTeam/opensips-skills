@@ -18,7 +18,7 @@ Reference for the OpenSIPs 3.6 freeswitch_scripting module. Read this file when 
 
 ## Overview
 
-_freeswitch\_scripting_ is a helper module that exposes full control over the FreeSWITCH ESL interface to the OpenSIPS script.
+_freeswitch_scripting_ is a helper module that exposes full control over the FreeSWITCH ESL interface to the OpenSIPS script.
 
 It allows the OpenSIPS script writer to subscribe to generic FreeSWITCH ESL events as well as to run arbitrary FreeSWITCH ESL commands and interpret their results. It makes use of the [freeswitch](freeswitch) module for the management of ESL connections and event subscriptions.
 
@@ -41,12 +41,12 @@ None.
 
 The SQL column name for the comma-separated, case-sensitive FreeSWITCH event names which OpenSIPS will subscribe to.
 
-*Default value is “events\_csv”.*
+*Default value is “events_csv”.*
 
 **Example.** Set the `db_col_events` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_col\_events", "fs\_events")
+modparam("freeswitch_scripting", "db_col_events", "fs_events")
 ```
 ### `db_col_ip` (string)
 
@@ -57,7 +57,7 @@ The SQL column name for the "ip" ESL connect information.
 **Example.** Set the `db_col_ip` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_col\_ip", "ip\_addr")
+modparam("freeswitch_scripting", "db_col_ip", "ip_addr")
 ```
 ### `db_col_password` (string)
 
@@ -68,7 +68,7 @@ The SQL column name for the "password" ESL connect information.
 **Example.** Set the `db_col_password` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_col\_password", "pass")
+modparam("freeswitch_scripting", "db_col_password", "pass")
 ```
 ### `db_col_port` (string)
 
@@ -79,7 +79,7 @@ The SQL column name for the "port" ESL connect information.
 **Example.** Set the `db_col_port` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_col\_port", "tcp\_port")
+modparam("freeswitch_scripting", "db_col_port", "tcp_port")
 ```
 ### `db_col_username` (string)
 
@@ -90,7 +90,7 @@ The SQL column name for the "username" ESL connect information.
 **Example.** Set the `db_col_username` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_col\_username", "user")
+modparam("freeswitch_scripting", "db_col_username", "user")
 ```
 ### `db_table` (string)
 
@@ -101,7 +101,7 @@ The SQL table name for this module.
 **Example.** Set the `db_table` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_table", "freeswitch\_sockets")
+modparam("freeswitch_scripting", "db_table", "freeswitch_sockets")
 ```
 ### `db_url` (string)
 
@@ -112,7 +112,7 @@ An SQL database URL which the module will use in order to load a set of FreeSWIT
 **Example.** Set the `db_url` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("freeswitch_scripting", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `fs_subscribe` (string)
 
@@ -123,8 +123,8 @@ Add a FreeSWITCH ESL URL to which OpenSIPS will connect at startup. The URL synt
 **Example.** Set the `fs_subscribe` parameter.
 
 ```opensips
-modparam("freeswitch\_scripting", "fs\_subscribe", ":ClueCon@10.0.0.10?CHANNEL\_STATE")
-modparam("freeswitch\_scripting", "fs\_subscribe", ":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND\_JOB")
+modparam("freeswitch_scripting", "fs_subscribe", ":ClueCon@10.0.0.10?CHANNEL_STATE")
+modparam("freeswitch_scripting", "fs_subscribe", ":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND_JOB")
 ```
 
 ## Exported Functions
@@ -153,14 +153,14 @@ The current OpenSIPS worker will block until an answer from FreeSWITCH arrives. 
 ```opensips
 ...
 	# ESL socket 10.0.0.10 is defined in the database (password "ClueCon")
-	$var(rc) = freeswitch\_esl("bgapi originate {origination\_uuid=123456789}user/1010 9386\\njob-uuid: foobar", "10.0.0.10", "$var(response)");
+	$var(rc) = freeswitch_esl("bgapi originate {origination_uuid=123456789}user/1010 9386\\njob-uuid: foobar", "10.0.0.10", "$var(response)");
 	if ($var(rc) < 0) {
 		xlog("failed to execute ESL command ($var(rc))\\n");
 		return -1;
 	}
 ...
 	# ESL socket 10.0.0.10 is new, we must specify a password
-	$var(rc) = freeswitch\_esl("bgapi originate {origination\_uuid=123456789}user/1010 9386\\njob-uuid: foobar", ":ClueCon@10.0.0.10", $var(response));
+	$var(rc) = freeswitch_esl("bgapi originate {origination_uuid=123456789}user/1010 9386\\njob-uuid: foobar", ":ClueCon@10.0.0.10", $var(response));
 	if ($var(rc) < 0) {
 		xlog("failed to execute ESL command ($var(rc))\\n");
 		return -1;
@@ -219,7 +219,7 @@ An SQL database URL which the module will use in order to load a set of FreeSWIT
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("freeswitch_scripting", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Setting the `db_table` parameter
@@ -228,7 +228,7 @@ The SQL table name for this module.
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_table", "freeswitch\_sockets")
+modparam("freeswitch_scripting", "db_table", "freeswitch_sockets")
 ...
 ```
 ### Setting the `db_col_username` parameter
@@ -237,7 +237,7 @@ The SQL column name for the "username" ESL connect information.
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_col\_username", "user")
+modparam("freeswitch_scripting", "db_col_username", "user")
 ...
 ```
 ### Setting the `db_col_password` parameter
@@ -246,7 +246,7 @@ The SQL column name for the "password" ESL connect information.
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_col\_password", "pass")
+modparam("freeswitch_scripting", "db_col_password", "pass")
 ...
 ```
 ### Setting the `db_col_ip` parameter
@@ -255,7 +255,7 @@ The SQL column name for the "ip" ESL connect information.
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_col\_ip", "ip\_addr")
+modparam("freeswitch_scripting", "db_col_ip", "ip_addr")
 ...
 ```
 ### Setting the `db_col_port` parameter
@@ -264,7 +264,7 @@ The SQL column name for the "port" ESL connect information.
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_col\_port", "tcp\_port")
+modparam("freeswitch_scripting", "db_col_port", "tcp_port")
 ...
 ```
 ### Setting the `db_col_events` parameter
@@ -273,7 +273,7 @@ The SQL column name for the comma-separated, case-sensitive FreeSWITCH event nam
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "db\_col\_events", "fs\_events")
+modparam("freeswitch_scripting", "db_col_events", "fs_events")
 ...
 ```
 ### Setting the `fs_subscribe` parameter
@@ -282,8 +282,8 @@ Add a FreeSWITCH ESL URL to which OpenSIPS will connect at startup. The URL synt
 
 ```opensips
 ...
-modparam("freeswitch\_scripting", "fs\_subscribe", ":ClueCon@10.0.0.10?CHANNEL\_STATE")
-modparam("freeswitch\_scripting", "fs\_subscribe", ":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND\_JOB")
+modparam("freeswitch_scripting", "fs_subscribe", ":ClueCon@10.0.0.10?CHANNEL_STATE")
+modparam("freeswitch_scripting", "fs_subscribe", ":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND_JOB")
 ...
 ```
 ### `_freeswitch_esl()_` usage
@@ -293,14 +293,14 @@ Run an arbitrary command on an arbitrary FreeSWITCH ESL socket. The socket need 
 ```opensips
 ...
 	# ESL socket 10.0.0.10 is defined in the database (password "ClueCon")
-	$var(rc) = freeswitch\_esl("bgapi originate {origination\_uuid=123456789}user/1010 9386\\njob-uuid: foobar", "10.0.0.10", "$var(response)");
+	$var(rc) = freeswitch_esl("bgapi originate {origination_uuid=123456789}user/1010 9386\\njob-uuid: foobar", "10.0.0.10", "$var(response)");
 	if ($var(rc) < 0) {
 		xlog("failed to execute ESL command ($var(rc))\\n");
 		return -1;
 	}
 ...
 	# ESL socket 10.0.0.10 is new, we must specify a password
-	$var(rc) = freeswitch\_esl("bgapi originate {origination\_uuid=123456789}user/1010 9386\\njob-uuid: foobar", ":ClueCon@10.0.0.10", $var(response));
+	$var(rc) = freeswitch_esl("bgapi originate {origination_uuid=123456789}user/1010 9386\\njob-uuid: foobar", ":ClueCon@10.0.0.10", $var(response));
 	if ($var(rc) < 0) {
 		xlog("failed to execute ESL command ($var(rc))\\n");
 		return -1;

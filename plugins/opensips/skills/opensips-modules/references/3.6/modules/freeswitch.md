@@ -43,7 +43,7 @@ The sleep interval used when polling for an ESL command response. Since the valu
 
 ```opensips
 ...
-modparam("freeswitch", "esl\_cmd\_polling\_itv", 3000)
+modparam("freeswitch", "esl_cmd_polling_itv", 3000)
 ...
 ```
 ### `esl_cmd_timeout` (integer)
@@ -56,7 +56,7 @@ The maximally allowed duration for the execution of an ESL command. This interva
 
 ```opensips
 ...
-modparam("freeswitch", "esl\_cmd\_timeout", 3000)
+modparam("freeswitch", "esl_cmd_timeout", 3000)
 ...
 ```
 ### `esl_connect_timeout` (integer)
@@ -69,7 +69,7 @@ The maximally allowed duration for the establishment of an ESL connection.
 
 ```opensips
 ...
-modparam("freeswitch", "esl\_connect\_timeout", 3000)
+modparam("freeswitch", "esl_connect_timeout", 3000)
 ...
 ```
 ### `event_heartbeat_interval` (integer)
@@ -82,7 +82,7 @@ The expected interval between FreeSWITCH HEARTBEAT event arrivals.
 
 ```opensips
 ...
-modparam("freeswitch", "event\_heartbeat\_interval", 20)
+modparam("freeswitch", "event_heartbeat_interval", 20)
 ...
 ```
 

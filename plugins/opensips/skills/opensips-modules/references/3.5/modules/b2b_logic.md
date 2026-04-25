@@ -70,11 +70,11 @@ Allow bridging of calls in early stage by issuing a "UPDATE" request
 **Example.** 1.
 
 ```opensips
-modparam("b2b\_logic", "b2bl\_early\_update", 1)
+modparam("b2b_logic", "b2bl_early_update", 1)
 ```
 ### `b2bl_from_spec_param` (string)
 
-The name of the pseudo variable for storing the new “From” header. The PV must be set before calling “b2b\_init\_request”.
+The name of the pseudo variable for storing the new “From” header. The PV must be set before calling “b2b_init_request”.
 
 *Default value is NULL (disabled).*
 
@@ -82,14 +82,14 @@ The name of the pseudo variable for storing the new “From” header. The PV mu
 
 ```opensips
 ...
-modparam("b2b\_logic", "b2bl\_from\_spec\_param", "$var(b2bl\_from)")
+modparam("b2b_logic", "b2bl_from_spec_param", "$var(b2bl_from)")
 ...
 route{
 	...
 	# setting the From header
-	$var(b2bl\_from) = "\\"Call ID\\" <sip:user@opensips.org>";
+	$var(b2bl_from) = "\\"Call ID\\" <sip:user@opensips.org>";
 	...
-	b2b\_init\_request("top hiding");
+	b2b_init_request("top hiding");
 	...
 }
 ```
@@ -102,7 +102,7 @@ Call setup timeout for topology hiding scenario.
 **Example.** 60.
 
 ```opensips
-modparam("b2b\_logic", "b2bl\_th\_init\_timeout", 60)
+modparam("b2b_logic", "b2bl_th_init_timeout", 60)
 ```
 ### `cachedb_key_prefix` (string)
 
@@ -113,7 +113,7 @@ Prefix to use for every key set in the NoSQL database.
 **Example.** b2b.
 
 ```opensips
-modparam("b2b\_logic", "cachedb\_key\_prefix", "b2b")
+modparam("b2b_logic", "cachedb_key_prefix", "b2b")
 ```
 ### `cachedb_url` (string)
 
@@ -122,7 +122,7 @@ URL of a NoSQL database to be used. Only Redis is supported at the moment.
 **Example.** redis://localhost:6379/.
 
 ```opensips
-modparam("b2b\_logic", "cachedb\_url", "redis://localhost:6379/")
+modparam("b2b_logic", "cachedb_url", "redis://localhost:6379/")
 ```
 ### `cleanup_period` (integer)
 
@@ -134,7 +134,7 @@ The time interval at which to search for an hanged b2b context. A session is con
 
 ```opensips
 ...
-modparam("b2b\_logic", "cleanup\_period", 60)
+modparam("b2b_logic", "cleanup_period", 60)
 ...
 ```
 ### `contact_user` (integer)
@@ -146,7 +146,7 @@ If set to 1, adds user from From: header to generated Contact:
 **Example.** Set the `contact_user` parameter.
 
 ```opensips
-modparam("b2b\_logic", "contact\_user", 1)
+modparam("b2b_logic", "contact_user", 1)
 ```
 ### `custom_headers` (string)
 
@@ -169,7 +169,7 @@ If you wish some other headers to be passed also you should define them by setti
 **Example.** User-Agent;Date.
 
 ```opensips
-modparam("b2b\_logic", "custom\_headers", "User-Agent;Date")
+modparam("b2b_logic", "custom_headers", "User-Agent;Date")
 ```
 ### `custom_headers_regexp` (string)
 
@@ -187,7 +187,7 @@ Regexp to search SIP header by names that should be passed from the dialog of on
 
 ```opensips
 ...
-modparam("b2b\_logic", "custom\_headers\_regexp", "/^x-/i")
+modparam("b2b_logic", "custom_headers_regexp", "/^x-/i")
 ...
 ```
 ### `db_mode` (integer)
@@ -209,7 +209,7 @@ The B2B modules have support for the 3 type of database storage
 **Example.** 1.
 
 ```opensips
-modparam("b2b\_logic", "db\_mode", 1)
+modparam("b2b_logic", "db_mode", 1)
 ```
 ### `db_table` (string)
 
@@ -220,7 +220,7 @@ Name of the database table to be used
 **Example.** some_table_name.
 
 ```opensips
-modparam("b2b\_logic", "db\_table", "some\_table\_name")
+modparam("b2b_logic", "db_table", "some_table_name")
 ```
 ### `db_url` (string)
 
@@ -229,7 +229,7 @@ Database URL.
 **Example.** mysql://opensips:opensipsrw@127.0.0.1/opensips.
 
 ```opensips
-modparam("b2b\_logic", "db\_url", "mysql://opensips:opensipsrw@127.0.0.1/opensips")
+modparam("b2b_logic", "db_url", "mysql://opensips:opensipsrw@127.0.0.1/opensips")
 ```
 ### `hash_size` (integer)
 
@@ -241,7 +241,7 @@ The size of the hash table that stores the session entities.
 
 ```opensips
 ...
-modparam("b2b\_logic", "hash\_size", 10)
+modparam("b2b_logic", "hash_size", 10)
 ...
 ```
 ### `init_callid_hdr` (string)
@@ -251,7 +251,7 @@ The module offers the possibility to insert the original callid in a header in t
 **Example.** Set the `init_callid_hdr` parameter.
 
 ```opensips
-modparam("b2b\_logic", "init\_callid\_hdr", "Init-CallID")
+modparam("b2b_logic", "init_callid_hdr", "Init-CallID")
 ```
 ### `max_duration` (integer)
 
@@ -264,7 +264,7 @@ The maximum duration of a call.
 **Example.** Set the `max_duration` parameter.
 
 ```opensips
-modparam("b2b\_logic", "max\_duration", 7200)
+modparam("b2b_logic", "max_duration", 7200)
 ```
 ### `old_entity_term_delay` (integer)
 
@@ -275,7 +275,7 @@ When the _b2b_bridge_request_ is being used with the _late_bye_ flag, this param
 **Example.** 2.
 
 ```opensips
-modparam("b2b\_logic", "old\_entity\_term\_delay", 2) # delay the BYE with 2 seconds
+modparam("b2b_logic", "old_entity_term_delay", 2) # delay the BYE with 2 seconds
 ```
 ### `script_reply_route` (string)
 
@@ -285,7 +285,7 @@ The name of the script route to be called when replies belonging to an ongoing B
 
 ```opensips
 ...
-modparam("b2b\_logic", "script\_reply\_route", "b2b\_reply")
+modparam("b2b_logic", "script_reply_route", "b2b_reply")
 ...
 ```
 ### `script_req_route` (string)
@@ -296,7 +296,7 @@ The name of the script route to be called when requests belonging to an ongoing 
 
 ```opensips
 ...
-modparam("b2b\_logic", "script\_req\_route", "b2b\_request")
+modparam("b2b_logic", "script_req_route", "b2b_request")
 ...
 ```
 ### `server_address` (string)
@@ -306,7 +306,7 @@ The IP address of the machine that will be used as Contact in the generated mess
 **Example.** Set the `server_address` parameter.
 
 ```opensips
-modparam("b2b\_logic", "server\_address", "sip:sa@10.10.10.10:5060")
+modparam("b2b_logic", "server_address", "sip:sa@10.10.10.10:5060")
 ```
 ### `update_period` (integer)
 
@@ -317,7 +317,7 @@ The time interval at which to update the info in database.
 **Example.** 60.
 
 ```opensips
-modparam("b2b\_logic", "update\_period", 60)
+modparam("b2b_logic", "update_period", 60)
 ```
 
 ## Exported Functions

@@ -35,12 +35,12 @@ None.
 
 The name of the table containing partition definitions. To be used with `use_partitions` and `db_partitions_url`.
 
-*Default value is trie\_partitions.*
+*Default value is trie_partitions.*
 
-**Example.** trie\_partition\_defs.
+**Example.** trie_partition_defs.
 
 ```opensips
-modparam("trie", "db\_partitions\_table", "trie\_partition\_defs")
+modparam("trie", "db_partitions_table", "trie_partition_defs")
 ```
 ### `db_partitions_url` (string)
 
@@ -48,10 +48,10 @@ The url to the database containing partition-specific information.The `use_parti
 
 *Default value is "NULL".*
 
-**Example.** mysql://user:password@localhost/opensips\_partitions.
+**Example.** mysql://user:password@localhost/opensips_partitions.
 
 ```opensips
-modparam("trie", "db\_partitions\_url", "mysql://user:password@localhost/opensips\_partitions")
+modparam("trie", "db_partitions_url", "mysql://user:password@localhost/opensips_partitions")
 ```
 ### `extra_prefix_chars` (string)
 
@@ -62,11 +62,11 @@ List of ASCII (0-127) characters to be additionally accepted in the prefixes. By
 **Example.** #-%.
 
 ```opensips
-modparam("trie", "extra\_prefix\_chars", "#-%")
+modparam("trie", "extra_prefix_chars", "#-%")
 ```
 ### `no_concurrent_reload` (integer)
 
-If enabled, the module will not allow do run multiple trie\_reload MI commands in parallel (with overlapping) Any new reload will be rejected (and discarded) while an existing reload is in progress.
+If enabled, the module will not allow do run multiple trie_reload MI commands in parallel (with overlapping) Any new reload will be rejected (and discarded) while an existing reload is in progress.
 
 If you have a large routing set (millions of rules/prefixes), you should consider disabling concurrent reload as they will exhaust the shared memory (by reloading into memory, in the same time, multiple instances of routing data).
 
@@ -76,18 +76,18 @@ If you have a large routing set (millions of rules/prefixes), you should conside
 
 ```opensips
 # do not allow parallel reload operations
-modparam("trie", "no\_concurrent\_reload", 1)
+modparam("trie", "no_concurrent_reload", 1)
 ```
 ### `trie_table` (string)
 
 The name of the db table storing prefix rules.
 
-*Default value is trie\_table.*
+*Default value is trie_table.*
 
-**Example.** my\_prefix\_table.
+**Example.** my_prefix_table.
 
 ```opensips
-modparam("trie", "trie\_table", "my\_prefix\_table")
+modparam("trie", "trie_table", "my_prefix_table")
 ```
 ### `use_partitions` (integer)
 
@@ -98,7 +98,7 @@ Flag to configure whether to use partitions for tries. If this flag is set then 
 **Example.** 1.
 
 ```opensips
-modparam("trie", "use\_partitions", 1)
+modparam("trie", "use_partitions", 1)
 ```
 
 ## Exported Functions
@@ -151,7 +151,7 @@ Deletes individual entries in the trie, without reloading all of the data
 **Example.** MI FIFO Command Format
 
 ```opensips
-opensips-cli -x mi trie\_number\_delete partition\_name=part1 number=\["012340987","4858345"\]
+opensips-cli -x mi trie_number_delete partition_name=part1 number=\["012340987","4858345"\]
 ```
 
 ### `trie_number_upsert`
@@ -172,7 +172,7 @@ Upserts ( insert if not found, update is found ) an array of numbers in the trie
 **Example.** MI FIFO Command Format
 
 ```opensips
-opensips-cli -x mi trie\_number\_upsert partition\_name=part1 number=\["012340987"\] attrs=\["my\_attrs"\]
+opensips-cli -x mi trie_number_upsert partition_name=part1 number=\["012340987"\] attrs=\["my_attrs"\]
 ```
 
 ### `trie_reload`
@@ -190,7 +190,7 @@ Command to reload trie rules from database.
 **Example.** MI FIFO Command Format
 
 ```opensips
-opensips-cli -x mi trie\_reload part\_1
+opensips-cli -x mi trie_reload part_1
 ```
 
 ### `trie_reload_status`
@@ -210,7 +210,7 @@ Gets the time of the last reload for any partition.
 **Example.** Example 1.8. `trie_reload_status` usage when `use_partitions` is 0
 
 ```opensips
-$ opensips-cli -x mi trie\_reload\_status
+$ opensips-cli -x mi trie_reload_status
 Date:: Tue Aug 12 12:26:00 2014
 ```
 
@@ -232,7 +232,7 @@ Tries to match a number in the existing tries loaded from the database.
 **Example.** MI FIFO Command Format
 
 ```opensips
-opensips-cli -x mi trie\_search partition\_name=part1 number=012340987
+opensips-cli -x mi trie_search partition_name=part1 number=012340987
 ```
 
 ## Configuration Examples
@@ -243,7 +243,7 @@ Sets the `trie_table` parameter to 'my_prefix_table'.
 
 ```opensips
 ...
-modparam("trie", "trie\_table", "my\_prefix\_table")
+modparam("trie", "trie_table", "my_prefix_table")
 ...
 ```
 ### Set `no_concurrent_reload` parameter
@@ -253,7 +253,7 @@ Disables parallel reload operations by setting `no_concurrent_reload` to 1.
 ```opensips
 ...
 # do not allow parallel reload operations
-modparam("trie", "no\_concurrent\_reload", 1)
+modparam("trie", "no_concurrent_reload", 1)
 ...
 ```
 ### Set `use_partitions` parameter
@@ -262,7 +262,7 @@ Enables the use of partitions by setting `use_partitions` to 1.
 
 ```opensips
 ...
-modparam("trie", "use\_partitions", 1)
+modparam("trie", "use_partitions", 1)
 ...
 ```
 ### Set `db_partitions_url` parameter
@@ -271,7 +271,7 @@ Sets the `db_partitions_url` parameter to a MySQL connection string.
 
 ```opensips
 ...
-modparam("trie", "db\_partitions\_url", "mysql://user:password@localhost/opensips\_partitions")
+modparam("trie", "db_partitions_url", "mysql://user:password@localhost/opensips_partitions")
 ...
 ```
 ### Set `db_partitions_table` parameter
@@ -280,7 +280,7 @@ Sets the `db_partitions_table` parameter to 'trie_partition_defs'.
 
 ```opensips
 ...
-modparam("trie", "db\_partitions\_table", "trie\_partition\_defs")
+modparam("trie", "db_partitions_table", "trie_partition_defs")
 ...
 ```
 ### Set `extra_prefix_chars` parameter
@@ -289,7 +289,7 @@ Sets the `extra_prefix_chars` parameter to '#-%'.
 
 ```opensips
 ...
-modparam("trie", "extra\_prefix\_chars", "#-%")
+modparam("trie", "extra_prefix_chars", "#-%")
 ...
 ```
 ### `trie_search` usage
@@ -298,9 +298,9 @@ Demonstrates a script route using `trie_search` with strict length matching ('L'
 
 ```opensips
 ...
-if (trie\_search("$rU","L",$avp(code\_attrs),,"my\_partition")) {
+if (trie_search("$rU","L",$avp(code_attrs),,"my_partition")) {
     # we found it in the trie, it's a match
-    xlog("We found $rU in the trie with attrs $avp(code\_attrs) \\n");
+    xlog("We found $rU in the trie with attrs $avp(code_attrs) \\n");
 }
 ...
 ```
@@ -309,6 +309,6 @@ if (trie\_search("$rU","L",$avp(code\_attrs),,"my\_partition")) {
 Demonstrates the CLI command to check the reload status when partitions are not used.
 
 ```opensips
-$ opensips-cli -x mi trie\_reload\_status
+$ opensips-cli -x mi trie_reload_status
 Date:: Tue Aug 12 12:26:00 2014
 ```

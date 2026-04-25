@@ -47,10 +47,10 @@ Enable this parameter if your input JSONs contain signed integers which do not f
 
 ```opensips
 ...
-modparam("json", "enable\_long\_quoting", true)
+modparam("json", "enable_long_quoting", true)
 ...
-# normalize the "gateway\_id" int/string value to be always a string
-$var(gateway\_id) = "" + $json(body/gateway\_id);
+# normalize the "gateway_id" int/string value to be always a string
+$var(gateway_id) = "" + $json(body/gateway_id);
 ...
 ```
 
@@ -78,7 +78,7 @@ WARNING: You should be careful when using references. If you accidentally create
 ```opensips
 $json(b) := "\[\{\},\{\},\{\}\]";
 
-json\_link($json(stub), $json(b\[0\]));
+json_link($json(stub), $json(b\[0\]));
 
 $json(stub/ana) = "are"; #add to the stub
 $json(stub/ar) := "\[\]";
@@ -117,7 +117,7 @@ Test link :
 $json(b) := "\[1\]";
 
 /\* NEVER do this, it is meant only to show where problems might occur  *\/
-json\_link($json(b\[0\]), $json(b)); # replace 1 with a reference to b
+json_link($json(b\[0\]), $json(b)); # replace 1 with a reference to b
 
 xlog("\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n");
 
@@ -131,11 +131,11 @@ xlog("\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n");
 
 The `json` variable provides methods to access fields in json objects and indexes in json arrays.
 
-#### 1.4.1.1.�Variable lifetime
+#### 1.4.1.1.Variable lifetime
 
 The json variables will be available to the process that created them from the moment they were initialized. They will not reset per message or per transaction. If you want to use the on a per message basis you should initialize them each time.
 
-#### 1.4.1.2.�Accessing the $json(id) variable
+#### 1.4.1.2.Accessing the $json(id) variable
 
 The grammar that describes the id is:
 
@@ -159,7 +159,7 @@ Trying to get a value from a non-existing path (key or value) will return the NU
 
 Trying to replace or insert a value in a non-existing path will cause an error in setting the value and notice messages will be printed in the log describing the value of the json and the path used
 
-**Example�1.2.�Accessing the $json variable**
+**Example1.2.Accessing the $json variable**
 
 ...
 $json(obj1/key) = "value"; #replace or insert the (key,value)
@@ -172,7 +172,7 @@ xlog("$json(name/key1\[0\]\[-1\]/key2)"); # a more complex example
 
 ...
 
-**Example�1.3.�Iterating through an array using variables**
+**Example1.3.Iterating through an array using variables**
 
 ...
 
@@ -195,13 +195,13 @@ while( $json(ar1\[$var(i)\]) )
 
 ...
 
-#### 1.4.1.3.�Traversal
+#### 1.4.1.3.Traversal
 
 Dynamic traversal of a JSON object or array is possible by using a for each statement, similarly to the indexed pseudo variables iteration. However, note that indexing the $json variable is not supported in any other statements (this refers to indexing the entire variable and not to the indexes accepted in the grammar of the id).
 
 In order to explicitly iterate over a JSON object keys or values, you can use the .keys or .values suffix for the path specified in the id.
 
-**Example�1.4.�iteration over $json object keys**
+**Example1.4.iteration over $json object keys**
 
 ...
 $json(foo) := "{\\"a\\": 1, \\"b\\": 2, \\"c\\": 3}";
@@ -209,7 +209,7 @@ for ($var(k) in $(json(foo.keys)\[*\]))
     xlog("$var(k) ");
 ...
 
-**Example�1.5.�iteration over $json object values**
+**Example1.5.iteration over $json object values**
 
 ...
 $json(foo) := "{\\"a\\": 1, \\"b\\": 2, \\"c\\": 3}";
@@ -223,7 +223,7 @@ for ($var(v) in $(json(foo)\[*\]))
     xlog("$var(v) ");
 ...
 
-**Example�1.6.�iteration over $json array values**
+**Example1.6.iteration over $json array values**
 
 ...
 $json(foo) := "\[1, 2, 3\]";
@@ -231,7 +231,7 @@ for ($var(v) in $(json(foo)\[*\]))
     xlog("$var(v) ");
 ...
 
-#### 1.4.1.4.� Returned values from $json(id)
+#### 1.4.1.4. Returned values from $json(id)
 
 If the value specified by the id is an integer it will be returned as an integer value.
 
@@ -241,45 +241,45 @@ If the value specified by the id is any other type of json ( null, boolean, obje
 
 If the id does not exist a NULL value will be returned.
 
-#### 1.4.1.5.� Operators for the $json(id) variable
+#### 1.4.1.5. Operators for the $json(id) variable
 
 There are 2 operators available for this variable.
 
-##### 1.4.1.5.1.� The "=" operator
+##### 1.4.1.5.1. The "=" operator
 
 This will cause the value to be taken as is and be added to the json object ( e.g. string value or integer value ).
 
 Setting a value to NULL will cause it to be deleted.
 
-**Example�1.7.�Appending integers to arrays**
+**Example1.7.Appending integers to arrays**
 
 ...
 $json(array1\[\]) = 1;
 ...
 
-**Example�1.8.�Deleting the last element in an array**
+**Example1.8.Deleting the last element in an array**
 
 ...
 $json(array1\[-1\]) = NULL;
 ...
 
-**Example�1.9.�Adding a string value to a json object**
+**Example1.9.Adding a string value to a json object**
 
 ...
 $json(object1/some_key) = "some_value";
 ...
 
-##### 1.4.1.5.2.� The ":=" operator
+##### 1.4.1.5.2. The ":=" operator
 
 This will cause the value to be taken and interpreted as a json object ( e.g. this operator should be used to parse json inputs ).
 
-**Example�1.10.�Initializing an array**
+**Example1.10.Initializing an array**
 
 ...
 $json(array1) := "\[\]";
 ...
 
-**Example�1.11.�Setting a boolean or null value**
+**Example1.11.Setting a boolean or null value**
 
 ...
 $json(array1\[\]) := "null";
@@ -287,7 +287,7 @@ $json(array1\[\]) := "true";
 $json(array1\[\]) := "false";
 ...
 
-**Example�1.12.�Adding a json to another json**
+**Example1.12.Adding a json to another json**
 
 ...
 
@@ -322,10 +322,10 @@ Enable this parameter if your input JSONs contain signed integers which do not f
 
 ```opensips
 ...
-modparam("json", "enable\_long\_quoting", true)
+modparam("json", "enable_long_quoting", true)
 ...
-# normalize the "gateway\_id" int/string value to be always a string
-$var(gateway\_id) = "" + $json(body/gateway\_id);
+# normalize the "gateway_id" int/string value to be always a string
+$var(gateway_id) = "" + $json(body/gateway_id);
 ...
 ```
 ### Accessing the $json variable
@@ -433,7 +433,7 @@ This will cause the value to be taken as is and be added to the json object ( e.
 
 ```opensips
 ...
-$json(object1/some\_key) = "some\_value";
+$json(object1/some_key) = "some_value";
 ...
 ```
 ### Initializing an array
@@ -477,7 +477,7 @@ This function can be used to link json objects together. This will work simillar
 
 $json(b) := "\[{},{},{}\]";
 
-json\_link($json(stub), $json(b\[0\]));
+json_link($json(stub), $json(b\[0\]));
 
 $json(stub/ana) = "are"; #add to the stub
 $json(stub/ar) := "\[\]";
@@ -521,7 +521,7 @@ This function can be used to link json objects together. This will work simillar
 $json(b) := "\[1\]";
 
 /* NEVER do this, it is meant only to show where problems might occur  */
-json\_link($json(b\[0\]), $json(b)); # replace 1 with a reference to b
+json_link($json(b\[0\]), $json(b)); # replace 1 with a reference to b
 
 xlog("\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n");
 

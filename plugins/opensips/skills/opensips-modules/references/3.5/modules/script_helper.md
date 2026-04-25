@@ -46,14 +46,14 @@ None.
 
 ### `create_dialog_flags` (string)
 
-Flags used when creating dialogs. For details on these flags, please refer to the _create\_dialog()_ function of the dialog module.
+Flags used when creating dialogs. For details on these flags, please refer to the _create_dialog()_ function of the dialog module.
 
 *Default value is "".*
 
 **Example.** PpB.
 
 ```opensips
-modparam("script\_helper", "create\_dialog\_flags", "PpB")
+modparam("script_helper", "create_dialog_flags", "PpB")
 ```
 ### `sequential_route` (string)
 
@@ -64,9 +64,9 @@ Optional route to be run just before sequential requests are relayed. If the _ex
 **Example.** sequential_handling.
 
 ```opensips
-modparam("script\_helper", "sequential\_route", "sequential\_handling")
+modparam("script_helper", "sequential_route", "sequential_handling")
 ...
-route [sequential\_handling]
+route [sequential_handling]
 {
 ...
 }
@@ -81,7 +81,7 @@ Enables dialog support. Note that the dialog module must be loaded before this m
 **Example.** 1.
 
 ```opensips
-modparam("script\_helper", "use\_dialog", 1)
+modparam("script_helper", "use_dialog", 1)
 ```
 
 ## Configuration Examples

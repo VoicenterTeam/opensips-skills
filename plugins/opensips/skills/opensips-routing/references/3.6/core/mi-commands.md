@@ -60,8 +60,8 @@ Adds a rule to a non-readonly blacklist.
 **Example.** Example of usage for add_blacklist_rule command
 
 ```bash
-# opensips-cli -x mi add\_blacklist\_rule net\_dynamic '!tcp,127.0.0.1,5060'
-# opensips-cli -x mi add\_blacklist\_rule net\_dynamic '!tcp,127.0.0.1,5060' 3600
+# opensips-cli -x mi add_blacklist_rule net_dynamic '!tcp,127.0.0.1,5060'
+# opensips-cli -x mi add_blacklist_rule net_dynamic '!tcp,127.0.0.1,5060' 3600
 ```
 
 ## `arg`
@@ -95,7 +95,7 @@ This command queries for a stored value.
 **Example.** Example of usage for cache_fetch command
 
 ```bash
-# opensips-cli -x mi cache\_fetch local password\_user1
+# opensips-cli -x mi cache_fetch local password_user1
 ```
 
 ## `cache_remove`
@@ -112,7 +112,7 @@ This command removes a record from the cache system.
 **Example.** Example of usage for cache_remove command
 
 ```bash
-# opensips-cli -x mi cache\_remove local password\_user1
+# opensips-cli -x mi cache_remove local password_user1
 ```
 
 ## `cache_store`
@@ -131,7 +131,7 @@ This command stores in a cache system a string value.
 **Example.** Example of usage for cache_store command
 
 ```bash
-# opensips-cli -x mi cache\_store local password\_user1 password
+# opensips-cli -x mi cache_store local password_user1 password
 ```
 
 ## `check_blacklist`
@@ -151,8 +151,8 @@ The command check whether a proto:IP:port+pattern matches any rule of a blacklis
 **Example.** Example of usage for check_blacklist command
 
 ```bash
-# opensips-cli -x mi check\_blacklist net\_dynamic 127.0.0.1
-# opensips-cli -x mi check\_blacklists net\_dynamic udp 127.0.0.1 5060
+# opensips-cli -x mi check_blacklist net_dynamic 127.0.0.1
+# opensips-cli -x mi check_blacklists net_dynamic udp 127.0.0.1 5060
 ```
 
 ## `check_blacklists`
@@ -171,8 +171,8 @@ The command returns all the blacklists that match an proto:IP:port+pattern.
 **Example.** Example of usage for check_blacklists command
 
 ```bash
-# opensips-cli -x mi check\_blacklists 127.0.0.1
-# opensips-cli -x mi check\_blacklists udp 127.0.0.1 5060
+# opensips-cli -x mi check_blacklists 127.0.0.1
+# opensips-cli -x mi check_blacklists udp 127.0.0.1 5060
 ```
 
 ## `del_blacklist_rule`
@@ -189,7 +189,7 @@ Removes a rule from a non-readonly blacklist.
 **Example.** Example of usage for del_blacklist_rule command
 
 ```bash
-# opensips-cli -x mi del\_blacklist\_rule net\_dynamic '!tcp,127.0.0.1,5060'
+# opensips-cli -x mi del_blacklist_rule net_dynamic '!tcp,127.0.0.1,5060'
 ```
 
 ## `event_subscribe`
@@ -207,7 +207,7 @@ Subscribes an external application to a certain event.
 **Example.** Example of usage for event_subscribe command
 
 ```bash
-# opensips-cli -x mi event\_subscribe E\_PIKE\_BLOCKED udp:127.0.0.1:8888 1200
+# opensips-cli -x mi event_subscribe E_PIKE_BLOCKED udp:127.0.0.1:8888 1200
 ```
 
 ## `events_list`
@@ -219,7 +219,7 @@ Lists all the events published through the Event Interface.
 **Example.** Example of usage for events_list command
 
 ```bash
-# opensips-cli -x mi events\_list
+# opensips-cli -x mi events_list
 ```
 
 ## `get_statistics`
@@ -235,8 +235,8 @@ Prints the statistics (all, group or one) realtime values.
 **Example.** Examples of usage for get_statistics command
 
 ```bash
-# opensips-cli -x mi get\_statistics rcv\_requests
-# opensipsc-cli -x mi get\_statistics shmem:
+# opensips-cli -x mi get_statistics rcv_requests
+# opensipsc-cli -x mi get_statistics shmem:
 ```
 
 ## `kill`
@@ -264,7 +264,7 @@ The command lists all the defined (static or learned) blacklists from OpenSIPS.
 **Example.** Example of usage for list_blacklists command
 
 ```bash
-# opensips-cli -x mi list\_blacklists
+# opensips-cli -x mi list_blacklists
 ```
 
 ## `list_statistics`
@@ -280,7 +280,7 @@ Prints a list of available statistics in the current configuration of OpenSIPS.
 **Example.** Example of usage for list_statistics command
 
 ```bash
-# opensips-cli -x mi list\_statistics
+# opensips-cli -x mi list_statistics
 ```
 
 ## `list_tcp_conns`
@@ -292,7 +292,7 @@ The command lists all ongoing TCP/TLS connection from OpenSIPS.
 **Example.** Example of usage for list_tcp_conns command
 
 ```bash
-# opensips-cli -x mi list\_tcp\_conns
+# opensips-cli -x mi list_tcp_conns
 ```
 
 ## `log_level`
@@ -309,9 +309,9 @@ Get or set the logging level of one or all OpenSIPS processes. If no argument is
 **Example.** Examples of usage for log_level command
 
 ```bash
-# opensips-cli -x mi log\_level
-# opensipsctl fifo log\_level 1
-# opensipsctl fifo log\_level 4 10670
+# opensips-cli -x mi log_level
+# opensipsctl fifo log_level 1
+# opensipsctl fifo log_level 4 10670
 ```
 
 ## `log_level_filter`
@@ -328,8 +328,8 @@ Get or set the level of the extra filtering applied to log messages for a specif
 **Example.** Examples of usage for log_level_filter command
 
 ```bash
-# opensips-cli -x mi log\_level\_filter stderror
-# opensips-cli -x mi log\_level\_filter stderror 1
+# opensips-cli -x mi log_level_filter stderror
+# opensips-cli -x mi log_level_filter stderror 1
 ```
 
 ## `log_mute_state`
@@ -346,8 +346,8 @@ Get or set the mute state (printing enabled/disabled) of a specific logging cons
 **Example.** Examples of usage for log_mute_state command
 
 ```bash
-# opensips-cli -x mi log\_mute\_state syslog
-# opensips-cli -x mi log\_mute\_state syslog 1
+# opensips-cli -x mi log_mute_state syslog
+# opensips-cli -x mi log_mute_state syslog 1
 ```
 
 ## `mem_pkg_dump`
@@ -364,7 +364,7 @@ Triggers a pkg memory dump for a given process. The memory dump will written to 
 **Example.** Example of usage for mem_pkg_dump command
 
 ```bash
-# opensips-cli -x mi mem\_pkg\_dump 11854 -1
+# opensips-cli -x mi mem_pkg_dump 11854 -1
 ```
 
 ## `mem_shm_dump`
@@ -380,7 +380,7 @@ Triggers a shm memory dump. The memory dump will written to OpenSIPS's log using
 **Example.** Example of usage for mem_shm_dump command
 
 ```bash
-# opensips-cli -x mi mem\_shm\_dump -1
+# opensips-cli -x mi mem_shm_dump -1
 ```
 
 ## `ps`
@@ -421,8 +421,8 @@ Raises an event through the Event Interface using an MI command.
 **Example.** Examples of usage for raise_event command
 
 ```bash
-# opensips-cli -x mi raise\_event E\_PIKE\_BLOCKED 127.0.0.1 # array mode
-# opensips-cli -x -- mi -j raise\_event event=E\_PIKE\_BLOCKED params='{"ip":"127.0.0.1"}' # json mode
+# opensips-cli -x mi raise_event E_PIKE_BLOCKED 127.0.0.1 # array mode
+# opensips-cli -x -- mi -j raise_event event=E_PIKE_BLOCKED params='{"ip":"127.0.0.1"}' # json mode
 ```
 
 ## `reload_routes`
@@ -440,7 +440,7 @@ Reset (to zero) the value of all statistic variables that can be reset.
 **Example.** Example of usage for reset_all_statistics command
 
 ```bash
-# opensips-cli -x mi reset\_all\_statistics
+# opensips-cli -x mi reset_all_statistics
 ```
 
 ## `reset_statistics`
@@ -456,7 +456,7 @@ Reset (to zero) the value of a statistic variable. Note that not all variables a
 **Example.** Example of usage for reset_statistics command
 
 ```bash
-# opensips-cli -x mi reset\_statistics received\_replies
+# opensips-cli -x mi reset_statistics received_replies
 ```
 
 ## `shm_check`
@@ -468,7 +468,7 @@ Only available with QM_MALLOC + DBG_MALLOC. Fully scans the shared memory pool i
 **Example.** Example of usage for shm_check command
 
 ```bash
-# opensips-cli -x mi shm\_check
+# opensips-cli -x mi shm_check
 ```
 
 ## `sr_get_status`
@@ -485,8 +485,8 @@ The MI equivalent of the sr_check_status() script function - to get the status o
 **Example.** Examples of usage for sr_get_status command
 
 ```bash
-# opensips-cli -x mi sr\_get\_status core
-# opensips-cli -x mi sr\_get\_status drouting all
+# opensips-cli -x mi sr_get_status core
+# opensips-cli -x mi sr_get_status drouting all
 ```
 
 ## `sr_list_identifiers`
@@ -502,8 +502,8 @@ Command to list all the existing identifiers in OpenSIPS or only from a certain 
 **Example.** Examples of usage for sr_list_identifiers command
 
 ```bash
-#opensips-cli -x mi sr\_list\_identifiers
-#opensips-cli -x mi sr\_list\_identifiers drouting
+#opensips-cli -x mi sr_list_identifiers
+#opensips-cli -x mi sr_list_identifiers drouting
 ```
 
 ## `sr_list_reports`
@@ -520,7 +520,7 @@ Command to list the full set of reports (logs) collected by 'status/report' iden
 **Example.** Example of usage for sr_list_reports command
 
 ```bash
-#bin/opensips-cli -x mi sr\_list\_reports
+#bin/opensips-cli -x mi sr_list_reports
 ```
 
 ## `sr_list_status`
@@ -536,7 +536,7 @@ Command to list the status of the identifiers within one or all 'status/report' 
 **Example.** Example of usage for sr_list_status command
 
 ```bash
-#opensips-cli -x mi sr\_list\_status
+#opensips-cli -x mi sr_list_status
 ```
 
 ## `subscribers_list`
@@ -553,9 +553,9 @@ Lists information about the subscribers
 **Example.** Examples of usage for subscribers_list command
 
 ```bash
-# opensips-cli -x mi subscribers\_list
-# opensips-cli -x mi subscribers\_list E\_RTPPROXY\_STATUS
-# opensips-cli -x mi subscribers\_list E\_RTPPROXY\_STATUS unix:/tmp/event.sock
+# opensips-cli -x mi subscribers_list
+# opensips-cli -x mi subscribers_list E_RTPPROXY_STATUS
+# opensips-cli -x mi subscribers_list E_RTPPROXY_STATUS unix:/tmp/event.sock
 ```
 
 ## `uptime`
@@ -607,5 +607,5 @@ Get or set the global xlogging level in OpenSIPS processes.
 **Example.** Example of usage for xlog_level command
 
 ```bash
-# opensips-cli -x mi xlog\_level -2
+# opensips-cli -x mi xlog_level -2
 ```

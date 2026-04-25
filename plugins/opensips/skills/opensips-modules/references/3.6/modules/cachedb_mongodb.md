@@ -111,23 +111,23 @@ Set `cachedb_url` parameter
 ```opensips
 ...
 # Connect to a single _mongod_ instance
-modparam("cachedb\_mongodb", "cachedb\_url",
+modparam("cachedb_mongodb", "cachedb_url",
          "mongodb://localhost:27017/opensipsDB.dialog")
 
 # Connect to a _mongod_ replica set
-modparam("cachedb\_mongodb", "cachedb\_url",
+modparam("cachedb_mongodb", "cachedb_url",
          "mongodb://10.0.0.10,10.0.0.11:27017/opensipsDB.dialog?replicaSet=my-set")
 
 # Connect to a _mongos_ instance (routes to a sharded cluster)
-modparam("cachedb\_mongodb", "cachedb\_url",
+modparam("cachedb_mongodb", "cachedb_url",
          "mongodb://localhost/opensipsDB.dialog")
 
 # Example of multiple connections:
 #   \* to a main _mongos_, with failover to a backup _mongos_
 #   \* to a single _mongod_
-modparam("cachedb\_mongodb", "cachedb\_url",
+modparam("cachedb_mongodb", "cachedb_url",
          "mongodb:cluster://localhost,10.0.0.10:27017/opensipsDB.dialog")
-modparam("cachedb\_mongodb", "cachedb\_url",
+modparam("cachedb_mongodb", "cachedb_url",
          "mongodb://localhost:27017/opensipsDB.userlocation")
 ...
 ```
@@ -137,9 +137,9 @@ Reference MongoDB connections
 
 ```opensips
 ...
-cache\_store("mongodb", "key", "$ru value");
-cache\_remove("mongodb:cluster", "key");
-cache\_fetch("mongodb:instance1", "key", $avp(10));
+cache_store("mongodb", "key", "$ru value");
+cache_remove("mongodb:cluster", "key");
+cache_fetch("mongodb:instance1", "key", $avp(10));
 ...
 ```
 ### Set `exec_threshold` parameter
@@ -148,7 +148,7 @@ Set `exec_threshold` parameter
 
 ```opensips
 ...
-modparam("cachedb\_mongodb", "exec\_threshold", 100000)
+modparam("cachedb_mongodb", "exec_threshold", 100000)
 ...
 ```
 ### Setting the `compat_mode_2.4` parameter
@@ -157,7 +157,7 @@ Setting the `compat_mode_2.4` parameter
 
 ```opensips
 ...
-modparam("cachedb\_mongodb", "compat\_mode\_2.4", 1)
+modparam("cachedb_mongodb", "compat_mode_2.4", 1)
 ...
 ```
 ### Setting the `compat_mode_3.0` parameter
@@ -166,7 +166,7 @@ Setting the `compat_mode_3.0` parameter
 
 ```opensips
 ...
-modparam("cachedb\_mongodb", "compat\_mode\_3.0", 1)
+modparam("cachedb_mongodb", "compat_mode_3.0", 1)
 ...
 ```
 ### MongoDB Raw Insert
@@ -175,8 +175,8 @@ MongoDB Raw Insert
 
 ```opensips
 ...
-cache\_raw\_query("mongodb:cluster", "{ \\
-    \"insert\": \"ip\_blacklist\", \\
+cache_raw_query("mongodb:cluster", "{ \\
+    \"insert\": \"ip_blacklist\", \\
     \"documents\": [{ \\
         \"username\": \"$fU\", \\
         \"ip\": \"$si\", \\
@@ -192,8 +192,8 @@ MongoDB Raw Update
 
 ```opensips
 ...
-cache\_raw\_query("mongodb:cluster", "{ \\
-    \"update\": \"ip\_blacklist\", \\
+cache_raw_query("mongodb:cluster", "{ \\
+    \"update\": \"ip_blacklist\", \\
     \"updates\": [{ \\
         \"q\": { \\
             \"username\": \"$fU\", \\

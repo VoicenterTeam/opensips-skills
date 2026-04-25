@@ -153,7 +153,7 @@ modparam("sql_cacher", "sql_fetch_nr_rows", 1000)
 
 ### `sql_cache_dump(caching_id, columns, result_avps)`
 
-Dump all _columns_ cached within the given _caching\_id_, and write them to their respective _result\_avps_.
+Dump all _columns_ cached within the given _caching_id_, and write them to their respective _result_avps_.
 
 **Parameters:**
 
@@ -173,7 +173,7 @@ Dump all _columns_ cached within the given _caching\_id_, and write them to thei
 
 ```opensips
 # Example of pulling all cached CNAM records
-$var(n) = sql\_cache\_dump("cnam", "caller,callee,calling\_name,fraud\_score",
+$var(n) = sql_cache_dump("cnam", "caller,callee,calling_name,fraud_score",
                 "$avp(caller),$avp(callee),$avp(cnam),$avp(fraud)");
 $var(i) = 0;
 while ($var(i) < $var(n)) {
@@ -188,7 +188,7 @@ while ($var(i) < $var(n)) {
 
 The cached data is available through this read-only PV.The format is the following:
 
-*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter "1.3.3.�pvar_delimiter (string)")
+*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter "1.3.3.pvar_delimiter (string)")
     
 *   _id_ : cache entry id
     
@@ -217,9 +217,9 @@ Reloads the given key or invalidates all the keys in cache in _on demand_ mode.
 
 ```bash
 ...
-$ opensips-cli -x mi sql\_cacher\_reload subs\_caching
+$ opensips-cli -x mi sql_cacher_reload subs_caching
 ...
-$ opensips-cli -x mi sql\_cacher\_reload subs\_caching alice@domain.com
+$ opensips-cli -x mi sql_cacher_reload subs_caching alice@domain.com
 ...
 ```
 

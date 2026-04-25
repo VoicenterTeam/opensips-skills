@@ -40,7 +40,7 @@ This is an example of an event raised by the pike module when it decides an ip s
 ```opensips
 {
   "jsonrpc": "2.0",
-  "method": "E\_PIKE\_BLOCKED",
+  "method": "E_PIKE_BLOCKED",
   "params": {
     "ip": "192.168.2.11"
   }
@@ -49,7 +49,7 @@ This is an example of an event raised by the pike module when it decides an ip s
 ### Example 1.2. UNIX socket
 
 ```opensips
-unix:/tmp/opensips\_event.sock
+unix:/tmp/opensips_event.sock
 ```
 ### Example 1.3. UDP socket
 

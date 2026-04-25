@@ -27,7 +27,7 @@ The module implements the queuing system, the call distribution to agents, agent
 
 This is actually a Contact Center and it is able to handle both RTP/audio calls and (multiple) MSRP/chat calls, in the same time.
 
-The module provides an internal buit-in dispatching logic (for sending the calls/chats to the agents), but also offers the possibility to use an external logic to do the dispatching (see [cc\_dispatch\_call\_to\_agent](#mi_cc_dispatch_call_to_agent "1.7.7.� cc_dispatch_call_to_agent") MI command).
+The module provides an internal buit-in dispatching logic (for sending the calls/chats to the agents), but also offers the possibility to use an external logic to do the dispatching (see [cc_dispatch_call_to_agent](#mi_cc_dispatch_call_to_agent "1.7.7. cc_dispatch_call_to_agent") MI command).
 
 ## How It Works
 
@@ -35,11 +35,11 @@ The main entities in the modules are the flows (queues) and agents.
 
 ### 1.2.1. DB tables
 
-Each entity has a corresponding table in the database, for provisioning purposes - the _cc\_flows_ and _cc\_agents_ tables, see [DB schema](https://opensips.org/Documentation/Install-DBSchema--3-3#AEN2656). Data is loaded at startup and cached into memory ; runtime reload is possible via the MI commands (see the _cc\_reload_ command in [Exported MI Functions](#exported_mi_functions "1.7.�Exported MI Functions")).
+Each entity has a corresponding table in the database, for provisioning purposes - the _cc_flows_ and _cc_agents_ tables, see [DB schema](https://opensips.org/Documentation/Install-DBSchema--3-3#AEN2656). Data is loaded at startup and cached into memory ; runtime reload is possible via the MI commands (see the _cc_reload_ command in [Exported MI Functions](#exported_mi_functions "1.7.Exported MI Functions")).
 
-Additionally there is a table _cc\_cdrs_ for writing the CDRs - this operation is done in realtime, after the call in completed, covering all possible cases: call was dropped while in queue, call was rejected by agent, call was accepted by agent, call terminated with error - NOTE that a call may generate more than one CDR (like call rejected by agent A, and redistributed and accepted by agent B).
+Additionally there is a table _cc_cdrs_ for writing the CDRs - this operation is done in realtime, after the call in completed, covering all possible cases: call was dropped while in queue, call was rejected by agent, call was accepted by agent, call terminated with error - NOTE that a call may generate more than one CDR (like call rejected by agent A, and redistributed and accepted by agent B).
 
-The _cc\_calls_ table is used to store ongoing calls, regardless it's state (in queue, to the agent, ended). It is populated at runtime by the module and queried at startup. This table should not be manually provisioned.
+The _cc_calls_ table is used to store ongoing calls, regardless it's state (in queue, to the agent, ended). It is populated at runtime by the module and queried at startup. This table should not be manually provisioned.
 
 ### 1.2.2. Call Flows
 
@@ -49,17 +49,17 @@ Additional, the flow has a _priority_ - as agents may server multiple flows in t
 
 Configurable per flow, the module may do per-flow call dissuading; this means to redirect a call to another destination, if the queue/flow is overloaded:
 
-*   if the number of calls already in the queue exceeds the diss\_qsize\_th threshold
+*   if the number of calls already in the queue exceeds the diss_qsize_th threshold
     
-*   if the estimated time to wait of the queue exceeds the diss\_ewt\_th threshold
+*   if the estimated time to wait of the queue exceeds the diss_ewt_th threshold
     
-*   if the call was waiting in the queue for longer than diss\_onhold\_th threshold
+*   if the call was waiting in the queue for longer than diss_onhold_th threshold
     
 Optionally, the flow may define a _prependcid_ - a prefix to be added to the CLI (Caller ID) when the call is delivered to the agents - as an agent may receive call from multiple flows, it is important for the user to see which was the queue a call was received.
 
-In terms of media announcements, the flow defines the _message\_welcome_ (optional, to be played in the call, before doing anything with the call) and _message\_queue_ (mandatory, the looping message providing infinite on hold media IMPORTANT - this message must cycle and media server must never hung up on it. Both announcements are provided as SIP URIs (where the call has to be sent in order to get the playback).
+In terms of media announcements, the flow defines the _message_welcome_ (optional, to be played in the call, before doing anything with the call) and _message_queue_ (mandatory, the looping message providing infinite on hold media IMPORTANT - this message must cycle and media server must never hung up on it. Both announcements are provided as SIP URIs (where the call has to be sent in order to get the playback).
 
-The flow also has an optional _max\_wrapup time_, which acts as an upper limit for the per-agent/global value (the flow forces a ceiling of the wrapup value for all its calls).
+The flow also has an optional _max_wrapup time_, which acts as an upper limit for the per-agent/global value (the flow forces a ceiling of the wrapup value for all its calls).
 
 ### 1.2.3. Agents
 
@@ -69,9 +69,9 @@ The agent may provide support for different optional media types, like RTP/audio
 
 So, at a certain time, an agent may handle either a single call, either several chat sessions.
 
-Additionally, the agent has a initial _logstate_ - if he is logged in or not (being logged in is a must in order to receive calls). The log state may be changed at runtime via a dedicated MI command _cc\_agent\_login_, see [Exported MI Functions](#exported_mi_functions "1.7.�Exported MI Functions").
+Additionally, the agent has a initial _logstate_ - if he is logged in or not (being logged in is a must in order to receive calls). The log state may be changed at runtime via a dedicated MI command _cc_agent_login_, see [Exported MI Functions](#exported_mi_functions "1.7.Exported MI Functions").
 
-There is an optional per-agent _wrapup\_time_ defined, saying the time interval for an agent before getting a new call from the system (after he finished a call). If no value is defined for the agent, the global _wrapup\_time_ will be used. Note that the resulting value may be upper limited by the per-flow _max\_wrapup\_time_ if defined.
+There is an optional per-agent _wrapup_time_ defined, saying the time interval for an agent before getting a new call from the system (after he finished a call). If no value is defined for the agent, the global _wrapup_time_ will be used. Note that the resulting value may be upper limited by the per-flow _max_wrapup_time_ if defined.
 
 ## Dependencies
 
@@ -102,7 +102,7 @@ modparam("call_center", "acc_db_url",
 ```
 ### `b2b_logic_ctx_param` (string)
 
-The name of the _$b2b\_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the cc_handle_call function. This parameter will be copied throughout all the B2B scenarios started by the call_center module.
+The name of the _$b2b_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the cc_handle_call function. This parameter will be copied throughout all the B2B scenarios started by the call_center module.
 
 *Default value is call_center.*
 
@@ -112,17 +112,17 @@ The name of the _$b2b\_logic.ctx_ variable that can be used to retrieve the valu
 
 ```opensips
 ...
-modparam("call\_center", "b2b\_logic\_ctx\_param", "b2b\_callid")
+modparam("call_center", "b2b_logic_ctx_param", "b2b_callid")
 ...
-route\[handle\_call\_center\] {
+route\[handle_call_center\] {
     ...
-    cc\_handle\_call("flow", $ci);
+    cc_handle_call("flow", $ci);
     ...
 }
 ...
-route\[b2b\_handle\_request\] {
+route\[b2b_handle_request\] {
     ...
-    xlog("Initial Callid is $b2b\_logic.ctx(b2b\_callid)\\n");
+    xlog("Initial Callid is $b2b_logic.ctx(b2b_callid)\\n");
     ...
 }
 ```
@@ -149,7 +149,7 @@ Name to be used for the table holding the definition of the flows/queues.
 
 ```opensips
 ...
-modparam("call\_center", "cc\_flows\_table", "queues")
+modparam("call_center", "cc_flows_table", "queues")
 ...
 ```
 ### `cca_agentid_column` (string)
@@ -175,7 +175,7 @@ Name to be used for the calling/audio "location" (SIP URI) column in the agents 
 
 ```opensips
 ...
-modparam("call\_center", "cca\_location\_column", "sip\_uri")
+modparam("call_center", "cca_location_column", "sip_uri")
 ...
 ```
 ### `cca_logstate_column` (string)
@@ -188,7 +188,7 @@ Name to be used for the "logstate" (original login state) column in the agents t
 
 ```opensips
 ...
-modparam("call\_center", "cca\_logstate\_column", "log\_state")
+modparam("call_center", "cca_logstate_column", "log_state")
 ...
 ```
 ### `cca_msrp_location_column` (string)
@@ -201,7 +201,7 @@ Name to be used for the msrp/chat "location" (SIP URI) column in the agents tabl
 
 ```opensips
 ...
-modparam("call\_center", "cca\_msrp\_location\_column", "sip\_uri")
+modparam("call_center", "cca_msrp_location_column", "sip_uri")
 ...
 ```
 ### `cca_msrp_max_sessions_column` (string)
@@ -214,7 +214,7 @@ Name to be used for the column (in the agents table) holding the maximum number 
 
 ```opensips
 ...
-modparam("call\_center", "cca\_msrp\_max\_sessions\_column", "max\_chats")
+modparam("call_center", "cca_msrp_max_sessions_column", "max_chats")
 ...
 ```
 ### `cca_skills_column` (string)
@@ -227,7 +227,7 @@ Name to be used for the "skills" (list of skills) column in the agents table.
 
 ```opensips
 ...
-modparam("call\_center", "cca\_skills\_column", "skills")
+modparam("call_center", "cca_skills_column", "skills")
 ...
 ```
 ### `cca_wrapupend_column` (string)
@@ -240,7 +240,7 @@ Name to be used for the "wrapupend" (timestamp when the wrapup ends) column in t
 
 ```opensips
 ...
-modparam("call\_center", "cca\_wrapupend\_column", "wrapup\_ends")
+modparam("call_center", "cca_wrapupend_column", "wrapup_ends")
 ...
 ```
 ### `cca_wrapuptime_column` (string)
@@ -253,7 +253,7 @@ Name to be used for the "wrapuptime" (per-agent wrapup time) column in the agent
 
 ```opensips
 ...
-modparam("call\_center", "cca\_wrapuptime\_column", "wtime")
+modparam("call_center", "cca_wrapuptime_column", "wtime")
 ...
 ```
 ### `ccf_cid_column` (string)
@@ -279,7 +279,7 @@ Name to be used for the "EWT dissuading threshold" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_dissuading\_ewt\_th\_column", "th\_diss\_ewt")
+modparam("call_center", "ccf_dissuading_ewt_th_column", "th_diss_ewt")
 ...
 ```
 ### `ccf_dissuading_hangup_column` (string)
@@ -318,7 +318,7 @@ Name to be used for the "queue size dissuading threshold" column in the flows ta
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_dissuading\_qsize\_th\_column", "th\_diss\_qsize")
+modparam("call_center", "ccf_dissuading_qsize_th_column", "th_diss_qsize")
 ...
 ```
 ### `ccf_flowid_column` (string)
@@ -331,7 +331,7 @@ Name to be used for the "flow id" (unique DB id) column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_flowid\_column", "queue\_id")
+modparam("call_center", "ccf_flowid_column", "queue_id")
 ...
 ```
 ### `ccf_m_dissuading_column` (string)
@@ -344,7 +344,7 @@ Name to be used for the "audio message on dissuading" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_m\_dissuading\_column", "audio\_dissuading")
+modparam("call_center", "ccf_m_dissuading_column", "audio_dissuading")
 ...
 ```
 ### `ccf_m_flow_id_column` (string)
@@ -357,7 +357,7 @@ Name to be used for the "audio message on identifying the flow" column in the fl
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_m\_flow\_id\_column", "audio\_flow\_id")
+modparam("call_center", "ccf_m_flow_id_column", "audio_flow_id")
 ...
 ```
 ### `ccf_m_queue_column` (string)
@@ -370,7 +370,7 @@ Name to be used for the "audio message on queueing" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_m\_queue\_column", "audio\_queue")
+modparam("call_center", "ccf_m_queue_column", "audio_queue")
 ...
 ```
 ### `ccf_m_welcome_column` (string)
@@ -383,7 +383,7 @@ Name to be used for the "audio message on welcome" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_m\_welcome\_column", "audio\_welcome")
+modparam("call_center", "ccf_m_welcome_column", "audio_welcome")
 ...
 ```
 ### `ccf_max_wrapup_column` (string)
@@ -409,7 +409,7 @@ Name to be used for the "priority" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_priority\_column", "queue\_prio")
+modparam("call_center", "ccf_priority_column", "queue_prio")
 ...
 ```
 ### `ccf_skill_column` (string)
@@ -886,232 +886,232 @@ This event is raised when the status of an agent changes.
 Setting the SQL address for provisioning tables.
 
 ```opensips
-modparam("call\_center", "db\_url", 	"mysql://opensips:opensipsrw@localhost/opensips")
+modparam("call_center", "db_url", 	"mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### Example 1.2. Set `acc_db_url` parameter
 
 Setting the SQL address for the CDRs table.
 
 ```opensips
-modparam("call\_center", "acc\_db\_url", 	"mysql://opensips:opensipsrw@localhost/opensips\_cdrs")
+modparam("call_center", "acc_db_url", 	"mysql://opensips:opensipsrw@localhost/opensips_cdrs")
 ```
 ### Example 1.3. Set `rt_db_url` parameter
 
 Setting the SQL address for runtime tables (like cc_calls).
 
 ```opensips
-modparam("call\_center", "rt\_db\_url", 	"mysql://opensips:opensipsrw@localhost/opensips\_runtime")
+modparam("call_center", "rt_db_url", 	"mysql://opensips:opensipsrw@localhost/opensips_runtime")
 ```
 ### Example 1.4. Set `wrapup_time` parameter
 
 Setting the global wrapup time to 45 seconds.
 
 ```opensips
-modparam("call\_center", "wrapup\_time", 45)
+modparam("call_center", "wrapup_time", 45)
 ```
 ### Example 1.5. Set `queue_pos_param` parameter
 
 Setting the SIP URI parameter name for reporting queue position.
 
 ```opensips
-modparam("call\_center", "queue\_pos\_param", "cc\_pos")
+modparam("call_center", "queue_pos_param", "cc_pos")
 ```
 ### Example 1.6. Set `reject_on_no_agents` parameter
 
 Disabling rejection on no agents (allowing queueing).
 
 ```opensips
-modparam("call\_center", "reject\_on\_no\_agents", 0)
+modparam("call_center", "reject_on_no_agents", 0)
 ```
 ### Example 1.7. Set `chat_dispatch_policy` parameter
 
 Setting the chat dispatch policy to 'balancing'.
 
 ```opensips
-modparam("call\_center", "chat\_dispatch\_policy", "balancing")
+modparam("call_center", "chat_dispatch_policy", "balancing")
 ```
 ### Example 1.8. Set `internal_call_dispatching` parameter
 
 Disabling internal call dispatching to allow external logic via MI command.
 
 ```opensips
-modparam("call\_center", "internal\_call\_dispatching", 0)
+modparam("call_center", "internal_call_dispatching", 0)
 ```
 ### Example 1.9. Set `cc_agents_table` parameter
 
 Setting a custom name for the agents table.
 
 ```opensips
-modparam("call\_center", "cc\_agents\_table", "my\_agents")
+modparam("call_center", "cc_agents_table", "my_agents")
 ```
 ### Example 1.10. Set `cca_agentid_column` parameter
 
 Setting a custom name for the agent ID column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_agentid\_column", "cid")
+modparam("call_center", "cca_agentid_column", "cid")
 ```
 ### Example 1.11. Set `cca_location_column` parameter
 
 Setting a custom name for the audio location column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_location\_column", "sip\_uri")
+modparam("call_center", "cca_location_column", "sip_uri")
 ```
 ### Example 1.12. Set `cca_msrp_location_column` parameter
 
 Setting a custom name for the MSRP location column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_msrp\_location\_column", "sip\_uri")
+modparam("call_center", "cca_msrp_location_column", "sip_uri")
 ```
 ### Example 1.13. Set `cca_msrp_max_sessions_column` parameter
 
 Setting a custom name for the maximum MSRP sessions column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_msrp\_max\_sessions\_column", "max\_chats")
+modparam("call_center", "cca_msrp_max_sessions_column", "max_chats")
 ```
 ### Example 1.14. Set `cca_skills_column` parameter
 
 Setting a custom name for the skills column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_skills\_column", "skills")
+modparam("call_center", "cca_skills_column", "skills")
 ```
 ### Example 1.15. Set `cca_logstate_column` parameter
 
 Setting a custom name for the logstate column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_logstate\_column", "log\_state")
+modparam("call_center", "cca_logstate_column", "log_state")
 ```
 ### Example 1.16. Set `cca_wrapuptime_column` parameter
 
 Setting a custom name for the per-agent wrapuptime column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_wrapuptime\_column", "wtime")
+modparam("call_center", "cca_wrapuptime_column", "wtime")
 ```
 ### Example 1.17. Set `cca_wrapupend_column` parameter
 
 Setting a custom name for the wrapup end time column in the agents table.
 
 ```opensips
-modparam("call\_center", "cca\_wrapupend\_column", "wrapup\_ends")
+modparam("call_center", "cca_wrapupend_column", "wrapup_ends")
 ```
 ### Example 1.18. Set `cc_flows_table` parameter
 
 Setting a custom name for the flows table.
 
 ```opensips
-modparam("call\_center", "cc\_flows\_table", "queues")
+modparam("call_center", "cc_flows_table", "queues")
 ```
 ### Example 1.19. Set `ccf_flowid_column` parameter
 
 Setting a custom name for the flow ID column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_flowid\_column", "queue\_id")
+modparam("call_center", "ccf_flowid_column", "queue_id")
 ```
 ### Example 1.20. Set `ccf_priority_column` parameter
 
 Setting a custom name for the priority column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_priority\_column", "queue\_prio")
+modparam("call_center", "ccf_priority_column", "queue_prio")
 ```
 ### Example 1.21. Set `ccf_skill_column` parameter
 
 Setting a custom name for the skill column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_skill\_column", "queue\_skill")
+modparam("call_center", "ccf_skill_column", "queue_skill")
 ```
 ### Example 1.22. Set `ccf_cid_column` parameter
 
 Setting a custom name for the Caller ID prefix column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_cid\_column", "queue\_cli\_prefix")
+modparam("call_center", "ccf_cid_column", "queue_cli_prefix")
 ```
 ### Example 1.23. Set `ccf_max_wrapup_column` parameter
 
 Setting a custom name for the max wrapup time column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_max\_wrapup\_column", "queue\_wrapup")
+modparam("call_center", "ccf_max_wrapup_column", "queue_wrapup")
 ```
 ### Example 1.24. Set `ccf_dissuading_hangup_column` parameter
 
 Setting a custom name for the hangup after dissuading column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_dissuading\_hangup\_column", "hangup\_on\_dissuading")
+modparam("call_center", "ccf_dissuading_hangup_column", "hangup_on_dissuading")
 ```
 ### Example 1.25. Set `ccf_dissuading_onhold_th_column` parameter
 
 Setting a custom name for the on-hold dissuading threshold column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_dissuading\_onhold\_th\_column", "th\_diss\_onhold")
+modparam("call_center", "ccf_dissuading_onhold_th_column", "th_diss_onhold")
 ```
 ### Example 1.26. Set `ccf_dissuading_ewt_th_column` parameter
 
 Setting a custom name for the EWT dissuading threshold column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_dissuading\_ewt\_th\_column", "th\_diss\_ewt")
+modparam("call_center", "ccf_dissuading_ewt_th_column", "th_diss_ewt")
 ```
 ### Example 1.27. Set `ccf_dissuading_qsize_th_column` parameter
 
 Setting a custom name for the queue size dissuading threshold column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_dissuading\_qsize\_th\_column", "th\_diss\_qsize")
+modparam("call_center", "ccf_dissuading_qsize_th_column", "th_diss_qsize")
 ```
 ### Example 1.28. Set `ccf_m_welcome_column` parameter
 
 Setting a custom name for the welcome audio message column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_m\_welcome\_column", "audio\_welcome")
+modparam("call_center", "ccf_m_welcome_column", "audio_welcome")
 ```
 ### Example 1.29. Set `ccf_m_queue_column` parameter
 
 Setting a custom name for the queue audio message column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_m\_queue\_column", "audio\_queue")
+modparam("call_center", "ccf_m_queue_column", "audio_queue")
 ```
 ### Example 1.30. Set `ccf_m_dissuading_column` parameter
 
 Setting a custom name for the dissuading audio message column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_m\_dissuading\_column", "audio\_dissuading")
+modparam("call_center", "ccf_m_dissuading_column", "audio_dissuading")
 ```
 ### Example 1.31. Set `ccf_m_flow_id_column` parameter
 
 Setting a custom name for the flow ID audio message column in the flows table.
 
 ```opensips
-modparam("call\_center", "ccf\_m\_flow\_id\_column", "audio\_flow\_id")
+modparam("call_center", "ccf_m_flow_id_column", "audio_flow_id")
 ```
 ### Example 1.32. Set `b2b_logic_ctx_param` parameter
 
 Setting the context parameter name for b2b_logic and demonstrating its usage in routing logic.
 
 ```opensips
-modparam("call\_center", "b2b\_logic\_ctx\_param", "b2b\_callid")
-route[handle\_call\_center] {
+modparam("call_center", "b2b_logic_ctx_param", "b2b_callid")
+route[handle_call_center] {
     ...
-    cc\_handle\_call("flow", $ci);
+    cc_handle_call("flow", $ci);
     ...
 }
-route[b2b\_handle\_request] {
+route[b2b_handle_request] {
     ...
-    xlog("Initial Callid is $b2b\_logic.ctx(b2b\_callid)\n");
+    xlog("Initial Callid is $b2b_logic.ctx(b2b_callid)\n");
     ...
 }
 ```
@@ -1122,9 +1122,9 @@ This example shows how to set a custom context parameter name and how to retriev
 Using cc_handle_call in the REQUEST_ROUTE to push an INVITE request to the 'tech_support' flow, exiting if handling fails.
 
 ```opensips
-if (is\_method("INVITE") and !has\_totag()) {
-	if (!cc\_handle\_call("tech\_support")) {
-		send\_reply(403,"Cannot handle call");
+if (is_method("INVITE") and !has_totag()) {
+	if (!cc_handle_call("tech_support")) {
+		send_reply(403,"Cannot handle call");
 		exit;
 	}
 }
@@ -1137,7 +1137,7 @@ Using cc_agent_login in REQUEST_ROUTE to log off the agent named 'agentX'.
 
 ```opensips
 # log off the 'agentX' agent
-cc\_agent\_login("agentX",0);
+cc_agent_login("agentX",0);
 ```
 
 The second parameter '0' signifies logging off.

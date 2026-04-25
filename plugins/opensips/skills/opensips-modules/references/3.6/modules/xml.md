@@ -45,32 +45,32 @@ Creating a document
 
 ```opensips
 ...
-$xml(my\_doc) = "<doc></doc>";        # init object
+$xml(my_doc) = "<doc></doc>";        # init object
 
-$xml(my\_doc/doc) = "<list></list>";  # add a "list" node
+$xml(my_doc/doc) = "<list></list>";  # add a "list" node
 
-$xml(my\_doc/doc/list) = "<item>some\_value</item>";    # add an "item" node to the list
+$xml(my_doc/doc/list) = "<item>some_value</item>";    # add an "item" node to the list
 
-$xml(my\_doc/doc/list) = "<item>another\_value</item>"; # add another item to the list
+$xml(my_doc/doc/list) = "<item>another_value</item>"; # add another item to the list
 
-$xml(my\_doc/doc/list/item\[1\].val) = "new\_val";        # set text content of previous item
+$xml(my_doc/doc/list/item\[1\].val) = "new_val";        # set text content of previous item
 
-$xml(my\_doc/doc/list.attr/sort) = "asc";              # add attribute "sort" to list node
+$xml(my_doc/doc/list.attr/sort) = "asc";              # add attribute "sort" to list node
 
-$xml(my\_doc/doc/list.attr/sort) = NULL;               # remove previous attribute
+$xml(my_doc/doc/list.attr/sort) = NULL;               # remove previous attribute
 
-$xml(my\_doc/doc/list/item\[1\]) = NULL;                 # remove second item
+$xml(my_doc/doc/list/item\[1\]) = NULL;                 # remove second item
 
-$xml(my\_doc/doc/list.val) = "end";                    # add text content to list which now has
+$xml(my_doc/doc/list.val) = "end";                    # add text content to list which now has
                                                       # mixed content
 
-$xml(my\_doc/doc/list.val) = NULL;                     # remove the text content
+$xml(my_doc/doc/list.val) = NULL;                     # remove the text content
 
-xlog("$xml(my\_doc/doc/list)\n");                      # display the entire list
+xlog("$xml(my_doc/doc/list)\n");                      # display the entire list
 
-xlog("$xml(my\_doc)\n");                               # display the entire document
+xlog("$xml(my_doc)\n");                               # display the entire document
 
-$xml(my\_doc) = NULL;                                  # clear the entire document
+$xml(my_doc) = NULL;                                  # clear the entire document
 ...
 ```
 ### Inserting nodes with indentation
@@ -79,9 +79,9 @@ Inserting nodes with indentation
 
 ```opensips
 ...
-$xml(my\_doc) = "<doc>\\n</doc>";
-$xml(my\_doc/doc) = "\\t<list></list>\\n";
-$xml(my\_doc/doc/list) = "\\n\\t\\t<item></item>\\n\\t";
+$xml(my_doc) = "<doc>\\n</doc>";
+$xml(my_doc/doc) = "\\t<list></list>\\n";
+$xml(my_doc/doc/list) = "\\n\\t\\t<item></item>\\n\\t";
 
 # this creates the following document:
 # <doc>
@@ -101,9 +101,9 @@ Using script variables in path
 ```opensips
 ...
 # accessing the attribute of second item in list
-$var(my\_list) = "list";
-$var(my\_idx) = 1;
-$var(my\_attr) = "sort";
-xlog("$xml(my\_doc/doc/$var(my\_list)/item\[$var(my\_idx)\].attr/$var(my\_attr))\n");
+$var(my_list) = "list";
+$var(my_idx) = 1;
+$var(my_attr) = "sort";
+xlog("$xml(my_doc/doc/$var(my_list)/item\[$var(my_idx)\].attr/$var(my_attr))\n");
 ...
 ```

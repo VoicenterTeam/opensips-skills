@@ -47,7 +47,7 @@ The definition of an AVP that might contain the password to be used to perform a
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_password\_avp","$avp(12)")
+modparam("uac_auth","auth_password_avp","$avp(12)")
 ...
 ```
 ### `auth_realm_avp` (string)
@@ -60,7 +60,7 @@ The definition of an AVP that might contain the realm to be used to perform auth
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_realm\_avp","$avp(10)")
+modparam("uac_auth","auth_realm_avp","$avp(10)")
 ...
 ```
 ### `auth_username_avp` (string)
@@ -73,7 +73,7 @@ The definition of an AVP that might contain the username to be used to perform a
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_username\_avp","$avp(11)")
+modparam("uac_auth","auth_username_avp","$avp(11)")
 ...
 ```
 ### `credential` (string)
@@ -88,8 +88,8 @@ This parameter is required if UAC authentication is used.
 
 ```opensips
 ...
-modparam("uac\_auth","credential","username:domain:password")
-modparam("uac\_auth","credential","username:domain:0xc17ba8157756f263d07e158504204629")
+modparam("uac_auth","credential","username:domain:password")
+modparam("uac_auth","credential","username:domain:0xc17ba8157756f263d07e158504204629")
 ...
 ```
 
@@ -101,8 +101,8 @@ Contains a multiple definition of credentials used to perform authentication.
 
 ```opensips
 ...
-modparam("uac\_auth","credential","username:domain:password")
-modparam("uac\_auth","credential","username:domain:0xc17ba8157756f263d07e158504204629")
+modparam("uac_auth","credential","username:domain:password")
+modparam("uac_auth","credential","username:domain:0xc17ba8157756f263d07e158504204629")
 ...
 ```
 ### Set `auth_realm_avp` parameter
@@ -111,7 +111,7 @@ The definition of an AVP that might contain the realm to be used to perform auth
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_realm\_avp","$avp(10)")
+modparam("uac_auth","auth_realm_avp","$avp(10)")
 ...
 ```
 ### Set `auth_username_avp` parameter
@@ -120,7 +120,7 @@ The definition of an AVP that might contain the username to be used to perform a
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_username\_avp","$avp(11)")
+modparam("uac_auth","auth_username_avp","$avp(11)")
 ...
 ```
 ### Set `auth_password_avp` parameter
@@ -129,6 +129,6 @@ The definition of an AVP that might contain the password to be used to perform a
 
 ```opensips
 ...
-modparam("uac\_auth","auth\_password\_avp","$avp(12)")
+modparam("uac_auth","auth_password_avp","$avp(12)")
 ...
 ```

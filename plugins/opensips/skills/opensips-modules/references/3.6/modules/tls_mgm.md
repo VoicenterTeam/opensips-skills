@@ -529,10 +529,10 @@ Returns 1 if the message is received via TLS and the peer was verified during TL
 
 ```opensips
 ...
-if (is\_peer\_verified()) {
-        xlog("L\_INFO","request from verified TLS peer\\n");
+if (is_peer_verified()) {
+        xlog("L_INFO","request from verified TLS peer\\n");
 } else {
-        xlog("L\_INFO","request not verified\\n");
+        xlog("L_INFO","request not verified\\n");
 }
 ...
 ```

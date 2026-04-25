@@ -44,7 +44,7 @@ Name of the column storing alias domain.
 **Example.** adomain.
 
 ```opensips
-modparam("alias\_db", "alias\_domain\_column", "adomain")
+modparam("alias_db", "alias_domain_column", "adomain")
 ```
 ### `alias_user_column` (string)
 
@@ -55,7 +55,7 @@ Name of the column storing alias username.
 **Example.** auser.
 
 ```opensips
-modparam("alias\_db", "alias\_user\_column", "auser")
+modparam("alias_db", "alias_user_column", "auser")
 ```
 ### `append_branches` (integer)
 
@@ -71,7 +71,7 @@ If the alias resolves to many SIP IDs, the first is replacing the R-URI, the res
 **Example.** 1.
 
 ```opensips
-modparam("alias\_db", "append\_branches", 1)
+modparam("alias_db", "append_branches", 1)
 ```
 ### `db_url` (string)
 
@@ -82,7 +82,7 @@ Database URL.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("alias\_db", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("alias_db", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `domain_column` (string)
 
@@ -93,7 +93,7 @@ Name of the column storing user's domain.
 **Example.** sdomain.
 
 ```opensips
-modparam("alias\_db", "domain\_column", "sdomain")
+modparam("alias_db", "domain_column", "sdomain")
 ```
 ### `domain_prefix` (string)
 
@@ -104,7 +104,7 @@ Specifies the prefix to be stripped from the domain in R-URI before doing the se
 **Example.** sip..
 
 ```opensips
-modparam("alias\_db", "domain\_prefix", "sip.")
+modparam("alias_db", "domain_prefix", "sip.")
 ```
 ### `user_column` (string)
 
@@ -115,7 +115,7 @@ Name of the column storing username.
 **Example.** susername.
 
 ```opensips
-modparam("alias\_db", "user\_column", "susername")
+modparam("alias_db", "user_column", "susername")
 ```
 
 ## Exported Functions
@@ -183,7 +183,7 @@ Set the database URL.
 
 ```opensips
 ...
-modparam("alias\_db", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("alias_db", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `user_column` parameter
@@ -192,7 +192,7 @@ Set the name of the column storing username.
 
 ```opensips
 ...
-modparam("alias\_db", "user\_column", "susername")
+modparam("alias_db", "user_column", "susername")
 ...
 ```
 ### Set `domain_column` parameter
@@ -201,7 +201,7 @@ Set the name of the column storing user's domain.
 
 ```opensips
 ...
-modparam("alias\_db", "domain\_column", "sdomain")
+modparam("alias_db", "domain_column", "sdomain")
 ...
 ```
 ### Set `alias_user_column` parameter
@@ -210,7 +210,7 @@ Set the name of the column storing alias username.
 
 ```opensips
 ...
-modparam("alias\_db", "alias\_user\_column", "auser")
+modparam("alias_db", "alias_user_column", "auser")
 ...
 ```
 ### Set `alias_domain_column` parameter
@@ -219,7 +219,7 @@ Set the name of the column storing alias domain.
 
 ```opensips
 ...
-modparam("alias\_db", "alias\_domain\_column", "adomain")
+modparam("alias_db", "alias_domain_column", "adomain")
 ...
 ```
 ### Set `domain_prefix` parameter
@@ -228,7 +228,7 @@ Set the prefix to be stripped from the domain in R-URI before doing the search.
 
 ```opensips
 ...
-modparam("alias\_db", "domain\_prefix", "sip.")
+modparam("alias_db", "domain_prefix", "sip.")
 ...
 ```
 ### Set `append_branches` parameter
@@ -237,7 +237,7 @@ Set whether to append branches if the alias resolves to many SIP IDs.
 
 ```opensips
 ...
-modparam("alias\_db", "append\_branches", 1)
+modparam("alias_db", "append_branches", 1)
 ...
 ```
 ### `alias_db_lookup()` usage
@@ -246,8 +246,8 @@ Use the alias_db_lookup() function to search for aliases.
 
 ```opensips
 ...
-alias\_db\_lookup("dbaliases", "rd");
-alias\_db\_lookup("dba\_$(rU{s.substr,0,1})");
+alias_db_lookup("dbaliases", "rd");
+alias_db_lookup("dba_$(rU{s.substr,0,1})");
 ...
 ```
 ### `alias_db_find()` usage
@@ -257,6 +257,6 @@ Use the alias_db_find() function to perform a reverse alias lookup.
 ```opensips
 ...
 # do revers alias lookup and find the alias for the FROM URI
-alias\_db\_find("dbaliases", $fu, $avp(from\_alias), "r");
+alias_db_find("dbaliases", $fu, $avp(from_alias), "r");
 ...
 ```

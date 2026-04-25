@@ -40,7 +40,7 @@ Timeout value for connect (create session) operation.
 **Example.** 0.5.
 
 ```opensips
-modparam("db\_oracle", "reconnect", 0.5)
+modparam("db_oracle", "reconnect", 0.5)
 ```
 ### `timeout` (fixedpoint)
 
@@ -55,7 +55,7 @@ Timeout value for any operation with BD.
 **Example.** 1.5.
 
 ```opensips
-modparam("db\_oracle", "timeout", 1.5)
+modparam("db_oracle", "timeout", 1.5)
 ```
 
 ## Configuration Examples
@@ -66,7 +66,7 @@ Set `timeout` parameter
 
 ```opensips
 ...
-modparam("db\_oracle", "timeout", 1.5)
+modparam("db_oracle", "timeout", 1.5)
 ...
 ```
 ### Disable asynchronous mode
@@ -75,7 +75,7 @@ Disable asynchronous mode
 
 ```opensips
 ...
-modparam("db\_oracle", "timeout", 0)
+modparam("db_oracle", "timeout", 0)
 ...
 ```
 ### Set `reconnect` parameter
@@ -84,6 +84,6 @@ Set `reconnect` parameter
 
 ```opensips
 ...
-modparam("db\_oracle", "reconnect", 0.5)
+modparam("db_oracle", "reconnect", 0.5)
 ...
 ```

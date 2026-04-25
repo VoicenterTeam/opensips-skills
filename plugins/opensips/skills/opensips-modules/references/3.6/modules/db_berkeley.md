@@ -44,7 +44,7 @@ The auto-reload will close and reopen a Berkeley DB when the files inode has cha
 **Example.** 1.
 
 ```opensips
-modparam("db\_berkeley", "auto\_reload", 1)
+modparam("db_berkeley", "auto_reload", 1)
 ```
 ### `journal_roll_interval` (integer)
 
@@ -55,7 +55,7 @@ The journal_roll_interval will close and open a new log file. The roll operation
 **Example.** 3600.
 
 ```opensips
-modparam("db\_berkeley", "journal\_roll\_interval", 3600)
+modparam("db_berkeley", "journal_roll_interval", 3600)
 ```
 ### `log_enable` (integer)
 
@@ -71,7 +71,7 @@ The log_enable boolean controls when to create journal files. The following oper
 **Example.** 1.
 
 ```opensips
-modparam("db\_berkeley", "log\_enable", 1)
+modparam("db_berkeley", "log_enable", 1)
 ```
 
 ## Exported MI Functions

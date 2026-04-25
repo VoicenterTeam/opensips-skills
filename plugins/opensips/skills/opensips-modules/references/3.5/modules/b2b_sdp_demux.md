@@ -21,7 +21,7 @@ This module provides the logic to convert a multi-stream SDP call, to multiple c
 
 ## How It Works
 
-The logic is implemented on top of the B2B module, and de-multiplexes a B2B server (the initial call with multiple streams) to multiple B2B clients (with their own streams subset). In-dialog requests that come from the initial caller will be forked towards each client, and their replies aggregated back to the caller. The other side in-dialog requests are forwarded to the caller as if only their stream had changed. When a call is terminated from the client side, the module can have different behaviors, according to the [client\_bye\_mode](#param_client_bye_mode "1.4.1.�client\_bye\_mode (string)") parameter.
+The logic is implemented on top of the B2B module, and de-multiplexes a B2B server (the initial call with multiple streams) to multiple B2B clients (with their own streams subset). In-dialog requests that come from the initial caller will be forked towards each client, and their replies aggregated back to the caller. The other side in-dialog requests are forwarded to the caller as if only their stream had changed. When a call is terminated from the client side, the module can have different behaviors, according to the [client_bye_mode](#param_client_bye_mode "1.4.1.client_bye_mode (string)") parameter.
 
 ## Dependencies
 
@@ -50,7 +50,7 @@ This parameter indicates how a BYE coming from the client side should be treated
 **Example.** terminate.
 
 ```opensips
-modparam("b2b\_sdp\_demux", "client\_bye\_mode", "terminate")
+modparam("b2b_sdp_demux", "client_bye_mode", "terminate")
 ```
 
 ## Exported Functions
@@ -71,10 +71,10 @@ Engages the B2B SDP De-Multiplexing scenario for the calls it has been triggered
 
 ```opensips
 ...
-if (!has\_totag() && is\_method("INVITE")) {
+if (!has_totag() && is_method("INVITE")) {
 	$avp(headers) = "X-Leg: caller\\r\\n");
 	$avp(headers) = "X-Leg: callee\\r\\n");
-	b2b\_sdp\_demux("sip:media@localhost", $avp(headers));
+	b2b_sdp_demux("sip:media@localhost", $avp(headers));
 }
 ...
 ```

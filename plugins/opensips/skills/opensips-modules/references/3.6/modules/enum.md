@@ -82,7 +82,7 @@ i.1.e164.arpa.     TYPE65300  \# 14 (
 **Example.** txt.
 
 ```opensips
-modparam("enum", "bl\_algorithm", "txt")
+modparam("enum", "bl_algorithm", "txt")
 ```
 ### `branchlabel` (string)
 
@@ -104,7 +104,7 @@ The domain suffix to be added to the domain name obtained from the digits of an 
 **Example.** e1234.arpa..
 
 ```opensips
-modparam("enum", "domain\_suffix", "e1234.arpa.")
+modparam("enum", "domain_suffix", "e1234.arpa.")
 ```
 ### `i_enum_suffix` (string)
 
@@ -115,7 +115,7 @@ The domain suffix to be used for i_enum_query() lookups. Can be overridden by a 
 **Example.** e1234.arpa..
 
 ```opensips
-modparam("enum", "i\_enum\_suffix", "e1234.arpa.")
+modparam("enum", "i_enum_suffix", "e1234.arpa.")
 ```
 ### `isn_suffix` (string)
 
@@ -126,7 +126,7 @@ The domain suffix to be used for isn_query() lookups. Can be overridden by a par
 **Example.** freenum.org..
 
 ```opensips
-modparam("enum", "isn\_suffix", "freenum.org.")
+modparam("enum", "isn_suffix", "freenum.org.")
 ```
 ### `tel_uri_params` (string)
 
@@ -137,7 +137,7 @@ A string whose contents is appended to each new tel URI in the request as tel UR
 **Example.** ;npdi.
 
 ```opensips
-modparam("enum", "tel\_uri\_params", ";npdi")
+modparam("enum", "tel_uri_params", ";npdi")
 ```
 
 ## Exported Functions

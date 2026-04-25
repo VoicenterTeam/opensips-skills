@@ -48,7 +48,7 @@ Command-line parameteres passed down to the embedded RTPProxy module upon initia
 **Example.** -m 12000 -M 15000 -l 0.0.0.0 -6 /::.
 
 ```opensips
-modparam("rtp.io", "rtpproxy\_args", "-m 12000 -M 15000 -l 0.0.0.0 -6 /::")
+modparam("rtp.io", "rtpproxy_args", "-m 12000 -M 15000 -l 0.0.0.0 -6 /::")
 ```
 
 ## Configuration Examples

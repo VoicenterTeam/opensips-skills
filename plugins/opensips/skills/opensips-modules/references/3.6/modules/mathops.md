@@ -32,14 +32,14 @@ None.
 
 ### `decimal_digits` (integer)
 
-The precision of the results returned by all the module functions. The higher the “decimal\_digits” value, the more decimal digits the results will have.
+The precision of the results returned by all the module functions. The higher the “decimal_digits” value, the more decimal digits the results will have.
 
 *Default value is 6.*
 
 **Example.** 10.
 
 ```opensips
-modparam("mathops", "decimal\_digits", 10)
+modparam("mathops", "decimal_digits", 10)
 ```
 
 ## Exported Functions
@@ -330,7 +330,7 @@ if (math_trunc($avp(1), $avp(result))) {
 The precision of the results returned by all the module functions.
 
 ```opensips
-modparam("mathops", "decimal\_digits", 10)
+modparam("mathops", "decimal_digits", 10)
 ```
 ### `math_eval` usage
 
@@ -344,7 +344,7 @@ $avp(1) = "3.141592";
 $avp(2) = "2.71828";
 $avp(3) = "123.45678";
 
-if (math\_eval("$avp(1) \* ($avp(3) - ($avp(1) - $avp(2))) / $avp(3)", $avp(result))) {
+if (math_eval("$avp(1) \* ($avp(3) - ($avp(1) - $avp(2))) / $avp(3)", $avp(result))) {
 	xlog("Result of expression: $avp(result)\\n");
 } else {
 	xlog("Math eval failed!\\n");
@@ -359,7 +359,7 @@ The function evaluates a given RPN expression and writes the result in the outpu
 ```opensips
 $avp(1) = "3";
 
-if (math\_rpn("1 $avp(1) swap swap dup drop / exp ln 1 swap /", $avp(result))) {
+if (math_rpn("1 $avp(1) swap swap dup drop / exp ln 1 swap /", $avp(result))) {
 	xlog("Result of expression: $avp(result)\\n");
 } else {
 	xlog("RPN eval failed!\\n");
@@ -380,7 +380,7 @@ Truncation of a number towards zero.
 
 $avp(1) = "3.141492";
 
-if (math\_trunc($avp(1), $avp(result))) {
+if (math_trunc($avp(1), $avp(result))) {
 	xlog("Truncate result: $avp(result)\\n");
 } else {
 	xlog("Truncate failed!\\n");
@@ -397,7 +397,7 @@ Truncates a number, always towards -infinity.
 
 $avp(1) = "3.141492";
 
-if (math\_floor($avp(1), $avp(result))) {
+if (math_floor($avp(1), $avp(result))) {
 	xlog("Floor result: $avp(result)\\n");
 } else {
 	xlog("Floor operation failed!\\n");
@@ -414,7 +414,7 @@ Truncates a number, always towards +infinity.
 
 $avp(1) = "3.141492";
 
-if (math\_ceil($avp(1), $avp(result))) {
+if (math_ceil($avp(1), $avp(result))) {
 	xlog("Ceil result: $avp(result)\\n");
 } else {
 	xlog("Ceil operation failed!\\n");
@@ -431,7 +431,7 @@ The round function returns the nearest integer, and tie-breaking is done away fr
 
 $avp(1) = "3.141492";
 
-if (math\_round($avp(1), $avp(result))) {
+if (math_round($avp(1), $avp(result))) {
 
 	# result should be: 3
 	xlog("Round result: $avp(result)\\n");
@@ -441,7 +441,7 @@ if (math\_round($avp(1), $avp(result))) {
 
 ...
 
-if (math\_round($avp(1), $avp(result), 4)) {
+if (math_round($avp(1), $avp(result), 4)) {
 
 	# result should be: "3.1415"
 	xlog("Round result: $avp(result)\\n");
@@ -460,7 +460,7 @@ Rounding to N significant figures is done by first obtaining the number resulted
 
 $avp(1) = "3.141492";
 
-if (math\_round\_sf($avp(1), $avp(result), 4)) {
+if (math_round_sf($avp(1), $avp(result), 4)) {
 
 	# result should be: "3.141"
 	xlog("Round result: $avp(result)\\n");
@@ -481,7 +481,7 @@ Compare exp1 with exp2 and returns the comparison result in the result_var.
 $var(exp1) = "1 + 8";
 $var(exp2) = "7/2";
 
-if (math\_compare($var(exp1), $var(exp2), $var(result))) {
+if (math_compare($var(exp1), $var(exp2), $var(result))) {
 
 	# $var(result) will be 1, since 9 > 3.5
 }

@@ -68,7 +68,7 @@ The amount of milliseconds an asynchronous call should wait for getting an authe
 **Example.** 2000.
 
 ```opensips
-modparam("auth\_aka", "async\_timeout", 2000)
+modparam("auth_aka", "async_timeout", 2000)
 ```
 ### `default_algorithm` (string)
 
@@ -81,7 +81,7 @@ The default algorithm to be advertise during challenge, if the functions do not 
 **Example.** AKAv2-MD5.
 
 ```opensips
-modparam("auth\_aka", "default\_algorithm", "AKAv2-MD5")
+modparam("auth_aka", "default_algorithm", "AKAv2-MD5")
 ```
 ### `default_av_mgm` (string)
 
@@ -90,7 +90,7 @@ The default AV Manager used in case the functions do not provide them explicitly
 **Example.** diameter.
 
 ```opensips
-modparam("auth\_aka", "default\_av\_mgm", "diameter") # fetch AVs through the Cx interface
+modparam("auth_aka", "default_av_mgm", "diameter") # fetch AVs through the Cx interface
 ```
 ### `default_qop` (string)
 
@@ -101,7 +101,7 @@ The default qop parameter used during challenge, if the functions do not provide
 **Example.** auth,auth-int.
 
 ```opensips
-modparam("auth\_aka", "default\_qop", "auth,auth-int")
+modparam("auth_aka", "default_qop", "auth,auth-int")
 ```
 ### `hash_size` (integer)
 
@@ -112,7 +112,7 @@ The size of the hash that stores the AVs for each user. Must be a power of 2 num
 **Example.** 1024.
 
 ```opensips
-modparam("auth\_aka", "hash\_size", 1024)
+modparam("auth_aka", "hash_size", 1024)
 ```
 ### `pending_timeout` (integer)
 
@@ -127,7 +127,7 @@ The amount of seconds an authentication vector that is being used in the authent
 **Example.** 10.
 
 ```opensips
-modparam("auth\_aka", "pending\_timeout", 10)
+modparam("auth_aka", "pending_timeout", 10)
 ```
 ### `sync_timeout` (integer)
 
@@ -142,7 +142,7 @@ The amount of milliseconds a synchronous call should wait for getting an authent
 **Example.** 200.
 
 ```opensips
-modparam("auth\_aka", "sync\_timeout", 200)
+modparam("auth_aka", "sync_timeout", 200)
 ```
 ### `unused_timeout` (integer)
 
@@ -157,7 +157,7 @@ The amount of seconds an authentication vector that has not been used can stay i
 **Example.** 120.
 
 ```opensips
-modparam("auth\_aka", "unused\_timeout", 120)
+modparam("auth_aka", "unused_timeout", 120)
 ```
 
 ## Exported Functions
@@ -432,7 +432,7 @@ Adds an Authentication Vector through the MI interface.
 
 ```bash
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_add \\
+$ opensips-cli -x mi aka_av_add \\
 					sip:test@siphub.com
 					test@siphub.com
 					KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -455,7 +455,7 @@ Invalidates an Authentication Vector of an user identified by its authenticate v
 
 ```bash
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 					sip:test@siphub.com
 					test@siphub.com
 					KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -474,7 +474,7 @@ Invalidates all Authentication Vectors of an user through the MI interface.
 
 ```bash
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop\_all \\
+$ opensips-cli -x mi aka_av_drop_all \\
 					sip:test@siphub.com
 					test@siphub.com
 ```
@@ -495,7 +495,7 @@ Note: this function is useful when you know that fetching a new authentication v
 
 ```bash
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 					sip:test@siphub.com
 					test@siphub.com
 					KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -506,65 +506,65 @@ $ opensips-cli -x mi aka\_av\_drop \\
 ### `default_av_mgm` parameter usage
 
 ```opensips
-modparam("auth\_aka", "default\_av\_mgm", "diameter") # fetch AVs through the Cx interface
+modparam("auth_aka", "default_av_mgm", "diameter") # fetch AVs through the Cx interface
 ```
 ### `default_qop` parameter usage
 
 ```opensips
-modparam("auth\_aka", "default\_qop", "auth,auth-int")
+modparam("auth_aka", "default_qop", "auth,auth-int")
 ```
 ### `default_algorithm` parameter usage
 
 ```opensips
-modparam("auth\_aka", "default\_algorithm", "AKAv2-MD5")
+modparam("auth_aka", "default_algorithm", "AKAv2-MD5")
 ```
 ### `hash_size` parameter usage
 
 ```opensips
-modparam("auth\_aka", "hash\_size", 1024)
+modparam("auth_aka", "hash_size", 1024)
 ```
 ### `sync_timeout` parameter usage
 
 ```opensips
-modparam("auth\_aka", "sync\_timeout", 200)
+modparam("auth_aka", "sync_timeout", 200)
 ```
 ### `async_timeout` parameter usage
 
 ```opensips
-modparam("auth\_aka", "async\_timeout", 2000)
+modparam("auth_aka", "async_timeout", 2000)
 ```
 ### `unused_timeout` parameter usage
 
 ```opensips
-modparam("auth\_aka", "unused\_timeout", 120)
+modparam("auth_aka", "unused_timeout", 120)
 ```
 ### `pending_timeout` parameter usage
 
 ```opensips
-modparam("auth\_aka", "pending\_timeout", 10)
+modparam("auth_aka", "pending_timeout", 10)
 ```
 ### `aka_www_authorize` usage
 
 ```opensips
 ...
-if (!aka\_www\_authorize("diameter", "siphub.com"))
-	aka\_www\_challenge("diameter", "siphub.com", "auth");
+if (!aka_www_authorize("diameter", "siphub.com"))
+	aka_www_challenge("diameter", "siphub.com", "auth");
 ...
 ```
 ### `aka_proxy_authorize` usage
 
 ```opensips
 ...
-if (!aka\_proxy\_authorize("siphub.com"))
-	aka\_proxy\_challenge("diameter", "siphub.com", "auth");
+if (!aka_proxy_authorize("siphub.com"))
+	aka_proxy_challenge("diameter", "siphub.com", "auth");
 ...
 ```
-### aka\_www\_challenge usage
+### aka_www_challenge usage
 
 ```opensips
 ...
-if (!aka\_www\_authorize("siphub.com")) {
-	aka\_www\_challenge(,"siphub.com", "auth-int", "AKAv1-MD5");
+if (!aka_www_authorize("siphub.com")) {
+	aka_www_challenge(,"siphub.com", "auth-int", "AKAv1-MD5");
 }
 ...
 ```
@@ -572,15 +572,15 @@ if (!aka\_www\_authorize("siphub.com")) {
 
 ```opensips
 ...
-if (!aka\_proxy\_authorize("siphub.com"))
-	aka\_proxy\_challenge(,"siphub.com", "auth");
+if (!aka_proxy_authorize("siphub.com"))
+	aka_proxy_challenge(,"siphub.com", "auth");
 ...
 ```
 ### `aka_av_add` usage
 
 ```opensips
 ...
-aka\_av\_add("sip:test@siphub.com", "test@siphub.com",
+aka_av_add("sip:test@siphub.com", "test@siphub.com",
 			"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=", /\* authenticate \*/
 			"00000262c0000014000028af2d6398cbe26eea69", /\* authorize \*/
 			"db7f8c4a58e17083974bba3b936d34c4", /\* ck \*/
@@ -591,7 +591,7 @@ aka\_av\_add("sip:test@siphub.com", "test@siphub.com",
 
 ```opensips
 ...
-aka\_av\_drop("sip:test@siphub.com", "test@siphub.com",
+aka_av_drop("sip:test@siphub.com", "test@siphub.com",
 			"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=");
 ...
 ```
@@ -599,14 +599,14 @@ aka\_av\_drop("sip:test@siphub.com", "test@siphub.com",
 
 ```opensips
 ...
-aka\_av\_drop\_all("sip:test@siphub.com", "test@siphub.com", $var(count));
+aka_av_drop_all("sip:test@siphub.com", "test@siphub.com", $var(count));
 ...
 ```
 ### `aka_av_fail` usage
 
 ```opensips
 ...
-aka\_av\_fail("sip:test@siphub.com", "test@siphub.com", 3);
+aka_av_fail("sip:test@siphub.com", "test@siphub.com", 3);
 ...
 ```
 ### `aka_av_add` usage
@@ -614,7 +614,7 @@ aka\_av\_fail("sip:test@siphub.com", "test@siphub.com", 3);
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_add \\
+$ opensips-cli -x mi aka_av_add \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -628,7 +628,7 @@ $ opensips-cli -x mi aka\_av\_add \\
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=
@@ -639,7 +639,7 @@ $ opensips-cli -x mi aka\_av\_drop \\
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop\_all \\
+$ opensips-cli -x mi aka_av_drop_all \\
 				sip:test@siphub.com
 				test@siphub.com
 ...
@@ -649,7 +649,7 @@ $ opensips-cli -x mi aka\_av\_drop\_all \\
 ```opensips
 ...
 ## adds an AKA AV
-$ opensips-cli -x mi aka\_av\_drop \\
+$ opensips-cli -x mi aka_av_drop \\
 				sip:test@siphub.com
 				test@siphub.com
 				KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=

@@ -29,11 +29,11 @@ The module, via an internal API, also provide the foundation to build on top of 
 
 ## How It Works
 
-To create the dialog associated with an initial request, you must call the create\_dialog() function, with or without parameter.
+To create the dialog associated with an initial request, you must call the create_dialog() function, with or without parameter.
 
-The dialog is automatically terminated when a “BYE” is received. In case of no “BYE”, the dialog lifetime is controlled via the default timeout (see “default\_timeout” - [default\_timeout](#param_default_timeout "1.6.5.�default\_timeout (integer)")) and custom timeout (see “$DLG\_timeout” - [$DLG\_timeout](#pv_DLG_timeout "1.10.8.�$DLG\_timeout")).
+The dialog is automatically terminated when a “BYE” is received. In case of no “BYE”, the dialog lifetime is controlled via the default timeout (see “default_timeout” - [default_timeout](#param_default_timeout "1.6.5.default_timeout (integer)")) and custom timeout (see “$DLG_timeout” - [$DLG_timeout](#pv_DLG_timeout "1.10.8.$DLG_timeout")).
 
-Once terminated, the in-memory dialog may be destroyed right away or, depending on the “delete\_delay” - [delete\_delay](#param_delete_delay "1.6.8.�delete\_delay (integer)")) setting, it may be kept for a while in memory, in a read-only state (no action, no changes, nothing). This delaying may be used to help with the routing of late in-dialog request that may be received after the dialog terminted (like late BYE's due retransmissions, cross BYE requests, auth'ed BYE request, slow ACK on re-INVITEs, etc).
+Once terminated, the in-memory dialog may be destroyed right away or, depending on the “delete_delay” - [delete_delay](#param_delete_delay "1.6.8.delete_delay (integer)")) setting, it may be kept for a while in memory, in a read-only state (no action, no changes, nothing). This delaying may be used to help with the routing of late in-dialog request that may be received after the dialog terminted (like late BYE's due retransmissions, cross BYE requests, auth'ed BYE request, slow ACK on re-INVITEs, etc).
 
 ## Dependencies
 
@@ -89,14 +89,14 @@ modparam("dialog", "cluster_auto_sync", 0)
 ```
 ### `db_flush_vals_profiles` (integer)
 
-Pushes dialog values, profiles and flags into the database along with other dialog state information (see db\_mode 1 and 2).
+Pushes dialog values, profiles and flags into the database along with other dialog state information (see db_mode 1 and 2).
 
 *Default value is empty.*
 
 **Example.** Set the `db_flush_vals_profiles` parameter.
 
 ```opensips
-modparam("dialog", "db\_flush\_vals\_profiles", 1)
+modparam("dialog", "db_flush_vals_profiles", 1)
 ```
 ### `db_mode` (integer)
 
@@ -147,7 +147,7 @@ The default dialog timeout (in seconds) if no custom one is set.
 **Example.** 21600.
 
 ```opensips
-modparam("dialog", "default\_timeout", 21600)
+modparam("dialog", "default_timeout", 21600)
 ```
 ### `delete_delay` (integer)
 
@@ -173,7 +173,7 @@ This OpenSIPS cluster exposes the **"dialog-dlg-repl"** capability in order to m
 **Example.** 1.
 
 ```opensips
-modparam("dialog", "dialog\_replication\_cluster", 1)
+modparam("dialog", "dialog_replication_cluster", 1)
 ```
 ### `dlg_extra_hdrs` (string)
 
@@ -195,7 +195,7 @@ The column's name in the database to store the dialogs' id information.
 **Example.** dlg_id_c_name.
 
 ```opensips
-modparam("dialog", "dlg\_id\_column", "dlg\_id\_c\_name")
+modparam("dialog", "dlg_id_column", "dlg_id_c_name")
 ```
 ### `dlg_match_mode` (integer)
 
@@ -225,7 +225,7 @@ If the statistics support should be enabled or not. Via statistic variables, the
 **Example.** 0.
 
 ```opensips
-modparam("dialog", "enable\_stats", 0)
+modparam("dialog", "enable_stats", 0)
 ```
 ### `flags_column` (string)
 
@@ -236,7 +236,7 @@ The column's name in the database to store the dialogs' flags.
 **Example.** Set the `flags_column` parameter.
 
 ```opensips
-modparam("dialog", "flags\_column", "flags\_c\_name")
+modparam("dialog", "flags_column", "flags_c_name")
 ```
 ### `from_contact_column` (string)
 
@@ -280,7 +280,7 @@ The column's name in the database to store the information about the local inter
 **Example.** from_sock_c_name.
 
 ```opensips
-modparam("dialog", "from\_sock\_column", "from\_sock\_c\_name")
+modparam("dialog", "from_sock_column", "from_sock_c_name")
 ```
 ### `from_tag_column` (string)
 
@@ -310,23 +310,23 @@ The size of the hash table internally used to keep the dialogs. A larger table i
 
 *Default value is 4096.*
 
-**Notes:** IMPORTANT: If dialogs' information should be stored in a database, a constant hash\_size should be used, otherwise the restored process will not take place. If you really want to modify the hash\_size you must delete all table's rows before restarting OpenSIPS.
+**Notes:** IMPORTANT: If dialogs' information should be stored in a database, a constant hash_size should be used, otherwise the restored process will not take place. If you really want to modify the hash_size you must delete all table's rows before restarting OpenSIPS.
 
 **Example.** 1024.
 
 ```opensips
-modparam("dialog", "hash\_size", 1024)
+modparam("dialog", "hash_size", 1024)
 ```
 ### `log_profile_hash_size` (integer)
 
-The size of the hash table internally used to store profile->dialog associations. A larger table can provide more parallel operations but consumes more memory. The hash size is provided as the base 2 logarithm(e.g. log\_profile\_hash\_size =4 means the table has 2^4 entries).
+The size of the hash table internally used to store profile->dialog associations. A larger table can provide more parallel operations but consumes more memory. The hash size is provided as the base 2 logarithm(e.g. log_profile_hash_size =4 means the table has 2^4 entries).
 
 *Default value is 4.*
 
 **Example.** 5.
 
 ```opensips
-modparam("dialog", "log\_profile\_hash\_size", 5) #set a table size of 32
+modparam("dialog", "log_profile_hash_size", 5) #set a table size of 32
 ```
 ### `mflags_column` (string)
 
@@ -337,7 +337,7 @@ The column's name in the database to store the dialogs' module flags.
 **Example.** mflags_c_name.
 
 ```opensips
-modparam("dialog", "mflags\_column", "mflags\_c_name")
+modparam("dialog", "mflags_column", "mflags_c_name")
 ```
 ### `options_ping_interval` (integer)
 
@@ -370,7 +370,7 @@ Specifies the cluster ID for profile replication using the _clusterer_ module. T
 **Example.** 1.
 
 ```opensips
-modparam("dialog", "profile\_replication\_cluster", 1)
+modparam("dialog", "profile_replication_cluster", 1)
 ```
 ### `profile_size_prefix` (string)
 
@@ -392,7 +392,7 @@ Specifies how long a dialog profile should be kept in the CacheDB until it expir
 **Example.** 43200.
 
 ```opensips
-modparam("dialog", "profile\_timeout", 43200)
+modparam("dialog", "profile_timeout", 43200)
 ```
 ### `profile_value_prefix` (string)
 
@@ -414,29 +414,29 @@ The column's name in the database to store the dialogs' profiles.
 **Example.** profiles_c_name.
 
 ```opensips
-modparam("dialog", "profiles\_column", "profiles\_c_name")
+modparam("dialog", "profiles_column", "profiles_c_name")
 ```
 ### `profiles_no_value` (string)
 
-List of names (alphanumerical/-/\_) for profiles without values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.
+List of names (alphanumerical/-/_) for profiles without values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.
 
 *Default value is empty.*
 
 **Example.** Set the `profiles_no_value` parameter.
 
 ```opensips
-modparam("dialog", "profiles\_no\_value", "inbound ; outbound ; shared/s; repl/b;")
+modparam("dialog", "profiles_no_value", "inbound ; outbound ; shared/s; repl/b;")
 ```
 ### `profiles_with_value` (string)
 
-List of names (alphanumerical/-/\_) for profiles with values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.
+List of names (alphanumerical/-/_) for profiles with values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.
 
 *Default value is empty.*
 
 **Example.** Set the `profiles_with_value` parameter.
 
 ```opensips
-modparam("dialog", "profiles\_with\_value", "callerCC; gatewayCC; clientChannels/s; codecUsed/b;")
+modparam("dialog", "profiles_with_value", "callerCC; gatewayCC; clientChannels/s; codecUsed/b;")
 ```
 ### `race_condition_timeout` (integer)
 
@@ -471,7 +471,7 @@ Used to specify the length of the buffer used by the binary replication, in byte
 **Example.** 500.
 
 ```opensips
-modparam("dialog", "replicate\_profiles\_buffer", 500)
+modparam("dialog", "replicate_profiles_buffer", 500)
 ```
 ### `replicate_profiles_check` (string)
 
@@ -482,7 +482,7 @@ Timer in seconds, used to specify how often the module should check whether old,
 **Example.** 100.
 
 ```opensips
-modparam("dialog", "replicate\_profiles\_check", 100)
+modparam("dialog", "replicate_profiles_check", 100)
 ```
 ### `replicate_profiles_expire` (string)
 
@@ -515,7 +515,7 @@ Name of the Record-Route parameter to be added with the dialog cookie. It is use
 **Example.** xyz.
 
 ```opensips
-modparam("dialog", "rr\_param", "xyz")
+modparam("dialog", "rr_param", "xyz")
 ```
 ### `sflags_column` (string)
 
@@ -526,7 +526,7 @@ The column's name in the database to store the dialogs' script flags.
 **Example.** sflags_c_name.
 
 ```opensips
-modparam("dialog", "sflags\_column", "sflags\_c_name")
+modparam("dialog", "sflags_column", "sflags_c_name")
 ```
 ### `start_time_column` (string)
 
@@ -537,7 +537,7 @@ The column's name in the database to store the dialogs' start time information.
 **Example.** start_time_c_name.
 
 ```opensips
-modparam("dialog", "start\_time\_column", "start\_time\_c\_name")
+modparam("dialog", "start_time_column", "start_time_c_name")
 ```
 ### `state_column` (string)
 
@@ -548,7 +548,7 @@ The column's name in the database to store the dialogs' state information.
 **Example.** state_c_name.
 
 ```opensips
-modparam("dialog", "state\_column", "state\_c\_name")
+modparam("dialog", "state_column", "state_c_name")
 ```
 ### `table_name` (string)
 
@@ -570,7 +570,7 @@ The column's name in the database to store the dialogs' timeout.
 **Example.** timeout_c_name.
 
 ```opensips
-modparam("dialog", "timeout\_column", "timeout\_c_name")
+modparam("dialog", "timeout_column", "timeout_c_name")
 ```
 ### `timer_bulk_del_no` (integer)
 
@@ -581,7 +581,7 @@ The number of dialogs that should be attempted to be deleted at the same time ( 
 **Example.** Set the `timer_bulk_del_no` parameter.
 
 ```opensips
-modparam("dialog", "timer\_bulk\_del\_no", 10)
+modparam("dialog", "timer_bulk_del_no", 10)
 ```
 ### `to_contact_column` (string)
 
@@ -625,7 +625,7 @@ The column's name in the database to store information about the local interface
 **Example.** to_sock_c_name.
 
 ```opensips
-modparam("dialog", "to\_sock\_column", "to\_sock\_c\_name")
+modparam("dialog", "to_sock_column", "to_sock_c_name")
 ```
 ### `to_tag_column` (string)
 
@@ -658,7 +658,7 @@ The column's name in the database to store the dialogs' vars.
 **Example.** vars_c_name.
 
 ```opensips
-modparam("dialog", "vars\_column", "vars\_c_name")
+modparam("dialog", "vars_column", "vars_c_name")
 ```
 
 ## Exported Functions
@@ -1887,7 +1887,7 @@ This event is raised when the dialog state is changed.
 **Parameters:**
 
 - `id` *(string)* — the hex representation of the dialog id.
-- `db_id` *(integer)* — the integer representation of the dialog id, as it is stored in the database _dlg\_id_ field.
+- `db_id` *(integer)* — the integer representation of the dialog id, as it is stored in the database _dlg_id_ field.
 - `callid` *(string)* — the callid.
 - `from_tag` *(string)* — the From tag.
 - `to_tag` *(string)* — the To tag.
@@ -1900,402 +1900,402 @@ This event is raised when the dialog state is changed.
 
 ```opensips
 ...
-modparam("dialog", "enable\_stats", 0)
+modparam("dialog", "enable_stats", 0)
 ...
 ```
 ### Set `hash_size` parameter
 
 ```opensips
 ...
-modparam("dialog", "hash\_size", 1024)
+modparam("dialog", "hash_size", 1024)
 ...
 ```
 ### Set `hash_size` parameter
 
 ```opensips
 ...
-modparam("dialog", "log\_profile\_hash\_size", 5) #set a table size of 32
+modparam("dialog", "log_profile_hash_size", 5) #set a table size of 32
 ...
 ```
 ### Set `rr_param` parameter
 
 ```opensips
 ...
-modparam("dialog", "rr\_param", "xyz")
+modparam("dialog", "rr_param", "xyz")
 ...
 ```
 ### Set `default_timeout` parameter
 
 ```opensips
 ...
-modparam("dialog", "default\_timeout", 21600)
+modparam("dialog", "default_timeout", 21600)
 ...
 ```
 ### Set `dlf_extra_hdrs` parameter
 
 ```opensips
 ...
-modparam("dialog", "dlg\_extra\_hdrs", "Hint: credit expired\\r\\n")
+modparam("dialog", "dlg_extra_hdrs", "Hint: credit expired\\r\\n")
 ...
 ```
 ### Set `dlg_match_mode` parameter
 
 ```opensips
 ...
-modparam("dialog", "dlg\_match\_mode", 0)
+modparam("dialog", "dlg_match_mode", 0)
 ...
 ```
 ### Set `delete_delay` parameter
 
 ```opensips
 ...
-modparam("dialog", "delete\_delay", 10)
+modparam("dialog", "delete_delay", 10)
 ...
 ```
 ### Set `db_url` parameter
 
 ```opensips
 ...
-modparam("dialog", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("dialog", "db_url", "dbdriver://username:password@dbhost/dbname")
 ...
 ```
 ### Set `db_mode` parameter
 
 ```opensips
 ...
-modparam("dialog", "db\_mode", 1)
+modparam("dialog", "db_mode", 1)
 ...
 ```
 ### Set `db_update_period` parameter
 
 ```opensips
 ...
-modparam("dialog", "db\_update\_period", 120)
+modparam("dialog", "db_update_period", 120)
 ...
 ```
 ### Set `options_ping_interval` parameter
 
 ```opensips
 ...
-modparam("dialog", "options\_ping\_interval", 20)
+modparam("dialog", "options_ping_interval", 20)
 ...
 ```
 ### Set `reinvite_ping_interval` parameter
 
 ```opensips
 ...
-modparam("dialog", "reinvite\_ping\_interval", 600)
+modparam("dialog", "reinvite_ping_interval", 600)
 ...
 ```
 ### Set `table_name` parameter
 
 ```opensips
 ...
-modparam("dialog", "table\_name", "my\_dialog")
+modparam("dialog", "table_name", "my_dialog")
 ...
 ```
 ### Set `call_id_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "call\_id\_column", "callid\_c\_name")
+modparam("dialog", "call_id_column", "callid_c_name")
 ...
 ```
 ### Set `from_uri_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_uri\_column", "from\_uri\_c\_name")
+modparam("dialog", "from_uri_column", "from_uri_c_name")
 ...
 ```
 ### Set `from_tag_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_tag\_column", "from\_tag\_c\_name")
+modparam("dialog", "from_tag_column", "from_tag_c_name")
 ...
 ```
 ### Set `to_uri_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_uri\_column", "to\_uri\_c\_name")
+modparam("dialog", "to_uri_column", "to_uri_c_name")
 ...
 ```
 ### Set `to_tag_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_tag\_column", "to\_tag\_c\_name")
+modparam("dialog", "to_tag_column", "to_tag_c_name")
 ...
 ```
 ### Set `from_cseq_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_cseq\_column", "from\_cseq\_c\_name")
+modparam("dialog", "from_cseq_column", "from_cseq_c_name")
 ...
 ```
 ### Set `to_cseq_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_cseq\_column", "to\_cseq\_c\_name")
+modparam("dialog", "to_cseq_column", "to_cseq_c_name")
 ...
 ```
 ### Set `from_route_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_route\_column", "from\_route\_c\_name")
+modparam("dialog", "from_route_column", "from_route_c_name")
 ...
 ```
 ### Set `to_route_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_route\_column", "to\_route\_c\_name")
+modparam("dialog", "to_route_column", "to_route_c_name")
 ...
 ```
 ### Set `from_contact_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_contact\_column", "from\_contact\_c\_name")
+modparam("dialog", "from_contact_column", "from_contact_c_name")
 ...
 ```
 ### Set `to_contact_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_contact\_column", "to\_contact\_c\_name")
+modparam("dialog", "to_contact_column", "to_contact_c_name")
 ...
 ```
 ### Set `from_sock_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "from\_sock\_column", "from\_sock\_c\_name")
+modparam("dialog", "from_sock_column", "from_sock_c_name")
 ...
 ```
 ### Set `to_sock_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "to\_sock\_column", "to\_sock\_c\_name")
+modparam("dialog", "to_sock_column", "to_sock_c_name")
 ...
 ```
 ### Set `dlg_id_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "dlg\_id\_column", "dlg\_id\_c\_name")
+modparam("dialog", "dlg_id_column", "dlg_id_c_name")
 ...
 ```
 ### Set `state_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "state\_column", "state\_c\_name")
+modparam("dialog", "state_column", "state_c_name")
 ...
 ```
 ### Set `start_time_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "start\_time\_column", "start\_time\_c\_name")
+modparam("dialog", "start_time_column", "start_time_c_name")
 ...
 ```
 ### Set `timeout_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "timeout\_column", "timeout\_c\_name")
+modparam("dialog", "timeout_column", "timeout_c_name")
 ...
 ```
 ### Set `profiles_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "profiles\_column", "profiles\_c\_name")
+modparam("dialog", "profiles_column", "profiles_c_name")
 ...
 ```
 ### Set `vars_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "vars\_column", "vars\_c\_name")
+modparam("dialog", "vars_column", "vars_c_name")
 ...
 ```
 ### Set `sflags_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "sflags\_column", "sflags\_c\_name")
+modparam("dialog", "sflags_column", "sflags_c_name")
 ...
 ```
 ### Set `mflags_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "mflags\_column", "mflags\_c\_name")
+modparam("dialog", "mflags_column", "mflags_c_name")
 ...
 ```
 ### Set `flags_column` parameter
 
 ```opensips
 ...
-modparam("dialog", "flags\_column", "flags\_c\_name")
+modparam("dialog", "flags_column", "flags_c_name")
 ...
 ```
 ### Set `profiles_with_value` parameter
 
 ```opensips
 ...
-modparam("dialog", "profiles\_with\_value", "callerCC; gatewayCC; clientChannels/s; codecUsed/b;")
+modparam("dialog", "profiles_with_value", "callerCC; gatewayCC; clientChannels/s; codecUsed/b;")
 ...
 ```
 ### Set `profiles_no_value` parameter
 
 ```opensips
 ...
-modparam("dialog", "profiles\_no\_value", "inbound ; outbound ; shared/s; repl/b;")
+modparam("dialog", "profiles_no_value", "inbound ; outbound ; shared/s; repl/b;")
 ...
 ```
 ### Set `db_flush_vals_profiles` parameter
 
 ```opensips
 ...
-modparam("dialog", "db\_flush\_vals\_profiles", 1)
+modparam("dialog", "db_flush_vals_profiles", 1)
 ...
 ```
 ### Set `timer_bulk_del_no` parameter
 
 ```opensips
 ...
-modparam("dialog", "timer\_bulk\_del\_no", 10)
+modparam("dialog", "timer_bulk_del_no", 10)
 ...
 ```
 ### Set `race_condition_timeout` parameter
 
 ```opensips
 ...
-modparam("dialog", "race\_condition\_timeout", 1)
+modparam("dialog", "race_condition_timeout", 1)
 ...
 ```
 ### Set `cachedb_url` parameter
 
 ```opensips
 ...
-modparam("dialog", "cachedb\_url", "redis://127.0.0.1:6379")
+modparam("dialog", "cachedb_url", "redis://127.0.0.1:6379")
 ...
 ```
 ### Set `profile_value_prefix` parameter
 
 ```opensips
 ...
-modparam("dialog", "profile\_value\_prefix", "dlgv\_")
+modparam("dialog", "profile_value_prefix", "dlgv_")
 ...
 ```
 ### Set `profile_no_value_prefix` parameter
 
 ```opensips
 ...
-modparam("dialog", "profile\_no\_value\_prefix", "dlgnv\_")
+modparam("dialog", "profile_no_value_prefix", "dlgnv_")
 ...
 ```
 ### Set `profile_size_prefix` parameter
 
 ```opensips
 ...
-modparam("dialog", "profile\_size\_prefix", "dlgs\_")
+modparam("dialog", "profile_size_prefix", "dlgs_")
 ...
 ```
 ### Set `profile_timeout` parameter
 
 ```opensips
 ...
-modparam("dialog", "profile\_timeout", "43200")
+modparam("dialog", "profile_timeout", "43200")
 ...
 ```
 ### Set `dialog_replication_cluster` parameter
 
 ```opensips
 ...
-modparam("dialog", "dialog\_replication\_cluster", 1)
+modparam("dialog", "dialog_replication_cluster", 1)
 ...
 ```
 ### Set `profile_replication_cluster` parameter
 
 ```opensips
 ...
-modparam("dialog", "profile\_replication\_cluster", 1)
+modparam("dialog", "profile_replication_cluster", 1)
 ...
 ```
 ### Set `replicate_profiles_buffer` parameter
 
 ```opensips
 ...
-modparam("dialog", "replicate\_profiles\_buffer", 500)
+modparam("dialog", "replicate_profiles_buffer", 500)
 ...
 ```
 ### Set `replicate_profiles_check` parameter
 
 ```opensips
 ...
-modparam("dialog", "replicate\_profiles\_check", 100)
+modparam("dialog", "replicate_profiles_check", 100)
 ...
 ```
 ### Set `replicate_profiles_timer` parameter
 
 ```opensips
 ...
-modparam("dialog", "replicate\_profiles\_timer", 100)
+modparam("dialog", "replicate_profiles_timer", 100)
 ...
 ```
 ### Set `replicate_profiles_expire` parameter
 
 ```opensips
 ...
-modparam("dialog", "replicate\_profiles\_expire", 10)
+modparam("dialog", "replicate_profiles_expire", 10)
 ...
 ```
 ### Set `cluster_auto_sync` parameter
 
 ```opensips
 ...
-modparam("dialog", "cluster\_auto\_sync", 0)
+modparam("dialog", "cluster_auto_sync", 0)
 ...
 ```
 ### `create_dialog()` usage
 
 ```opensips
 ...
-create\_dialog();
+create_dialog();
 ...
 #ping caller
-create\_dialog("P");
+create_dialog("P");
 ...
 #ping caller and callee
-create\_dialog("Pp");
+create_dialog("Pp");
 
 #bye on timeout
-create\_dialog("B");
+create_dialog("B");
 ...
 ```
 ### `match_dialog()` usage
 
 ```opensips
 ...
-    if (has\_totag()) {
-        loose\_route();
+    if (has_totag()) {
+        loose_route();
 
-        # example 1: match according to [dlg\_match\_mode](#param_dlg_match_mode "1.6.7.�dlg\_match\_mode (integer)")
-        if ($DLG\_status == NULL && !match\_dialog())
+        # example 1: match according to [dlg_match_mode](#param_dlg_match_mode "1.6.7.dlg_match_mode (integer)")
+        if ($DLG_status == NULL && !match_dialog())
             xlog("cannot match request to a dialog\\n");
 
-        # example 2: override [dlg\_match\_mode](#param_dlg_match_mode "1.6.7.�dlg\_match\_mode (integer)")
-        if ($DLG\_status == NULL && !match\_dialog("DID\_FALLBACK"))
+        # example 2: override [dlg_match_mode](#param_dlg_match_mode "1.6.7.dlg_match_mode (integer)")
+        if ($DLG_status == NULL && !match_dialog("DID_FALLBACK"))
             xlog("cannot match request to a dialog\\n");
     }
 ...
@@ -2304,12 +2304,12 @@ create\_dialog("B");
 
 ```opensips
 ...
-    if (has\_totag()) {
-        loose\_route();
-        if ($DLG\_status!=NULL && !validate\_dialog() ) {
+    if (has_totag()) {
+        loose_route();
+        if ($DLG_status!=NULL && !validate_dialog() ) {
             xlog(" in-dialog bogus request \\n");
         } else {
-            xlog(" in-dialog valid request - $DLG\_dir !\\n");
+            xlog(" in-dialog valid request - $DLG_dir !\\n");
         }
     }
 ...
@@ -2318,23 +2318,23 @@ create\_dialog("B");
 
 ```opensips
 ...
-    if (has\_totag()) {
-        loose\_route();
-        if ($DLG\_status!=NULL)
-            if (!validate\_dialog())
-                fix\_route\_dialog();
+    if (has_totag()) {
+        loose_route();
+        if ($DLG_status!=NULL)
+            if (!validate_dialog())
+                fix_route_dialog();
     }
 ...
 ```
 ### `get_dialog_info` usage
 
 ```opensips
-if ( get\_dialog\_info("callee",$avp(callee\_array),"caller",$fu,$var(dlg\_no)) ) {
-	xlog("caller $fu has $var(dlg\_no) other ongoing calls, talking with :");	
+if ( get_dialog_info("callee",$avp(callee_array),"caller",$fu,$var(dlg_no)) ) {
+	xlog("caller $fu has $var(dlg_no) other ongoing calls, talking with :");	
 	$var(it) = 0;
-	while ($var(it) < $var(dlg\_no)) {
-		$var(current\_callee) = $(avp(callee\_array)\[$var(it)\]);
-		xlog(" $var(current\_callee) ");
+	while ($var(it) < $var(dlg_no)) {
+		$var(current_callee) = $(avp(callee_array)\[$var(it)\]);
+		xlog(" $var(current_callee) ");
 		$var(it) = $var(it) + 1;
 	}
 
@@ -2342,19 +2342,19 @@ if ( get\_dialog\_info("callee",$avp(callee\_array),"caller",$fu,$var(dlg\_no)) 
 }
 
 # create dialog for current call and place the caller and callee attributes
-create\_dialog();
-$dlg\_val(caller) = $fu;
-$dlg\_val(callee) = $ru;
+create_dialog();
+$dlg_val(caller) = $fu;
+$dlg_val(callee) = $ru;
 ...
 ```
 ### `get_dialog_vals` usage
 
 ```opensips
-if ( get\_dialog\_vals($avp(d\_names),$avp(d\_vals),$var(callid)) ) {
+if ( get_dialog_vals($avp(d_names),$avp(d_vals),$var(callid)) ) {
 	xlog("the call $var(callid) has the variables:\\n);
 	$var(i) = 0;
-	while ( $(avp(d\_names)\[$var(i)\])!=NULL ) {
-		xlog("var $var(i) is $(avp(d\_names)\[$var(i)\])='$(avp(d\_vals)\[$var(i)\])'\\n");
+	while ( $(avp(d_names)\[$var(i)\])!=NULL ) {
+		xlog("var $var(i) is $(avp(d_names)\[$var(i)\])='$(avp(d_vals)\[$var(i)\])'\\n");
 		$var(i) = $var(i) + 1;
 	}
 }
@@ -2363,11 +2363,11 @@ if ( get\_dialog\_vals($avp(d\_names),$avp(d\_vals),$var(callid)) ) {
 ### `get_dialog_vals` usage
 
 ```opensips
-if ( get\_dialogs\_by\_val("caller",$fU,$avp(dlg\_jsons),$avp(dlg\_no)) ) {
-	xlog("Caller $fU has $avp(dlg\_no) other calls \\n);
+if ( get_dialogs_by_val("caller",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {
+	xlog("Caller $fU has $avp(dlg_no) other calls \\n);
 	$var(i) = 0;
-	while ( $(avp(dlg\_jsons)\[$var(i)\])!=NULL ) {
-		$json(dlg\_info) := $(avp(dlg\_jsons)\[$var(i)\]); 
+	while ( $(avp(dlg_jsons)\[$var(i)\])!=NULL ) {
+		$json(dlg_info) := $(avp(dlg_jsons)\[$var(i)\]); 
 		# fetch any info for the above call and process it
 		$var(i) = $var(i) + 1;
 	}
@@ -2377,11 +2377,11 @@ if ( get\_dialogs\_by\_val("caller",$fU,$avp(dlg\_jsons),$avp(dlg\_no)) ) {
 ### `get_dialog_vals` usage
 
 ```opensips
-if ( get\_dialogs\_by\_profile("caller",$fU,$avp(dlg\_jsons),$avp(dlg\_no)) ) {
-	xlog("Caller $fU has $avp(dlg\_no) other calls \\n);
+if ( get_dialogs_by_profile("caller",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {
+	xlog("Caller $fU has $avp(dlg_no) other calls \\n);
 	$var(i) = 0;
-	while ( $(avp(dlg\_jsons)\[$var(i)\])!=NULL ) {
-		$json(dlg\_info) := $(avp(dlg\_jsons)\[$var(i)\]); 
+	while ( $(avp(dlg_jsons)\[$var(i)\])!=NULL ) {
+		$json(dlg_info) := $(avp(dlg_jsons)\[$var(i)\]); 
 		# fetch any info for the above call and process it
 		$var(i) = $var(i) + 1;
 	}
@@ -2391,12 +2391,12 @@ if ( get\_dialogs\_by\_profile("caller",$fU,$avp(dlg\_jsons),$avp(dlg\_no)) ) {
 ### `load_dialog_ctx` usage
 
 ```opensips
-if (load\_dialog\_ctx("$var(callid)")) {
+if (load_dialog_ctx("$var(callid)")) {
 	xlog("The dialog '$var(callid)' already has a duration "
-	     "of $DLG\_lifetime seconds\\n");
-	if (is\_in\_profile("inboundCall"))
+	     "of $DLG_lifetime seconds\\n");
+	if (is_in_profile("inboundCall"))
 		xlog("this dialog is an inbound call\\n");
-	unload\_dialog\_ctx();
+	unload_dialog_ctx();
 }
 ...
 ```
@@ -2404,35 +2404,35 @@ if (load\_dialog\_ctx("$var(callid)")) {
 
 ```opensips
 ...
-set\_dlg\_profile("inboundCall");
+set_dlg_profile("inboundCall");
 
 # Set a new value (all other values are kept intact)
-set\_dlg\_profile("caller", $fu);
+set_dlg_profile("caller", $fu);
 
 # Set a new value while removing all previous values
-set\_dlg\_profile("caller", $fu, true);
+set_dlg_profile("caller", $fu, true);
 ...
 ```
 ### `unset_dlg_profile` usage
 
 ```opensips
 ...
-unset\_dlg\_profile("inboundCall");
-unset\_dlg\_profile("caller", $fu);
+unset_dlg_profile("inboundCall");
+unset_dlg_profile("caller", $fu);
 ...
 # Remove all values in a profile
-unset\_dlg\_profile("caller");
+unset_dlg_profile("caller");
 ...
 ```
 ### `is_in_profile` usage
 
 ```opensips
 ...
-if (is\_in\_profile("inboundCall")) {
+if (is_in_profile("inboundCall")) {
 	log("this request belongs to a inbound call\\n");
 }
 ...
-if (is\_in\_profile("caller","XX")) {
+if (is_in_profile("caller","XX")) {
 	log("this request belongs to a call of user XX\\n");
 }
 ...
@@ -2440,13 +2440,13 @@ if (is\_in\_profile("caller","XX")) {
 ### `get_profile_size` usage
 
 ```opensips
-modparam("dialog", "profiles\_no\_value", "inboundCalls")
-modparam("dialog", "profiles\_with\_value", "caller")
+modparam("dialog", "profiles_no_value", "inboundCalls")
+modparam("dialog", "profiles_with_value", "caller")
 ...
-get\_profile\_size("inboundCalls",,$var(size));
+get_profile_size("inboundCalls",,$var(size));
 xlog("inboundCalls: $var(size)\\n");
 ...
-get\_profile\_size("caller", $fu, $var(size));
+get_profile_size("caller", $fu, $var(size));
 xlog("currently, the user $fu has $var(size) active outgoing calls\\n");
 ...
 ```
@@ -2454,29 +2454,29 @@ xlog("currently, the user $fu has $var(size) active outgoing calls\\n");
 
 ```opensips
 ...
-set\_dlg\_flag("MY\_DLG\_FLAG");
+set_dlg_flag("MY_DLG_FLAG");
 ...
 ```
 ### `test_and_set_dlg_flag` usage
 
 ```opensips
 ...
-test\_and\_set\_dlg\_flag("MY\_DLG\_FLAG", 0);
+test_and_set_dlg_flag("MY_DLG_FLAG", 0);
 ...
 ```
 ### `reset_dlg_flag` usage
 
 ```opensips
 ...
-reset\_dlg\_flag("MY\_DLG\_FLAG");
+reset_dlg_flag("MY_DLG_FLAG");
 ...
 ```
 ### `is_dlg_flag_set` usage
 
 ```opensips
 ...
-if (is\_dlg\_flag\_set("MY\_DLG\_FLAG")) {
-	xlog("dialog flag MY\_DLG\_FLAG is set\\n");
+if (is_dlg_flag_set("MY_DLG_FLAG")) {
+	xlog("dialog flag MY_DLG_FLAG is set\\n");
 }
 ...
 ```
@@ -2484,80 +2484,80 @@ if (is\_dlg\_flag\_set("MY\_DLG\_FLAG")) {
 
 ```opensips
 ...
-store\_dlg\_value("inv\_src\_ip",$si);
-store\_dlg\_value("account type",$var(account));
+store_dlg_value("inv_src_ip",$si);
+store_dlg_value("account type",$var(account));
 # or
-$dlg\_val(account\_type) = "prepaid";
+$dlg_val(account_type) = "prepaid";
 ...
 ```
 ### `fetch_dlg_value` usage
 
 ```opensips
 ...
-fetch\_dlg\_value("inv\_src\_ip",$avp(2));
-fetch\_dlg\_value("account type",$var(account));
+fetch_dlg_value("inv_src_ip",$avp(2));
+fetch_dlg_value("account type",$var(account));
 # or
-$var(account) = $dlg\_val(account\_type);
+$var(account) = $dlg_val(account_type);
 ...
 ```
 ### `set_dlg_sharing_tag` usage
 
 ```opensips
 ...
-set\_dlg\_sharing\_tag("vip1");
+set_dlg_sharing_tag("vip1");
 ...
 ```
 ### `dlg_on_answer` usage
 
 ```opensips
 ...
-create\_dialog();
-dlg\_on\_answer("dlg\_answered");
+create_dialog();
+dlg_on_answer("dlg_answered");
 ...
-route[dlg\_answered] {
-	xlog("The dialog $DLG\_did was answered\\n");
+route[dlg_answered] {
+	xlog("The dialog $DLG_did was answered\\n");
 }
 ```
 ### `dlg_on_timeout` usage
 
 ```opensips
 ...
-create\_dialog();
-$DLG\_timeout=120;
-dlg\_on\_timeout("dlg\_timeout");
+create_dialog();
+$DLG_timeout=120;
+dlg_on_timeout("dlg_timeout");
 ...
-route[dlg\_timeout] {
-	xlog("The dialog $DLG\_did timed out\\n");
-	if (\_some\_prolongation\_condition)
-		$DLG\_timeout = 60; # give it 1 min more
+route[dlg_timeout] {
+	xlog("The dialog $DLG_did timed out\\n");
+	if (_some_prolongation_condition)
+		$DLG_timeout = 60; # give it 1 min more
 }
 ```
 ### `dlg_on_hangup` usage
 
 ```opensips
 ...
-create\_dialog();
-dlg\_on\_hangup("dlg\_hangup");
+create_dialog();
+dlg_on_hangup("dlg_hangup");
 ...
-route[dlg\_hangup] {
-	xlog("The dialog $DLG\_did terminated after $DLG\_lifetime secs\\n");
+route[dlg_hangup] {
+	xlog("The dialog $DLG_did terminated after $DLG_lifetime secs\\n");
 }
 ```
 ### `dlg_send_sequential` usage to convert DTMF codes
 
 ```opensips
 ...
-event\_route[E\_RTPPROXY\_DTMF] {
-    if (load\_dialog\_ctx("$param(id)", "did")) {
+event_route[E_RTPPROXY_DTMF] {
+    if (load_dialog_ctx("$param(id)", "did")) {
         if ($param(stream) == 0) {
             $var(direction) = "callee";
         } else {
             $var(direction) = "caller";
         }
-        dlg\_send\_sequential($var(direction), "INFO",
+        dlg_send_sequential($var(direction), "INFO",
                 "Signal=$param(digit)\\nDuration=160",
                 "application/dtmf-relay");
-        unload\_dialog\_ctx();
+        unload_dialog_ctx();
     }
 }
 ...
@@ -2568,9 +2568,9 @@ event\_route[E\_RTPPROXY\_DTMF] {
 ...
 route {
 	...
-	if (has\_totag()) {
-		if (loose\_route())
-			dlg\_inc\_cseq(); # increment upstream CSeq after each in-dialog request
+	if (has_totag()) {
+		if (loose_route())
+			dlg_inc_cseq(); # increment upstream CSeq after each in-dialog request
 	}
 }
 ...

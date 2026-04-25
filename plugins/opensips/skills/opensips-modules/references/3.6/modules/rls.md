@@ -71,7 +71,7 @@ If set to an empty string, no username will be added to the contact and the cont
 **Example.** rls.
 
 ```opensips
-modparam("rls", "contact\_user", "rls")
+modparam("rls", "contact_user", "rls")
 ```
 ### `hash_size` (integer)
 

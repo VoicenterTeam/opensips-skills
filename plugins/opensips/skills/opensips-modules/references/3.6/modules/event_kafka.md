@@ -88,10 +88,10 @@ Publishes a message to a Kafka broker (or cluster). As the actual send operation
 ```opensips
 ...
 $var(msg) = "my msg content";
-kafka\_publish("k1", $var(kmsg), $ci, "kafka\_report");
+kafka_publish("k1", $var(kmsg), $ci, "kafka_report");
 ...
-route\[kafka\_report\] {
-	xlog("Delivery status: $avp(kafka\_status) for broker: $avp(kafka\_id)\\n");
+route\[kafka_report\] {
+	xlog("Delivery status: $avp(kafka_status) for broker: $avp(kafka_id)\\n");
 }
 ...
 ```
@@ -104,7 +104,7 @@ Sets the `broker_id` parameter.
 
 ```opensips
 ...
-modparam("event\_kafka", "broker\_id", "\[k1\]127.0.0.1:9092/topic1?g.linger.ms=100&t.acks=all")
+modparam("event_kafka", "broker_id", "\[k1\]127.0.0.1:9092/topic1?g.linger.ms=100&t.acks=all")
 ...
 ```
 ### `kafka_publish()` function usage
@@ -114,10 +114,10 @@ Demonstrates usage of the `kafka_publish()` function.
 ```opensips
 ...
 $var(msg) = "my msg content";
-kafka\_publish("k1", $var(kmsg), $ci, "kafka\_report");
+kafka_publish("k1", $var(kmsg), $ci, "kafka_report");
 ...
-route[kafka\_report] {
-	xlog("Delivery status: $avp(kafka\_status) for broker: $avp(kafka\_id)\n");
+route[kafka_report] {
+	xlog("Delivery status: $avp(kafka_status) for broker: $avp(kafka_id)\n");
 }
 ...
 ```

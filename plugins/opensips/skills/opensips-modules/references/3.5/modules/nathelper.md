@@ -57,7 +57,7 @@ None.
 
 The ID of the cluster the module is part of. The clustering support is used by the nathelper module for controlling the pinging process. When part of a cluster of multiple nodes, the nodes can agree upon which node is the one responsible for pinging.
 
-The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the cluster\_sharing\_tag option.
+The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the cluster_sharing_tag option.
 
 For more info on how to define and populate a cluster (with OpenSIPS nodes) see the "clusterer" module.
 
@@ -66,13 +66,13 @@ For more info on how to define and populate a cluster (with OpenSIPS nodes) see 
 **Example.** 9.
 
 ```opensips
-modparam("nathelper", "cluster\_id", 9)
+modparam("nathelper", "cluster_id", 9)
 ```
 ### `cluster_sharing_tag` (string)
 
 The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform pinging of the contacts. If defined, only the node with active status of this tag will perform the pinging.
 
-The cluster\_id must be defined for this option to work.
+The cluster_id must be defined for this option to work.
 
 This is an optional parameter. If not set, all the nodes in the cluster will individually do the pinging.
 
@@ -81,7 +81,7 @@ This is an optional parameter. If not set, all the nodes in the cluster will ind
 **Example.** vip.
 
 ```opensips
-modparam("nathelper", "cluster\_sharing\_tag", "vip")
+modparam("nathelper", "cluster_sharing_tag", "vip")
 ```
 ### `force_socket` (string)
 
@@ -92,7 +92,7 @@ Sending socket to be used for pinging contacts without local socket information 
 **Example.** localhost:33333.
 
 ```opensips
-modparam("nathelper", "force\_socket", "localhost:33333")
+modparam("nathelper", "force_socket", "localhost:33333")
 ```
 ### `max_pings_lost` (integer)
 
@@ -103,7 +103,7 @@ Number of unresponded pings after which the contact shall be removed from the lo
 **Example.** 5.
 
 ```opensips
-modparam("nathelper", "max\_pings\_lost", 5)
+modparam("nathelper", "max_pings_lost", 5)
 ```
 ### `natping_interval` (integer)
 
@@ -116,7 +116,7 @@ Period of time in seconds between sending the NAT pings to all currently registe
 **Example.** Set the `natping_interval` parameter.
 
 ```opensips
-modparam("nathelper", "natping\_interval", 10)
+modparam("nathelper", "natping_interval", 10)
 ```
 ### `natping_partitions` (integer)
 
@@ -129,7 +129,7 @@ How many partitions/chunks to be used for sending the pingings. One partition me
 **Example.** Set the `natping_partitions` parameter.
 
 ```opensips
-modparam("nathelper", "natping\_partitions", 4)
+modparam("nathelper", "natping_partitions", 4)
 ```
 ### `natping_socket` (string)
 
@@ -140,7 +140,7 @@ Spoof the natping's source-ip to this address. Works only for IPv4.
 **Example.** Set the `natping_socket` parameter.
 
 ```opensips
-modparam("nathelper", "natping\_socket", "192.168.1.1:5006")
+modparam("nathelper", "natping_socket", "192.168.1.1:5006")
 ```
 ### `natping_tcp` (integer)
 
@@ -151,7 +151,7 @@ If the flag is set, TCP/TLS clients will also be pinged with SIP OPTIONS message
 **Example.** 1.
 
 ```opensips
-modparam("nathelper", "natping\_tcp", 1)
+modparam("nathelper", "natping_tcp", 1)
 ```
 ### `nortpproxy_str` (string)
 
@@ -166,7 +166,7 @@ If empty string, no marker will be added or checked.
 **Example.** a=sdpmangled:yes\r\n.
 
 ```opensips
-modparam("nathelper", "nortpproxy\_str", "a=sdpmangled:yes\r\n")
+modparam("nathelper", "nortpproxy_str", "a=sdpmangled:yes\r\n")
 ```
 ### `oldip_skip` (string)
 
@@ -182,42 +182,42 @@ Parameter which specifies whether old media ip and old origin ip shall be put in
 **Example.** oc.
 
 ```opensips
-modparam("nathelper", "oldip\_skip", "oc")
+modparam("nathelper", "oldip_skip", "oc")
 ```
 ### `ping_nated_only` (integer)
 
-If this variable is set then only contacts that have “behind\_NAT” flag in user location database set will get ping.
+If this variable is set then only contacts that have “behind_NAT” flag in user location database set will get ping.
 
 *Default value is 0.*
 
 **Example.** Set the `ping_nated_only` parameter.
 
 ```opensips
-modparam("nathelper", "ping\_nated\_only", 1)
+modparam("nathelper", "ping_nated_only", 1)
 ```
 ### `ping_threshold` (integer)
 
-If a contact does not respond in _ping\_threshold_ seconds since the ping has been sent, the contact shall be removed after max\_pings\_lost unresponded pings.
+If a contact does not respond in _ping_threshold_ seconds since the ping has been sent, the contact shall be removed after max_pings_lost unresponded pings.
 
 *Default value is 3 (seconds)..*
 
 **Example.** 10.
 
 ```opensips
-modparam("nathelper", "ping\_threshold", 10)
+modparam("nathelper", "ping_threshold", 10)
 ```
 ### `received_avp` (string)
 
-The name of the Attribute-Value-Pair (AVP) used to store the URI containing the received IP, port and protocol. The URI is created by the [fix\_nated\_register()](#func_fix_nated_register "1.5.4.� fix\_nated_register()") function and this data may then be also picked up by the registrar module, which will attach a "Received=" attribute to the registration. Do not forget to change the value of corresponding parameter in the [registrar](registrar) module whenever you change the value of this parameter.
+The name of the Attribute-Value-Pair (AVP) used to store the URI containing the received IP, port and protocol. The URI is created by the [fix_nated_register()](#func_fix_nated_register "1.5.4. fix_nated_register()") function and this data may then be also picked up by the registrar module, which will attach a "Received=" attribute to the registration. Do not forget to change the value of corresponding parameter in the [registrar](registrar) module whenever you change the value of this parameter.
 
 *Default value is "NULL" (disabled).*
 
-**Notes:** You must set this parameter if you use [fix\_nated\_register()](#func_fix_nated_register "1.5.4.� fix\_nated_register()"). Additionally, if you are using registrar, you must also set its symmetric [received\_avp](registrar#received_avp) module parameter to the **same value**.
+**Notes:** You must set this parameter if you use [fix_nated_register()](#func_fix_nated_register "1.5.4. fix_nated_register()"). Additionally, if you are using registrar, you must also set its symmetric [received_avp](registrar#received_avp) module parameter to the **same value**.
 
 **Example.** Set the `received_avp` parameter.
 
 ```opensips
-modparam("nathelper", "received\_avp", "$avp(received)")
+modparam("nathelper", "received_avp", "$avp(received)")
 ```
 ### `remove_on_timeout_bflag` (string)
 
@@ -225,10 +225,10 @@ What branch flag to be used in order to activate usrloc contact removal when the
 
 *Default value is NULL (disabled)..*
 
-**Example.** SIPPING\_RTO.
+**Example.** SIPPING_RTO.
 
 ```opensips
-modparam("nathelper", "remove\_on\_timeout\_bflag", "SIPPING\_RTO")
+modparam("nathelper", "remove_on_timeout_bflag", "SIPPING_RTO")
 ```
 ### `sipping_bflag` (string)
 
@@ -236,10 +236,10 @@ What branch flag should be used by the module to identify NATed contacts for whi
 
 *Default value is NULL (disabled)..*
 
-**Example.** SIPPING\_ENABLE.
+**Example.** SIPPING_ENABLE.
 
 ```opensips
-modparam("nathelper", "sipping\_bflag", "SIPPING\_ENABLE")
+modparam("nathelper", "sipping_bflag", "SIPPING_ENABLE")
 ```
 ### `sipping_from` (string)
 
@@ -250,7 +250,7 @@ The parameter sets the SIP URI to be used in generating the SIP requests for NAT
 **Example.** sip:pinger@siphub.net.
 
 ```opensips
-modparam("nathelper", "sipping\_from", "sip:pinger@siphub.net")
+modparam("nathelper", "sipping_from", "sip:pinger@siphub.net")
 ```
 ### `sipping_ignore_rpl_codes` (CSV string)
 
@@ -261,7 +261,7 @@ A comma-separated list of SIP reply status codes to contact pings which are to b
 **Example.** 408, 480, 404.
 
 ```opensips
-modparam("nathelper", "sipping\_ignore\_rpl\_codes", "408, 480, 404")
+modparam("nathelper", "sipping_ignore_rpl_codes", "408, 480, 404")
 ```
 ### `sipping_latency_flag` (string)
 
@@ -269,10 +269,10 @@ The branch flag which will be used in order to enable contact pinging latency co
 
 *Default value is NULL (disabled)..*
 
-**Example.** SIPPING\_CALC\_LATENCY.
+**Example.** SIPPING_CALC_LATENCY.
 
 ```opensips
-modparam("nathelper", "sipping\_latency\_flag", "SIPPING\_CALC\_LATENCY")
+modparam("nathelper", "sipping_latency_flag", "SIPPING_CALC_LATENCY")
 ```
 ### `sipping_method` (string)
 
@@ -283,7 +283,7 @@ The parameter sets the SIP method to be used in generating the SIP requests for 
 **Example.** INFO.
 
 ```opensips
-modparam("nathelper", "sipping\_method", "INFO")
+modparam("nathelper", "sipping_method", "INFO")
 ```
 
 ## Exported Functions
@@ -334,7 +334,7 @@ if (search("User-Agent: Cisco ATA.*") {
 
 ### `fix_nated_register()`
 
-The function creates a URI consisting of the source IP, port and protocol and stores it in the [received_avp](#param_received_avp "1.4.5.�received_avp (str)") AVP. The URI will be appended as "received" parameter to Contact in 200 OK and may also be stored in the user location database if the same AVP is also configured for the [registrar](registrar) module.
+The function creates a URI consisting of the source IP, port and protocol and stores it in the [received_avp](#param_received_avp "1.4.5.received_avp (str)") AVP. The URI will be appended as "received" parameter to Contact in 200 OK and may also be stored in the user location database if the same AVP is also configured for the [registrar](registrar) module.
 
 **Usable from:** REQUEST_ROUTE
 
@@ -423,12 +423,12 @@ Gets or sets the natpinging status.
 **Example.** nh_enable_ping usage
 
 ```bash
-$ opensips-cli -x mi nh\_enable\_ping
+$ opensips-cli -x mi nh_enable_ping
 Status:: 1
 $
-$ opensips-cli -x mi nh\_enable\_ping 0
+$ opensips-cli -x mi nh_enable_ping 0
 $
-$ opensips-cli -x mi nh\_enable\_ping
+$ opensips-cli -x mi nh_enable_ping
 Status:: 0
 $
 ```
@@ -441,16 +441,16 @@ Period of time in seconds between sending the NAT pings to all currently registe
 
 ```opensips
 ...
-modparam("nathelper", "natping\_interval", 10)
+modparam("nathelper", "natping_interval", 10)
 ...
 ```
 ### Set `ping_nated_only` parameter
 
-If this variable is set then only contacts that have “behind\_NAT” flag in user location database set will get ping.
+If this variable is set then only contacts that have “behind_NAT” flag in user location database set will get ping.
 
 ```opensips
 ...
-modparam("nathelper", "ping\_nated\_only", 1)
+modparam("nathelper", "ping_nated_only", 1)
 ...
 ```
 ### Set `natping_partitions` parameter
@@ -459,7 +459,7 @@ How many partitions/chunks to be used for sending the pingings. One partition me
 
 ```opensips
 ...
-modparam("nathelper", "natping\_partitions", 4)
+modparam("nathelper", "natping_partitions", 4)
 ...
 ```
 ### Set `natping_socket` parameter
@@ -468,16 +468,16 @@ Spoof the natping's source-ip to this address. Works only for IPv4.
 
 ```opensips
 ...
-modparam("nathelper", "natping\_socket", "192.168.1.1:5006")
+modparam("nathelper", "natping_socket", "192.168.1.1:5006")
 ...
 ```
 ### Set `received_avp` parameter
 
-The name of the Attribute-Value-Pair (AVP) used to store the URI containing the received IP, port and protocol. The URI is created by the [fix\_nated\_register()](#func_fix_nated_register "1.5.4.� fix_nated_register()") function and this data may then be also picked up by the registrar module, which will attach a "Received=" attribute to the registration.
+The name of the Attribute-Value-Pair (AVP) used to store the URI containing the received IP, port and protocol. The URI is created by the [fix_nated_register()](#func_fix_nated_register "1.5.4. fix_nated_register()") function and this data may then be also picked up by the registrar module, which will attach a "Received=" attribute to the registration.
 
 ```opensips
 ...
-modparam("nathelper", "received\_avp", "$avp(received)")
+modparam("nathelper", "received_avp", "$avp(received)")
 ...
 ```
 ### Set `force_socket` parameter
@@ -486,7 +486,7 @@ Sending socket to be used for pinging contacts without local socket information 
 
 ```opensips
 ...
-modparam("nathelper", "force\_socket", "localhost:33333")
+modparam("nathelper", "force_socket", "localhost:33333")
 ...
 ```
 ### Set `sipping_bflag` parameter
@@ -495,25 +495,25 @@ What branch flag should be used by the module to identify NATed contacts for whi
 
 ```opensips
 ...
-modparam("nathelper", "sipping\_bflag", "SIPPING\_ENABLE")
+modparam("nathelper", "sipping_bflag", "SIPPING_ENABLE")
 ...
 ```
 ### Set `remove_on_timeout_bflag` parameter
 
-What branch flag to be used in order to activate usrloc contact removal when the [ping\_threshold](#param_ping_threshold "1.4.16.�ping_threshold (int)") is exceeded.
+What branch flag to be used in order to activate usrloc contact removal when the [ping_threshold](#param_ping_threshold "1.4.16.ping_threshold (int)") is exceeded.
 
 ```opensips
 ...
-modparam("nathelper", "remove\_on\_timeout\_bflag", "SIPPING\_RTO")
+modparam("nathelper", "remove_on_timeout_bflag", "SIPPING_RTO")
 ...
 ```
 ### Set `sipping_latency_flag` parameter
 
-The branch flag which will be used in order to enable contact pinging latency computation and reporting via the usrloc E\_UL\_LATENCY\_UPDATE event.
+The branch flag which will be used in order to enable contact pinging latency computation and reporting via the usrloc E_UL_LATENCY_UPDATE event.
 
 ```opensips
 ...
-modparam("nathelper", "sipping\_latency\_flag", "SIPPING\_CALC\_LATENCY")
+modparam("nathelper", "sipping_latency_flag", "SIPPING_CALC_LATENCY")
 ...
 ```
 ### Set `sipping_ignore_rpl_codes` parameter
@@ -522,7 +522,7 @@ A comma-separated list of SIP reply status codes to contact pings which are to b
 
 ```opensips
 ...
-modparam("nathelper", "sipping\_ignore\_rpl\_codes", "408, 480, 404")
+modparam("nathelper", "sipping_ignore_rpl_codes", "408, 480, 404")
 ...
 ```
 ### Set `sipping_from` parameter
@@ -531,7 +531,7 @@ The parameter sets the SIP URI to be used in generating the SIP requests for NAT
 
 ```opensips
 ...
-modparam("nathelper", "sipping\_from", "sip:pinger@siphub.net")
+modparam("nathelper", "sipping_from", "sip:pinger@siphub.net")
 ...
 ```
 ### Set `sipping_method` parameter
@@ -540,7 +540,7 @@ The parameter sets the SIP method to be used in generating the SIP requests for 
 
 ```opensips
 ...
-modparam("nathelper", "sipping\_method", "INFO")
+modparam("nathelper", "sipping_method", "INFO")
 ...
 ```
 ### Set `nortpproxy_str` parameter
@@ -549,7 +549,7 @@ The parameter sets the SDP attribute used by nathelper to mark the packet SDP in
 
 ```opensips
 ...
-modparam("nathelper", "nortpproxy\_str", "a=sdpmangled:yes\\r\\n")
+modparam("nathelper", "nortpproxy_str", "a=sdpmangled:yes\\r\\n")
 ...
 ```
 ### Set `natping_tcp` parameter
@@ -558,7 +558,7 @@ If the flag is set, TCP/TLS clients will also be pinged with SIP OPTIONS message
 
 ```opensips
 ...
-modparam("nathelper", "natping\_tcp", 1)
+modparam("nathelper", "natping_tcp", 1)
 ...
 ```
 ### Set `oldip_skip` parameter
@@ -567,16 +567,16 @@ Parameter which specifies whether old media ip and old origin ip shall be put in
 
 ```opensips
 ...
-modparam("nathelper", "oldip\_skip", "oc")
+modparam("nathelper", "oldip_skip", "oc")
 ...
 ```
 ### Set `ping_threshold` parameter
 
-If a contact does not respond in _ping\_threshold_ seconds since the ping has been sent, the contact shall be removed after [max\_pings\_lost](#param_max_pings_lost "1.4.17.�max_pings_lost (int)") unresponded pings.
+If a contact does not respond in _ping_threshold_ seconds since the ping has been sent, the contact shall be removed after [max_pings_lost](#param_max_pings_lost "1.4.17.max_pings_lost (int)") unresponded pings.
 
 ```opensips
 ...
-modparam("nathelper", "ping\_threshold", 10)
+modparam("nathelper", "ping_threshold", 10)
 ...
 ```
 ### Set `max_pings_lost` parameter
@@ -585,7 +585,7 @@ Number of unresponded pings after which the contact shall be removed from the lo
 
 ```opensips
 ...
-modparam("nathelper", "max\_pings\_lost", 5)
+modparam("nathelper", "max_pings_lost", 5)
 ...
 ```
 ### Set `cluster_id` parameter
@@ -595,7 +595,7 @@ The ID of the cluster the module is part of. The clustering support is used by t
 ```opensips
 ...
 # Be part of cluster ID 9
-modparam("nathelper", "cluster\_id", 9)
+modparam("nathelper", "cluster_id", 9)
 ...
 ```
 ### Set `cluster_sharing_tag` parameter
@@ -605,8 +605,8 @@ The name of the sharing tag (as defined per clusterer modules) to control which 
 ```opensips
 ...
 # only the node with the active "vip" sharing tag will perform pinging
-modparam("nathelper", "cluster\_id", 9)
-modparam("nathelper", "cluster\_sharing\_tag", "vip")
+modparam("nathelper", "cluster_id", 9)
+modparam("nathelper", "cluster_sharing_tag", "vip")
 ...
 ```
 ### `fix_nated_contact` usage
@@ -616,9 +616,9 @@ Rewrites the URI Contact HF to contain request's source address:port. If a list 
 ```opensips
 ...
 if (search("User-Agent: Cisco ATA.*") {
-    fix\_nated\_contact(";ata=cisco");
+    fix_nated_contact(";ata=cisco");
 } else {
-    fix\_nated\_contact();
+    fix_nated_contact();
 }
 ...
 ```
@@ -633,7 +633,7 @@ Alters the SDP information in orer to facilitate NAT traversal. What changes to 
 # Add extra "a=x-attr1" SDP line
 # Add extra "a=x-attr2" SDP line
 if (search("User-Agent: Cisco ATA.*")
-    {fix\_nated\_sdp(3,,"\\r\\na=x-attr1\\r\\na=x-attr2");};
+    {fix_nated_sdp(3,,"\\r\\na=x-attr1\\r\\na=x-attr2");};
 ...
 ```
 ### `add_rcv_paramer` usage
@@ -642,18 +642,18 @@ Add received parameter to Contact header fields or Contact URI. The parameter wi
 
 ```opensips
 ...
-add\_rcv\_param(); # add the parameter to the Contact header
+add_rcv_param(); # add the parameter to the Contact header
 ....
-add\_rcv\_param(1); # add the parameter to the Contact URI
+add_rcv_param(1); # add the parameter to the Contact URI
 ...
 ```
 ### `fix_nated_register` usage
 
-The function creates a URI consisting of the source IP, port and protocol and stores it in the [received\_avp](#param_received_avp "1.4.5.�received_avp (str)") AVP.
+The function creates a URI consisting of the source IP, port and protocol and stores it in the [received_avp](#param_received_avp "1.4.5.received_avp (str)") AVP.
 
 ```opensips
 ...
-fix\_nated\_register();
+fix_nated_register();
 ...
 ```
 ### `nat_uac_test` usage
@@ -663,7 +663,7 @@ Determines whether the received SIP message originated behind a NAT, using one o
 ```opensips
 ...
 # check for private Contact or SDP media IP addresses
-if (nat\_uac\_test("private-contact,private-sdp"))
+if (nat_uac_test("private-contact,private-sdp"))
 	xlog("SIP message is NAT'ed (Call-ID: $ci)\\n");
 ...
 ```
@@ -673,12 +673,12 @@ Gets or sets the natpinging status.
 
 ```opensips
 ...
-$ opensips-cli -x mi nh\_enable\_ping
+$ opensips-cli -x mi nh_enable_ping
 Status:: 1
 $
-$ opensips-cli -x mi nh\_enable\_ping 0
+$ opensips-cli -x mi nh_enable_ping 0
 $
-$ opensips-cli -x mi nh\_enable\_ping
+$ opensips-cli -x mi nh_enable_ping
 Status:: 0
 $
 ...

@@ -51,7 +51,7 @@ This parameter is used for permissions when handling Subscribe messages. If set 
 **Example.** 1.
 
 ```opensips
-modparam("presence\_xml", "force\_active", 1)
+modparam("presence_xml", "force_active", 1)
 ```
 ### `generate_offline_body` (string)
 
@@ -64,7 +64,7 @@ This parameter should be set to 0 if you want to prevent OpenSIPS from automatic
 **Example.** 0.
 
 ```opensips
-modparam("presence\_xml", "generate\_offline\_body", 0)
+modparam("presence_xml", "generate_offline_body", 0)
 ```
 ### `pidf_manipulation` (integer)
 
@@ -80,7 +80,7 @@ Setting this parameter to 1 enables the features described in RFC 4827. It gives
 **Example.** 1.
 
 ```opensips
-modparam("presence\_xml", "pidf\_manipulation", 1)
+modparam("presence_xml", "pidf_manipulation", 1)
 ```
 ### `pres_rules_auid` (string)
 
@@ -91,7 +91,7 @@ This parameter should be configured if you are using the non integrated xcap mod
 **Example.** org.openmobilealliance.pres-rules.
 
 ```opensips
-modparam("presence\_xml", "pres\_rules\_auid", "org.openmobilealliance.pres-rules")
+modparam("presence_xml", "pres_rules_auid", "org.openmobilealliance.pres-rules")
 ```
 ### `pres_rules_filename` (string)
 
@@ -102,17 +102,17 @@ This parameter should be configured if you are using the non integrated xcap mod
 **Example.** pres-rules.
 
 ```opensips
-modparam("presence\_xml", "pres\_rules\_filename", "pres-rules")
+modparam("presence_xml", "pres_rules_filename", "pres-rules")
 ```
 ### `xcap_server` (string)
 
-The address of the xcap servers used for storage. This parameter is compulsory if the integrated\_xcap\_server parameter is not set. It can be set more that once, to construct an address list of trusted XCAP servers.
+The address of the xcap servers used for storage. This parameter is compulsory if the integrated_xcap_server parameter is not set. It can be set more that once, to construct an address list of trusted XCAP servers.
 
-**Example.** xcap\_server.example.org.
+**Example.** xcap_server.example.org.
 
 ```opensips
-modparam("presence\_xml", "xcap\_server", "xcap\_server.example.org")
-modparam("presence\_xml", "xcap\_server", "xcap\_server.ag.org")
+modparam("presence_xml", "xcap_server", "xcap_server.example.org")
+modparam("presence_xml", "xcap_server", "xcap_server.ag.org")
 ```
 
 ## Configuration Examples

@@ -20,11 +20,11 @@ This module cannot be used "out of the box". The user has to supply functionalit
 
 The module can be used in all current OpenSIPS modules that need database access. Relaying of insert, update, query and delete operations is supported.
 
-Modules can be configured to use the db\_perlvdb module as database backend using the db\_url\_parameter:
+Modules can be configured to use the db_perlvdb module as database backend using the db_url_parameter:
 
-modparam("acc", "db\_url", "perlvdb:OpenSIPS::VDB::Adapter::AccountingSIPtrace")
+modparam("acc", "db_url", "perlvdb:OpenSIPS::VDB::Adapter::AccountingSIPtrace")
 
-This configuration options tells acc module that it should use the db\_perlvdb module which will in turn use the Perl class OpenSIPS::VDB::Adapter::AccountingSIPtrace to relay the database requests.
+This configuration options tells acc module that it should use the db_perlvdb module which will in turn use the Perl class OpenSIPS::VDB::Adapter::AccountingSIPtrace to relay the database requests.
 
 ## How It Works
 
@@ -40,7 +40,7 @@ OpenSIPS uses a database API for requests of numerous different types of data. F
 
 This module relays these database requests to user implemented Perl functions.
 
-A client module has to be configured to use the db\_perlvdb module in conjunction with a Perl class to provide the functions. The configured class needs to inherit from the base class `OpenSIPS::VDB`.
+A client module has to be configured to use the db_perlvdb module in conjunction with a Perl class to provide the functions. The configured class needs to inherit from the base class `OpenSIPS::VDB`.
 
 Derived classes have to implement the necessary functions "query", "insert", "update" and/or "delete". The client module specifies the necessary functions. To find out which functions are called from a module, its processes may be evaluated with the `OpenSIPS::VDB::Adapter::Describe` class which will log incoming requests (without actually providing any real functionality).
 

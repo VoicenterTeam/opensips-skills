@@ -33,7 +33,7 @@ if (perl_exec("ldap_alias")) {
 
 just as you would have done with the current alias_db module.
 
-The functions you can use are listed in the [exported_functions](#exported_functions "1.6.�Exported Functions") section below.
+The functions you can use are listed in the [exported_functions](#exported_functions "1.6.Exported Functions") section below.
 
 On the Perl side, there are a number of functions that let you read and modify the current SIP message, such as the RURI or the message flags. An introduction to the Perl interface and the full reference documentation can be found below.
 
@@ -97,7 +97,7 @@ Calls a perl function _with_ passing it the current SIP message. The SIP message
 
 ```opensips
 ...
-if (perl\_exec("ldapalias")) {
+if (perl_exec("ldapalias")) {
 	...
 };
 ...
@@ -124,7 +124,7 @@ Calls a perl function _without_ passing it the current SIP message. May be used 
 ```opensips
 ...
 if ($rm=="INVITE") {
-	perl\_exec\_simple("dosomething", "on invite messages");
+	perl_exec_simple("dosomething", "on invite messages");
 };
 ...
 ```

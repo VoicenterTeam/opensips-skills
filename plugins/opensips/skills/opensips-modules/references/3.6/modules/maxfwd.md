@@ -32,18 +32,18 @@ None.
 
 ### `max_limit` (integer)
 
-Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max\_limits - if it does, the header value will by decreased to “max\_limit”.
+Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max_limits - if it does, the header value will by decreased to “max_limit”.
 
 *Default value is 256.*
 
 *Valid range: 1 to 256.*
 
-**Notes:** This check is done when calling the mf\_process\_maxfwd\_header() header.
+**Notes:** This check is done when calling the mf_process_maxfwd_header() header.
 
 **Example.** 32.
 
 ```opensips
-modparam("maxfwd", "max\_limit", 32)
+modparam("maxfwd", "max_limit", 32)
 ```
 
 ## Exported Functions
@@ -114,7 +114,7 @@ Set an upper limit for the max-forward value in the outgoing requests.
 
 ```opensips
 ...
-modparam("maxfwd", "max\_limit", 32)
+modparam("maxfwd", "max_limit", 32)
 ...
 ```
 ### `mx_process_maxfwd_header` usage
@@ -124,9 +124,9 @@ Initial sanity checks for messages with max_forwards==0 or excessively long requ
 ```opensips
 ...
 # initial sanity checks -- messages with
-# max\_forwards==0, or excessively long requests
-if (!mf\_process\_maxfwd\_header(10) && $retcode==-1) {
-	sl\_send\_reply(483,"Too Many Hops");
+# max_forwards==0, or excessively long requests
+if (!mf_process_maxfwd_header(10) && $retcode==-1) {
+	sl_send_reply(483,"Too Many Hops");
 	exit;
 };
 ...
@@ -139,8 +139,8 @@ Check if Max-Forward value is 0 before forwarding to a gateway.
 ...
 # next hope is a gateway, so make no sens to
 # forward if MF is 0 (after decrement)
-if ( is\_maxfwd\_lt(1) ) {
-	sl\_send\_reply(483,"Too Many Hops");
+if ( is_maxfwd_lt(1) ) {
+	sl_send_reply(483,"Too Many Hops");
 	exit;
 };
 ...

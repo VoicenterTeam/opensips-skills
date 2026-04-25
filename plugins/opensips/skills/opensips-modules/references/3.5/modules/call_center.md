@@ -96,13 +96,13 @@ SQL address to the DB server -- database specific. This must be the Database whe
 
 ```opensips
 ...
-modparam("call\_center", "acc\_db\_url", 
-	"mysql://opensips:opensipsrw@localhost/opensips\_cdrs")
+modparam("call_center", "acc_db_url", 
+	"mysql://opensips:opensipsrw@localhost/opensips_cdrs")
 ...
 ```
 ### `b2b_logic_ctx_param` (string)
 
-The name of the _$b2b_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the [cc_handle_call](#func_cc_handle_call "1.5.1.� cc_handle_call( flowID [,param])") function.
+The name of the _$b2b_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the [cc_handle_call](#func_cc_handle_call "1.5.1. cc_handle_call( flowID [,param])") function.
 
 This parameter will be copied throughout all the B2B scenarios started by the call_center module. NOTE that you can change the value of the current scenario by writing into it, but the change will not be reflected in a different scenario.
 
@@ -149,7 +149,7 @@ Name to be used for the table holding the definition of the flows/queues.
 
 ```opensips
 ...
-modparam("call\_center", "cc\_flows\_table", "queues")
+modparam("call_center", "cc_flows_table", "queues")
 ...
 ```
 ### `cca_agentid_column` (string)
@@ -230,7 +230,7 @@ Name to be used for the "wrapupend" (timestamp when the wrapup ends) column in t
 
 ```opensips
 ...
-modparam("call\_center", "cca\_wrapupend\_column", "wrapup\_ends")
+modparam("call_center", "cca_wrapupend_column", "wrapup_ends")
 ...
 ```
 ### `cca_wrapuptime_column` (string)
@@ -243,7 +243,7 @@ Name to be used for the "wrapuptime" (per-agent wrapup time) column in the agent
 
 ```opensips
 ...
-modparam("call\_center", "cca\_wrapuptime\_column", "wtime")
+modparam("call_center", "cca_wrapuptime_column", "wtime")
 ...
 ```
 ### `ccf_cid_column` (string)
@@ -256,7 +256,7 @@ Name to be used for the "caller ID prefix" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_cid\_column", "queue\_cli\_prefix")
+modparam("call_center", "ccf_cid_column", "queue_cli_prefix")
 ...
 ```
 ### `ccf_dissuading_ewt_th_column` (string)
@@ -280,7 +280,7 @@ Name to be used for the "hangup after dissuading" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_dissuading\_hangup\_column", "hangup\_on\_dissuading")
+modparam("call_center", "ccf_dissuading_hangup_column", "hangup_on_dissuading")
 ...
 ```
 ### `ccf_dissuading_onhold_th_column` (string)
@@ -293,7 +293,7 @@ Name to be used for the "on-hold dissuading threshold" column in the flows table
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_dissuading\_onhold\_th\_column", "th\_diss\_onhold")
+modparam("call_center", "ccf_dissuading_onhold_th_column", "th_diss_onhold")
 ...
 ```
 ### `ccf_dissuading_qsize_th_column` (string)
@@ -317,7 +317,7 @@ Name to be used for the "flow id" (unique DB id) column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_flowid\_column", "queue\_id")
+modparam("call_center", "ccf_flowid_column", "queue_id")
 ...
 ```
 ### `ccf_m_dissuading_column` (string)
@@ -376,7 +376,7 @@ Name to be used for the "max limit for wrapup time" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_max\_wrapup\_column", "queue\_wrapup")
+modparam("call_center", "ccf_max_wrapup_column", "queue_wrapup")
 ...
 ```
 ### `ccf_priority_column` (string)
@@ -389,7 +389,7 @@ Name to be used for the "priority" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_priority\_column", "queue\_prio")
+modparam("call_center", "ccf_priority_column", "queue_prio")
 ...
 ```
 ### `ccf_skill_column` (string)
@@ -402,7 +402,7 @@ Name to be used for the "skill" column in the flows table.
 
 ```opensips
 ...
-modparam("call\_center", "ccf\_skill\_column", "queue\_skill")
+modparam("call_center", "ccf_skill_column", "queue_skill")
 ...
 ```
 ### `chat_dispatch_policy` (string)
@@ -433,7 +433,7 @@ SQL address to the DB server -- database specific. This must be the Database hol
 
 ```opensips
 ...
-modparam("call\_center", "db\_url", 
+modparam("call_center", "db_url", 
 	"mysql://opensips:opensipsrw@localhost/opensips")
 ...
 ```
@@ -460,7 +460,7 @@ The name of an SIP URI parameter to be used to report the position in the waitin
 
 ```opensips
 ...
-modparam("call\_center", "queue\_pos\_param", "cc\_pos")
+modparam("call_center", "queue_pos_param", "cc_pos")
 ...
 ```
 ### `reject_on_no_agents` (integer)
@@ -486,8 +486,8 @@ SQL address/URL of the DB server (database specific) where the runtime tables (n
 
 ```opensips
 ...
-modparam("call\_center", "rt\_db\_url", 
-	"mysql://opensips:opensipsrw@localhost/opensips\_runtime")
+modparam("call_center", "rt_db_url", 
+	"mysql://opensips:opensipsrw@localhost/opensips_runtime")
 ...
 ```
 ### `wrapup_time` (integer)
@@ -502,7 +502,7 @@ Time for an agent between finishing a call and receiving the next call from the 
 
 ```opensips
 ...
-modparam("call\_center", "wrapup\_time", 45)
+modparam("call_center", "wrapup_time", 45)
 ...
 ```
 

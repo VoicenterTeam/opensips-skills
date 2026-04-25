@@ -221,7 +221,7 @@ Replaces re with repl (sed or perl like) in the body of the message.
 **Example.** .
 
 ```opensips
-if (subst\_body("/^o=(\[^ \]\*) /o=$fU /"))
+if (subst_body("/^o=(\[^ \]\*) /o=$fU /"))
 	xlog("successfully prepared an "o" line update!\\n");
 ```
 
@@ -235,21 +235,21 @@ Runs the re substitution on the message uri (like subst but works only on the ur
 
 **Usable from:** REQUEST_ROUTE, ONREPLY_ROUTE, FAILURE_ROUTE, BRANCH_ROUTE
 
-**Example.** adds 3463 prefix to numeric uris, and save the original uri (\0 match) as a parameter: orig\_uri (just an example).
+**Example.** adds 3463 prefix to numeric uris, and save the original uri (\0 match) as a parameter: orig_uri (just an example).
 
 ```opensips
 # adds 3463 prefix to numeric uris, and save the original uri (\0 match)
-# as a parameter: orig\_uri (just an example)
-if (subst\_uri('/^sip:(\[0-9\]+)@(.*\)$/sip:3463\\1@\\2;orig\_uri=\\0/i')){$
+# as a parameter: orig_uri (just an example)
+if (subst_uri('/^sip:(\[0-9\]+)@(.*\)$/sip:3463\\1@\\2;orig_uri=\\0/i')){$
 
-# adds the avp 'uri\_prefix' as prefix to numeric uris, and save the original
-# uri (\0 match) as a parameter: orig\_uri (just an example)
-if (subst\_uri('/^sip:(\[0-9\]+)@(.*\)$/sip:$avp(uri\_prefix)\\1@\\2;orig\_uri=\\0/i')){$
+# adds the avp 'uri_prefix' as prefix to numeric uris, and save the original
+# uri (\0 match) as a parameter: orig_uri (just an example)
+if (subst_uri('/^sip:(\[0-9\]+)@(.*\)$/sip:$avp(uri_prefix)\\1@\\2;orig_uri=\\0/i')){$
 ```
 
 ### `subst_user('/re/repl/flags')`
 
-Runs the re substitution on the message uri (like subst\_uri but works only on the user portion of the uri)
+Runs the re substitution on the message uri (like subst_uri but works only on the user portion of the uri)
 
 **Parameters:**
 
@@ -261,11 +261,11 @@ Runs the re substitution on the message uri (like subst\_uri but works only on t
 
 ```opensips
 # adds 3463 prefix to uris ending with 3642 (just an example)
-if (subst\_user('/3642$/36423463/')){$
+if (subst_user('/3642$/36423463/')){$
 
 ...
-# adds avp 'user\_prefix' as prefix to username in r-uri ending with 3642
-if (subst\_user('/(.*)3642$/$avp(user\_prefix)\\13642/')){$
+# adds avp 'user_prefix' as prefix to username in r-uri ending with 3642
+if (subst_user('/(.*)3642$/$avp(user_prefix)\\13642/')){$
 ```
 
 ## Configuration Examples

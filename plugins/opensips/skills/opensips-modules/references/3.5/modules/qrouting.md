@@ -67,7 +67,7 @@ An SQL database URL.
 **Example.** mysql://opensips:opensipsrw@localhost/opensips.
 
 ```opensips
-modparam("qrouting", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("qrouting", "db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 ```
 ### `decimal_digits` (string)
 
@@ -78,11 +78,11 @@ The amount of decimal digits to use in logging or MI output.
 **Example.** 4.
 
 ```opensips
-modparam("qrouting", "decimal\_digits", 4)
+modparam("qrouting", "decimal_digits", 4)
 ```
 ### `event_bad_dst_threshold` (string)
 
-The minimally accepted quality of a (prefix, destination) combination, given as a quoted floating point number in the \[0, 1\] interval. Whenever a (prefix, destination) combination receives a score below this threshold, the [E\_QROUTING\_BAD\_DST](#event_E_QROUTING_BAD_DST "1.7.1.� E\_QROUTING\_BAD\_DST") event will be triggered.
+The minimally accepted quality of a (prefix, destination) combination, given as a quoted floating point number in the \[0, 1\] interval. Whenever a (prefix, destination) combination receives a score below this threshold, the [E_QROUTING_BAD_DST](#event_E_QROUTING_BAD_DST "1.7.1. E_QROUTING_BAD_DST") event will be triggered.
 
 *Default value is NULL (not set).*
 
@@ -91,7 +91,7 @@ The minimally accepted quality of a (prefix, destination) combination, given as 
 **Example.** 0.5.
 
 ```opensips
-modparam("qrouting", "event\_bad\_dst\_threshold", "0.5")
+modparam("qrouting", "event_bad_dst_threshold", "0.5")
 ```
 ### `extra_stats` (string)
 
@@ -124,7 +124,7 @@ The duration (in minutes) that a gateway's statistics for a given call will be k
 **Example.** 15.
 
 ```opensips
-modparam("qrouting", "history\_span", 15)
+modparam("qrouting", "history_span", 15)
 ```
 ### `min_samples_acd` (integer)
 
@@ -135,7 +135,7 @@ The minimally accepted amount of sampled ACD statistics for each (prefix, destin
 **Example.** 30.
 
 ```opensips
-modparam("qrouting", "min\_samples\_acd", 30)
+modparam("qrouting", "min_samples_acd", 30)
 ```
 ### `min_samples_asr` (integer)
 
@@ -183,7 +183,7 @@ modparam("qrouting", "min_samples_pdd", 15)
 ```
 ### `sampling_interval` (integer)
 
-The duration (in seconds) of the statistics sampling window. Every _[sampling\_interval](#param_sampling_interval "1.4.5.�sampling_interval (integer)")_ seconds, the accumulated statistics during the most recent sampling window get added to each gateway, while the oldest sampled interval statistics are subtracted (rotated away) from each gateway.
+The duration (in seconds) of the statistics sampling window. Every _[sampling_interval](#param_sampling_interval "1.4.5.sampling_interval (integer)")_ seconds, the accumulated statistics during the most recent sampling window get added to each gateway, while the oldest sampled interval statistics are subtracted (rotated away) from each gateway.
 
 A lower value will lead to a closer to realtime adjustment to traffic changes, but it will also increase CPU usage and internal contention due to locking.
 
@@ -192,7 +192,7 @@ A lower value will lead to a closer to realtime adjustment to traffic changes, b
 **Example.** 5.
 
 ```opensips
-modparam("qrouting", "sampling\_interval", 5)
+modparam("qrouting", "sampling_interval", 5)
 ```
 ### `table_name` (string)
 
@@ -203,14 +203,14 @@ The name of the quality-based routing profiles table.
 **Example.** qr_profiles_bak.
 
 ```opensips
-modparam("qrouting", "table\_name", "qr\_profiles\_bak")
+modparam("qrouting", "table_name", "qr_profiles_bak")
 ```
 
 ## Exported Functions
 
 ### `qr_disable_dst(rule_id, dst_name, [part])`
 
-Within a given routing rule, temporarily remove the given gateway or carrier from routing, until they are re-enabled via [qr_enable_dst()](#func_qr_enable_dst "1.5.3.� qr_enable_dst(rule_id, dst_name, [part])") or [qr_enable_dst](#mi_qr_enable_dst "1.6.4.�qr_enable_dst"). The removal effect will be lost on an OpenSIPS restart.
+Within a given routing rule, temporarily remove the given gateway or carrier from routing, until they are re-enabled via [qr_enable_dst()](#func_qr_enable_dst "1.5.3. qr_enable_dst(rule_id, dst_name, [part])") or [qr_enable_dst](#mi_qr_enable_dst "1.6.4.qr_enable_dst"). The removal effect will be lost on an OpenSIPS restart.
 
 **Parameters:**
 
@@ -255,7 +255,7 @@ qr_enable_dst($param(rule_id), $param(dst_name), $param(partition));
 
 ### `qr_set_xstat(rule_id, gw_name, stat_name, inc_by, [part], [inc_total])`
 
-Provide a new sample value for an extra statistic on a given (prefix, gateway) combination. Extra statistics may be defined using the [extra_stats](#param_extra_stats "1.4.6.�extra_stats (string)") module parameter.
+Provide a new sample value for an extra statistic on a given (prefix, gateway) combination. Extra statistics may be defined using the [extra_stats](#param_extra_stats "1.4.6.extra_stats (string)") module parameter.
 
 **Parameters:**
 
@@ -405,7 +405,7 @@ The duration, in milliseconds, between the receival of the initial INVITE and th
 
 ### `E_QROUTING_BAD_DST`
 
-This event may be raised during routing, asynchronously, whenever the score of a (prefix, destination) pair falls below [event_bad_dst_threshold](#param_event_bad_dst_threshold "1.4.12.�event_bad_dst_threshold (string)").
+This event may be raised during routing, asynchronously, whenever the score of a (prefix, destination) pair falls below [event_bad_dst_threshold](#param_event_bad_dst_threshold "1.4.12.event_bad_dst_threshold (string)").
 
 **Parameters:**
 

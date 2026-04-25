@@ -64,20 +64,20 @@ The append_userphone (integer) parameter instructs the OSP module if to append "
 **Example.** Set the `append_userphone` parameter.
 
 ```opensips
-modparam("osp","append\_userphone",0)
+modparam("osp","append_userphone",0)
 ```
 ### `ca_certificates` (string)
 
-These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart\_0.pem in the default configuration directory. The default config directory is set at compile time using CFG\_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use\_security\_features parameter is set to 0, these parameters will be ignored.
+These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use_security_features parameter is set to 0, these parameters will be ignored.
 
 *Default value is cacart_0.pem.*
 
-**Notes:** If use\_security\_features parameter is set to 0, these parameters will be ignored.
+**Notes:** If use_security_features parameter is set to 0, these parameters will be ignored.
 
 **Example.** /usr/local/etc/opensips/cacert.pem.
 
 ```opensips
-modparam("osp","ca\_certificates","/usr/local/etc/opensips/cacert.pem")
+modparam("osp","ca_certificates","/usr/local/etc/opensips/cacert.pem")
 ```
 ### `cnam_avp` (string)
 
@@ -88,7 +88,7 @@ The cnam_avp (string) parameter instructs the OSP module to use the defined AVP 
 **Example.** Set the `cnam_avp` parameter.
 
 ```opensips
-modparam("osp","cnam\_avp","$avp(cnam)")
+modparam("osp","cnam_avp","$avp(cnam)")
 ```
 ### `custom_info_avp` (string)
 
@@ -99,7 +99,7 @@ The custom_info_avp (string) parameter instructs the OSP module to use the defin
 **Example.** Set the `custom_info_avp` parameter.
 
 ```opensips
-modparam("osp","custom\_info\_avp","$avp(cinfo)")
+modparam("osp","custom_info_avp","$avp(cinfo)")
 ```
 ### `destination_media_avp` (string)
 
@@ -110,7 +110,7 @@ These parameters are used to tell the OSP module which AVPs are used to store me
 **Example.** Set the `destination_media_avp` parameter.
 
 ```opensips
-modparam("osp", "destination\_media\_avp", "$avp(destmedia)")
+modparam("osp", "destination_media_avp", "$avp(destmedia)")
 ```
 ### `device_ip` (string)
 
@@ -123,7 +123,7 @@ modparam("osp","device_ip","[127.0.0.1]:5060")
 ```
 ### `enable_crypto_hardware_support` (integer)
 
-The enable\_crypto\_hardware\_support (integer) parameter is used to set the cryptographic hardware acceleration engine in the openssl library. The default value is 0 (no crypto hardware is present). If crypto hardware is used, the value should be set to 1.
+The enable_crypto_hardware_support (integer) parameter is used to set the cryptographic hardware acceleration engine in the openssl library. The default value is 0 (no crypto hardware is present). If crypto hardware is used, the value should be set to 1.
 
 *Default value is 0.*
 
@@ -135,7 +135,7 @@ The enable\_crypto\_hardware\_support (integer) parameter is used to set the cry
 **Example.** 0.
 
 ```opensips
-modparam("osp","enable\_crypto\_hardware\_support",0)
+modparam("osp","enable_crypto_hardware_support",0)
 ```
 ### `extraheaders_value` (string)
 
@@ -144,18 +144,18 @@ The extraheaders_value (string) parameter instructs the OSP module to append the
 **Example.** Set the `extraheaders_value` parameter.
 
 ```opensips
-modparam("osp", "extraheaders\_value", "Source: N")
+modparam("osp", "extraheaders_value", "Source: N")
 ```
 ### `identity_algorithm_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
-*Default value is $avp(\_osp\_identity\_algorithm\_).*
+*Default value is $avp(_osp_identity_algorithm_).*
 
 **Example.** $avp(idalg).
 
 ```opensips
-modparam("osp","identity\_algorithm\_avp","$avp(idalg)")
+modparam("osp","identity_algorithm_avp","$avp(idalg)")
 ```
 ### `identity_canon_avp` (string)
 
@@ -170,25 +170,25 @@ modparam("osp","identity_canon_avp","$avp(idcanon)")
 ```
 ### `identity_information_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
-*Default value is $avp(\_osp\_identity\_information\_).*
+*Default value is $avp(_osp_identity_information_).*
 
 **Example.** $avp(idinfo).
 
 ```opensips
-modparam("osp","identity\_information\_avp","$avp(idinfo)")
+modparam("osp","identity_information_avp","$avp(idinfo)")
 ```
 ### `identity_signature_avp` (string)
 
-These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(\_osp\_identity\_signature\_)", "$avp(\_osp\_identity\_algorithm\_)", "$avp(\_osp\_identity\_information\_)", "$avp(\_osp\_identity\_type\_)", "$avp(\_osp\_identity\_canon\_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. The default values are "$avp(_osp_identity_signature_)", "$avp(_osp_identity_algorithm_)", "$avp(_osp_identity_information_)", "$avp(_osp_identity_type_)", "$avp(_osp_identity_canon_)"). Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
-*Default value is $avp(\_osp\_identity\_signature\_).*
+*Default value is $avp(_osp_identity_signature_).*
 
 **Example.** $avp(idsign).
 
 ```opensips
-modparam("osp","identity\_signature\_avp","$avp(idsign)")
+modparam("osp","identity_signature_avp","$avp(idsign)")
 ```
 ### `identity_type_avp` (string)
 
@@ -203,16 +203,16 @@ modparam("osp","identity_type_avp","$avp(idtype)")
 ```
 ### `local_certificate` (string)
 
-These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart\_0.pem in the default configuration directory. The default config directory is set at compile time using CFG\_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use\_security\_features parameter is set to 0, these parameters will be ignored.
+These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use_security_features parameter is set to 0, these parameters will be ignored.
 
 *Default value is localcert.pem.*
 
-**Notes:** If use\_security\_features parameter is set to 0, these parameters will be ignored.
+**Notes:** If use_security_features parameter is set to 0, these parameters will be ignored.
 
 **Example.** /usr/local/etc/opensips/localcert.pem.
 
 ```opensips
-modparam("osp","local\_certificate","/usr/local/etc/opensips/localcert.pem")
+modparam("osp","local_certificate","/usr/local/etc/opensips/localcert.pem")
 ```
 ### `max_destinations` (integer)
 
@@ -242,7 +242,7 @@ The networkid_location (integer) parameter instructs the OSP module where the de
 **Example.** Set the `networkid_location` parameter.
 
 ```opensips
-modparam("osp","networkid\_location",2)
+modparam("osp","networkid_location",2)
 ```
 ### `networkid_parameter` (string)
 
@@ -253,7 +253,7 @@ The networkid_parameter (string) parameter instructs the OSP module to use which
 **Example.** Set the `networkid_parameter` parameter.
 
 ```opensips
-modparam("osp","networkid\_param","networkid")
+modparam("osp","networkid_param","networkid")
 ```
 ### `parameterstring_location` (integer)
 
@@ -270,7 +270,7 @@ The parameterstring_location (integer) parameter instructs the OSP module where 
 **Example.** 0.
 
 ```opensips
-modparam("osp","parameterstring\_location",0)
+modparam("osp","parameterstring_location",0)
 ```
 ### `parameterstring_value` (string)
 
@@ -279,7 +279,7 @@ The parameterstring_value (string) parameter instructs the OSP module to append 
 **Example.** Set the `parameterstring_value` parameter.
 
 ```opensips
-modparam("osp","parameterstring\_value","")
+modparam("osp","parameterstring_value","")
 ```
 ### `persistence` (integer)
 
@@ -292,16 +292,16 @@ modparam("osp","persistence",1000)
 ```
 ### `private_key` (string)
 
-These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart\_0.pem in the default configuration directory. The default config directory is set at compile time using CFG\_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use\_security\_features parameter is set to 0, these parameters will be ignored.
+These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed. If use_security_features parameter is set to 0, these parameters will be ignored.
 
 *Default value is pkey.pem.*
 
-**Notes:** If use\_security\_features parameter is set to 0, these parameters will be ignored.
+**Notes:** If use_security_features parameter is set to 0, these parameters will be ignored.
 
 **Example.** /usr/local/etc/opensips/pkey.pem.
 
 ```opensips
-modparam("osp","private\_key","/usr/local/etc/opensips/pkey.pem")
+modparam("osp","private_key","/usr/local/etc/opensips/pkey.pem")
 ```
 ### `report_networkid` (integer)
 
@@ -323,14 +323,14 @@ modparam("osp","report_networkid",3)
 ```
 ### `request_date_avp` (string)
 
-The request\_date\_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SIP request Date header values. The default value is "$avp(\_osp\_request\_date\_)"). Then the request date can be used by "$avp(\_osp\_request\_date\_)"). All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+The request_date_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SIP request Date header values. The default value is "$avp(_osp_request_date_)"). Then the request date can be used by "$avp(_osp_request_date_)"). All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
-*Default value is $avp(\_osp\_request\_date\_).*
+*Default value is $avp(_osp_request_date_).*
 
 **Example.** $avp(reqdate).
 
 ```opensips
-modparam("osp","request\_date\_avp","$avp(reqdate)")
+modparam("osp","request_date_avp","$avp(reqdate)")
 ```
 ### `retry_delay` (integer)
 
@@ -356,14 +356,14 @@ modparam("osp","retry_limit",2)
 ```
 ### `sdp_fingerprint_avp` (string)
 
-The sdp\_fingerprint\_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SDP fing print attribute values. The default value is "$avp(\_osp\_sdp\_fingerprint\_)"). Then the SDP finger print attributes can be used by "$avp(\_osp\_sdp\_fingerprint\_)"). All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
+The sdp_fingerprint_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SDP fing print attribute values. The default value is "$avp(_osp_sdp_fingerprint_)"). Then the SDP finger print attributes can be used by "$avp(_osp_sdp_fingerprint_)"). All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.
 
-*Default value is $avp(\_osp\_sdp\_fingerprint\_).*
+*Default value is $avp(_osp_sdp_fingerprint_).*
 
 **Example.** $avp(sdpfp).
 
 ```opensips
-modparam("osp","sdp\_fingerprint\_avp","$avp(sdpfp)")
+modparam("osp","sdp_fingerprint_avp","$avp(sdpfp)")
 ```
 ### `service_provider_avp` (string)
 
@@ -391,7 +391,7 @@ The service_type (integer) parameter instructs the OSP module what services it s
 **Example.** Set the `service_type` parameter.
 
 ```opensips
-modparam("osp","service\_type",0)
+modparam("osp","service_type",0)
 ```
 ### `source_device_avp` (string)
 
@@ -402,7 +402,7 @@ The source_device_avp (string) parameter instructs the OSP module to use the def
 **Example.** $avp(srcdev).
 
 ```opensips
-modparam("osp","source\_device\_avp","$avp(srcdev)")
+modparam("osp","source_device_avp","$avp(srcdev)")
 ```
 ### `source_media_avp` (string)
 
@@ -413,7 +413,7 @@ These parameters are used to tell the OSP module which AVPs are used to store me
 **Example.** Set the `source_media_avp` parameter.
 
 ```opensips
-modparam("osp", "source\_media\_avp", "$avp(srcmedia)")
+modparam("osp", "source_media_avp", "$avp(srcmedia)")
 ```
 ### `source_networkid_avp` (string)
 
@@ -424,7 +424,7 @@ The source_networkid_avp (string) parameter instructs the OSP module to use the 
 **Example.** $avp(snid).
 
 ```opensips
-modparam("osp","source\_networkid\_avp","$avp(snid)")
+modparam("osp","source_networkid_avp","$avp(snid)")
 ```
 ### `source_switchid_avp` (string)
 
@@ -435,7 +435,7 @@ The source_switchid_avp (string) parameter instructs the OSP module to use the d
 **Example.** $avp(swid).
 
 ```opensips
-modparam("osp","source\_switchid\_avp","$avp(swid)")
+modparam("osp","source_switchid_avp","$avp(swid)")
 ```
 ### `sp16_uri` (string)
 
@@ -472,7 +472,7 @@ These sp_uri (string) parameters define peering servers to be used for requestin
 **Example.** Set the `sp1_uri` parameter.
 
 ```opensips
-modparam("osp","sp1\_uri","http://osptestserver.transnexus.com:5045/osp")
+modparam("osp","sp1_uri","http://osptestserver.transnexus.com:5045/osp")
 ```
 ### `sp1_weight` (integer)
 
@@ -500,7 +500,7 @@ These sp_uri (string) parameters define peering servers to be used for requestin
 **Example.** Set the `sp2_uri` parameter.
 
 ```opensips
-modparam("osp","sp2\_uri","https://\[1.2.3.4\]:1443/osp")
+modparam("osp","sp2_uri","https://\[1.2.3.4\]:1443/osp")
 ```
 ### `sp2_weight` (integer)
 
@@ -550,7 +550,7 @@ The switchid_location (integer) parameter instructs the OSP module where the des
 **Example.** Set the `switchid_location` parameter.
 
 ```opensips
-modparam("osp","switchid\_location",2)
+modparam("osp","switchid_location",2)
 ```
 ### `switchid_parameter` (string)
 
@@ -561,7 +561,7 @@ The switchid_parameter (string) parameter instructs the OSP module to use which 
 **Example.** Set the `switchid_parameter` parameter.
 
 ```opensips
-modparam("osp","switchid\_param","switchid")
+modparam("osp","switchid_param","switchid")
 ```
 ### `timeout` (integer)
 
@@ -576,7 +576,7 @@ modparam("osp","timeout",10)
 ```
 ### `token_format` (integer)
 
-When OpenSIPS receives a SIP INVITE with a peering token, the OSP module will validate the token to determine whether or not the call has been authorized by a peering server. Peering tokens may, or may not, be digitally signed. The token\_format (integer) parameter defines if OpenSIPS will validate signed or unsigned tokens or both. The values for token format are defined below. The default value is 2. If use\_security\_features parameter is set to 0, signed tokens cannot be validated.
+When OpenSIPS receives a SIP INVITE with a peering token, the OSP module will validate the token to determine whether or not the call has been authorized by a peering server. Peering tokens may, or may not, be digitally signed. The token_format (integer) parameter defines if OpenSIPS will validate signed or unsigned tokens or both. The values for token format are defined below. The default value is 2. If use_security_features parameter is set to 0, signed tokens cannot be validated.
 
 *Default value is 2.*
 
@@ -586,12 +586,12 @@ When OpenSIPS receives a SIP INVITE with a peering token, the OSP module will va
 - 1 - Validate only unsigned tokens. Calls with valid unsigned tokens are allowed.
 - 2 - Validate both signed and unsigned tokens are allowed. Calls with valid tokens are allowed.
 
-**Notes:** If use\_security\_features parameter is set to 0, signed tokens cannot be validated.
+**Notes:** If use_security_features parameter is set to 0, signed tokens cannot be validated.
 
 **Example.** 2.
 
 ```opensips
-modparam("osp","token\_format",2)
+modparam("osp","token_format",2)
 ```
 ### `use_number_portability` (integer)
 
@@ -677,7 +677,7 @@ The work_mode (integer) parameter instructs the OSP module what mode it should w
 **Example.** Set the `work_mode` parameter.
 
 ```opensips
-modparam("osp","work\_mode",0)
+modparam("osp","work_mode",0)
 ```
 
 ## Exported Functions
@@ -702,12 +702,12 @@ This function is used to check if the calling number is translated. Before calli
 ```opensips
 ...
 if (checkcallingtranslation()) {
-  # Remove the Remote\_Party-ID from the received message
+  # Remove the Remote_Party-ID from the received message
   # Otherwise it will be forwarded on to the next hop
-  remove\_hf("Remote-Party-ID");
+  remove_hf("Remote-Party-ID");
 
-  # Append a new Remote\_Party
-  append\_rpid\_hf();
+  # Append a new Remote_Party
+  append_rpid_hf();
 }
 ...
 ```

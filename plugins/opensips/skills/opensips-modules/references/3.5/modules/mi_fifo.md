@@ -16,7 +16,7 @@ Reference for the OpenSIPs 3.5 mi_fifo module. Read this file when configuring o
 
 ## Overview
 
-This is a module which provides a FIFO transport layer implementation for Management Interface. It receives the command over a FIFO file and returns the output through the reply\_fifo specified.
+This is a module which provides a FIFO transport layer implementation for Management Interface. It receives the command over a FIFO file and returns the output through the reply_fifo specified.
 
 ## How It Works
 

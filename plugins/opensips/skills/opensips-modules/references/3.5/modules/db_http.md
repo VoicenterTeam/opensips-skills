@@ -54,7 +54,7 @@ Whether or not to use SSL. If value is 1 the module will use https otherwise it 
 **Example.** 1.
 
 ```opensips
-modparam("db\_http", "SSL",1)
+modparam("db_http", "SSL",1)
 ```
 ### `cap_insert_update` (integer)
 
@@ -65,7 +65,7 @@ Whether or not the server supports insert_update capabilities.
 **Example.** 1.
 
 ```opensips
-modparam("db\_http", "cap\_insert\_update", 1)
+modparam("db_http", "cap_insert_update", 1)
 ```
 ### `cap_last_inserted_id` (integer)
 
@@ -76,7 +76,7 @@ Whether or not the server supports last_inserted_id capabilities.
 **Example.** 1.
 
 ```opensips
-modparam("db\_http", "cap\_last\_inserted\_id", 1)
+modparam("db_http", "cap_last_inserted_id", 1)
 ```
 ### `cap_raw_query` (integer)
 
@@ -87,7 +87,7 @@ Whether or not the server supports raw queries.
 **Example.** 1.
 
 ```opensips
-modparam("db\_http", "cap\_raw\_query", 1)
+modparam("db_http", "cap_raw_query", 1)
 ```
 ### `cap_replace` (integer)
 
@@ -98,7 +98,7 @@ Whether or not the server supports replace capabilities.
 **Example.** 1.
 
 ```opensips
-modparam("db\_http", "cap\_replace", 1)
+modparam("db_http", "cap_replace", 1)
 ```
 ### `disable_expect` (integer)
 
@@ -185,9 +185,9 @@ There is a slight difference between the url of db_http and the urls of the othe
 
 ```opensips
 ...
-modparam("presence", "db\_url","http://user:pass@localhost:13100")
+modparam("presence", "db_url","http://user:pass@localhost:13100")
 or
-modparam("presence", "db\_url","http://user:pass@www.some.com/some/some")
+modparam("presence", "db_url","http://user:pass@www.some.com/some/some")
 ...
 ```
 ### Set `SSL` parameter
@@ -196,7 +196,7 @@ Whether or not to use SSL. If value is 1 the module will use https otherwise it 
 
 ```opensips
 ...
-modparam("db\_http", "SSL",1)
+modparam("db_http", "SSL",1)
 ...
 ```
 ### Set `cap_raw_query` parameter
@@ -205,7 +205,7 @@ Whether or not the server supports raw queries.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_raw\_query", 1)
+modparam("db_http", "cap_raw_query", 1)
 ...
 ```
 ### Set `cap_replace` parameter
@@ -214,7 +214,7 @@ Whether or not the server supports replace capabilities.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_replace", 1)
+modparam("db_http", "cap_replace", 1)
 ...
 ```
 ### Set `cap_insert_update` parameter
@@ -223,7 +223,7 @@ Whether or not the server supports insert_update capabilities.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_insert\_update", 1)
+modparam("db_http", "cap_insert_update", 1)
 ...
 ```
 ### Set `cap_last_inserted_id` parameter
@@ -232,7 +232,7 @@ Whether or not the server supports last_inserted_id capabilities.
 
 ```opensips
 ...
-modparam("db\_http", "cap\_last\_inserted\_id", 1)
+modparam("db_http", "cap_last_inserted_id", 1)
 ...
 ```
 ### Set `field_delimiter` parameter
@@ -241,7 +241,7 @@ Character to be used to delimit fields in the reply.Only one char may be set.
 
 ```opensips
 ...
-modparam("db\_http", "field\_delimiter",";")
+modparam("db_http", "field_delimiter",";")
 ...
 ```
 ### Set `row_delimiter` parameter
@@ -250,7 +250,7 @@ Character to be used to delimit rows in the reply.Only one char may be set.
 
 ```opensips
 ...
-modparam("db\_http", "row\_delimiter","\\n")
+modparam("db_http", "row_delimiter","\\n")
 ...
 ```
 ### Set `quote_delimiter` parameter
@@ -259,7 +259,7 @@ Character to be used to quote fields that require quoting in the reply.Only one 
 
 ```opensips
 ...
-modparam("db\_http", "quote\_delimiter","|")
+modparam("db_http", "quote_delimiter","|")
 ...
 ```
 ### Set `value_delimiter` parameter
@@ -268,7 +268,7 @@ The delimiter used to separate multiple fields of a single variable (see Section
 
 ```opensips
 ...
-modparam("db\_http", "value\_delimiter",";")
+modparam("db_http", "value_delimiter",";")
 ...
 ```
 ### Set `timeout` parameter
@@ -277,7 +277,7 @@ The maximum number of milliseconds that the HTTP ops are allowed to last
 
 ```opensips
 ...
-modparam("db\_http", "timeout",5000)
+modparam("db_http", "timeout",5000)
 ...
 ```
 ### Set `disable_expect` parameter
@@ -286,6 +286,6 @@ Disables automatic 'Expect: 100-continue' behavior in libcurl for requests over 
 
 ```opensips
 ...
-modparam("db\_http", "disable\_expect",1)
+modparam("db_http", "disable_expect",1)
 ...
 ```

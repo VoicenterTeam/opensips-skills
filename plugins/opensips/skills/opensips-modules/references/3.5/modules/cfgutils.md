@@ -23,17 +23,17 @@ Useful extensions for the server configuration.
 
 ## How It Works
 
-The cfgutils module can be used to introduce randomness to the behaviour of the server. It provides setup functions and the “rand\_event” function. This function return either true or false, depending on a random value and a specified probability. E.g. if you set via fifo or script a probability value of 5%, then 5% of all calls to rand\_event will return false. The pseudovariable “$RANDOM” could be used to introduce random values e.g. into a SIP reply.
+The cfgutils module can be used to introduce randomness to the behaviour of the server. It provides setup functions and the “rand_event” function. This function return either true or false, depending on a random value and a specified probability. E.g. if you set via fifo or script a probability value of 5%, then 5% of all calls to rand_event will return false. The pseudovariable “$RANDOM” could be used to introduce random values e.g. into a SIP reply.
 
 The benefit of this module is the probability of the decision can be manipulated by external applications such as web interface or command line tools. The probability must be specified as percent value, ranging from 0 to 100.
 
-The module exports commands to FIFO server that can be used to change the global settings via FIFO interface. The FIFO commands are: “set\_prob”, “reset\_prob” and “get\_prob”.
+The module exports commands to FIFO server that can be used to change the global settings via FIFO interface. The FIFO commands are: “set_prob”, “reset_prob” and “get_prob”.
 
 This module can be used for simple load-shedding, e.g. reply 5% of the Invites with a 503 error and a adequate random Retry-After value.
 
 The module provides as well functions to delay the execution of the server. The functions “sleep” and “usleep” could be used to let the server wait a specific time interval.
 
-It can also hash the config file used from the server with a (weak) cryptographic hash function on startup. This value is saved and can be later compared to the actual hash, to detect modifications of this file after the server start. This functions are available as the FIFO commands “check\_config\_hash” and “get\_config\_hash”.
+It can also hash the config file used from the server with a (weak) cryptographic hash function on startup. This value is saved and can be later compared to the actual hash, to detect modifications of this file after the server start. This functions are available as the FIFO commands “check_config_hash” and “get_config_hash”.
 
 ## Dependencies
 
@@ -54,7 +54,7 @@ The config file name for that a hash value should be calculated on startup.
 **Example.** Set the `hash_file` parameter.
 
 ```opensips
-modparam("cfgutils", "hash\_file", "/etc/opensips/opensips.cfg")
+modparam("cfgutils", "hash_file", "/etc/opensips/opensips.cfg")
 ```
 ### `initial_probability` (string)
 
@@ -65,7 +65,7 @@ The initial value of the probability.
 **Example.** Set the `initial_probability` parameter.
 
 ```opensips
-modparam("cfgutils", "initial\_probability", 15)
+modparam("cfgutils", "initial_probability", 15)
 ```
 ### `lock_pool_size` (integer)
 
@@ -84,12 +84,12 @@ The number of dynamic script locks to be allocated at OpenSIPS startup. This num
 - 64
 - ...
 
-**Notes:** Note that the _lock\_pool\_size_ parameter only affects the number of dynamic locks created at startup. The pool of static locks only depends on the number of unique static strings supplied throughout the script to the set of static lock functions.
+**Notes:** Note that the _lock_pool_size_ parameter only affects the number of dynamic locks created at startup. The pool of static locks only depends on the number of unique static strings supplied throughout the script to the set of static lock functions.
 
 **Example.** Set the `lock_pool_size` parameter.
 
 ```opensips
-modparam("cfgutils", "lock\_pool\_size", 64)
+modparam("cfgutils", "lock_pool_size", 64)
 ```
 ### `shv_hash_size` (integer)
 
@@ -100,7 +100,7 @@ The size of the hash table used to store the shared variables ($shv).
 **Example.** Set the `shv_hash_size` parameter.
 
 ```opensips
-modparam("cfgutils", "shv\_hash\_size", 1024)
+modparam("cfgutils", "shv_hash_size", 1024)
 ```
 ### `shvset` (string)
 
@@ -742,7 +742,7 @@ The initial value of the probability.
 
 ```opensips
    
-modparam("cfgutils", "initial\_probability", 15)
+modparam("cfgutils", "initial_probability", 15)
    
 ```
 ### `hash_file` parameter usage
@@ -751,7 +751,7 @@ The config file name for that a hash value should be calculated on startup.
 
 ```opensips
    
-modparam("cfgutils", "hash\_file", "/etc/opensips/opensips.cfg")
+modparam("cfgutils", "hash_file", "/etc/opensips/opensips.cfg")
    
 ```
 ### `shv_hash_size` parameter usage
@@ -759,7 +759,7 @@ modparam("cfgutils", "hash\_file", "/etc/opensips/opensips.cfg")
 The size of the hash table used to store the shared variables ($shv).
 
 ```opensips
-modparam("cfgutils", "shv\_hash\_size", 1024)
+modparam("cfgutils", "shv_hash_size", 1024)
 ```
 ### `shvset` parameter usage
 
@@ -786,7 +786,7 @@ modparam("cfgutils", "varset", "gw=s:sip:11.11.11.11;transport=tcp")
 The number of dynamic script locks to be allocated at OpenSIPS startup.
 
 ```opensips
-modparam("cfgutils", "lock\_pool\_size", 64)
+modparam("cfgutils", "lock_pool_size", 64)
 ```
 ### `rand_event()` usage
 
@@ -794,9 +794,9 @@ Generates a random floating point value between 0 - 100 and returns true if the 
 
 ```opensips
 ...
-if (rand\_event()) {
-  append\_to\_reply("Retry-After: 120\\n");
-  sl\_send\_reply(503, "Try later");
+if (rand_event()) {
+  append_to_reply("Retry-After: 120\\n");
+  sl_send_reply(503, "Try later");
   exit;
 }
 # normal message processing follows
@@ -808,7 +808,7 @@ Set the “probability” of the decision.
 
 ```opensips
 ...
-rand\_set\_prob(4);
+rand_set_prob(4);
 ...
 ```
 ### `rand_reset_prob()` usage
@@ -817,7 +817,7 @@ Reset the probability back to the initial_probability value.
 
 ```opensips
 ...
-rand\_reset\_prob();
+rand_reset_prob();
 ...
 ```
 ### `rand_get_prob()` usage
@@ -826,7 +826,7 @@ Return the current probability setting, e.g. for logging purposes.
 
 ```opensips
 ...
-rand\_get\_prob();
+rand_get_prob();
    
 ```
 ### `sleep` usage
@@ -865,7 +865,7 @@ Debugging function that dumps the status for the private (PKG) memory.
 
 ```opensips
 ...
-pkg\_status();
+pkg_status();
 ...			
 ```
 ### `shm_status` usage
@@ -874,7 +874,7 @@ Debugging function that dumps the status for the shared (SHM) memory.
 
 ```opensips
 ...
-shm\_status();
+shm_status();
 ...			
 ```
 ### `set_count` usage
@@ -883,7 +883,7 @@ Counts the number of values of a given variable.
 
 ```opensips
 ...
-set\_count($avp(dids), $var(num\_dids));
+set_count($avp(dids), $var(num_dids));
 ...			
 ```
 ### `set_select_weight` usage
@@ -892,7 +892,7 @@ This function selects an element from a set formed by the integer values of the 
 
 ```opensips
 ...
-$var(next\_gw\_idx) = set\_select\_weight($avp(gw\_success\_rates));
+$var(next_gw_idx) = set_select_weight($avp(gw_success_rates));
 ...			
 ```
 ### `ts_usec_delta` usage
@@ -901,7 +901,7 @@ This function returns the absolute difference between the two given timestamps.
 
 ```opensips
 ...
-ts\_usec\_delta($var(t1s), 300, 10, $var(t2us), $var(diff\_str));
+ts_usec_delta($var(t1s), 300, 10, $var(t2us), $var(diff_str));
 ...			
 ```
 ### `check_time_rec` usage
@@ -911,11 +911,11 @@ The function returns a positive value if the specified time recurrence string ma
 ```opensips
 ...
 # Only passing if still in 2012 and on a Bucharest-compatible timezone
-if (check\_time\_rec("Europe/Bucharest|20120101T000000|20130101T000000"))
+if (check_time_rec("Europe/Bucharest|20120101T000000|20130101T000000"))
 	xlog("Current system time matches the given Romanian time interval\\n");
 ...
 # Only passing if less than 30 days have passed from "dtstart", system timezone
-if (check\_time\_rec("20121101T000000||p30d"))
+if (check_time_rec("20121101T000000||p30d"))
 	xlog("Current time matches the given interval\\n");
 ...			
 ```
@@ -926,9 +926,9 @@ Acquire the static lock which corresponds to "key".
 ```opensips
 \# acquire and release a static lock 
 ...
-get\_static\_lock("Zone\_1");
+get_static_lock("Zone_1");
 ...
-release\_static\_lock("Zone\_1");
+release_static_lock("Zone_1");
 ...
 ```
 ### `release_static_lock` usage
@@ -938,9 +938,9 @@ Release the static lock corresponding to "key".
 ```opensips
 \# acquire and release a static lock 
 ...
-get\_static\_lock("Zone\_1");
+get_static_lock("Zone_1");
 ...
-release\_static\_lock("Zone\_1");
+release_static_lock("Zone_1");
 ...
 ```
 ### `get_dynamic_lock` usage
@@ -950,11 +950,11 @@ Acquire the dynamic lock corresponding to "key".
 ```opensips
 ...
 # acquire and release a dynamic lock on the "Call-ID" header field value
-if (!get\_dynamic\_lock($ci)) {
+if (!get_dynamic_lock($ci)) {
 	xlog("Error while getting dynamic lock!\\n");
 }
 ...
-if (!release\_dynamic\_lock($ci) {
+if (!release_dynamic_lock($ci) {
 	xlog("Error while releasing dynamic lock!\\n");
 }
 ...
@@ -966,11 +966,11 @@ Release the dynamic lock corresponding to "key".
 ```opensips
 ...
 # acquire and release a dynamic lock on the "Call-ID" header field value
-if (!get\_dynamic\_lock($ci)) {
+if (!get_dynamic_lock($ci)) {
 	xlog("Error while getting dynamic lock!\\n");
 }
 ...
-if (!release\_dynamic\_lock($ci) {
+if (!release_dynamic_lock($ci) {
 	xlog("Error while releasing dynamic lock!\\n");
 }
 ...
@@ -982,23 +982,23 @@ A function used to test if two strings will generate the same hash value.
 ```opensips
 ...
 # Proper way of acquiring two dynamic locks successively
-if (!get\_dynamic\_lock($avp(foo))) {
+if (!get_dynamic_lock($avp(foo))) {
 	xlog("Error while getting dynamic lock!\\n");
 }
 
-if (!strings\_share\_lock($avp(foo), $avp(bar)) {
-	if (!get\_dynamic\_lock($avp(bar))) {
+if (!strings_share_lock($avp(foo), $avp(bar)) {
+	if (!get_dynamic_lock($avp(bar))) {
 		xlog("Error while getting dynamic lock!\\n");
 	}
 }
 ...
-if (!strings\_share\_lock($avp(foo), $avp(bar)) {
-	if (!release\_dynamic\_lock($avp(bar)) {
+if (!strings_share_lock($avp(foo), $avp(bar)) {
+	if (!release_dynamic_lock($avp(bar)) {
 		xlog("Error while releasing dynamic lock!\\n");
 	}
 }
 
-if (!release\_dynamic\_lock($avp(foo)) {
+if (!release_dynamic_lock($avp(foo)) {
 	xlog("Error while releasing dynamic lock!\\n");
 }
 ...
@@ -1009,7 +1009,7 @@ Fetch the current Unix time epoch with microsecond precision.
 
 ```opensips
 ...
-get\_accurate\_time($var(sec), $var(usec));
+get_accurate_time($var(sec), $var(usec));
 xlog("Current Unix timestamp: $var(sec) s, $var(usec) us\\n");
 ...
 ```
@@ -1023,7 +1023,7 @@ $avp(foo) := "str1";
 $avp(foo)  = "str2";
 $avp(foo)  = "str3";
 xlog("Initial AVP list is: $(avp(foo)[\*])\\n");       # str3 str2 str1
-if(shuffle\_avps( $avp(foo) ))
+if(shuffle_avps( $avp(foo) ))
     xlog("Shuffled AVP list is: $(avp(foo)[\*])\\n");  # str1, str3, str2 (for example)
 ...				
 ```
@@ -1034,10 +1034,10 @@ Waits a number of seconds. This function does exactly the same as sleep(), but i
 ```opensips
 {
 ...
-async( sleep("5"), after\_sleep );
+async( sleep("5"), after_sleep );
 }
 
-route\[after\_sleep\] {
+route\[after_sleep\] {
 ...
 }
 ```
@@ -1048,10 +1048,10 @@ Waits a number of micro-seconds. This function does exactly the same as usleep()
 ```opensips
 {
 ...
-async( usleep("1000"), after\_usleep );
+async( usleep("1000"), after_usleep );
 }
 
-route\[after\_usleep\] {
+route\[after_usleep\] {
 ...
 }
 ```
@@ -1061,7 +1061,7 @@ Set the probability value to the given parameter.
 
 ```opensips
 ...
-$ opensips-cli -x mi rand\_set\_prob 10
+$ opensips-cli -x mi rand_set_prob 10
 ...
 ```
 ### `rand_reset_prob` usage
@@ -1070,7 +1070,7 @@ Reset the probability value to the inital start value.
 
 ```opensips
 ...
-$ opensips-cli -x mi rand\_reset\_prob
+$ opensips-cli -x mi rand_reset_prob
 ...
 ```
 ### `rand_get_prob` usage
@@ -1079,7 +1079,7 @@ Return the actual probability setting.
 
 ```opensips
 ...
-$ opensips-cli -x mi get\_prob
+$ opensips-cli -x mi get_prob
 The actual probability is 50 percent.
 ...
 ```
@@ -1089,7 +1089,7 @@ Check if the actual config file hash is identical to the stored one.
 
 ```opensips
 ...
-$ opensips-cli -x mi check\_config\_hash
+$ opensips-cli -x mi check_config_hash
 The actual config file hash is identical to the stored one.
 ...
 ```
@@ -1099,7 +1099,7 @@ Return the stored config file hash.
 
 ```opensips
 ...
-$ opensips-cli -x mi get\_config\_hash
+$ opensips-cli -x mi get_config_hash
 1580a37104eb4de69ab9f31ce8d6e3e0
 ...
 ```
@@ -1109,7 +1109,7 @@ Set the value of a shared variable ($shv(name)).
 
 ```opensips
 ...
-$ opensips-cli -x mi shv\_set debug int 0
+$ opensips-cli -x mi shv_set debug int 0
 ...
 ```
 ### `shv_get` usage
@@ -1118,8 +1118,8 @@ Get the value of a shared variable ($shv(name)).
 
 ```opensips
 ...
-$ opensips-cli -x mi shv\_get debug
-$ opensips-cli -x mi shv\_get
+$ opensips-cli -x mi shv_get debug
+$ opensips-cli -x mi shv_get
 ...
 ```
 ### `env(name) pseudo-variable` usage
@@ -1141,8 +1141,8 @@ $avp(10) = ($RANDOM / 16777216); # 2^24
 if ($avp(10) < 10) {
    $avp(10) = 10;
 }
-append\_to\_reply("Retry-After: $avp(10)\\n");
-sl\_send\_reply(503, "Try later");
+append_to_reply("Retry-After: $avp(10)\\n");
+sl_send_reply(503, "Try later");
 exit;
 # normal message processing follows
    			 

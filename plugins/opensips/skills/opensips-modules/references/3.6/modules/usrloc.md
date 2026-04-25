@@ -53,7 +53,7 @@ Name of column containing additional registration-related information.
 
 ```opensips
 ...
-modparam("usrloc", "attr\_column", "attributes")
+modparam("usrloc", "attr_column", "attributes")
 ...
 ```
 ### `cachedb_url` (string)
@@ -65,7 +65,7 @@ URL of a NoSQL database to be used. Only required in a cachedb-enabled cluster_m
 **Example.** mongodb://10.0.0.4:27017/opensipsDB.userlocation.
 
 ```opensips
-modparam("usrloc", "cachedb\_url", "mongodb://10.0.0.4:27017/opensipsDB.userlocation")
+modparam("usrloc", "cachedb_url", "mongodb://10.0.0.4:27017/opensipsDB.userlocation")
 ```
 ### `callid_column` (string)
 
@@ -76,7 +76,7 @@ Name of column containing callid values.
 **Example.** callid.
 
 ```opensips
-modparam("usrloc", "callid\_column", "callid")
+modparam("usrloc", "callid_column", "callid")
 ```
 ### `cflags_column` (string)
 
@@ -120,7 +120,7 @@ This parameter may take the following values:
 **Example.** federation-cachedb.
 
 ```opensips
-modparam("usrloc", "cluster\_mode", "federation-cachedb")
+modparam("usrloc", "cluster_mode", "federation-cachedb")
 ```
 ### `contact_column` (string)
 
@@ -169,7 +169,7 @@ Name of column containing cseq numbers.
 **Example.** cseq.
 
 ```opensips
-modparam("usrloc", "cseq\_column", "cseq")
+modparam("usrloc", "cseq_column", "cseq")
 ```
 ### `cseq_delay` (integer)
 
@@ -202,7 +202,7 @@ This parameter has been kept for backwards compatibility. It acts as a working_m
 **Example.** 2.
 
 ```opensips
-modparam("usrloc", "db\_mode", 2)
+modparam("usrloc", "db_mode", 2)
 ```
 ### `db_url` (string)
 
@@ -213,7 +213,7 @@ URL of the database that should be used.
 **Example.** dbdriver://username:password@dbhost/dbname.
 
 ```opensips
-modparam("usrloc", "db\_url", "dbdriver://username:password@dbhost/dbname")
+modparam("usrloc", "db_url", "dbdriver://username:password@dbhost/dbname")
 ```
 ### `desc_time_order` (integer)
 
@@ -224,7 +224,7 @@ If the user's contacts should be kept timestamp ordered; otherwise the contact w
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "desc\_time\_order", 1)
+modparam("usrloc", "desc_time_order", 1)
 ```
 ### `domain_column` (string)
 
@@ -246,7 +246,7 @@ Name of column containing expires value.
 **Example.** expires.
 
 ```opensips
-modparam("usrloc", "expires\_column", "expires")
+modparam("usrloc", "expires_column", "expires")
 ```
 ### `flags_column` (string)
 
@@ -261,7 +261,7 @@ modparam("usrloc", "flags_column", "flags")
 ```
 ### `ha_cluster` (integer)
 
-Only relevant in **"federation-cachedb"** [cluster_mode](#param_cluster_mode "1.5.27.�cluster_mode (string)"). Denotes the HA cluster ID to use in order to establish the active node within the HA pair, such that only that node performs WRITE operations to CacheDB.
+Only relevant in **"federation-cachedb"** [cluster_mode](#param_cluster_mode "1.5.27.cluster_mode (string)"). Denotes the HA cluster ID to use in order to establish the active node within the HA pair, such that only that node performs WRITE operations to CacheDB.
 
 *Default value is 0 (disabled).*
 
@@ -272,7 +272,7 @@ modparam("usrloc", "ha_cluster", 4)
 ```
 ### `ha_shtag` (string)
 
-Only relevant in **"federation-cachedb"** [cluster_mode](#param_cluster_mode "1.5.27.�cluster_mode (string)"). Denotes the HA cluster sharing tag to use in order to establish the active node within the HA pair, such that only that node performs WRITE operations to CacheDB.
+Only relevant in **"federation-cachedb"** [cluster_mode](#param_cluster_mode "1.5.27.cluster_mode (string)"). Denotes the HA cluster sharing tag to use in order to establish the active node within the HA pair, such that only that node performs WRITE operations to CacheDB.
 
 *Default value is NULL (disabled).*
 
@@ -304,7 +304,7 @@ Name of column containing generic key-value data.
 
 ```opensips
 ...
-modparam("usrloc", "kv\_store\_column", "json\_data")
+modparam("usrloc", "kv_store_column", "json_data")
 ...
 ```
 ### `latency_event_min_us` (integer)
@@ -334,7 +334,7 @@ modparam("usrloc", "latency_event_min_us_delta", 300000)
 Specifies the cluster ID which this instance will send to and receive from all user-location related information (addresses-of-record, contacts), organized into specific events (inserts, deletes or updates).
 This OpenSIPS cluster exposes the "usrloc-contact-repl" capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the "seed" value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.
 Default value is 0 (replication disabled).
-More details on the user location distribution mechanisms are available under [Distributed SIP User Location](#distributed-sip-user-location "1.2.�Distributed SIP User Location").
+More details on the user location distribution mechanisms are available under [Distributed SIP User Location](#distributed-sip-user-location "1.2.Distributed SIP User Location").
 
 *Default value is 0 (replication disabled).*
 
@@ -363,7 +363,7 @@ The parameter may take the following values:
 **Example.** 1.
 
 ```opensips
-modparam("usrloc", "matching\_mode", 1)
+modparam("usrloc", "matching_mode", 1)
 ```
 ### `max_contact_delete` (integer)
 
@@ -385,7 +385,7 @@ Name of column containing supported methods.
 **Example.** methods.
 
 ```opensips
-modparam("usrloc", "methods\_column", "methods")
+modparam("usrloc", "methods_column", "methods")
 ```
 ### `mi_dump_kv_store` (integer)
 
@@ -424,7 +424,7 @@ Name of column containing the Path header.
 
 ```opensips
 ...
-modparam("usrloc", "path\_column", "path")
+modparam("usrloc", "path_column", "path")
 ...
 ```
 ### `pinging_mode` (string)
@@ -452,7 +452,7 @@ Name of column containing q values.
 **Example.** q.
 
 ```opensips
-modparam("usrloc", "q\_column", "q")
+modparam("usrloc", "q_column", "q")
 ```
 ### `received_column` (string)
 
@@ -501,7 +501,7 @@ This parameter may take the following values:
 **Example.** sync-from-cluster.
 
 ```opensips
-modparam("usrloc", "restart\_persistency", "sync-from-cluster")
+modparam("usrloc", "restart_persistency", "sync-from-cluster")
 ```
 ### `sip_instance_column` (string)
 
@@ -513,7 +513,7 @@ Name of column containing the SIP instance.
 
 ```opensips
 ...
-modparam("usrloc", "sip\_instance\_column", "sip\_instance")
+modparam("usrloc", "sip_instance_column", "sip_instance")
 ...
 ```
 ### `skip_replicated_db_ops` (int)
@@ -563,7 +563,7 @@ This parameter may take the following values:
 **Example.** write-back.
 
 ```opensips
-modparam("usrloc", "sql\_write\_mode", "write-back")
+modparam("usrloc", "sql_write_mode", "write-back")
 ```
 ### `timer_interval` (integer)
 
@@ -576,7 +576,7 @@ In case of an OpenSIPS shutdown or even a crash, contacts which are in memory on
 **Example.** 120.
 
 ```opensips
-modparam("usrloc", "timer\_interval", 120)
+modparam("usrloc", "timer_interval", 120)
 ```
 ### `use_domain` (integer)
 
@@ -588,7 +588,7 @@ If the domain part of the user should be also saved and used for identifing the 
 
 ```opensips
 ...
-modparam("usrloc", "use\_domain", 1)
+modparam("usrloc", "use_domain", 1)
 ...
 ```
 ### `user_agent_column` (string)
@@ -648,7 +648,7 @@ Refer to section Distributed SIP User Location for details regarding the cluster
 **Example.** full-sharing-cachedb-cluster.
 
 ```opensips
-modparam("usrloc", "working\_mode\_preset", "full-sharing-cachedb-cluster")
+modparam("usrloc", "working_mode_preset", "full-sharing-cachedb-cluster")
 ```
 
 ## Exported Functions

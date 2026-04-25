@@ -32,14 +32,14 @@ None.
 
 ### `decimal_digits` (integer)
 
-The precision of the results returned by all the module functions. The higher the “decimal\_digits” value, the more decimal digits the results will have.
+The precision of the results returned by all the module functions. The higher the “decimal_digits” value, the more decimal digits the results will have.
 
 *Default value is 6.*
 
 **Example.** 10.
 
 ```opensips
-modparam("mathops", "decimal\_digits", 10)
+modparam("mathops", "decimal_digits", 10)
 ```
 
 ## Exported Functions

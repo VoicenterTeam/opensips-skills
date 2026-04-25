@@ -18,7 +18,7 @@ Reference for the OpenSIPs 3.6 prometheus module. Read this file when configurin
 
 This module provides a HTTP interface for the [Prometheus](https://prometheus.io/) monitoring system, allowing it to fetch different statistics from OpenSIPS.
 
-In order to use it, you have to explicitely define the statistics you want to provide by listing them in the [statistics](#param_statistics "1.3.7.�statistics(string)") parameter.
+In order to use it, you have to explicitely define the statistics you want to provide by listing them in the [statistics](#param_statistics "1.3.7.statistics(string)") parameter.
 
 Currently only _counter_ and _gauge_ metrics types are supported by the module, and whether to choose one or the other for a specific statistic is dictated by the way that statistic was defined either internally, or explicitely through the _variable_ parameter of the _statistics_ module.
 
@@ -162,12 +162,12 @@ Declares a custom statistic exported to Prometheus server. It specifies its type
 
 ```opensips
 ...
-modparam("prometheus", "script\_route", "my\_custom\_prometheus\_route")
+modparam("prometheus", "script_route", "my_custom_prometheus_route")
 ...
-route[my\_custom\_prometheus\_route] {
+route[my_custom_prometheus_route] {
 	...
-	prometheus\_declare\_stat("opensips\_cps");
-	prometheus\_push\_stat(3);
+	prometheus_declare_stat("opensips_cps");
+	prometheus_push_stat(3);
 	...
 }
 ```
@@ -192,16 +192,16 @@ Pushes a custom statistic value and optionally a set of labels to the Prometheus
 
 ```opensips
 ...
-modparam("prometheus", "script\_route", "my\_custom\_prometheus\_route")
+modparam("prometheus", "script_route", "my_custom_prometheus_route")
 ...
-route[my\_custom\_prometheus\_route] {
+route[my_custom_prometheus_route] {
 	...
-	prometheus\_declare\_stat("opensips\_cps");
-	prometheus\_push\_stat(3); # no label is being used
-	prometheus\_declare\_stat("opensips\_cc");
+	prometheus_declare_stat("opensips_cps");
+	prometheus_push_stat(3); # no label is being used
+	prometheus_declare_stat("opensips_cc");
 	# the next two are equivalent
-	prometheus\_push\_stat(10, "{gateway=\"gw1\"}"); # no label is being used
-	prometheus\_push\_stat(10, "gateway", "gw1"); # same as the above
+	prometheus_push_stat(10, "{gateway=\"gw1\"}"); # no label is being used
+	prometheus_push_stat(10, "gateway", "gw1"); # same as the above
 	...
 }
 ```
@@ -210,12 +210,12 @@ route[my\_custom\_prometheus\_route] {
 
 ### Example 1.12. Prometheus Scrape Config
 
-In order to have Prometheus query OpenSIPS for statistics, you need to tell him where to get statistics from. To do that, you should define a scarpe job in Prometheus's _scrape\_configs_ config, indicating the IP and port you've configured the _httpd_ module to listen on (default: _0.0.0.0:8888_).
+In order to have Prometheus query OpenSIPS for statistics, you need to tell him where to get statistics from. To do that, you should define a scarpe job in Prometheus's _scrape_configs_ config, indicating the IP and port you've configured the _httpd_ module to listen on (default: _0.0.0.0:8888_).
 
 ```opensips
-scrape\_configs:
-  - job\_name: opensips
+scrape_configs:
+  - job_name: opensips
 
-    static\_configs:
+    static_configs:
     - targets: \['localhost:8888'\]
 ```

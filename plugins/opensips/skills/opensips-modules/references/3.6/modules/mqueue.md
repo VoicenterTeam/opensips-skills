@@ -42,12 +42,12 @@ The URL to connect to database for loading values in mqueue table at start up an
 
 ```opensips
 ...
-modparam("mqueue", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("mqueue", "db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 
 # Example of table in sqlite,
 # you have the set the fields to support the length according
 # to the data that will be present in the mqueue
-CREATE TABLE mqueue\_name (
+CREATE TABLE mqueue_name (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 key character varying(64) DEFAULT "" NOT NULL,
 val character varying(4096) DEFAULT "" NOT NULL
@@ -105,7 +105,7 @@ Add a new item (key, value) in the queue. If max size of queue is exceeded, the 
 
 ```opensips
 ...
-mq\_add("myq", "$rU", "call from $fU");
+mq_add("myq", "$rU", "call from $fU");
 ...
 ```
 
@@ -127,7 +127,7 @@ Take oldest item from queue and fill $mqk(queue) and $mqv(queue) pseudo variable
 
 ```opensips
 ...
-while(mq\_fetch("myq"))
+while(mq_fetch("myq"))
 {
 	xlog("$mqk(myq) - $mqv(myq)\\n");
 }
@@ -146,7 +146,7 @@ Free the item fetched in pseudo-variables. It is optional, a new fetch frees the
 
 ```opensips
 ...
-mq\_pv\_free("myq");
+mq_pv_free("myq");
 ...
 ```
 
@@ -167,8 +167,8 @@ Returns the current number of elements in the mqueue.
 
 ```opensips
 ...
-$var(q\_size) = mq\_size("queue");
-xlog("L\_INFO", "Size of queue is: $var(q\_size)\\n");
+$var(q_size) = mq_size("queue");
+xlog("L_INFO", "Size of queue is: $var(q_size)\\n");
 ...
 ```
 
@@ -210,7 +210,7 @@ Fetch one (or up to limit) key-value pair from a memory queue.
 **Example.** mq_fetch usage
 
 ```opensips
-opensips-cli -x mq\_fetch xyz
+opensips-cli -x mq_fetch xyz
 ```
 
 ### `mq_get_size`
@@ -224,7 +224,7 @@ Get the size of a memory queue.
 **Example.** mq_get_size usage
 
 ```opensips
-opensips-cli -x mq\_get\_size xyz
+opensips-cli -x mq_get_size xyz
 ```
 
 ### `mq_get_sizes`
@@ -234,7 +234,7 @@ Get the size for all memory queues.
 **Example.** mq_get_sizes usage
 
 ```opensips
-opensips-cli -x mq\_get\_sizes
+opensips-cli -x mq_get_sizes
 ```
 
 ## Configuration Examples
@@ -245,12 +245,12 @@ The URL to connect to database for loading values in mqueue table at start up an
 
 ```opensips
 ...
-modparam("mqueue", "db\_url", "mysql://opensips:opensipsrw@localhost/opensips")
+modparam("mqueue", "db_url", "mysql://opensips:opensipsrw@localhost/opensips")
 
 # Example of table in sqlite,
 # you have the set the fields to support the length according
 # to the data that will be present in the mqueue
-CREATE TABLE mqueue\_name (
+CREATE TABLE mqueue_name (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 key character varying(64) DEFAULT "" NOT NULL,
 val character varying(4096) DEFAULT "" NOT NULL
@@ -275,7 +275,7 @@ Add a new item (key, value) in the queue. If max size of queue is exceeded, the 
 
 ```opensips
 ...
-mq\_add("myq", "$rU", "call from $fU");
+mq_add("myq", "$rU", "call from $fU");
 ...
 ```
 ### `mq_fetch` usage
@@ -284,7 +284,7 @@ Take oldest item from queue and fill $mqk(queue) and $mqv(queue) pseudo variable
 
 ```opensips
 ...
-while(mq\_fetch("myq"))
+while(mq_fetch("myq"))
 {
 	xlog("$mqk(myq) - $mqv(myq)\\n");
 }
@@ -296,7 +296,7 @@ Free the item fetched in pseudo-variables. It is optional, a new fetch frees the
 
 ```opensips
 ...
-mq\_pv\_free("myq");
+mq_pv_free("myq");
 ...
 ```
 ### `mq_size` usage
@@ -305,8 +305,8 @@ Returns the current number of elements in the mqueue.
 
 ```opensips
 ...
-$var(q\_size) = mq\_size("queue");
-xlog("L\_INFO", "Size of queue is: $var(q\_size)\\n");
+$var(q_size) = mq_size("queue");
+xlog("L_INFO", "Size of queue is: $var(q_size)\\n");
 ...
 ```
 ### `mq_get_size` usage
@@ -315,7 +315,7 @@ Get the size of a memory queue.
 
 ```opensips
 ...
-opensips-cli -x mq\_get\_size xyz
+opensips-cli -x mq_get_size xyz
 ...
 ```
 ### `mq_fetch` usage
@@ -324,7 +324,7 @@ Fetch one (or up to limit) key-value pair from a memory queue.
 
 ```opensips
 ...
-opensips-cli -x mq\_fetch xyz
+opensips-cli -x mq_fetch xyz
 ...
 ```
 ### `mq_get_sizes` usage
@@ -333,6 +333,6 @@ Get the size for all memory queues.
 
 ```opensips
 ...
-opensips-cli -x mq\_get\_sizes
+opensips-cli -x mq_get_sizes
 ...
 ```
