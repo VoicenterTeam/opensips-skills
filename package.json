@@ -17,6 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "test:golden": "vitest run tests/golden",
     "test:e2e": "vitest run tests/e2e",
+    "test:integrity": "vitest run tests/integrity",
     "lint": "eslint scripts/",
     "format": "prettier --write \"scripts/**/*.{ts,js,json}\" \"*.{json,md}\"",
     "format:check": "prettier --check \"scripts/**/*.{ts,js,json}\" \"*.{json,md}\"",

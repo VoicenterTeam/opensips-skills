@@ -79,7 +79,7 @@ The following table maps common authoring tasks to the right approach and the re
 | Dialog tracking | Load `dialog`. Call `create_dialog()` early in `request_route`; use dialog-scoped variables (`$dlg_val`) for cross-request state. | `references/{version}/modules/dialog.md`, `references/{version}/core/variables.md` |
 | Accounting | Load `acc` plus a backend (`acc_db`, `acc_radius`, `acc_diameter`). Set the appropriate accounting flag; `acc` hooks into `tm` for transaction-bound recording. | `references/{version}/modules/acc.md`, `references/{version}/core/flags.md` |
 | Pseudo-variable lookup | Read the variable's type, read/write availability, scope, and route-block availability before using. | `references/{version}/core/variables.md` |
-| Header manipulation | Use `textops` / `textopsx` (`append_hf`, `remove_hf`, `subst`). Choose the function that matches whether you need a single match or all occurrences. | `references/{version}/modules/textops.md`, `references/{version}/modules/textopsx.md` |
+| Header manipulation | Use `textops` (`append_hf`, `remove_hf`, `subst`). Choose the function that matches whether you need a single match or all occurrences. | `references/{version}/modules/textops.md` |
 | Loose record routing | Load `rr`. Call `record_route()` on initial requests; `loose_route()` early on in-dialog requests. | `references/{version}/modules/rr.md` |
 | User location lookup | Load `usrloc` (loaded transitively by `registrar`). Use `lookup("location")` against the saved AOR before relaying to a user. | `references/{version}/modules/usrloc.md`, `references/{version}/modules/registrar.md` |
 
