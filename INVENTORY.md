@@ -43,6 +43,7 @@ This file lists every document in the archive with a one-line description. Usefu
 | `008-ser-lineage-neutral-framing.md` | ~200 | Single "SIP Express Router" mention; never name siblings |
 | `009-data-folder-and-dynamic-version-discovery.md` | ~180 | `data/` is canonical source; build auto-discovers versions; 3.4/3.5/3.6 in scope; guides included |
 | `010-rendering-time-output-sanitization.md` | ~90 | Narrow exception to Rule 3: strip three classes of upstream extraction artifacts (`U+FFFD`, `U+200B`, `\_`) at the renderer boundary; gated by an explicit threshold |
+| `011-cross-platform-schema-hash.md` | ~80 | Schema hash normalises CRLF→LF before hashing so the digest is stable on Windows (autocrlf=true) and Linux/macOS; baseline regenerated to canonical LF value |
 
 ## docs/plan/
 
@@ -119,7 +120,7 @@ Per ADR-009, `data/{version}/` is the canonical source-data location (auto-disco
 ## Counts
 
 - **Authored Markdown files (docs + root):** 57
-- **ADRs:** 11 (template + 10 substantive)
+- **ADRs:** 12 (template + 11 substantive)
 - **Milestones:** 11 (README + 10 numbered)
 - **Research reports:** 3 (plus README)
 - **Schema specs:** 18 (plus README)

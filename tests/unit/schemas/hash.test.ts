@@ -56,6 +56,31 @@ describe("computeSchemaHash", () => {
     }
   });
 
+  it("produces the same hash for CRLF and LF line endings of identical content", () => {
+    // Cross-platform stability: on Windows checkouts (autocrlf=true, the
+    // Git-for-Windows default), tracked files are CRLF-terminated; on
+    // Linux/macOS they're LF. The hash function MUST yield the same digest
+    // for the same canonical content regardless of working-tree line
+    // endings, otherwise the schema-hash gate fires on Windows-only.
+    let lfTmp: string | undefined;
+    let crlfTmp: string | undefined;
+    try {
+      lfTmp = mkdtempSync(join(tmpdir(), "hash-lf-"));
+      crlfTmp = mkdtempSync(join(tmpdir(), "hash-crlf-"));
+      const lfContent = "export const A = 1;\nexport const B = 2;\n";
+      const crlfContent = lfContent.replace(/\n/g, "\r\n");
+      writeFileSync(join(lfTmp, "alpha.schema.ts"), lfContent);
+      writeFileSync(join(crlfTmp, "alpha.schema.ts"), crlfContent);
+
+      const lfHash = computeSchemaHash(lfTmp);
+      const crlfHash = computeSchemaHash(crlfTmp);
+      expect(crlfHash).toBe(lfHash);
+    } finally {
+      if (lfTmp) rmSync(lfTmp, { recursive: true, force: true });
+      if (crlfTmp) rmSync(crlfTmp, { recursive: true, force: true });
+    }
+  });
+
   it("includes files in scripts/schemas/core/ (recursive)", () => {
     let tmp: string | undefined;
     try {

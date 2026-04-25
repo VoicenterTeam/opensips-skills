@@ -78,7 +78,14 @@ export function computeSchemaHash(rootDir?: string): string {
 
   const hash = createHash("sha256");
   for (const { abs } of candidates) {
-    hash.update(readFileSync(abs));
+    // Normalise CRLF → LF before hashing so the digest is identical on
+    // Windows checkouts (with autocrlf=true, which is the Git-for-Windows
+    // default) and on Linux/macOS where the working tree is already LF.
+    // Without this, the same canonical schema content produces two
+    // different hashes depending on platform — directly contradicting
+    // this function's "stable across operating systems" guarantee.
+    const text = readFileSync(abs, "utf8").replace(/\r\n/g, "\n");
+    hash.update(Buffer.from(text, "utf8"));
   }
   return hash.digest("hex");
 }
