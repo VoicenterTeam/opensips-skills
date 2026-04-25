@@ -7,8 +7,10 @@ This file lists every document in the archive with a one-line description. Usefu
 | File | Lines | Purpose |
 |---|---|---|
 | `CLAUDE.md` | ~340 | Project operating manual — navigation map, rules, discipline |
-| `README.md` | ~80 | Archive entry point and orientation guide |
+| `README.md` | ~193 | Public landing page (M10) — what this is, install, quick example, supported versions |
+| `CONTRIBUTING.md` | ~245 | New-contributor onboarding (M10) — setup, dev loop, PR expectations, ADR/SKILL.md/version workflows |
 | `LICENSE` | ~675 | GPL-3.0 license text (matches upstream OpenSIPs) |
+| `CHANGELOG.md` | growing | Keep-a-Changelog format. v1.0.0 ships M0-M9 |
 | `.gitignore` | ~35 | Excludes node_modules/dist/IDE/.env; preserves data/ and generated references per ADR-002/009 |
 
 ## docs/
@@ -87,6 +89,19 @@ Human-readable JSON schema specifications (mirrored from `opensips-docs-collecto
 | File | Purpose |
 |---|---|
 | `2026-04-25-execution-strategy.md` | Superpower-driven execution playbook layered on top of `docs/plan/` |
+
+## docs/process/ (M10)
+
+| File | Purpose |
+|---|---|
+| `release-process.md` | Pre-release checklist, cutting/post-verifying releases, communicating, rollback |
+| `maintenance.md` | Issue triage, refresh cadence, deprecation policy, post-release expectations |
+
+## docs/
+
+| File | Purpose |
+|---|---|
+| `usage-guide.md` | End-user guide: phrasing prompts, version resolution, what plugin won't do |
 
 ## docs/testing/
 

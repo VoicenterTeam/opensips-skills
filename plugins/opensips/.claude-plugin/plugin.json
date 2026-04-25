@@ -1,7 +1,7 @@
 {
   "name": "opensips",
-  "version": "0.1.0",
-  "description": "OpenSIPs Skills",
+  "version": "1.0.0",
+  "description": "OpenSIPs Skills: authoring + per-module reference + security review for OpenSIPs SIP server configurations.",
   "author": "OpenSIPS",
   "homepage": "https://opensips.org",
   "repository": "https://github.com/OpenSIPS/opensips-skills",

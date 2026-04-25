@@ -1,162 +1,193 @@
-# Implementation Plan
+# opensips-skills
 
-> **Purpose:** Sequenced, milestone-by-milestone build plan for the `opensips-skills` project. Each milestone is its own file in this directory, with concrete tasks, acceptance criteria, and risk notes.
->
-> **Audience:** Anyone implementing the project, in whatever order they pick up the work — solo developer with Claude Code, future open-source contributor, or maintainer adding scope after v1.
->
-> **Status:** Authoritative for sequencing. Individual task estimates and assignments are the implementer's call; this document constrains *what* and *in what order*, not *who* or *when*.
+> Claude Code plugin providing three coordinated Agent Skills for working with OpenSIPs.
 
----
+[![CI](https://github.com/OpenSIPS/opensips-skills/workflows/CI/badge.svg)](https://github.com/OpenSIPS/opensips-skills/actions)
+[![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
-## How this plan is organized
+## What this is
 
-The plan is split into eleven files: this overview plus ten numbered milestone files.
+OpenSIPs is twenty years old and runs some of the world's most demanding real-time communication infrastructure — carrier networks, contact centers, CPaaS platforms, enterprise PBXes. It has hundreds of modules, a domain-specific scripting language, and documentation that spans thousands of pages across multiple versions. Ask any general-purpose LLM to write you an `opensips.cfg` and the result looks right and is subtly broken: a parameter name from the wrong version, a function signature borrowed from a sibling SER-lineage project, a pseudo-variable that does not exist. The output compiles, runs, and fails in production.
 
-```
-docs/plan/
-├── README.md                              # this file
-├── 00-repository-scaffolding.md
-├── 01-schema-mirroring-and-validation.md
-├── 02-core-pipeline-foundation.md
-├── 03-per-module-rendering.md
-├── 04-core-type-rendering.md
-├── 05-consolidated-index.md
-├── 06-multi-version-support.md
-├── 07-skill-authoring.md
-├── 08-local-plugin-testing.md
-├── 09-test-suite-and-ci.md
-└── 10-public-release-prep.md
-```
+This is a knowledge problem, not a model problem. Training data conflates OpenSIPs with other projects descending from the SIP Express Router (SER) lineage and conflates syntax across versions that have drifted over two decades. Without a grounded reference, the model has no way to tell the difference. `opensips-skills` solves this by grounding Claude in version-specific, OpenSIPs-authoritative documentation. Every function signature, parameter, pseudo-variable, MI command, and module dependency is mirrored from upstream extraction and rendered as Markdown reference files Claude reads on demand.
 
-Each milestone file has the same shape — Goal, Why this is sequenced here, Tasks, Acceptance criteria, Risks, Parallelization notes, Cross-references. Read milestones in order on first pass. Once you have a working mental model, jump to whichever one you're working on.
+The plugin ships three coordinated skills that load together. `opensips-routing` authors and edits `opensips.cfg` route scripts. `opensips-modules` is the authoritative per-module reference library, indexed for fast lookup. `opensips-security-advisor` reviews configs for security issues; it ships in v1 as a scaffold with a stable trigger surface, and substantive review patterns are authored by a separate agent post-v1.
 
-The numbering is sequencing, not naming. Milestone 0 (repository scaffolding) is genuinely the first thing to do; milestone 10 (public release prep) is genuinely the last.
+Version coverage is dynamic. As of this release the plugin covers OpenSIPs 3.5 and 3.6, with 3.4 source data committed but blocked by a known upstream defect. New versions arrive by dropping a folder under `data/` — no code change required.
 
----
+The audience this is built for: SIP and VoIP engineers who already know OpenSIPs — carriers, ITSPs, contact centers, CPaaS operators — and want a pair programmer that produces a working `request_route` in sixty seconds instead of twenty minutes, without the silent bugs that come from LLM hallucination. A secondary audience is engineers new to OpenSIPs who want to try it: every answer cites a real reference file they can read themselves, so the plugin doubles as a guided experience.
 
-## Milestone index
+## Install
 
-| # | Milestone | What's true at the end of it |
-|---|---|---|
-| 0 | [Repository scaffolding](00-repository-scaffolding.md) | Repo exists with full folder structure, all documentation committed, package.json and tsconfig set up, no code yet. |
-| 1 | [Schema mirroring and validation](01-schema-mirroring-and-validation.md) | Zod schemas mirrored from extraction project, schema hash drift check works, `npm run validate` runs against `source/3.6/` and produces structured errors. |
-| 2 | [Core pipeline foundation](02-core-pipeline-foundation.md) | Orchestrator, discover stage, file I/O helpers, error infrastructure, CLI surface. `npm run build --dry-run` runs end-to-end with no rendering. |
-| 3 | [Per-module rendering](03-per-module-rendering.md) | `render-module.ts` produces complete per-module Markdown for OpenSIPs 3.6 in `plugins/opensips/skills/opensips-modules/references/3.6/modules/`. |
-| 4 | [Core type rendering](04-core-type-rendering.md) | `render-core.ts` produces twelve aggregated Markdown files in `plugins/opensips/skills/opensips-routing/references/3.6/core/`. |
-| 5 | [Consolidated index](05-consolidated-index.md) | `build-consolidated.ts` produces `consolidated.json` per version with all four indexes, statistics, and relationships blocks. |
-| 6 | [Multi-version support](06-multi-version-support.md) | Both 3.5 and 3.6 trees built and committed, version isolation verified end-to-end. |
-| 7 | [Skill authoring](07-skill-authoring.md) | Three SKILL.md files written, `ser-lineage-notes.md` authored, plugin manifests in place, security advisor scaffold present. |
-| 8 | [Local plugin testing](08-local-plugin-testing.md) | Plugin loads in Claude Code, all three skills trigger on canonical prompts, reference files load on demand, end-to-end demo works. |
-| 9 | [Test suite and CI](09-test-suite-and-ci.md) | Unit tests for each pipeline stage, golden-file tests, end-to-end build tests, CI with three jobs (validate, build, reproduce). |
-| 10 | [Public release prep](10-public-release-prep.md) | README, CONTRIBUTING.md, marketplace.json polished, plugin description finalized, ready for distribution. |
+The plugin runs inside Claude Code. The two install paths:
 
----
+```bash
+# Via the Claude Code plugin marketplace (once published)
+/plugin marketplace add OpenSIPS/opensips-skills
+/plugin install opensips@opensips-skills
 
-## Dependency graph
-
-The sequencing is constrained by what each milestone produces and consumes. The graph:
-
-```
-                         ┌───────────────────────┐
-                         │  M0  Repository scaf.  │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M1  Schemas + valid.  │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M2  Pipeline found.   │
-                         └───────────┬────────────┘
-                                     │
-                       ┌─────────────┴──────────────┐
-                       ▼                            ▼
-            ┌───────────────────┐        ┌───────────────────┐
-            │  M3  Module rend.  │        │  M4  Core rend.    │
-            └─────────┬─────────┘        └────────┬──────────┘
-                      │                            │
-                      └─────────────┬──────────────┘
-                                    ▼
-                         ┌───────────────────────┐
-                         │  M5  Consolidated idx. │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M6  Multi-version     │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M7  Skill authoring   │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M8  Local testing     │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M9  Tests + CI        │
-                         └───────────┬────────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  M10 Public release    │
-                         └───────────────────────┘
+# Or, locally for development
+claude --plugin-dir /path/to/opensips-skills/plugins/opensips
 ```
 
-The only place the graph branches is between M3 and M4 — module and core rendering can happen concurrently if there's a second contributor. Everything else is strictly sequential.
+After installation, run `/skills` inside Claude Code to confirm `opensips-routing`, `opensips-modules`, and `opensips-security-advisor` are all listed. The skills do not need to be invoked by name — they activate automatically when prompts mention OpenSIPs concerns. There is no per-version install step; the plugin ships every supported version's reference tree in one package and resolves the active version from the prompt at trigger time.
 
----
+## Quick example
 
-## Why this sequencing
+**Prompt:**
 
-Three principles drive the order:
+> "I'm on OpenSIPs 3.6. Write me a `request_route` that loads `tm` and `registrar`, authenticates inbound REGISTER via `auth_db`, and stores location. Then audit it for missing rate limits."
 
-**Build the pipeline before the content.** The hand-authored SKILL.md files in milestone 7 reference the generated reference files. Trying to author "see `references/{version}/modules/tm.md`" before tm.md exists means guessing at conventions you'd then have to fix. The pipeline is the foundation; SKILL.md content sits on top of it.
+**What happens behind the scenes:**
 
-**Validate end-to-end before hardening.** Milestone 8 (local plugin testing) is the first time the system runs as a whole. Milestones 1–7 produce structurally correct artifacts; milestone 8 verifies they compose into runtime behavior. Tests come after this verification (milestone 9) because tests without a working system test nothing useful.
+- `opensips-routing` activates because the prompt names `opensips.cfg` concerns and a route block. It reads `references/3.6/modules/tm.md`, `references/3.6/modules/registrar.md`, and `references/3.6/modules/auth_db.md` to ground the function signatures, plus `references/3.6/core/variables.md` for the pseudo-variable list.
+- `opensips-modules` is consulted via the consolidated index whenever a function or parameter needs disambiguation — for example, confirming that `www_authorize` (not `www_authenticate` from a sibling project) is the OpenSIPs name, and that `auth_db.calculate_ha1` takes an integer (`1`), not the boolean keyword some sibling projects accept.
+- `opensips-security-advisor` activates on the "audit" cue, flags the missing flood-protection module, and points to `references/3.6/modules/pike.md` and `references/3.6/modules/ratelimit.md` for the remediation.
 
-**Add complexity in single-version mode first, generalize after.** Milestones 3–5 work against OpenSIPs 3.6 only. Milestone 6 adds 3.5 and verifies version isolation. The reverse order (build for two versions from day one) means debugging two failure surfaces at once, which is slower than getting one version right and then proving the design generalizes.
+**The response includes a config like:**
 
----
+```
+loadmodule "tm.so"
+loadmodule "registrar.so"
+loadmodule "auth.so"
+loadmodule "auth_db.so"
+loadmodule "usrloc.so"
+loadmodule "sl.so"
 
-## How to use this plan
+modparam("auth_db", "db_url", "mysql://opensips:pw@localhost/opensips")
+modparam("auth_db", "calculate_ha1", 1)
+modparam("auth_db", "load_credentials", "rpid")
 
-**For solo development with Claude Code as pair.** Read this README, then read milestone 0. Execute it. Re-read milestone 1 when 0 is done; execute it. Repeat. Each milestone file's "Acceptance criteria" section tells you when you're done with that milestone — don't move on early.
+request_route {
+    if (is_method("REGISTER")) {
+        if (!www_authorize("", "subscriber")) {
+            www_challenge("", "auth");
+            exit;
+        }
+        if (!save("location")) {
+            sl_reply_error();
+        }
+        exit;
+    }
+    # ... in-dialog and call routing below
+}
+```
 
-**For onboarding a new contributor.** Point them at this README first, then `CLAUDE.md` for project orientation, then the relevant milestone file for what they're picking up. The milestone files are self-contained enough that a contributor can read just one and understand what to do, as long as they've also read the architecture docs the milestone cross-references.
+**Plus a short narrative** explaining what each block does and why each function call is the one chosen — `www_authorize` for REGISTER (the registrar is the challenger), `$authattr` read directly rather than through a sibling-project accessor pattern, `save("location")` paired with an explicit error reply on failure.
 
-**For tracking progress.** GitHub issues are the right place to track per-task progress within a milestone. The plan files are stable references for what's planned and why; the issues are mutable workflow. Don't update plan files to record progress — update issues.
+**Plus a security note** flagging that no `pike` or `ratelimit` is loaded. The advisor points out that without one of them, the registrar will accept arbitrary REGISTER floods from a single source, and suggests `loadmodule "pike.so"` with `pike_check_req()` early in `request_route` as the simplest defense, with a pointer to the per-module reference for the modparam grammar.
 
-**For changing the plan.** If reality diverges from the plan in a small way (a task takes longer, a sub-task gets split), don't edit the plan. Just keep building. If reality diverges in a large way (a milestone needs to be reordered, dropped, or split), open an ADR or a discussion before editing the plan files. The plan is supposed to be stable.
+The whole exchange takes one prompt and one response. The skills coordinate automatically; the user does not invoke them by name. Every identifier in the response — function names, parameter names, pseudo-variables, module names — is checked against `references/3.6/` before it is emitted.
 
----
+## A second example: a pure reference lookup
 
-## What this plan is not
+Not every prompt needs all three skills. A reference-only question takes a different path:
 
-This plan does not assign work to people. The project is currently solo with Claude Code as pair; future contributors will pick up whatever fits their interest. There is no "owner" field per task.
+**Prompt:**
 
-This plan does not estimate calendar time. Time estimates for solo work with AI assistance are unreliable, and time estimates anchor people to wrong expectations. Each milestone has a "scope of work" but no "expected completion date."
+> "On OpenSIPs 3.5, what does `dispatcher`'s `ds_select_dst` function take as arguments, and which algorithm codes are valid?"
 
-This plan does not specify implementation details below the task level. A task says "implement the discover stage"; the milestone's cross-references point at `docs/architecture/data-pipeline.md` §2.1 for the spec. The plan tells you what to build and in what order; the architecture docs tell you what "built correctly" means.
+**What happens:**
 
-This plan does not cover post-v1 work. Future skills (operations, module development, autonomous testing) will get their own plans when they enter scope. Adding them to this plan now would conflate "what's planned for v1" with "what might happen later."
+- `opensips-modules` activates because the prompt names a specific module (`dispatcher`) and asks about an exported function. `opensips-routing` does not activate — there is no authoring intent. `opensips-security-advisor` does not activate — there is no review or audit cue.
+- The skill consults `references/3.5/consolidated.json` to confirm `ds_select_dst` is exported by `dispatcher` and to find the per-module reference path. It then reads `references/3.5/modules/dispatcher.md` for the full signature, the algorithm-code list, the route-block availability, and the relevant `modparam(...)` entries (`ds_probing_mode`, `ds_ping_method`, partition setup).
+- The answer quotes signatures verbatim from the reference, lists each algorithm code with its distribution semantics, and notes the route blocks where the function is callable. The answer is grounded in 3.5 specifically — if the user later switches to 3.6, the same prompt re-runs the lookup against `references/3.6/`.
 
----
+This is the router-index pattern in practice. The skill's SKILL.md is a catalog and a set of lookup rules; the substantive content lives in the per-module reference file. Claude reads what is needed, when it is needed, and answers from the reference rather than from priors.
 
-## Cross-references
+## What you can ask the plugin to do
 
-- For the *what* and *why*: `docs/requirements.md`, `docs/vision.md`.
-- For the *how* of building: `docs/architecture/data-pipeline.md`, `docs/architecture/rendering-templates.md`, `docs/architecture/skill-authoring-guide.md`.
-- For the rationale behind specific decisions: `docs/architecture/adr/`.
-- For background research that informed the architecture: `docs/research/`.
-- For project operating rules and the navigation map: `/CLAUDE.md`.
+The skills cover the bulk of day-to-day OpenSIPs work that previously required deep documentation diving. A non-exhaustive list:
 
----
+- **Authoring routes.** Registrars, stateful proxies, NAT traversal, digest authentication, dispatcher load balancing, dynamic routing, dialog tracking, accounting, header manipulation, loose record routing, user location lookup. Each pattern is grounded in the relevant per-module reference and produces working OpenSIPs syntax for the active version — not generic boilerplate.
+- **Looking up exports.** "What functions does `dialog` export?" "What parameters does `dispatcher` take?" "Which module owns `t_relay`?" "What does `$dlg_val(name)` return?" The router-index pattern reads the consolidated index for the source, then reads the per-module file for the answer.
+- **Reviewing pasted configs.** Paste an `opensips.cfg` fragment and ask for a refactor, an extension, or a sanity check. The skills cross-reference every named function, pseudo-variable, and module against the active version's reference set; identifiers that do not match are flagged with a request for clarification rather than silently accepted.
+- **Auditing for security issues.** Ask "is this safe?" or "review for INVITE flooding / registration hijacking / toll fraud / spoofed REGISTER / RTP relay exposure" and the security-advisor skill activates. In v1 the advisor's body is a scaffold; it will gain depth as a separate authoring agent contributes review patterns post-release.
+- **Cross-version work.** State the version explicitly ("I'm on 3.5" or "I'm on 3.6") and the answer pulls from that version's reference tree. The plugin does not blend versions; if you ask about a function that exists in one version but not another, it tells you which.
 
-*End of overview. Open `00-repository-scaffolding.md` to begin.*
+What the plugin does **not** do: it does not write configs for sibling SER-lineage projects, does not connect to a live OpenSIPs server, does not run a config in a sandbox, and does not develop new C modules. Those are legitimate future skills that fall outside this project's v1 scope.
+
+## How it works
+
+```
+Upstream extraction project           This project (opensips-skills)
+opensips-docs-collector  ──────►   data/{version}/
+  produces JSON per version              core/, modules/, guides/
+                                         │
+                                         │ npm run build (deterministic)
+                                         ▼
+                                   plugins/opensips/skills/
+                                     opensips-routing/      (authoring)
+                                     opensips-modules/      (router-index)
+                                     opensips-security-advisor/  (scaffold)
+                                     references/{version}/  (generated .md)
+                                     consolidated.json      (lookup)
+```
+
+Data flows in one direction. The upstream `opensips-docs-collector` project extracts OpenSIPs documentation per version and emits validated JSON. This project mirrors that JSON under `data/`, validates it against locally mirrored Zod schemas (with a SHA-256 hash check that fails fast on contract drift), and renders two Markdown families: per-item files for modules (one Markdown per module) and aggregated files for core types (variables, operators, statements, transformations, flags, parameters, async, events, MI commands, statistics, functions, route blocks). Where the upstream extraction provides them, installation/configuration/syntax guides are rendered alongside. A consolidated JSON index per version provides fast lookup keyed by function name, pseudo-variable, MI command, parameter-by-module, and a `moduleDependencies` graph.
+
+The three skills coordinate through their `description` fields and the reference files they share. `opensips-routing` is the authoring hub: it owns route-block decisions, NAT and authentication patterns, dispatcher and dialog setup, and the procedural shape of an `opensips.cfg`. It consults the per-module files for signatures and defers to `opensips-modules` for catalog scans. `opensips-modules` is the router-index — its SKILL.md is a 194-row module catalog (for 3.6) that routes Claude to the right per-module reference rather than answering from training-data priors. The two-step lookup pattern — read `consolidated.json` to find the source, then read the per-module file for full content — grounds every signature, parameter, and pseudo-variable in version-correct content. `opensips-security-advisor` reads both skills' references and contributes review judgment; in v1 it ships as a scaffold with the trigger surface defined and substantive review patterns landing through a separate authoring agent post-release.
+
+The cross-project guardrail runs through every skill. OpenSIPs is one of several projects descending from the SIP Express Router (SER), and identifiers from sibling projects look familiar enough to corrupt training-data priors. Every SKILL.md instructs Claude to treat the active version's reference set as the only source of truth for valid identifiers. A function name, parameter, or pseudo-variable that is not in `references/{version}/` is flagged rather than fabricated. A `ser-lineage-notes.md` in each version's tree carries the operational rule with concrete confusion patterns drawn from real cases.
+
+Determinism is enforced in CI. The build pipeline runs twice and diffs the output; any byte-level difference is a build failure. Schema-hash drift, validation failures, version-isolation violations, golden-file regressions, lint errors, and unreplaced `MODULE_INDEX_PLACEHOLDER` markers all surface as discrete CI gates. The result is that the generated reference set is reproducible from input data alone — what users install matches what was tested.
+
+## Supported OpenSIPs versions
+
+| Version | Status | Modules | Guides |
+|---|---|---|---|
+| 3.6 | ✅ supported | 194 | 3 |
+| 3.5 | ✅ supported | 137 | — |
+| 3.4 | ⚠️ blocked upstream | (data present, marked broken) | (data present, blocked) |
+
+OpenSIPs 3.4's source data is present in `data/3.4/` but a known upstream JSON-parse defect in `core/variables.json` blocks validation. The build skips it cleanly via a `data/3.4/.broken` marker and exits with a clear warning rather than failing the whole run. The fix belongs upstream in `opensips-docs-collector`; once corrected and re-mirrored, the marker is removed and 3.4 ships without any code change here.
+
+The same dynamic-discovery design carries forward. When OpenSIPs 4.x ships, adding it is a data operation: extract upstream against the new release, drop `data/4.0/` into this repository, run `npm run baseline:update -- --only 4.0`, and the next build covers it. Per ADR-009, no version is hard-coded anywhere in the codebase — the build scans `data/` for any `^\d+\.\d+$` directory and processes whatever it finds. The same applies in reverse: when an OpenSIPs version ages out and upstream stops extracting it, it drops out of the build automatically.
+
+Version isolation is strict. Each version's reference tree is built, indexed, and consumed independently. There is no "what changed between 3.5 and 3.6" reasoning, and the build pipeline asserts (in CI) that no generated file in one version's tree references another version's identifiers. When the user states a version, the answer comes from within that version only.
+
+## Documentation
+
+- [Vision](docs/vision.md) — one-page narrative of why this project exists.
+- [Requirements](docs/requirements.md) — what the project is building.
+- [Architecture](docs/architecture/) — data pipeline, rendering templates, skill authoring guide.
+- [ADRs](docs/architecture/adr/) — recorded architectural decisions.
+- [Implementation plan](docs/plan/) — milestone-by-milestone build plan.
+- [Test strategy](docs/testing/test-strategy.md) — what is tested at each level and the CI gates.
+- [Golden-path demos](docs/testing/golden-path-demos.md) — the manual checklist run before each release.
+- [CONTRIBUTING.md](CONTRIBUTING.md) — how to help.
+- [CLAUDE.md](CLAUDE.md) — project operating manual for AI pair programmers.
+
+## Contributing
+
+Contributions are welcome. The kinds of contributions that fit here:
+
+- Bug fixes in the build pipeline, the rendering scripts, or the test suite.
+- Documentation improvements — clearer prose, better cross-references, fixed typos.
+- Test additions and CI improvements.
+- New ADRs proposing architectural changes (the ADR comes before the code).
+- New OpenSIPs version coverage, when upstream extraction is available — drop the data folder, run the baseline update, open a PR.
+
+Some contributions belong elsewhere:
+
+- Module reference content goes upstream to `opensips-docs-collector`. This project is a faithful transformer of upstream JSON; if a module reference is wrong, the fix is upstream so every consumer benefits. The hand-authored `SKILL.md` files and `ser-lineage-notes.md` are the only authored Markdown in the skill trees — everything else is generated.
+- Substantive `opensips-security-advisor` review patterns are owned by a separate authoring agent per ADR-005. The scaffold here defines the trigger surface; the body content lands later through that agent's PRs.
+- Architectural changes — how skills are structured, how the build works, how versions are resolved — need an ADR before code. See `docs/architecture/adr/000-template.md`.
+
+The local development loop is `npm install`, `npm run validate`, `npm run build`, `npm test`. The build is deterministic; every PR runs the build twice in CI and fails if the output differs. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide, including the local development loop, pull request expectations, and the schema mirroring contract.
+
+## Project status
+
+This is the v1.0.0 public release. The pipeline, the skills, the reference content, and the CI gates are all in place; the project has been internally validated against a set of golden-path demos covering route authoring, module reference, version isolation, and multi-skill coordination. Future work — additional OpenSIPs versions, expanded security-advisor review patterns, additional skills for operations and module development — is post-v1 and is tracked through the project's issue tracker rather than the implementation plan.
+
+If you find a bug, a regression, or a place where the plugin produces a wrong answer, please open an issue with the prompt that triggered it and the version you were targeting. Wrong answers in the generated reference content are usually upstream extraction bugs and get filed in `opensips-docs-collector`; wrong answers from a SKILL.md decision are filed here.
+
+## License
+
+GPL-3.0-or-later, matching upstream OpenSIPs. See [LICENSE](LICENSE).
+
+## Acknowledgments
+
+- The OpenSIPs project and its core team for the underlying SIP server and the documentation this plugin grounds Claude in.
+- The upstream `opensips-docs-collector` extraction project for the structured JSON that feeds the build pipeline.
+- The Claude Code Agent Skills system for the plugin runtime that makes coordinated, version-aware skill loading possible.

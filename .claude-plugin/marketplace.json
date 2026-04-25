@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-marketplace",
-  "name": "opensips-marketplace",
-  "version": "0.1.0",
-  "description": "OpenSIPs Agent Skills for Claude Code",
+  "name": "opensips-skills",
+  "version": "1.0.0",
+  "description": "OpenSIPs Agent Skills for Claude Code: route script authoring, per-module reference, and security review for SIP server configurations.",
   "owner": "OpenSIPS",
   "homepage": "https://github.com/OpenSIPS/opensips-skills",
   "license": "GPL-3.0-or-later",
@@ -10,9 +10,10 @@
     {
       "name": "opensips",
       "source": "./plugins/opensips",
-      "version": "0.1.0",
-      "description": "Three coordinated skills for working with OpenSIPs in Claude Code: route script authoring, module reference data, and security review.",
-      "category": "development"
+      "version": "1.0.0",
+      "description": "Three coordinated skills for working with OpenSIPs in Claude Code: route script authoring, per-module reference data (194 modules for 3.6, 137 for 3.5), and security review.",
+      "category": "development",
+      "tags": ["sip", "voip", "opensips", "telecom", "infrastructure", "sbc"]
     }
   ]
 }
