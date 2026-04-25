@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsx scripts/build-references.ts",
+    "build:skills": "tsx scripts/build-module-index/cli.ts",
     "validate": "tsx scripts/build-references.ts --validate-only",
     "clean": "tsx scripts/clean.ts",
     "test": "vitest run",
