@@ -1,0 +1,335 @@
+{
+  "id": "module-jabber-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "jabber Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/jabber.html",
+  "content_markdown": "This is new version of Jabber module that integrates XODE XML parser for parsing Jabber messages. That introduces a new module dependency: expat library.\n\nExpat is a common XML library and is the fastest available for Linux/Unix, the second over all, after msxml library. It is integrated in most of well known Linux distributions.\n\n### 1.1.1. New Features\n\n*   Presence support (see doc/xxjab.cfg for a sample cfg file) (January 2003).\n*   SIP to Jabber conference support (December 2003).\n*   Possibility to manage all kinds of Jabber messages (message/presence/iq) (December 2003).\n*   Aliases -- Possibility to set host aliases for addresses (see parameter's desc.) (December 2003).\n*   Send received SIP MESSAGE messages to different IM networks (Jabber, ICQ,MSN, AIM, Yahoo) using a Jabber server (December 2003).\n*   Send incoming Jabber instant messages as SIP MESSAGE messages.\n*   Gateways detection -- Ability to see whether an IM gateway is up or down.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:38:53.279Z",
+  "module_name": "jabber",
+  "overview": "This is new version of Jabber module that integrates XODE XML parser for parsing Jabber messages. That introduces a new module dependency: expat library.\n\nExpat is a common XML library and is the fastest available for Linux/Unix, the second over all, after msxml library. It is integrated in most of well known Linux distributions.\n\n### 1.1.1. New Features\n\n*   Presence support (see doc/xxjab.cfg for a sample cfg file) (January 2003).\n*   SIP to Jabber conference support (December 2003).\n*   Possibility to manage all kinds of Jabber messages (message/presence/iq) (December 2003).\n*   Aliases -- Possibility to set host aliases for addresses (see parameter's desc.) (December 2003).\n*   Send received SIP MESSAGE messages to different IM networks (Jabber, ICQ,MSN, AIM, Yahoo) using a Jabber server (December 2003).\n*   Send incoming Jabber instant messages as SIP MESSAGE messages.\n*   Gateways detection -- Ability to see whether an IM gateway is up or down.",
+  "how_it_works": "### 1.2. Admin's Guide\n\n### Note\n\nA more complete guide about SIMPLE2Jabber gateway can be found at [https://opensips.org/](https://opensips.org/). The part below will be removed soon, only the manual from web will be updated.\n\nThe Jabber server setup is not a subject of this guide. Check [http://www.jabber.org](http://www.jabber.org) for that.\n\nUseful scripts, for creating Jabber Gateway database, or for managing the Jabber accounts form web are located in 'doc' subdirectory of the module.\n\nMain steps of using the Jabber gateway:\n\n*   Create the MySQL database.\n*   Setup the local Jabber server.\n*   Set the module parameter values in cfg file of OpenSIPS, load the dependent modules, set up the routing rules for Jabber gateway.\n*   Run OpenSIPS.\n\nThe administrator of OpenSIPS/Jabber gateway _must_ inform the users what are the aliases for Jabber/Other IM networks. Other IMs could be AIM, ICQ, MSN, Yahoo, and so on.\n\nThese aliases depend on the server hostname where runs OpenSIPS and how local Jabber server is setup.\n\nNext is presented a use case. Prologue:\n\n*   OpenSIPS is running on “server.org”.\n*   Local Jabber server is running on “jabsrv.server.org”.\n*   Jabber network alias (first part of “jdomain”) is “jabber.server.org”\n\nThe aliases for other IM networks _must_ be the same as JID set in Jabber configuration file for each IM transport.\n\nThe JIDs of Jabber transports _must_ start with the name of the network. For AIM, JID must start with “aim.”, for ICQ with “icq” (that because I use icqv7-t), for MSN with “msn.” and for Yahoo with “yahoo.”. The gateway needs these to find out what transport is working and which not. For our use case these could be like “aim.server.org”, “icq.server.org”, “msn.server.org”, “yahoo.server.org”.\n\nIt is indicated to have these aliases in DNS, thus the client application can resolve the DNS name. Otherwise there must be set the outbound proxy to OpenSIPS server.\n\n*** Routing rules for Jabber gateway First step is to configure OpenSIPS to recognize messages for Jabber gateway. Look at “doc/xjab.cfg” to see a sample. The idea is to look in messages for destination address and if it contains Jabber alias or other IM alias, that means the message is for Jabber gateway.\n\nNext step is to find out what means that message for Jabber gateway. It could be a special message what triggers the gateway to take an action or is a simple message which should be delivered to Jabber network (using the method “jab_send_message”).\n\nThe special messages are for:\n\n*   Registering to Jabber server (go online in Jabber network)--here must be called “jab_go_online” method.\n*   Leaving the Jabber network (go offline in Jabber network)--here must be called “jab_go_offline” method.\n*   Joining a Jabber conference room--here must be called “jab_join_jconf”.\n*   Leaving a Jabber conference room--here must be called “jab_exit_jconf”.\n\nThe destination address _must_ follow the following patterns:\n\n*   For Jabber network: “username<delim>jabber_server@jabber_alias”.\n*   For Jabber conference: “nickname<delim>room<delim>conference_server@jabber_alias”.\n*   For AIM network: “aim_username@aim_alias”.\n*   For ICQ network: “icq_number@icq_alias”.\n*   For MSN network: “msn_username<delim>msn_server@msn_alias”. msn_server can be “msn.com” or “hotmail.com”.\n*   For YAHOO network: “yahoo_username@yahoo_alias”.\n\n### Note\n\n“jabber_alias” is the first part of “jdomain”.\n\n### 1.3. Admin Guide\n\nThe user must activate his Jabber account associated with his SIP id. For each other IM network on which he wants to send messages, he must set an account for that IM network. The gateway is not able to create new account in foreign networks, excepting local Jabber server.\n\nWhen you want to send a message to someone in other IM network, you must set the destination of the message according with the pattern corresponding to that IM network (see last part of “Admin guide” chapter).\n\nSending a message to user@jabber.xxx.org which is in Jabber network, the destination must be: user<delim>jabber.xxx.org@jabber_alias.\n\nFor someone who is in Yahoo network the destination must be: user@yahoo_alias\n\n### Note\n\nThe OpenSIPS administrator have to set the Jabber transports for each IM network in order to be able to send messages to those networks. The alias of each IM network can be found out from OpenSIPS admin.\n\nYou cannot send messages from your SIP client to your associated Jabber account--is something like sending messages to yourself.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "Expat",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "pa"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://root@127.0.0.1/sip_jab",
+      "description": "SQL URL of database.",
+      "example_value": "mysql://username:password@host/sip\\_jab",
+      "example_code": "modparam(\"jabber\", \"db\\_url\", \"mysql://username:password@host/sip\\_jab\")"
+    },
+    {
+      "name": "jaddress",
+      "type": "string",
+      "default_value": "127.0.0.1",
+      "description": "IP or hostname of Jabber server -- it must be the same as the value from <host> tag of Jabber server config file.",
+      "example_value": "1.2.3.4",
+      "example_code": "modparam(\"jabber\", \"jaddress\", \"1.2.3.4\")"
+    },
+    {
+      "name": "jport",
+      "type": "integer",
+      "default_value": "5222",
+      "description": "Port number of Jabber server.",
+      "example_value": "1234",
+      "example_code": "modparam(\"jabber\", \"jport\", 1234)"
+    },
+    {
+      "name": "jdomain",
+      "type": "string",
+      "default_value": "none",
+      "description": "Format: jabber.sipserver.com=<delim>. If the destination is for Jabber network the URI should be like: username<delim>jabber_server@jdomain or nickname<delim>roomname<delim>conference_server@jdomain\n\n<delim> must be a un-reserved character. By default this character is * . The destination will be transformed to username@jabber_server or roomname@conference_server/nickname before the message is sent to Jabber server.",
+      "example_value": "jabber.sipserver.com=\\*",
+      "example_code": "modparam(\"jabber\", \"jdomain\", \"jabber.sipserver.com=\\*\")"
+    },
+    {
+      "name": "aliases",
+      "type": "string",
+      "default_value": "none",
+      "description": "Aliases for IM networks.\n\nFormat: “N;alias1=<delim1>;...;aliasN=<delimN>;” Destinations like '*@aliasX' could have other format than those specified for Jabber network. All <delim> from user part of the destination address will be changed to <delimX> if the destination address contains <aliasX>.\n\n(Ex: jdomain is 'jabber.x.com=*' and msn_alias is 'msn.x.com=%'. The destination address forM MSN Network, on SIP side, is like 'username*hotmail.com@msn.x.com'. The destination address will be transformed to 'username%hotmail.com@msn.x.com'. 'msn.x.com' must be the same as the JID associated with MSN transport in Jabber configuration file (usually is 'jabberd.xml'))",
+      "example_value": "1;msn.x.com=%",
+      "example_code": "modparam(\"jabber\", \"aliases\", \"1;msn.x.com=%\")"
+    },
+    {
+      "name": "proxy",
+      "type": "string",
+      "default_value": "none",
+      "description": "Outbound proxy address.\n\nFormat: ip_address:port hostname:port\n\nAll SIP messages generated by gateway will be sent to that address. If is missing, the message will be delivered to the hostname of the destination address",
+      "example_value": "10.0.0.1:5060 sipserver.com:5060",
+      "example_code": "modparam(\"jabber\", \"proxy\", \"10.0.0.1:5060 sipserver.com:5060\")"
+    },
+    {
+      "name": "registrar",
+      "type": "string",
+      "default_value": "jabber\\_gateway@127.0.0.1",
+      "description": "The address in whose behalf the INFO and ERROR messages are sent.",
+      "example_value": "jabber\\_gateway@127.0.0.1",
+      "example_code": "modparam(\"jabber\", \"registrar\", \"jabber\\_gateway@127.0.0.1\")"
+    },
+    {
+      "name": "workers",
+      "type": "integer",
+      "default_value": "2",
+      "description": "Number of workers.",
+      "example_value": "2",
+      "example_code": "modparam(\"jabber\", \"workers\", 2)"
+    },
+    {
+      "name": "max_jobs",
+      "type": "integer",
+      "default_value": "10",
+      "description": "Maximum jobs per worker.",
+      "example_value": "10",
+      "example_code": "modparam(\"jabber\", \"max\\_jobs\", 10)"
+    },
+    {
+      "name": "cache_time",
+      "type": "integer",
+      "default_value": "600",
+      "description": "Cache time of a Jabber connection.",
+      "example_value": "600",
+      "example_code": "modparam(\"jabber\", \"cache\\_time\", 600)"
+    },
+    {
+      "name": "delay_time",
+      "type": "integer",
+      "default_value": "90 seconds",
+      "description": "Time to keep a SIP message (in seconds).",
+      "example_value": "90",
+      "example_code": "modparam(\"jabber\", \"delay\\_time\", 90)"
+    },
+    {
+      "name": "sleep_time",
+      "type": "integer",
+      "default_value": "20 seconds",
+      "description": "Time between expired Jabber connections checking (in seconds).",
+      "example_value": "20",
+      "example_code": "modparam(\"jabber\", \"sleep\\_time\", 20)"
+    },
+    {
+      "name": "check_time",
+      "type": "integer",
+      "default_value": "20 seconds",
+      "description": "Time between checking the status of JabberGW workers (in seconds).",
+      "example_value": "20",
+      "example_code": "modparam(\"jabber\", \"check\\_time\", 20)"
+    },
+    {
+      "name": "priority",
+      "type": "string",
+      "default_value": "“9”",
+      "description": "Presence priority for Jabber gateway.",
+      "example_value": "3",
+      "example_code": "modparam(\"jabber\", \"priority\", \"3\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "jab_send_message",
+      "signature": "jab_send_message()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Converts SIP MESSAGE message to a Jabber message and sends it to Jabber server.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "jab_send_message();",
+          "description": "jab_send_message() usage"
+        }
+      ]
+    },
+    {
+      "name": "jab_join_jconf",
+      "signature": "jab_join_jconf()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain . If the nickname is missing, then the SIP username is used.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "jab_join_jconf();",
+          "description": "jab_join_jconf() usage"
+        }
+      ]
+    },
+    {
+      "name": "jab_exit_jconf",
+      "signature": "jab_exit_jconf()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain .",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "jab_exit_jconf();",
+          "description": "jab_exit_jconf() usage"
+        }
+      ]
+    },
+    {
+      "name": "jab_go_online",
+      "signature": "jab_go_online()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Register to the Jabber server with associated Jabber ID of the SIP user.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "jab_go_online();",
+          "description": "jab_go_online() usage"
+        }
+      ]
+    },
+    {
+      "name": "jab_go_offline",
+      "signature": "jab_go_offline()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Log off from Jabber server the associated Jabber ID of the SIP user.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "jab_go_offline();",
+          "description": "jab_go_offline() usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.1. Set `db_url` parameter",
+      "description": "SQL URL of database.",
+      "code": "...\nmodparam(\"jabber\", \"db\\_url\", \"mysql://username:password@host/sip\\_jab\")\n..."
+    },
+    {
+      "title": "Example 1.2. Set `jaddress` parameter",
+      "description": "IP or hostname of Jabber server -- it must be the same as the value from <host> tag of Jabber server config file.",
+      "code": "...\nmodparam(\"jabber\", \"jaddress\", \"1.2.3.4\")\n..."
+    },
+    {
+      "title": "Example 1.3. Set `jport` parameter",
+      "description": "Port number of Jabber server.",
+      "code": "...\nmodparam(\"jabber\", \"jport\", 1234)\n..."
+    },
+    {
+      "title": "Example 1.4. Set `jdomain` parameter",
+      "description": "Format: jabber.sipserver.com=<delim>. If the destination is for Jabber network the URI should be like: username<delim>jabber\\_server@jdomain or nickname<delim>roomname<delim>conference\\_server@jdomain <delim> must be a un-reserved character. By default this character is * . The destination will be transformed to username@jabber\\_server or roomname@conference\\_server/nickname before the message is sent to Jabber server.",
+      "code": "...\nmodparam(\"jabber\", \"jdomain\", \"jabber.sipserver.com=*\")\n..."
+    },
+    {
+      "title": "Example 1.5. Set `jdomain` parameter",
+      "description": "Aliases for IM networks. Format: “N;alias1=<delim1>;...;aliasN=<delimN>;” Destinations like '*@aliasX' could have other format than those specified for Jabber network. All <delim> from user part of the destination address will be changed to <delimX> if the destination address contains <aliasX>.",
+      "code": "...\nmodparam(\"jabber\", \"aliases\", \"1;msn.x.com=%\")\n..."
+    },
+    {
+      "title": "Example 1.6. Set `proxy` parameter",
+      "description": "Outbound proxy address. Format: ip\\_address:port hostname:port All SIP messages generated by gateway will be sent to that address. If is missing, the message will be delivered to the hostname of the destination address",
+      "code": "...\nmodparam(\"jabber\", \"proxy\", \"10.0.0.1:5060 sipserver.com:5060\")\n..."
+    },
+    {
+      "title": "Example 1.7. Set `registrar` parameter",
+      "description": "The address in whose behalf the INFO and ERROR messages are sent.",
+      "code": "...\nmodparam(\"jabber\", \"registrar\", \"jabber\\_gateway@127.0.0.1\")\n..."
+    },
+    {
+      "title": "Example 1.8. Set `workers` parameter",
+      "description": "Number of workers.",
+      "code": "...\nmodparam(\"jabber\", \"workers\", 2)\n..."
+    },
+    {
+      "title": "Example 1.9. Set `max_jobs` parameter",
+      "description": "Maximum jobs per worker.",
+      "code": "...\nmodparam(\"jabber\", \"max\\_jobs\", 10)\n..."
+    },
+    {
+      "title": "Example 1.10. Set `cache_time` parameter",
+      "description": "Cache time of a Jabber connection.",
+      "code": "...\nmodparam(\"jabber\", \"cache\\_time\", 600)\n..."
+    },
+    {
+      "title": "Example 1.11. Set `delay_time` parameter",
+      "description": "Time to keep a SIP message (in seconds).",
+      "code": "...\nmodparam(\"jabber\", \"delay\\_time\", 90)\n..."
+    },
+    {
+      "title": "Example 1.12. Set `sleep_time` parameter",
+      "description": "Time between expired Jabber connections checking (in seconds).",
+      "code": "...\nmodparam(\"jabber\", \"sleep\\_time\", 20)\n..."
+    },
+    {
+      "title": "Example 1.13. Set `check_time` parameter",
+      "description": "Time between checking the status of JabberGW workers (in seconds).",
+      "code": "...\nmodparam(\"jabber\", \"check\\_time\", 20)\n..."
+    },
+    {
+      "title": "Example 1.14. Set `priority` parameter",
+      "description": "Presence priority for Jabber gateway.",
+      "code": "...\nmodparam(\"jabber\", \"priority\", \"3\")\n..."
+    },
+    {
+      "title": "Example 1.15. `jab_send_message()` usage",
+      "description": "Converts SIP MESSAGE message to a Jabber message and sends it to Jabber server.",
+      "code": "...\njab\\_send\\_message();\n..."
+    },
+    {
+      "title": "Example 1.16. `jab_join_jconf()` usage",
+      "description": "Join a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain . If the nickname is missing, then the SIP username is used.",
+      "code": "...\njab\\_join\\_jconf();\n..."
+    },
+    {
+      "title": "Example 1.17. `jab_exit_jconf()` usage",
+      "description": "Leave a Jabber conference--the nickname, room name and conference server address should be included in To header as: nickname%roomname%conference\\_server@jdomain .",
+      "code": "...\njab\\_exit\\_jconf();\n..."
+    },
+    {
+      "title": "Example 1.18. `jab_go_online()` usage",
+      "description": "Register to the Jabber server with associated Jabber ID of the SIP user.",
+      "code": "...\njab\\_go\\_online();\n..."
+    },
+    {
+      "title": "Example 1.19. `jab_go_offline()` usage",
+      "description": "Log off from Jabber server the associated Jabber ID of the SIP user.",
+      "code": "...\njab\\_go\\_offline();\n..."
+    }
+  ]
+}

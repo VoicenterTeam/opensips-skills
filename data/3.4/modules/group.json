@@ -1,0 +1,330 @@
+{
+  "id": "module-group-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "group Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/group.html",
+  "content_markdown": "This module provides functionalities for different methods of group membership checking.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:23:33.246Z",
+  "module_name": "group",
+  "overview": "This module provides functionalities for different methods of group membership checking.",
+  "how_it_works": "There is a database table that contains list of users and groups they belong to. The module provides the possibility to check if a specific user belongs to a specific group.\n\nThere is no DB caching support, each check involving a DB query.\n\nAnother database table contains list of regular expressions and group IDs. A matching occurs if the user URI match the regular expression. This type of matching may be used to fetch the group ID(s) the user belongs to (via RE matching) .\n\nDue performance reasons (regular expression evaluation), DB cache support is available: the table content is loaded into memory at startup and all regular expressions are compiled.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "AAA module",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "description": "URL of the database table to be used.",
+      "example_value": "mysql://username:password@dbhost/opensips",
+      "example_code": "modparam(\"group\", \"db\\_url\", \"mysql://username:password@dbhost/opensips\")"
+    },
+    {
+      "name": "table",
+      "type": "string",
+      "default_value": "grp",
+      "description": "Name of the table holding strict definitions of groups and their members.",
+      "example_value": "grp\\_table",
+      "example_code": "modparam(\"group\", \"table\", \"grp\\_table\")"
+    },
+    {
+      "name": "user_column",
+      "type": "string",
+      "default_value": "username",
+      "description": "Name of the “table” column holding usernames.",
+      "example_value": "user",
+      "example_code": "modparam(\"group\", \"user\\_column\", \"user\")"
+    },
+    {
+      "name": "domain_column",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of the “table” column holding domains.",
+      "example_value": "realm",
+      "example_code": "modparam(\"group\", \"domain\\_column\", \"realm\")"
+    },
+    {
+      "name": "group_column",
+      "type": "string",
+      "default_value": "grp",
+      "description": "Name of the “table” column holding groups.",
+      "example_value": "grp",
+      "example_code": "modparam(\"group\", \"group\\_column\", \"grp\")"
+    },
+    {
+      "name": "use_domain",
+      "type": "integer",
+      "default_value": "0 (no)",
+      "description": "If enabled (set to non zero value) then domain will be used also used for strict group matching; otherwise only the username part will be used.",
+      "example_value": "1",
+      "example_code": "modparam(\"group\", \"use\\_domain\", 1)"
+    },
+    {
+      "name": "re_table",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Name of the table holding definitions for regular-expression based groups. If no table is defined, the regular-expression support is disabled.",
+      "example_value": "re\\_grp",
+      "example_code": "modparam(\"group\", \"re\\_table\", \"re\\_grp\")"
+    },
+    {
+      "name": "re_exp_column",
+      "type": "string",
+      "default_value": "reg\\_exp",
+      "description": "Name of the “re\\_table” column holding the regular expression used for user matching.",
+      "example_value": "re",
+      "example_code": "modparam(\"group\", \"re\\_exp\\_column\", \"re\")"
+    },
+    {
+      "name": "re_gid_column",
+      "type": "string",
+      "default_value": "group\\_id",
+      "description": "Name of the “re\\_table” column holding the group IDs.",
+      "example_value": "grp\\_id",
+      "example_code": "modparam(\"group\", \"re\\_gid\\_column\", \"grp\\_id\")"
+    },
+    {
+      "name": "multiple_gid",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If enabled (non zero value) the regular-expression matching will return all group IDs that match the user; otherwise only the first will be returned.",
+      "example_value": "0",
+      "example_code": "modparam(\"group\", \"multiple\\_gid\", 0)"
+    },
+    {
+      "name": "aaa_url",
+      "type": "string",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol.",
+      "example_value": "radius:/etc/radiusclient-ng/radiusclient.conf",
+      "example_code": "modparam(\"group\", \"aaa\\_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "db_is_user_in",
+      "signature": "db_is_user_in(uri, group)",
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "a SIP URI whose username and optionally domain to be used.",
+          "valid_values": [
+            "Request-URI",
+            "To",
+            "From",
+            "Credentials",
+            "default"
+          ]
+        },
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": "the group to check"
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "username in the given URI is member of the given group"
+        },
+        {
+          "value": "false",
+          "condition": "username in the given URI is not member of the given group"
+        }
+      ],
+      "description": "This function is to be used for script group membership. The function returns true if username in the given URI is member of the given group and false if not.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (db_is_user_in(\"Request-URI\", \"ld\")) {\n\t...\n}\n...\n$avp(grouptocheck)=\"offline\";\n\nif (db_is_user_in(\"Credentials\", $avp(grouptocheck))) {\n\t...\n}\n...\n",
+          "description": "`db_is_user_in` usage"
+        }
+      ]
+    },
+    {
+      "name": "db_get_user_group",
+      "signature": "db_get_user_group(uri, output_avp)",
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "a SIP URI to be matched against the regular expressions",
+          "valid_values": [
+            "Request-URI",
+            "To",
+            "From",
+            "Credentials",
+            "default"
+          ]
+        },
+        {
+          "name": "output_avp",
+          "type": "var",
+          "required": true,
+          "description": "a list of matched group IDs"
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the username in the given \"uri\" belongs to at least one group"
+        }
+      ],
+      "description": "This function is to be used for regular expression based group membership, using DB support. The function returns true if the username in the given \"uri\" belongs to at least one group.\n\nAll matching group IDs shall be returned in \"output_avp\" if multiple_gid is enabled, otherwise only the first one to match (the records are attempted in reversed order of the results returned by the RDBMS).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (db_get_user_group(\"Request-URI\", $avp(10))) {\n    xdbg(\"User $ru belongs to the following groups: $(avp(10)[*])\\n\");\n    ....\n};\n...\n",
+          "description": "`db_get_user_group` usage"
+        }
+      ]
+    },
+    {
+      "name": "aaa_is_user_in",
+      "signature": "aaa_is_user_in(uri, group)",
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "a SIP URI whose username and optionally domain to be used, this can be one of:",
+          "valid_values": [
+            "Request-URI",
+            "To",
+            "From",
+            "Credentials"
+          ]
+        },
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": "Name of the group to check."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "username in the given \"uri\" is member of the given group"
+        },
+        {
+          "value": "false",
+          "condition": "username in the given \"uri\" is not member of the given group"
+        }
+      ],
+      "description": "This function checks group membership, using AAA support. The function returns true if username in the given \"uri\" is member of the given group and false if not.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (aaa_is_user_in(\"Request-URI\", \"ld\")) {\n\t...\n};\n...\n",
+          "description": "`aaa_is_user_in` usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"group\", \"db\\_url\", \"mysql://username:password@dbhost/opensips\")\n..."
+    },
+    {
+      "title": "Set `table` parameter",
+      "description": "Set `table` parameter",
+      "code": "...\nmodparam(\"group\", \"table\", \"grp\\_table\")\n..."
+    },
+    {
+      "title": "Set `user_column` parameter",
+      "description": "Set `user_column` parameter",
+      "code": "...\nmodparam(\"group\", \"user\\_column\", \"user\")\n..."
+    },
+    {
+      "title": "Set `domain_column` parameter",
+      "description": "Set `domain_column` parameter",
+      "code": "...\nmodparam(\"group\", \"domain\\_column\", \"realm\")\n..."
+    },
+    {
+      "title": "Set `group_column` parameter",
+      "description": "Set `group_column` parameter",
+      "code": "...\nmodparam(\"group\", \"group\\_column\", \"grp\")\n..."
+    },
+    {
+      "title": "Set `use_domain` parameter",
+      "description": "Set `use_domain` parameter",
+      "code": "...\nmodparam(\"group\", \"use\\_domain\", 1)\n..."
+    },
+    {
+      "title": "Set `re_table` parameter",
+      "description": "Set `re_table` parameter",
+      "code": "...\nmodparam(\"group\", \"re\\_table\", \"re\\_grp\")\n..."
+    },
+    {
+      "title": "Set `re_exp_column` parameter",
+      "description": "Set `re_exp_column` parameter",
+      "code": "...\nmodparam(\"group\", \"re\\_exp\\_column\", \"re\")\n..."
+    },
+    {
+      "title": "Set `re_gid_column` parameter",
+      "description": "Set `re_gid_column` parameter",
+      "code": "...\nmodparam(\"group\", \"re\\_gid\\_column\", \"grp\\_id\")\n..."
+    },
+    {
+      "title": "Set `multiple_gid` parameter",
+      "description": "Set `multiple_gid` parameter",
+      "code": "...\nmodparam(\"group\", \"multiple\\_gid\", 0)\n..."
+    },
+    {
+      "title": "Set `aaa_url` parameter",
+      "description": "Set `aaa_url` parameter",
+      "code": "...\nmodparam(\"group\", \"aaa\\_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")\n..."
+    },
+    {
+      "title": "`db_is_user_in` usage",
+      "description": "`db_is_user_in` usage",
+      "code": "...\nif (db\\_is\\_user\\_in(\"Request-URI\", \"ld\")) {\n\t...\n}\n...\n$avp(grouptocheck)=\"offline\";\n\nif (db\\_is\\_user\\_in(\"Credentials\", $avp(grouptocheck))) {\n\t...\n}\n..."
+    },
+    {
+      "title": "`db_get_user_group` usage",
+      "description": "`db_get_user_group` usage",
+      "code": "...\nif (db\\_get\\_user\\_group(\"Request-URI\", $avp(10))) {\n    xdbg(\"User $ru belongs to the following groups: $(avp(10)\\[\\*])\\\\n\");\n    ....\n};\n..."
+    },
+    {
+      "title": "`aaa_is_user_in` usage",
+      "description": "`aaa_is_user_in` usage",
+      "code": "...\nif (aaa\\_is\\_user\\_in(\"Request-URI\", \"ld\")) {\n\t...\n};\n..."
+    }
+  ]
+}

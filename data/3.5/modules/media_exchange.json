@@ -1,0 +1,606 @@
+{
+  "id": "module-media_exchange-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "media_exchange Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/media_exchange.html",
+  "content_markdown": "This module provides the means to exchange media SDP between different SIP proxied calls, and calls started or received from a Media Server. The module itself does not have any media capabilities, it simply exposes primitives to exchange the SDP body between two or more different calls.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:26:52.798Z",
+  "module_name": "media_exchange",
+  "overview": "This module provides the means to exchange media SDP between different SIP proxied calls, and calls started or received from a Media Server. The module itself does not have any media capabilities, it simply exposes primitives to exchange the SDP body between two or more different calls.",
+  "how_it_works": "The module can both originate calls, pushing an existing SDP to a media server, to playback, or simply record an existing RTP, as well as take the SDP of a new call and inject the SDP into an existing, proxied sip call. In order to manipulate the new calls, either generated, or terminated, the module behaves as a back-to-back user agent with the aim of the [OpenSIPS B2B entities module](b2b_entities).\n\nIn terms of the SDP media exchanged, the module can have two different modes:\n\n*   _Two way Media_ - in this mode, the media of a new call will be pushed towards one of the legs of an existing call. This will result in a party of the call talking with the Media Server. By default, the other participant of the call will be put on hold, but this behavior can be tuned when the new leg is originated.\n    \n*   _Fork Media_ - the new B2B call, either originated or terminated, will just have a copy of the RTP forked by the media proxy engine. In this mode, the proxied call should have had the RTP relay engaged path before the forked call starts. One can fork only one media leg, or both legs. _NOTE:_ RTPProxy currently does not support stopping media streaming, therefore if the streaming call terminates, RTPProxy will continue streaming, even if there is no one listening on the other end.\n    \nThis module can provide different functionalities and can be used in various use cases, such as:\n\n*   _Call Recording_ - similar to the [OpenSIPS SIPREC](siprec) module, it can be used to fork the RTP media to a new SIP destination, but without the SIPREC payload.\n    \n*   _Call Listening_ - one might want to call into OpenSIPS and start listening an existing call.\n    \n*   _Call Announcements_ - inject an announcement from a Media Server to the participants of an ongoing call.",
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction module.",
+      "optional": false
+    },
+    {
+      "name": "Dialog",
+      "type": "module",
+      "reason": "Dialog module for keeping track of the proxied calls.",
+      "optional": false
+    },
+    {
+      "name": "B2B_ENTITIES",
+      "type": "module",
+      "reason": "Back-2-Back module used form manipulating calls with the Media Server.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "RTP Relay"
+  ],
+  "exported_parameters": [],
+  "exported_functions": [
+    {
+      "name": "media_fork_to_uri",
+      "signature": "media_fork_to_uri(URI[, leg[, headers[, medianum]]])",
+      "parameters": [
+        {
+          "name": "URI",
+          "type": "string",
+          "required": true,
+          "description": "destination where to push the current call's media"
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg that will be streamed. Possible values are caller, callee and both. If missing, the direction of the indialog request is used.",
+          "valid_values": [
+            "caller",
+            "callee",
+            "both"
+          ]
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "optional headers added to the generated request."
+        },
+        {
+          "name": "medianum",
+          "type": "integer",
+          "required": false,
+          "description": "the media stream that will be forked within the call. First index is 0. If missing, all media streams of that leg(s) are streamed."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Behaves as a B2B user agent client to initiate a call to a SIP URI and then stream the media to the SDP received in the 200 OK response.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_to_uri(\"sip:record@127.0.0.1:5080\");\n...",
+          "description": "Use `media_fork_to_uri()` function to fork media to a Media Server"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_fork_from_call",
+      "signature": "media_fork_from_call(callid[, leg[, medianum]])",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the identifier of the callid to stream/fork media from"
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg that will be streamed. Possible values are caller, callee and both. If missing, both legs will be streamed.",
+          "valid_values": [
+            "caller",
+            "callee",
+            "both"
+          ]
+        },
+        {
+          "name": "medianum",
+          "type": "integer",
+          "required": false,
+          "description": "the media stream that will be forked within the call. First index is 0. If missing, all media streams of that leg(s) are streamed, as long as the body has enough streams."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Starts streaming the media of an existing proxied call, identified by the callid parameter to the SDP in the request's body.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_fork_from_call($hdr(X-CallID));\n...",
+          "description": "Use `media_fork_from_call()` function to fork all media streams of a call"
+        },
+        {
+          "language": "opensips",
+          "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_fork_from_call($hdr(X-CallID), \"caller\", 0);\n...",
+          "description": "Use `media_fork_from_call()` function to fork only the first caller's stream"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_fork_pause",
+      "signature": "media_fork_pause([leg[, medianum]])",
+      "parameters": [
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg that will be paused. Possible values are caller, callee and both. If missing, all ongoing media sessions will be paused.",
+          "valid_values": [
+            "caller",
+            "callee",
+            "both"
+          ]
+        },
+        {
+          "name": "medianum",
+          "type": "integer",
+          "required": false,
+          "description": "the media stream to be paused. First index is 0. If missing, all ongoing media streams associated to the selected leg will be paused."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Pauses an existing RTP media streaming session. This function does not terminate the forking call, but only stops sending the RTP. It also re-invites the Media Server to inform about the change.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_pause();\n...",
+          "description": "Use `media_fork_pause()` function to temporarily stop the entire media stream of the call"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_fork_resume",
+      "signature": "media_fork_resume([leg[, medianum]])",
+      "parameters": [
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg that will be resumed. Possible values are caller, callee and both. If missing, all existing media legs that are stopped will be started.",
+          "valid_values": [
+            "caller",
+            "callee",
+            "both"
+          ]
+        },
+        {
+          "name": "medianum",
+          "type": "integer",
+          "required": false,
+          "description": "the media stream to be paused. First index is 0. If missing, all ongoing media streams associated to the selected leg will be paused."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Resumes the RTP media stream of an existing session/call. This function relies on the fact that a media fork session has been previously started.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_resume();\n...",
+          "description": "Use `media_fork_resume()` function to resume a forking previously stopped"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_exchange_from_uri",
+      "signature": "media_exchange_from_uri(URI[, leg[, body[, headers[, nohold]]]])",
+      "parameters": [
+        {
+          "name": "URI",
+          "type": "string",
+          "required": true,
+          "description": "destination used to originate the new call."
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg where the new media SDP will be pushed. Possible values are caller and callee. If missing, the module considers it is an hold re-INVITE, and exchanges the media SDP of the other leg.",
+          "valid_values": [
+            "caller",
+            "callee"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "custom body used for the generated INVITE. If missing, the body stored in the dialog associated with the involved leg will be used."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "optional headers added to the generated request."
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if set to true, the other participant will not be put on hold. This is useful when a new call will be generated for the other leg as well."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Originates a call to the specified URI. The SDP in the response is fetched and pushed towards one of the call's legs, resulting in two way audio between the participant of the ongoing call, and the new call. By default, the other participant leg is put on hold. Can be called for an in-dialog request, such as a re-INVITE (for example when putting an entity on hold), or for an INFO request (triggered for example by a DTMF).",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (has_totag() && is_method(\"INVITE\") && is_audio_on_hold())\n\tmedia_exchange_from_uri(\"sip:moh@127.0.0.1:5080\");\n...",
+          "description": "Use `media_exchange_from_uri()` function to fetch media from a Media Server's call"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_exchange_to_call",
+      "signature": "media_exchange_to_call(callid[, leg[, nohold]])",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the identifier of the callid to exchange media."
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg that will be streamed. Possible values are caller and callee.",
+          "valid_values": [
+            "caller",
+            "callee"
+          ]
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if set to true, the other participant will not be put on hold. This is useful when a new call will be generated for the other leg as well."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Pushes the SDP of a new call received in an existing proxied call, resulting in two-way audio between a Media Server that originated the call, and the existing participant of the ongoing proxied call.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_exchange_to_call($hdr(X-CallID), \"caller\");\n...",
+          "description": "Use `media_exchange_to_call()` function to make an announcement"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_terminate",
+      "signature": "media_terminate([leg[, nohold]])",
+      "parameters": [
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg to terminate the media exchange. Possible values are caller and callee. If missing, the direction of the indialog request is used.",
+          "valid_values": [
+            "caller",
+            "callee"
+          ]
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if set to true, and the other participant is involved in a different media exchange, the current leg is no longer put on hold. Note: if the request that terminates the media exchange is a re-INVITE within the dialog, this function will not un-hold the other leg, as the re-INVITE itself should be relayed further to do that. This behavior can be changed by explicitly setting the nohold parameter"
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Terminates an ongoing media session exchange, whether the media is only streamed, or two way audio is flowing. If the participant leg is involved in a different media exchange, the current leg is put on hold.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (has_totag() && is_method(\"INVITE\") && !is_audio_on_hold())\n\tmedia_terminate();\n...",
+          "description": "Use `media_terminate()` function to terminate an announcement"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "media_handle_indialog",
+      "signature": "media_handle_indialog()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "indicates that the message has been handled, but there's no additional tasks to be performed in the script."
+        },
+        {
+          "value": "-1",
+          "condition": "indicates that there is no ongoing media exchange or fork happening for that call, or that there was no additional logic to do for that request."
+        },
+        {
+          "value": "-2",
+          "condition": "indicates that all additional handling of the request was performed, and that the request should not be forwarded to the user agent, but instead it should be dropped."
+        },
+        {
+          "value": "-3",
+          "condition": "signals an internal error."
+        }
+      ],
+      "description": "Searches for an existing media session started for any leg, and if there is ongoing session found, it performs additional logic for handling that request. For example, if media has been started in forking mode, and the INVITE is for activating on-hold, then the function will also pause the forked stream. Depending on the return code of this function, one has to perform additional logic in the script.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (has_totag() && loose_route()) {\n\t# handling sequential\n\tmedia_handle_indialog();\n\tswitch ($rc) {\n\tcase -2:\n\t\tdrop;\n\tcase -1:\n\t\txlog(\"no ongoing media session for $ci!\\n\");\n\tcase 1:\n\t\tbreak;\n}",
+          "description": "Use `media_terminate()` function to terminate an announcement"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "media_fork_from_call_to_uri",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of the dialog that will have its RTP streamed to the new call towards the Media Server"
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "the destination URI of the new call"
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "indicates the participant leg that will have its RTP streamed in the new call. Possible values are “caller”, “callee” or “both”. If missing, both media streams are forked"
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to add to the outgoing request"
+        },
+        {
+          "name": "medianum",
+          "type": "integer",
+          "required": false,
+          "description": "the media stream that will be forked within the call. First index is 0. If missing, all media streams of that leg(s) are streamed."
+        }
+      ],
+      "description": "MI command that has the same behavior as media_fork_to_uri(), only that the triggering is not script driven, but exterior driven. Useful for starting listening a call.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "# start streaming a callid to record media server\nopensips-cli -x mi media\\_fork\\_from\\_call\\_to\\_uri \\\n\tcallid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \\\n\turi=sip:record@127.0.0.1:5080",
+          "description": "start streaming a callid to record media server"
+        }
+      ]
+    },
+    {
+      "name": "media_exchange_from_call_to_uri",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of the dialog that will have it's leg mixed with the new call to the Media Server"
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "the destination URI of the new call"
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": true,
+          "description": "indicates the participant that will have its media pined into the new call. Possible values are “caller” and “callee”."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to add to the outgoing request"
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if set to a non-zero value, the module avoids putting the other participant on hold when the media exchanging starts"
+        }
+      ],
+      "description": "MI command that has the same behavior as media_exchange_from_uri(), only that the triggering is not script driven, but exterior driven. Useful for injecting media announcements during a call.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "# start playing back an annoucement to caller\nopensips-cli -x mi media\\_exchange\\_from\\_call\\_to\\_uri \\\n\tcallid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \\\n\turi=sip:announcement@127.0.0.1:5080 \\\n\tleg=caller",
+          "description": "start playing back an annoucement to caller"
+        }
+      ]
+    },
+    {
+      "name": "media_exchange_from_call_to_uri_body",
+      "parameters": [
+        {
+          "name": "body",
+          "type": "string",
+          "required": true,
+          "description": "The body has to be specified in the mandatory body parameter"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of the dialog that will have it's leg mixed with the new call to the Media Server"
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "the destination URI of the new call"
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": true,
+          "description": "indicates the participant that will have its media pined into the new call. Possible values are “caller” and “callee”."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to add to the outgoing request"
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if set to a non-zero value, the module avoids putting the other participant on hold when the media exchanging starts"
+        }
+      ],
+      "description": "MI command that does the same thing as the media_exchange_from_call_to_uri MI function, but also allows you to specify a custom body in the outgoing request. The body has to be specified in the mandatory body parameter, all the other parameters being the same as the ones of media_exchange_from_call_to_uri.",
+      "examples": []
+    },
+    {
+      "name": "media_terminate",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of the dialog that will have the media exchange terminated."
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": false,
+          "description": "the leg for whom to terminate the media exchange. Accepted values are caller, callee and both. If missing, all media sessions are terminated."
+        },
+        {
+          "name": "nohold",
+          "type": "integer",
+          "required": false,
+          "description": "if specified and has a non-zero value, the leg that is being terminated is not put on hold if the other participant still has an ongoing media session."
+        }
+      ],
+      "description": "MI command to terminate an ongoing media exchange.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "# terminate a caller announcement\nopensips-cli -x mi media\\_terminate \\\n\tcallid=c6fdb0f9-47dc-495d-8d38-0f37e836a531 \\\n\tleg=caller",
+          "description": "terminate a caller announcement"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Use `media_fork_to_uri()` function to fork media to a Media Server",
+      "description": "Use `media_fork_to_uri()` function to fork media to a Media Server",
+      "code": "...\nif (!has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_to_uri(\"sip:record@127.0.0.1:5080\");\n..."
+    },
+    {
+      "title": "Use `media_fork_from_call()` function to fork all media streams of a call",
+      "description": "Use `media_fork_from_call()` function to fork all media streams of a call",
+      "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_fork_from_call($hdr(X-CallID));\n..."
+    },
+    {
+      "title": "Use `media_fork_from_call()` function to fork only the first caller's stream",
+      "description": "Use `media_fork_from_call()` function to fork only the first caller's stream",
+      "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_fork_from_call($hdr(X-CallID), \"caller\", 0);\n..."
+    },
+    {
+      "title": "Use `media_fork_pause()` function to temporarily stop the entire media stream of the call",
+      "description": "Use `media_fork_pause()` function to temporarily stop the entire media stream of the call",
+      "code": "...\nif (has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_pause();\n..."
+    },
+    {
+      "title": "Use `media_fork_resume()` function to resume a forking previously stopped",
+      "description": "Use `media_fork_resume()` function to resume a forking previously stopped",
+      "code": "...\nif (has_totag() && is_method(\"INVITE\"))\n\tmedia_fork_resume();\n..."
+    },
+    {
+      "title": "Use `media_exchange_from_uri()` function to fetch media from a Media Server's call",
+      "description": "Use `media_exchange_from_uri()` function to fetch media from a Media Server's call",
+      "code": "...\nif (has_totag() && is_method(\"INVITE\") && is_audio_on_hold())\n\tmedia_exchange_from_uri(\"sip:moh@127.0.0.1:5080\");\n..."
+    },
+    {
+      "title": "Use `media_exchange_to_call()` function to make an announcement",
+      "description": "Use `media_exchange_to_call()` function to make an announcement",
+      "code": "...\nif (!has_totag() && is_method(\"INVITE\") && $hdr(X-CallID) != NULL)\n\tmedia_exchange_to_call($hdr(X-CallID), \"caller\");\n..."
+    },
+    {
+      "title": "Use `media_terminate()` function to terminate an announcement",
+      "description": "Use `media_terminate()` function to terminate an announcement",
+      "code": "...\nif (has_totag() && is_method(\"INVITE\") && !is_audio_on_hold())\n\tmedia_terminate();\n..."
+    },
+    {
+      "title": "Use `media_terminate()` function to terminate an announcement",
+      "description": "Use `media_terminate()` function to terminate an announcement",
+      "code": "...\nif (has_totag() && loose_route()) {\n\t# handling sequential\n\tmedia_handle_indialog();\n\tswitch ($rc) {\ncase -2:\n\tdrop;\ncase -1:\n\txlog(\"no ongoing media session for $ci!\\n\");\ncase 1:\n\tbreak;\n}\n..."
+    }
+  ]
+}

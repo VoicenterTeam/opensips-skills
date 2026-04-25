@@ -1,0 +1,61 @@
+{
+  "id": "module-cachedb_memcached-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "cachedb_memcached Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/cachedb_memcached.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with a memcached server. It uses libmemcached client library to connect to several memcached servers that store data. It uses the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:27:38.327Z",
+  "module_name": "cachedb_memcached",
+  "overview": "This module is an implementation of a cache system designed to work with a memcached server. It uses libmemcached client library to connect to several memcached servers that store data. It uses the Key-Value interface exported from the core.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libmemcached",
+      "type": "library",
+      "reason": "The following libraries or applications must be installed before running OpenSIPS with this module loaded: libmemcached can be downloaded from: http://tangent.org/552/libmemcached.html. Download the archive, extract sources, run ./configure, make,sudo make install.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The urls of the server groups that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations. It can be set more than one time. The prefix part of the URL will be the identifier that will be used from the script.",
+      "example_value": "memcached:group1://localhost:9999,127.0.0.1/",
+      "example_code": "modparam(\"cachedb_memcached\", \"cachedb_url\",\"memcached:group1://localhost:9999,127.0.0.1/\");\nmodparam(\"cachedb_memcached\", \"cachedb_url\",\"memcached:y://random_url:8888/\");"
+    },
+    {
+      "name": "exec_threshold",
+      "type": "integer",
+      "default_value": "0 ( unlimited - no warnings )",
+      "description": "The maximum number of microseconds that a local cache query can last. Anything above the threshold will trigger a warning message to the log",
+      "example_value": "100000",
+      "example_code": "modparam(\"cachedb_memcached\", \"exec_threshold\", 100000)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Set `cachedb_url` parameter",
+      "code": "...\nmodparam(\"cachedb_memcached\", \"cachedb_url\",\"memcached:group1://localhost:9999,127.0.0.1/\");\nmodparam(\"cachedb_memcached\", \"cachedb_url\",\"memcached:y://random_url:8888/\");\n..."
+    },
+    {
+      "title": "Use memcached servers",
+      "description": "Use memcached servers",
+      "code": "...\ncache_store(\"memcached:group1\",\"key\",\"$ru value\");\ncache_fetch(\"memcached:y\",\"key\",$avp(10));\ncache_remove(\"memcached:group1\",\"key\");\n..."
+    },
+    {
+      "title": "Set `exec_threshold` parameter",
+      "description": "Set `exec_threshold` parameter",
+      "code": "...\nmodparam(\"cachedb_memcached\", \"exec_threshold\", 100000)\n..."
+    }
+  ]
+}

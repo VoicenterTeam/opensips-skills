@@ -1,0 +1,177 @@
+{
+  "id": "module-cachedb_redis-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "cachedb_redis Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/cachedb_redis.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with a Redis server. It uses hiredis client library to connect to either a single Redis server instance, or to a Redis Server inside a Redis Cluster. It uses the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:28:46.246Z",
+  "module_name": "cachedb_redis",
+  "overview": "This module is an implementation of a cache system designed to work with a Redis server. It uses hiredis client library to connect to either a single Redis server instance, or to a Redis Server inside a Redis Cluster. It uses the Key-Value interface exported from the core.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "hiredis",
+      "type": "library",
+      "reason": "Must be installed before running OpenSIPS with this module loaded. If TLS connections are enabled, hiredis needs to be compiled with TLS support.",
+      "optional": false
+    },
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "Required if use_tls is defined.",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The URLs of the server groups that OpenSIPS will connect to in order to use, from script, the cache_store(), cache_fetch(), etc. operations. It may be set more than once. The prefix part of the URL will be the identifier that will be used from the script.",
+      "example_value": "redis:group1://localhost:6379/",
+      "example_code": "...\n# single-instance URLs (Redis Server or Redis Cluster)\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:group1://localhost:6379/\")\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:cluster1://random_url:8888/\")\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\n\t\"redis:ha://localhost,host_a:6380,host_b:6381,host_c/\")\n..."
+    },
+    {
+      "name": "connect_timeout",
+      "type": "integer",
+      "default_value": "5000 ms",
+      "description": "This parameter specifies how many milliseconds OpenSIPS should wait for connecting to a Redis node.",
+      "example_value": "1000",
+      "example_code": "...\n# wait 1 seconds for Redis to connect\nmodparam(\"cachedb_redis\", \"connect_timeout\",1000)\n..."
+    },
+    {
+      "name": "query_timeout",
+      "type": "integer",
+      "default_value": "5000 ms",
+      "description": "This parameter specifies how many milliseconds OpenSIPS should wait for a query response from a Redis node.",
+      "example_value": "1000",
+      "example_code": "...\n# wait 1 seconds for Redis queries\nmodparam(\"cachedb_redis\", \"query_timeout\",1000)\n..."
+    },
+    {
+      "name": "shutdown_on_error",
+      "type": "integer",
+      "default_value": "0",
+      "description": "By setting this parameter to 1, OpenSIPS will abort startup if the initial connection to Redis is not possible. Runtime reconnect behavior is unaffected by this parameter, and is always enabled.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\n# abort OpenSIPS startup if Redis is down\nmodparam(\"cachedb_redis\", \"shutdown_on_error\", 1)\n...",
+      "notes": "Runtime reconnect behavior is unaffected by this parameter, and is always enabled."
+    },
+    {
+      "name": "use_tls",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter will allow you to use TLS for Redis connections. In order to enable TLS for a specific connection, you can use the \"tls_domain=_dom_name_\" URL parameter in the cachedb_url of this module (or other modules that use the CacheDB interface). This should be placed at the end of the URL after the '?' character. When using this parameter, you must also ensure that _tls_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains. Note that TLS is supported by Redis starting with version 6.0. Also, it is an optional feature enabled at compile time and might not be included in the standard Redis packages available for your OS.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"tls_mgm\", \"client_domain\", \"redis\")\nmodparam(\"tls_mgm\", \"certificate\", \"[redis]/etc/pki/tls/certs/redis.pem\")\nmodparam(\"tls_mgm\", \"private_key\", \"[redis]/etc/pki/tls/private/redis.key\")\nmodparam(\"tls_mgm\", \"ca_list\",     \"[redis]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"cachedb_redis\", \"use_tls\", 1)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\"redis://localhost:6379/?tls_domain=redis\")\n...",
+      "notes": "Requires tls_mgm module. TLS is supported by Redis starting with version 6.0."
+    },
+    {
+      "name": "ftsearch_index_name",
+      "type": "string",
+      "default_value": "idx:usrloc",
+      "description": "Only relevant with _RedisJSON_ and _RediSearch_ server-side support. A global index name to be used for all internal JSON full-text search operations. Future extensions may add, e.g., a connection-level index name setting.",
+      "example_value": "ix::usrloc",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_index_name\", \"ix::usrloc\")",
+      "notes": "Only relevant with RedisJSON and RediSearch server-side support."
+    },
+    {
+      "name": "ftsearch_json_prefix",
+      "type": "string",
+      "default_value": "usrloc:",
+      "description": "Only relevant with _RedisJSON_ and _RediSearch_ server-side support. A key naming prefix for all internally-created Redis JSON objects (e.g. created with JSON.SET or JSON.MSET).",
+      "example_value": "userlocation:",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_json_prefix\", \"userlocation:\")",
+      "notes": "Only relevant with RedisJSON and RediSearch server-side support."
+    },
+    {
+      "name": "ftsearch_max_results",
+      "type": "integer",
+      "default_value": "10000",
+      "description": "Only relevant with _RedisJSON_ and _RediSearch_ server-side support. The maximum number of results returned by each internally-triggered FT.SEARCH JSON lookup query.",
+      "example_value": "100",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_max_results\", 100)",
+      "notes": "Only relevant with RedisJSON and RediSearch server-side support."
+    },
+    {
+      "name": "ftsearch_json_mset_expire",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "Only relevant with _RedisJSON_ and _RediSearch_ server-side support. A Redis EXPIRE timer to set/refresh on the JSON key after each JSON.MSET operation (create the JSON or add/remove subkeys), in seconds. A value of **0** disables the EXPIRE queries completely.",
+      "example_value": "7200",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_json_mset_expire\", 7200)",
+      "notes": "Only relevant with RedisJSON and RediSearch server-side support. A value of 0 disables the EXPIRE queries completely."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Set `cachedb_url` parameter",
+      "code": "...\n# single-instance URLs (Redis Server or Redis Cluster)\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:group1://localhost:6379/\")\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:cluster1://random_url:8888/\")\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\n\t\"redis:ha://localhost,host_a:6380,host_b:6381,host_c/\")\n..."
+    },
+    {
+      "title": "Use Redis servers",
+      "description": "Use Redis servers",
+      "code": "...\ncache_store(\"redis:group1\", \"key\", \"$ru value\");\ncache_fetch(\"redis:cluster1\", \"key\", $avp(10));\ncache_remove(\"redis:cluster1\", \"key\");\n..."
+    },
+    {
+      "title": "Set `connect_timeout` parameter",
+      "description": "Set `connect_timeout` parameter",
+      "code": "...\n# wait 1 seconds for Redis to connect\nmodparam(\"cachedb_redis\", \"connect_timeout\",1000)\n..."
+    },
+    {
+      "title": "Set `connect_timeout` parameter",
+      "description": "Set `connect_timeout` parameter",
+      "code": "...\n# wait 1 seconds for Redis queries\nmodparam(\"cachedb_redis\", \"query_timeout\",1000)\n..."
+    },
+    {
+      "title": "Set the `shutdown_on_error` parameter",
+      "description": "Set the `shutdown_on_error` parameter",
+      "code": "...\n# abort OpenSIPS startup if Redis is down\nmodparam(\"cachedb_redis\", \"shutdown_on_error\", 1)\n..."
+    },
+    {
+      "title": "Set the `use_tls` parameter",
+      "description": "Set the `use_tls` parameter",
+      "code": "...\nmodparam(\"tls_mgm\", \"client_domain\", \"redis\")\nmodparam(\"tls_mgm\", \"certificate\", \"[redis]/etc/pki/tls/certs/redis.pem\")\nmodparam(\"tls_mgm\", \"private_key\", \"[redis]/etc/pki/tls/private/redis.key\")\nmodparam(\"tls_mgm\", \"ca_list\",     \"[redis]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"cachedb_redis\", \"use_tls\", 1)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\"redis://localhost:6379/?tls_domain=redis\")\n..."
+    },
+    {
+      "title": "Set the `ftsearch_index_name` parameter",
+      "description": "Set the `ftsearch_index_name` parameter",
+      "code": "modparam(\"cachedb_redis\", \"ftsearch_index_name\", \"ix::usrloc\")"
+    },
+    {
+      "title": "Set the `ftsearch_json_prefix` parameter",
+      "description": "Set the `ftsearch_json_prefix` parameter",
+      "code": "modparam(\"cachedb_redis\", \"ftsearch_json_prefix\", \"userlocation:\")"
+    },
+    {
+      "title": "Set the `ftsearch_max_results` parameter",
+      "description": "Set the `ftsearch_max_results` parameter",
+      "code": "modparam(\"cachedb_redis\", \"ftsearch_max_results\", 100)"
+    },
+    {
+      "title": "Set the `ftsearch_json_mset_expire` parameter",
+      "description": "Set the `ftsearch_json_mset_expire` parameter",
+      "code": "modparam(\"cachedb_redis\", \"ftsearch_json_mset_expire\", 7200)"
+    },
+    {
+      "title": "Redis Raw Query Examples",
+      "description": "Here are a couple examples of running some Redis queries",
+      "code": "...\n\t$var(my_hash) = \"my_hash_name\";\n\t$var(my_key) = \"my_key_name\";\n\t$var(my_value) = \"my_key_value\";\n\tcache_raw_query(\"redis\",\"HSET $var(my_hash) $var(my_key) $var(my_value)\");\n\tcache_raw_query(\"redis\",\"HGET $var(my_hash) $var(my_key)\",\"$avp(result)\");\n\txlog(\"We have fetched $avp(result) \\\\n\");\n...\n\t$var(my_hash) = \"my_hash_name\";\n\t$var(my_key1) = \"my_key1_name\";\n\t$var(my_key2) = \"my_key2_name\";\n\t$var(my_value1) = \"my_key1_value\";\n\t$var(my_value2) = \"my_key2_value\";\n\tcache_raw_query(\"redis\",\"HSET $var(my_hash) $var(my_key1) $var(my_value1)\");\n\tcache_raw_query(\"redis\",\"HSET $var(my_hash) $var(my_key2) $var(my_value2)\");\n\tcache_raw_query(\"redis\",\"HGETALL $var(my_hash)\",\"$avp(result)\");\n\n\t$var(it) = 0;\n\twhile ($(avp(result_final)[$var(it)]) != NULL) {\n\t\txlog(\"Multiple key reply: - we have fetched $(avp(result_final)[$var(it)]) \\\\n\");\n\t\t$var(it) = $var(it) + 1;\n\t}\n..."
+    }
+  ]
+}

@@ -1,0 +1,753 @@
+{
+  "id": "module-b2b_entities-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "b2b_entities Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/b2b_entities.html",
+  "content_markdown": "The B2BUA implementation in OpenSIPS is separated in two layers:\n\n*   a lower one(coded in this module)- which implements the basic functions of a UAS and UAC\n*   a upper one - which represents the logic engine of B2BUA, responsible of actually implementing the B2BUA services using the functions offered by the low level.\n\nThis module stores records corresponding to the dialogs in which the B2BUA is involved. It exports an API to be called from other modules which offers functions for creating a new dialog record, for sending requests or replies in one dialog and will also notify the upper level module when a request or reply is received inside one stored dialog. The records are separated in two types: b2b server entities and b2b client entities depending on the mode they are created. An entity created for a received initial message will be a server entity, while a entity that will send an initial request(create a new dialog) will be a b2b client entity. The name corresponds to the behavior in the first transaction - if UAS - server entity and if UAC - client entity. This module does not implement a B2BUA alone, but needs a B2B logic implementing module.\n\nThe module is able to respond to authentication challanges if the uac_auth module is loaded first. The list of credentials for b2b authentication is also provided by the uac_auth module.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T09:30:29.525Z",
+  "module_name": "b2b_entities",
+  "overview": "The B2BUA implementation in OpenSIPS is separated in two layers:\n\n*   a lower one(coded in this module)- which implements the basic functions of a UAS and UAC\n*   a upper one - which represents the logic engine of B2BUA, responsible of actually implementing the B2BUA services using the functions offered by the low level.\n\nThis module stores records corresponding to the dialogs in which the B2BUA is involved. It exports an API to be called from other modules which offers functions for creating a new dialog record, for sending requests or replies in one dialog and will also notify the upper level module when a request or reply is received inside one stored dialog. The records are separated in two types: b2b server entities and b2b client entities depending on the mode they are created. An entity created for a received initial message will be a server entity, while a entity that will send an initial request(create a new dialog) will be a b2b client entity. The name corresponds to the behavior in the first transaction - if UAS - server entity and if UAC - client entity. This module does not implement a B2BUA alone, but needs a B2B logic implementing module.\n\nThe module is able to respond to authentication challanges if the uac_auth module is loaded first. The list of credentials for b2b authentication is also provided by the uac_auth module.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "tm",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "a db module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "uac_auth",
+      "type": "module",
+      "reason": "Mandatory if authentication is required",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "server_hsize",
+      "type": "integer",
+      "default_value": "9",
+      "description": "The size of the hash table that stores the b2b server entities. It is the 2 logarithmic value of the real size.",
+      "example_value": "10",
+      "example_code": "modparam(\"b2b\\_entities\", \"server\\_hsize\", 10)"
+    },
+    {
+      "name": "client_hsize",
+      "type": "integer",
+      "default_value": "9",
+      "description": "The size of the hash table that stores the b2b client entities. It is the 2 logarithmic value of the real size.",
+      "example_value": "10",
+      "example_code": "modparam(\"b2b\\_entities\", \"client\\_hsize\", 10)"
+    },
+    {
+      "name": "script_req_route",
+      "type": "string",
+      "description": "The name of the b2b script route that will be called when B2B requests are received.",
+      "example_value": "b2b_request",
+      "example_code": "modparam(\"b2b\\_entities\", \"script\\_req\\_route\", \"b2b\\_request\")"
+    },
+    {
+      "name": "script_reply_route",
+      "type": "string",
+      "description": "The name of the b2b script route that will be called when B2B replies are received.",
+      "example_value": "b2b_reply",
+      "example_code": "modparam(\"b2b\\_entities\", \"script\\_reply\\_route\", \"b2b\\_reply\")"
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "description": "Database URL. It is not compulsory, if not set data is not stored in database.",
+      "example_value": "mysql://opensips:opensipsrw@127.0.0.1/opensips",
+      "example_code": "modparam(\"b2b\\_entities\", \"db\\_url\", \"mysql://opensips:opensipsrw@127.0.0.1/opensips\")"
+    },
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "URL of a NoSQL database to be used. Only Redis is supported at the moment.",
+      "example_value": "redis://localhost:6379/",
+      "example_code": "...\nmodparam(\"b2b\\_entities\", \"cachedb\\_url\", \"redis://localhost:6379/\")\n..."
+    },
+    {
+      "name": "cachedb_key_prefix",
+      "type": "string",
+      "default_value": "b2be$",
+      "description": "Prefix to use for every key set in the NoSQL database.",
+      "example_value": "b2b",
+      "example_code": "...\nmodparam(\"b2b\\_entities\", \"cachedb\\_key\\_prefix\", \"b2b\")\n..."
+    },
+    {
+      "name": "update_period",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The time interval at which to update the info in database.",
+      "example_value": "60",
+      "example_code": "...\nmodparam(\"b2b\\_entities\", \"update\\_period\", 60)\n..."
+    },
+    {
+      "name": "b2b_key_prefix",
+      "type": "string",
+      "default_value": "B2B",
+      "description": "The string to use when generating the key ( it is inserted in the SIP messages as callid or to tag. It is useful to set this prefix if you use more instances of opensips B2BUA cascaded in the same architecture. Sometimes opensips B2BUA looks at the callid or totag to see if it has the format it uses to determine if the request was sent by it.",
+      "example_value": "B2B1",
+      "example_code": "...\nmodparam(\"b2b\\_entities\", \"b2b\\_key\\_prefix\", \"B2B1\")\n..."
+    },
+    {
+      "name": "db_mode",
+      "type": "integer",
+      "default_value": "2",
+      "description": "The B2B modules have support for the 3 type of database storage",
+      "possible_values": [
+        "0 (NO DB STORAGE)",
+        "1 (WRITE THROUGH)",
+        "2 (WRITE BACK)"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"b2b\\_entities\", \"db\\_mode\", 1)\n..."
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "b2b_entities",
+      "description": "The name of the table that will be used for storing B2B entities",
+      "scope": "global",
+      "example_value": "some table name",
+      "example_code": "modparam(\"b2b\\_entities\", \"db\\_table\", \"some table name\")"
+    },
+    {
+      "name": "cluster_id",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The ID of the cluster this instance belongs to. Setting this parameter enables clustering support for the OpenSIPS B2BUA by replicating the B2B entities (B2B dialogs) between instances. This also ensures restart persistency through the _clusterer_ module's data \"sync\" mechanism. This OpenSIPS cluster exposes the **\"b2be-entities-repl\"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **\"seed\"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.",
+      "scope": "global",
+      "example_value": "10",
+      "example_code": "modparam(\"b2b\\_entities\", \"cluster\\_id\", 10)"
+    },
+    {
+      "name": "passthru_prack",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This parameter allows to control, whether a PRACK should be generated locally (=0) or if we request it to be end-to-end (=1).",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"b2b\\_entities\", \"passthru\\_prack\", 1)"
+    },
+    {
+      "name": "advertised_contact",
+      "type": "string",
+      "description": "Contact to use in generated messages for UA session started with the [ua\\_session\\_client\\_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function.",
+      "scope": "global",
+      "example_value": "opensips@10.10.10.10:5060",
+      "example_code": "modparam(\"b2b\\_entities\", \"advertised\\_contact\", \"opensips@10.10.10.10:5060\")"
+    },
+    {
+      "name": "ua_default_timeout",
+      "type": "string",
+      "default_value": "43200",
+      "description": "Default timeout, in seconds, for UA session started with the [ua\\_session\\_server\\_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags], [extra_params])\") function or the [ua\\_session\\_client\\_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function. After this interval a BYE will be sent and the session will be deleted.",
+      "scope": "global",
+      "example_value": "7200",
+      "example_code": "modparam(\"b2b\\_entities\", \"ua\\_default\\_timeout\", 7200)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "ua_session_server_init",
+      "signature": "ua_session_server_init([key], [flags], [extra_params])",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "var",
+          "required": false,
+          "description": "Variable to return the b2b entity key of the new UA session."
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "configures options for this UA session via the following flags: t[nn] - maximum duration of this session in seconds. After this timeout a BYE will be sent and the session will be deleted. If this is not set, the default timeout, configured with ua_default_timeout will be used. Example: t3600; a - report the receving of ACK requests via the E_UA_SESSION event; r - report the receving of replies via the E_UA_SESSION event; d - disable the automatic sending of ACK upon receving a 200 OK reply for INVITE (in case of UAC session) or re-INVITE; h - provide the headers of the SIP request/reply in the E_UA_SESSION event; b - provide the body of the SIP request/reply in the E_UA_SESSION event; n - do not trigger the E_UA_SESSION event (with event_type NEW) for initial INVITES handled with this function.",
+          "valid_values": [
+            "t[nn]",
+            "a",
+            "r",
+            "d",
+            "h",
+            "b",
+            "n"
+          ]
+        },
+        {
+          "name": "extra_params",
+          "type": "string",
+          "required": false,
+          "description": "An arbitrary value to be passed to the _extra_params_ parameter in the E_UA_SESSION event."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function initializes a new UA session by processing an initial INVITE. Further requests/replies received belonging to this session will only be handled via the E_UA_SESSION event.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif(is_method(\"INVITE\") && !has_totag()) {\n   ua_session_server_init($var(b2b_key), \"arhb\");\n\n   ua_session_reply($var(b2b_key), \"INVITE\", 200, \"OK\", $var(my_sdp));\n   \n   exit;\n}\n...",
+          "description": "Example 1.16 usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "ua_session_update",
+      "signature": "ua_session_update(key, method, [body], [extra_headers], [content_type])",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": true,
+          "description": "name of the SIP method for this request."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "body to include in the SIP message."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message."
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "description": "Content-Type header. If the parameter is missing and a body is provided, \"Content-Type: application/sdp\" will be used."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Sends a sequential request for a UA session started with the ua_session_server_init() function or the ua_session_client_start MI function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nua_session_update($var(b2b_key), \"OPTIONS\");\n...",
+          "description": "Example 1.17 usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "ua_session_server_init"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "ua_session_reply",
+      "signature": "ua_session_reply(key, method, code, [reason], [body], [extra_headers], [content_type])",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": true,
+          "description": "name of the SIP method that is replied to."
+        },
+        {
+          "name": "code",
+          "type": "int",
+          "required": true,
+          "description": "reply code."
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": false,
+          "description": "reply reason string."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "body to include in the SIP message."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message."
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "description": "Content-Type header. If the parameter is missing and a body is provided, \"Content-Type: application/sdp\" will be used."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Sends a reply for a UA session started with the ua_session_server_init() function or the ua_session_client_start MI function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nua_session_reply($var(b2b_key), \"INVITE\", 180, \"Ringing\");\n...",
+          "description": "Example 1.18 usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "ua_session_server_init"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "ua_session_terminate",
+      "signature": "ua_session_terminate(key, [extra_headers])",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Terminate a UA session started with the ua_session_server_init() function or the ua_session_client_start MI function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nua_session_terminate($var(b2b_key));\n...",
+          "description": "Example 1.19 usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "ua_session_server_init"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "b2be_list",
+      "parameters": [],
+      "description": "This command can be used to list the internals of the b2b entities.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi b2be_list",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ua_session_client_start",
+      "parameters": [
+        {
+          "name": "ruri",
+          "type": "string",
+          "required": true,
+          "description": "Request URI"
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "required": true,
+          "description": "To URI; can also be specified as: display_name,uri in order to set a Display Name, eg. Alice,sip:alice@opensips.org."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "required": true,
+          "description": "From URI; can also be specified as: display_name,uri in order to set a Display Name, eg. Alice,sip:alice@opensips.org"
+        },
+        {
+          "name": "proxy",
+          "type": "string",
+          "required": false,
+          "description": "URI of the outbound proxy to send the INVITE to"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "message body"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "description": "Content Type header to use. If missing and a body is provided, \"Content-Type: application/sdp\" will be used."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags with the same meaning as for the flags paramater of ua_session_server_init()."
+        },
+        {
+          "name": "socket",
+          "type": "string",
+          "required": false,
+          "description": "OpenSIPS sending socket"
+        }
+      ],
+      "description": "This command starts a new UAC session by sending an initial INVITE. Further requests/replies received belonging to this session will only be handled via the [E_UA_SESSION](#event_E_UA_SESSION \"1.6.1.� E_UA_SESSION\") event.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi ua_session_client_start ruri=sip:bob@opensips.org \\\n to=sip:bob@opensips.org from=sip:alice@opensips.org flags=arhb",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ua_session_update",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": true,
+          "description": "name of the SIP method for this request."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "body to include in the SIP message."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message."
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "description": "Content-Type header. If the parameter is missing and a body is provided, \"Content-Type: application/sdp\" will be used."
+        }
+      ],
+      "description": "Sends a sequential request for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags], [extra_params])\") function or the [ua_session_client_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi ua_session_update key=B2B.436.1925389.1649338095 method=OPTIONS",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ua_session_reply",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": true,
+          "description": "name of the SIP method that is replied to."
+        },
+        {
+          "name": "code",
+          "type": "integer",
+          "required": true,
+          "description": "reply code"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "reply reason string"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "body to include in the SIP message"
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "description": "Content-Type header. If the parameter is missing and a body is provided, \"Content-Type: application/sdp\" will be used."
+        }
+      ],
+      "description": "Sends a reply for a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags], [extra_params])\") function or the [ua_session_client_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi ua_session_reply key=B2B.436.1925389.1649338095 method=OPTIONS code=200 reason=OK",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ua_session_terminate",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "extra headers to include in the SIP message"
+        }
+      ],
+      "description": "Terminate a UA session started with the [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags], [extra_params])\") function or the [ua_session_client_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi ua_session_terminate key=B2B.436.1925389.1649338095",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ua_session_list",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": false,
+          "description": "b2b entity key of the UA session to list. If missing, all sessions will be listed."
+        }
+      ],
+      "description": "List information about UA sessions started with [ua_session_server_init()](#func_ua_session_server_init \"1.4.1.� ua_session_server_init([key], [flags], [extra_params])\") function or the [ua_session_client_start](#mi_ua_session_client_start \"1.5.2.� ua_session_client_start\") MI function.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi ua_session_list",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_UA_SESSION",
+      "description": "This event is triggered for requests/replies belonging to an ongoing UA session started with the ua_session_server_init() function or the ua_session_client_start MI function. Note that replies will not be reported at all unless the _r_ flag was set when initiating the UA session. Also ACK requests are only reported if the _a_ flag was set.",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "description": "b2b entity key of the UA session."
+        },
+        {
+          "name": "entity_type",
+          "type": "string",
+          "description": "indicates whether this is a UAS or UAc entity."
+        },
+        {
+          "name": "event_type",
+          "type": "string",
+          "description": "the type of event: NEW - for initial INVITE requests, handled with the ua_session_server_init() function. EARLY - for 1xx provisional responses. ANSWERED - for 2xx successful responses. REJECTED - for 3xx-6xx failure responses. UPDATED - for any sequential requests, including ACK but excluding BYE/CANCEL. TERMINATED - for BYE or CANCEL requests."
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "description": "the reply status code if the message is a SIP reply"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "description": "the reply reason if the message is a SIP reply"
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "description": "the SIP method name"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "SIP message body"
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "full list of all SIP headers in the message."
+        },
+        {
+          "name": "extra_params",
+          "type": "string",
+          "description": "an arbitrary value. Currently only the ua_session_server_init() function passes this if the extra_params argument is used, and it only appears in the NEW event_type."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `server_hsize` parameter",
+      "description": "Set `server_hsize` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"server_hsize\", 10)\n..."
+    },
+    {
+      "title": "Set `client_hsize` parameter",
+      "description": "Set `client_hsize` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"client_hsize\", 10)\n..."
+    },
+    {
+      "title": "Set `script_req_route` parameter",
+      "description": "Set `script_req_route` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"script_req_route\", \"b2b_request\")\n..."
+    },
+    {
+      "title": "Set `script_repl_route` parameter",
+      "description": "Set `script_repl_route` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"script_reply_route\", \"b2b_reply\")\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"db_url\", \"mysql://opensips:opensipsrw@127.0.0.1/opensips\")\n..."
+    },
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Set `cachedb_url` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"cachedb_url\", \"redis://localhost:6379/\")\n..."
+    },
+    {
+      "title": "Set `cachedb_key_prefix` parameter",
+      "description": "Set `cachedb_key_prefix` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"cachedb_key_prefix\", \"b2b\")\n..."
+    },
+    {
+      "title": "Set `update_period` parameter",
+      "description": "Set `update_period` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"update_period\", 60)\n..."
+    },
+    {
+      "title": "Set `b2b_key_prefix` parameter",
+      "description": "Set `b2b_key_prefix` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"b2b_key_prefix\", \"B2B1\")\n..."
+    },
+    {
+      "title": "Set `db_mode` parameter",
+      "description": "Set `db_mode` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"db_mode\", 1)\n..."
+    },
+    {
+      "title": "Set `db_table` parameter",
+      "description": "Set `db_table` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"db_table\", \"some table name\")\n..."
+    },
+    {
+      "title": "Set `cluster_id` parameter",
+      "description": "Set `cluster_id` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"cluster_id\", 10)\n..."
+    },
+    {
+      "title": "Set `passthru_prack` parameter",
+      "description": "Set `passthru_prack` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"passthru_prack\", 1)\n..."
+    },
+    {
+      "title": "Set `advertised_contact` parameter",
+      "description": "Set `advertised_contact` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"advertised_contact\", \"opensips@10.10.10.10:5060\")\n..."
+    },
+    {
+      "title": "Set `ua_default_timeout` parameter",
+      "description": "Set `ua_default_timeout` parameter",
+      "code": "...\nmodparam(\"b2b_entities\", \"ua_default_timeout\", 7200)\n..."
+    },
+    {
+      "title": "`ua_session_server_init` usage",
+      "description": "`ua_session_server_init` usage",
+      "code": "...\nif(is_method(\"INVITE\") && !has_totag()) {\n   ua_session_server_init($var(b2b_key), \"arhb\");\n\n   ua_session_reply($var(b2b_key), \"INVITE\", 200, \"OK\", $var(my_sdp));\n   \n   exit;\n}\n..."
+    },
+    {
+      "title": "`ua_session_update` usage",
+      "description": "`ua_session_update` usage",
+      "code": "...\nua_session_update($var(b2b_key), \"OPTIONS\");\n..."
+    },
+    {
+      "title": "`ua_session_reply` usage",
+      "description": "`ua_session_reply` usage",
+      "code": "...\nua_session_reply($var(b2b_key), \"INVITE\", 180, \"Ringing\");\n..."
+    },
+    {
+      "title": "`ua_session_terminate` usage",
+      "description": "`ua_session_terminate` usage",
+      "code": "...\nua_session_terminate($var(b2b_key));\n..."
+    },
+    {
+      "title": "`b2b_api_t` structure",
+      "description": "`b2b_api_t` structure",
+      "code": "...\ntypedef struct b2b_api {\n\tb2b_server_new_t          server_new;\n\tb2b_client_new_t          client_new;\n\n\tb2b_send_request_t        send_request;\n\tb2b_send_reply_t          send_reply;\n\n\tb2b_entity_delete_t       entity_delete;\n\n\tb2b_restore_linfo_t       restore_logic_info;\n\tb2b_update_b2bl_param_t   update_b2bl_param;\n}b2b_api_t;\n..."
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "id": "event-CoreEvents-3-4",
+  "document_type": "event",
+  "version": "3.4",
+  "title": "Core Events v3.4",
+  "url": "https://www.opensips.org/Documentation/Interface-CoreEvents-3-4",
+  "content_markdown": "[](https://www.opensips.org)\n\n\n*   [About](/About/About \"About\")\n*   [Downloads](/Downloads/Downloads \"Download\")\n*   [Documentation](/Documentation/Manuals \"Documentation\")\n*   [Community](/Community/OpenSIPS-CE \"Community\")\n*   [Development](/Development/Development \"Development\")\n*   [Training](/Training/Trainings \"Training\")\n\nDocumentation\n\n*   [Manuals](https://www.opensips.org/Documentation/Manuals \"Manuals\")\n*   [Advanced Tutorials](https://www.opensips.org/Documentation/Tutorials \"Tutorials\")\n*   [Tips & FAQ](https://www.opensips.org/Documentation/TipsFAQ \"TipsFAQ\")\n*   [Version Migration](https://www.opensips.org/Documentation/Migration \"Migration\")\n*   [OpenSIPS Webinars](https://www.opensips.org/Documentation/Webinars \"Webinars\")\n*   [Troubleshooting](https://www.opensips.org/Documentation/Troubleshooting \"Troubleshooting\")\n*   [OpenSIPS Tools](https://www.opensips.org/Documentation/Tools \"Tools\")\n*   [Devel Tutorial](https://www.opensips.org/Documentation/Development-Tutorials \"Development-Tutorials\")\n\n\n---\n\nPages for other versions: [devel](https://www.opensips.org/Documentation/Interface-CoreEvents-4-0 \"Core Events - 4.0\") [3.6](https://www.opensips.org/Documentation/Interface-CoreEvents-3-6 \"Core Events - 3.6\") [3.5](https://www.opensips.org/Documentation/Interface-CoreEvents-3-5 \"Core Events - 3.5\") 3.4 Older versions: [3.3](https://www.opensips.org/Documentation/Interface-CoreEvents-3-3 \"Core Events - 3.3\") [3.2](https://www.opensips.org/Documentation/Interface-CoreEvents-3-2 \"Core Events - 3.2\") [3.1](https://www.opensips.org/Documentation/Interface-CoreEvents-3-1 \"Core Events - 3.1\") [3.0](https://www.opensips.org/Documentation/Interface-CoreEvents-3-0 \"Core Events - 3.0\") [2.4](https://www.opensips.org/Documentation/Interface-CoreEvents-2-4 \"Core Events - 2.4\") [2.3](https://www.opensips.org/Documentation/Interface-CoreEvents-2-3 \"Core Events - devel\") [2.2](https://www.opensips.org/Documentation/Interface-CoreEvents-2-2 \"Core Events - 2.2\") [2.1](https://www.opensips.org/Documentation/Interface-CoreEvents-2-1 \"Core Events - devel\") [1.11](https://www.opensips.org/Documentation/Interface-CoreEvents-1-11 \"Core Events - 1.11\") [1.10](https://www.opensips.org/Documentation/Interface-CoreEvents-1-10 \"Core Events - ver 1.10\") [1.9](https://www.opensips.org/Documentation/Interface-CoreEvents-1-9 \"Core Events - ver 1.9\") [1.8](https://www.opensips.org/Documentation/Interface-CoreEvents-1-8 \"Core Events - ver 1.8\") [1.7](https://www.opensips.org/Documentation/Interface-CoreEvents-1-7 \"Core Events - ver 1.7\")\n\n  \n\n**Core Events v3.4**\n\n[Prev](https://www.opensips.org/Documentation/Interface-Events-3-4 \"Events Interface - 3.4\")\n\n[Next](https://www.opensips.org/Documentation/Interface-Statistics-3-4 \"Statistics Interface - devel\")\n\n---\n\n**Table of Content** ([hide](javascript:toggle('tocid');))\n\nEvents are exported by the **OpenSIPS** core through the Event Interface.\n\n---\n\n### 1.  Threshold limit exceeded [🔗](#E_CORE_THRESHOLD)\n\n**Event**: E\\_CORE\\_THRESHOLD\n\nThis event is triggered when a particular action takes longer than a specific threshold. It can be raised when a MySQL or DNS query takes too long, or a SIP message processing goes beyond a specific limit. For more information please see [this](http://lists.opensips.org/pipermail/users/2011-February/016918.html) post.\n\nParameters:\n\n*   **source**: the source of the event: mysql module, core (for DNS or message processing warnings).\n*   **time**: the amount of time (in microseconds) spent by the operation\n*   **extra**: extra information, depending on the source of the event\n\n### 2.  Private memory threshold exceeded [🔗](#E_CORE_PKG_THRESHOLD)\n\n**Event**: E\\_CORE\\_PKG\\_THRESHOLD\n\nThis event is triggered when the private memory usage goes above a threshold limit, specified by the **event\\_pkg\\_threshold** the core parameter. It warns external applications about low values of free private memory.\n\nParameters:\n\n*   **usage**: the percentage of private memory usage. Can have values between **event\\_pkg\\_threshold** and 100.\n*   **threshold**: the **event\\_pkg\\_threshold** specified in the script.\n*   **used**: the amount of private memory used.\n*   **size**: the total amount of private memory.\n*   **pid**: the pid of the process that raises the event.\n\nNote: If the **event\\_pkg\\_threshold** is not specified or 0, then this event is disabled.\n\n### 3.  Shared memory threshold exceeded [🔗](#E_CORE_SHM_THRESHOLD)\n\n**Event**: E\\_CORE\\_SHM\\_THRESHOLD\n\nThis event is triggered when the shared memory usage goes above a threshold limit, specified by the **event\\_shm\\_threshold** the core parameter. It warns external applications about low values of free shared memory.\n\nParameters:\n\n*   **usage**: the percentage of private memory usage. Can have values between **event\\_shm\\_threshold** and 100.\n*   **threshold**: the **event\\_shm\\_threshold** specified in the script.\n*   **used**: the amount of private memory used.\n*   **size**: the total amount of private memory.\n\nNote: If the **event\\_shm\\_threshold** is not specified or 0, then this event is disabled.\n\n### 4.  Process Auto-Scaling (upscale and downscale) [🔗](#E_CORE_PROC_AUTO_SCALE)\n\n**Event**: E\\_CORE\\_PROC\\_AUTO\\_SCALE\n\nThis event is triggered whenever a new process is created (forked) or a process is terminated due the auto-scaling logic. In order to have this event trigger, the [auto-scaling](https://www.opensips.org/Documentation/Script-CoreParameters-3-4#auto_scaling_profile) must be enabled in your configuration.\n\nParameters:\n\n*   **group\\_type**: the type/name of the scaling group (UDP/TCP/TIMER).\n*   **group\\_filter**: the filter (usually the socket/interface for UDP) of the scaling group.\n*   **group\\_load**: the load over the scaling group.\n*   **scale**: \"up\" or \"down\"\n*   **process\\_id**: the process ID (at OpenSIPS level) of the scaled (up or down) process.\n*   **pid**: the PID (OS level) of the scaled (up or down) process.\n\n### 5.  TCP connection disconnected [🔗](#E_CORE_TCP_DISCONNECT)\n\n**Event**: E\\_CORE\\_TCP\\_DISCONNECT\n\nThis event is triggered when a TCP connection is terminated/disconnected.\n\nParameters:\n\n*   **src\\_ip**: the source IP of the TCP connection\n*   **src\\_port**: the source PORT of the TCP connection\n*   **dst\\_ip**: the destination IP of the TCP connection\n*   **dst\\_port**: the destination PORT of the TCP connection\n*   **proto**: the protocol of the underlying TCP connection ( ie. tcp, tls, ws, wss, etc )\n\n### 6.  Status/Report status changed [🔗](#E_CORE_SR_STATUS_CHANGED)\n\n**Event**: E\\_CORE\\_SR\\_STATUS\\_CHANGED\n\nThis event is triggered the status of an SR identifier changes.\n\nParameters:\n\n*   **group**: the name of the SR group\n*   **identifier**: the name of the SR identifier\n*   **status**: the new status (as numerical value) of the SR identifier\n*   **details**: the details/text attached to the new status\n*   **old\\_status**: the old status (as numerical value) of the SR identifier\n\n### 7.  Log message produced [🔗](#E_CORE_LOG)\n\n**Event**: E\\_CORE\\_LOG\n\nThis event is triggered whenever a log message is produced by OpenSIPS. In order to have this event trigger, the [log\\_event\\_enabled](https://www.opensips.org/Documentation/Script-CoreParameters-3-4#log_event_enabled) must be enabled in your configuration.\n\nParameters:\n\n*   **time**: time when the log message was produced\n*   **pid**: the PID of the processes that produced this log message\n*   **level**: the log level of this message (\"DBG\", \"INFO\" etc.)\n*   **module**: module that produced this log message; NULL for logs triggered from the script by the **xlog()** function\n*   **function**: internal function that produced this log message; NULL for logs triggered from the script by the **xlog()** function\n*   **prefix**: logging prefix, configured via the [log\\_prefix](https://www.opensips.org/Documentation/Script-CoreParameters-3-4#log_prefix) parameter. It is an empty string if the parameter is not configured.\n*   **message**: the actual log message content\n\n\n\n---\n\n| | | |",
+  "category": "Core",
+  "extracted_at": "2024-05-21T00:00:00.000Z",
+  "events": [
+    {
+      "name": "E_CORE_THRESHOLD",
+      "module": "core",
+      "description": "This event is triggered when a particular action takes longer than a specific threshold. It can be raised when a MySQL or DNS query takes too long, or a SIP message processing goes beyond a specific limit.",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "description": "the source of the event: mysql module, core (for DNS or message processing warnings)."
+        },
+        {
+          "name": "time",
+          "type": "integer",
+          "description": "the amount of time (in microseconds) spent by the operation"
+        },
+        {
+          "name": "extra",
+          "type": "string",
+          "description": "extra information, depending on the source of the event"
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_PKG_THRESHOLD",
+      "module": "core",
+      "description": "This event is triggered when the private memory usage goes above a threshold limit, specified by the event_pkg_threshold the core parameter. It warns external applications about low values of free private memory.",
+      "parameters": [
+        {
+          "name": "usage",
+          "type": "integer",
+          "description": "the percentage of private memory usage. Can have values between event_pkg_threshold and 100."
+        },
+        {
+          "name": "threshold",
+          "type": "integer",
+          "description": "the event_pkg_threshold specified in the script."
+        },
+        {
+          "name": "used",
+          "type": "integer",
+          "description": "the amount of private memory used."
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "the total amount of private memory."
+        },
+        {
+          "name": "pid",
+          "type": "integer",
+          "description": "the pid of the process that raises the event."
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_SHM_THRESHOLD",
+      "module": "core",
+      "description": "This event is triggered when the shared memory usage goes above a threshold limit, specified by the event_shm_threshold the core parameter. It warns external applications about low values of free shared memory.",
+      "parameters": [
+        {
+          "name": "usage",
+          "type": "integer",
+          "description": "the percentage of private memory usage. Can have values between event_shm_threshold and 100."
+        },
+        {
+          "name": "threshold",
+          "type": "integer",
+          "description": "the event_shm_threshold specified in the script."
+        },
+        {
+          "name": "used",
+          "type": "integer",
+          "description": "the amount of private memory used."
+        },
+        {
+          "name": "size",
+          "type": "integer",
+          "description": "the total amount of private memory."
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_PROC_AUTO_SCALE",
+      "module": "core",
+      "description": "This event is triggered whenever a new process is created (forked) or a process is terminated due the auto-scaling logic. In order to have this event trigger, the auto-scaling must be enabled in your configuration.",
+      "parameters": [
+        {
+          "name": "group_type",
+          "type": "string",
+          "description": "the type/name of the scaling group (UDP/TCP/TIMER)."
+        },
+        {
+          "name": "group_filter",
+          "type": "string",
+          "description": "the filter (usually the socket/interface for UDP) of the scaling group."
+        },
+        {
+          "name": "group_load",
+          "type": "integer",
+          "description": "the load over the scaling group."
+        },
+        {
+          "name": "scale",
+          "type": "string",
+          "description": "\"up\" or \"down\""
+        },
+        {
+          "name": "process_id",
+          "type": "integer",
+          "description": "the process ID (at OpenSIPS level) of the scaled (up or down) process."
+        },
+        {
+          "name": "pid",
+          "type": "integer",
+          "description": "the PID (OS level) of the scaled (up or down) process."
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_TCP_DISCONNECT",
+      "module": "core",
+      "description": "This event is triggered when a TCP connection is terminated/disconnected.",
+      "parameters": [
+        {
+          "name": "src_ip",
+          "type": "string",
+          "description": "the source IP of the TCP connection"
+        },
+        {
+          "name": "src_port",
+          "type": "integer",
+          "description": "the source PORT of the TCP connection"
+        },
+        {
+          "name": "dst_ip",
+          "type": "string",
+          "description": "the destination IP of the TCP connection"
+        },
+        {
+          "name": "dst_port",
+          "type": "integer",
+          "description": "the destination PORT of the TCP connection"
+        },
+        {
+          "name": "proto",
+          "type": "string",
+          "description": "the protocol of the underlying TCP connection ( ie. tcp, tls, ws, wss, etc )"
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_SR_STATUS_CHANGED",
+      "module": "core",
+      "description": "This event is triggered the status of an SR identifier changes.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "description": "the name of the SR group"
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "description": "the name of the SR identifier"
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "description": "the new status (as numerical value) of the SR identifier"
+        },
+        {
+          "name": "details",
+          "type": "string",
+          "description": "the details/text attached to the new status"
+        },
+        {
+          "name": "old_status",
+          "type": "integer",
+          "description": "the old status (as numerical value) of the SR identifier"
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    },
+    {
+      "name": "E_CORE_LOG",
+      "module": "core",
+      "description": "This event is triggered whenever a log message is produced by OpenSIPS. In order to have this event trigger, the log_event_enabled must be enabled in your configuration.",
+      "parameters": [
+        {
+          "name": "time",
+          "type": "string",
+          "description": "time when the log message was produced"
+        },
+        {
+          "name": "pid",
+          "type": "integer",
+          "description": "the PID of the processes that produced this log message"
+        },
+        {
+          "name": "level",
+          "type": "string",
+          "description": "the log level of this message (\"DBG\", \"INFO\" etc.)"
+        },
+        {
+          "name": "module",
+          "type": "string",
+          "description": "module that produced this log message; NULL for logs triggered from the script by the xlog() function"
+        },
+        {
+          "name": "function",
+          "type": "string",
+          "description": "internal function that produced this log message; NULL for logs triggered from the script by the xlog() function"
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "description": "logging prefix, configured via the log_prefix parameter. It is an empty string if the parameter is not configured."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "description": "the actual log message content"
+        }
+      ],
+      "subscribe_method": "",
+      "examples": []
+    }
+  ]
+}

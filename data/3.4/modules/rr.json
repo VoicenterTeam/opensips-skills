@@ -1,0 +1,256 @@
+{
+  "id": "module-rr-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "rr Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/rr.html",
+  "content_markdown": "The module contains record routing logic",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:21:01.564Z",
+  "module_name": "rr",
+  "overview": "The module contains record routing logic",
+  "how_it_works": "OpenSIPS is basically _only_ a transaction statefull proxy, without any dialog support build in. There are many features/services which actually require dialog awareness, like storing the information in the dialog creation stage, information which will be used during the whole dialog existence.\n\nThe most urging example is NAT traversal, in dealing with the within the dialog INVITEs (re-INVITEs). When processing the initial INVITE, the proxy detects if the caller or callee is behind some NAT and fixes the signalling and media parts - since not all the detection mechanism are available for within the dialog requests (like usrloc), to be able to fix correspondingly the sequential requests, the proxy must remember that the original request was NAT processed. There are many other cases where dialog awareness fixes or helps.\n\nThe solution is to store additional dialog-related information in the routing set (Record-Route/Route headers), headers which show up in all sequential requests. So any information added to the Record-Route header will be found (with no direction dependencies) in Route header (corresponding to the proxy address).\n\nAs storage container, the parameters of the Record-Route / Route header will be used - Record-Route parameters mirroring are reinforced by RFC 3261 (see 12.1.1 UAS behavior).\n\nFor this purpose, the modules offers the following functions:\n\n*   add\\_rr\\_param() - see [add\\_rr\\_param()](#func_add_rr_param \"1.5.4.� add_rr_param(param)\")\n    \n*   check\\_route\\_param() - see [check\\_route\\_param()](#func_check_route_param \"1.5.5.� check_route_param(re)\")\n    \n**Example�1.1.�Dialog support in RR module**\n\n  \nUAC                       OpenSIPS PROXY                          UAS\n\n---- INVITE ------>       record\\_route()          ----- INVITE ---->\n                     add\\_rr\\_param(\";foo=true\")\n\n--- reINVITE ----->        loose\\_route()          ---- reINVITE --->\n                    check\\_route\\_param(\";foo=true\")\n\n<-- reINVITE ------        loose\\_route()          <--- reINVITE ----\n                    check\\_route\\_param(\";foo=true\")\n\n<------ BYE -------        loose\\_route()          <----- BYE -------\n                    check\\_route\\_param(\";foo=true\")\n  \n  ",
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "append_fromtag",
+      "type": "integer",
+      "default_value": "1 (yes)",
+      "description": "If turned on, request's from-tag is appended to record-route; that's useful for understanding whether subsequent requests (such as BYE) come from caller (route's from-tag==BYE's from-tag) or callee (route's from-tag==BYE's to-tag)",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"rr\", \"append\\_fromtag\", 0)\n..."
+    },
+    {
+      "name": "enable_double_rr",
+      "type": "integer",
+      "default_value": "1 (yes)",
+      "description": "There are some situations when the server needs to insert two Record-Route header fields instead of one. For example when using two disconnected networks or doing cross-protocol forwarding from UDP->TCP. This parameter enables inserting of 2 Record-Routes. The server will later remove both of them.",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"rr\", \"enable\\_double\\_rr\", 0)\n..."
+    },
+    {
+      "name": "add_username",
+      "type": "integer",
+      "default_value": "0 (no)",
+      "description": "If set to a non 0 value (which means yes), the username part will be also added in the Record-Route URI.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"rr\", \"add\\_username\", 1)\n..."
+    },
+    {
+      "name": "enable_socket_mismatch_warning",
+      "type": "integer",
+      "default_value": "1 (yes)",
+      "description": "When a preset record-route header is forced in OpenSIPS config and the host from the record-route header is not the same as the host server, a warning will be printed out in the logs. The 'enable\\_socket\\_mismatch\\_warning' parameter enables or disables the warning. When OpenSIPS is behind a NATed firewall, we don't want this warning to be printed for every bridged call.",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"rr\", \"enable\\_socket\\_mismatch\\_warning\", 0)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "loose_route",
+      "signature": "loose_route()",
+      "parameters": [],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "TRUE",
+          "condition": "If a Route header is found and behaves as described in RFC 3261"
+        },
+        {
+          "value": "FALSE",
+          "condition": "If there is no Route header, if parsing errors occur, or if there is only one Route header indicating the local proxy (preload scenario)"
+        }
+      ],
+      "description": "The function performs routing of SIP requests which contain a route set. The name is a little bit confusing, as this function also routes requests which are in the “strict router” format.\n\nThis function is usually used to route in-dialog requests (like ACK, BYE, reINVITE). Nevertheless also out-of-dialog requests can have a “pre-loaded route set” and my be routed with loose_route. It also takes care of translating between strict-routers and loose-router.\n\nThe loose_route() function analyzes the Route headers in the requests. If there is no Route header, the function returns FALSE and routing should be done exclusivly via RURI. If a Route header is found, the function returns TRUE and behaves as described in section 16.12 of RFC 3261. The only exception is for requests with preload Route headers (intial requests, carrying a Route header): if there is only one Route header indicating the local proxy, then the Route header is removed and the function returns FALSE.\n\nThe function is able to automatically detecting if it deals with a 'strict' or 'loose' routing scenario (the difference is how the SIP path is stored across the RURI and Route hdrs). To make the difference between the two scenarios OpenSIPS has to determine which SIP URI holds its address/domain - the RURI (then it is a strict routing scenario) or the top Route URI (then it is a loose route scenario). In order to check if the SIP URI holds its address/domain, OpenSIPS checks the host URI against the listening IPs/interfaces (as a static component) and the domains listed from the \"domain\" module/table (as the dynamic component).\n\nIf there is a Route header but other parsing errors occur ( like parsing the TO header to get the TAG ), the function also returns FALSE.\n\nMake sure your loose_routing function can't be used by attackers to bypass proxy authorization.\n\nThe loose_routing topic is very complex. See the RFC3261 for more details (grep for “route set” is a good starting point in this comprehensive RFC).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "loose_route();",
+          "description": "loose_route usage"
+        }
+      ]
+    },
+    {
+      "name": "record_route",
+      "signature": "record_route([string])",
+      "parameters": [
+        {
+          "name": "string",
+          "type": "string",
+          "required": false,
+          "description": "If any string is passed as parameter, it will be appended as URI parameter to the Record-Route header. The string must follow the “;name=value” scheme."
+        }
+      ],
+      "return_type": "void",
+      "description": "The function adds a new Record-Route header field. The header field will be inserted in the message before any other Record-Route header fields.\n\nIf any string is passed as parameter, it will be appended as URI parameter to the Record-Route header. The string must follow the “;name=value” scheme.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "record_route();",
+          "description": "record_route usage"
+        }
+      ]
+    },
+    {
+      "name": "record_route_preset",
+      "signature": "record_route_preset(string [, string2])",
+      "parameters": [
+        {
+          "name": "string",
+          "type": "string",
+          "required": true,
+          "description": "String to be inserted into the first header field; it may contain pseudo-variables."
+        },
+        {
+          "name": "string2",
+          "type": "string",
+          "required": false,
+          "description": "String to be inserted into the second header field. Note: If 'string2' is present, then the 'string' param is pointing to the outbound interface and the 'string2' param is pointing to the inbound interface."
+        }
+      ],
+      "return_type": "void",
+      "description": "This function will put the string into Record-Route, don't use unless you know what you are doing.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "record_route_preset(\"1.2.3.4:5090\");",
+          "description": "record_route_preset usage"
+        }
+      ]
+    },
+    {
+      "name": "add_rr_param",
+      "signature": "add_rr_param(param)",
+      "parameters": [
+        {
+          "name": "param",
+          "type": "string",
+          "required": true,
+          "description": "the URI parameter to be added. It must follow the “;name=value” scheme."
+        }
+      ],
+      "return_type": "void",
+      "description": "Adds a parameter to the Record-Route URI (param must be in “;name=value” format. The function may be called also before or after the record_route() call (see record_route()).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "add_rr_param(\";nat=yes\");",
+          "description": "add_rr_param usage"
+        }
+      ],
+      "related_functions": [
+        "record_route()"
+      ]
+    },
+    {
+      "name": "check_route_param",
+      "signature": "check_route_param(re)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "regular expression to check against the Route URI parameters."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the URI parameters of the local Route header matches the given regular expression"
+        }
+      ],
+      "description": "The function checks if the URI parameters of the local Route header (corresponding to the local server) matches the given regular expression. It must be call after loose_route() (see loose_route()).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (check_route_param(\"nat=yes\")) {\n    setflag(6);\n}",
+          "description": "check_route_param usage"
+        }
+      ],
+      "related_functions": [
+        "loose_route()"
+      ]
+    },
+    {
+      "name": "is_direction",
+      "signature": "is_direction(dir)",
+      "parameters": [
+        {
+          "name": "dir",
+          "type": "string",
+          "required": true,
+          "description": "the direction to be checked. It may be “upstream” (from UAS to UAC) or “downstream” (UAC to UAS).",
+          "valid_values": [
+            "upstream",
+            "downstream"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the “dir” is the same with the request's flow direction"
+        }
+      ],
+      "description": "The function checks the flow direction of the request. As for checking it's used the “ftag” Route header parameter, the append_fromtag (see append_fromtag module parameter) must be enabled. Also this must be called only after loose_route() (see loose_route()).\n\nThe function returns true if the “dir” is the same with the request's flow direction.\n\nThe “downstream” (UAC to UAS) direction is relative to the initial request that created the dialog.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (is_direction(\"upstream\")) {\n    xdbg(\"upstream request ($rm)\\\\n\");\n}",
+          "description": "is_direction usage"
+        }
+      ],
+      "related_functions": [
+        "loose_route()",
+        "append_fromtag"
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$rr_params",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "the whole string of the Route parameters - this is available only after calling loose_route()"
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Example 2.1. Loading RR module's API from another module",
+      "description": "Loading RR module's API from another module",
+      "code": "#include \"../rr/api.h\"\n...\nstruct rr\\_binds my\\_rrb;\n...\n...\n/* load the RR API */\nif (load\\_rr\\_api( &my\\_rrb )!=0) {\n    LM\\_ERR(\"can't load RR API\\\\n\");\n    goto error;\n}\n...\n...\n/* register a RR callback */\nif (my\\_rrb.register\\_rrcb(my\\_callback,0,0))!=0) {\n    LM\\_ERR(\"can't register RR callback\\\\n\");\n    goto error;\n}\n..."
+    }
+  ]
+}

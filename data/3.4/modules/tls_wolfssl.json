@@ -1,0 +1,41 @@
+{
+  "id": "module-tls_wolfssl-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "tls_wolfssl Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/tls_wolfssl.html",
+  "content_markdown": "This module implements TLS operations using the [_wolfSSL_](https://www.wolfssl.com/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_. The _wolfSSL_ library is statically-linked and bundled with this module so no installation or external dependency is required.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:39:55.416Z",
+  "module_name": "tls_wolfssl",
+  "overview": "This module implements TLS operations using the [_wolfSSL_](https://www.wolfssl.com/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_. The _wolfSSL_ library is statically-linked and bundled with this module so no installation or external dependency is required.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "autoconf",
+      "type": "application",
+      "reason": "Compilation",
+      "optional": false
+    },
+    {
+      "name": "automake",
+      "type": "application",
+      "reason": "Compilation",
+      "optional": false
+    },
+    {
+      "name": "libtool",
+      "type": "application",
+      "reason": "Compilation",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": []
+}

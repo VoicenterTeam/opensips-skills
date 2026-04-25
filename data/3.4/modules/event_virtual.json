@@ -1,0 +1,43 @@
+{
+  "id": "module-event_virtual-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "event_virtual Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/event_virtual.html",
+  "content_markdown": "The _event\\_virtual_ module provides the possibility to have multiple external applications, using different transport protocols, subscribed to the OpenSIPS Event Interface as a single virtual subscriber, for a specific event. When an event is triggered, the event\\_virtual module notifies the specified transport modules using one of the following policies:\n\n* _PARALLEL_ - all subscribers (applications) are notified at once\n* _FAILOVER_ - for every event raised, try to notify the subscribers, in the order in which they are given, until the first successful notification. A failed subscriber is skipped for further notifications until the [failover\\_timeout](#param_failover_timeout \"1.5.1.�failover\\_timeout (integer)\") passes.\n* _ROUND-ROBIN_ - for every event raised, notify the subscribers alternatively, in the order in which they are given (for each raised event notify a different subscriber)\n\nOnly one expire value can be used (for the whole virtual subscription), and not one for each individual subscriber.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:57:37.663Z",
+  "module_name": "event_virtual",
+  "overview": "The _event\\_virtual_ module provides the possibility to have multiple external applications, using different transport protocols, subscribed to the OpenSIPS Event Interface as a single virtual subscriber, for a specific event. When an event is triggered, the event\\_virtual module notifies the specified transport modules using one of the following policies:\n\n* _PARALLEL_ - all subscribers (applications) are notified at once\n* _FAILOVER_ - for every event raised, try to notify the subscribers, in the order in which they are given, until the first successful notification. A failed subscriber is skipped for further notifications until the [failover\\_timeout](#param_failover_timeout \"1.5.1.�failover\\_timeout (integer)\") passes.\n* _ROUND-ROBIN_ - for every event raised, notify the subscribers alternatively, in the order in which they are given (for each raised event notify a different subscriber)\n\nOnly one expire value can be used (for the whole virtual subscription), and not one for each individual subscriber.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "The OpenSIPS event modules which implement the transport protocols used by the subscribers",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "failover_timeout",
+      "type": "integer",
+      "default_value": "30",
+      "description": "The minimum duration in seconds that a failed subscriber is skipped for further notifications. This parameter only affects the _FAILOVER_ policy.",
+      "example_value": "5",
+      "example_code": "modparam(\"event\\_virtual\", \"failover\\_timeout\", 5)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Virtual socket",
+      "description": "The sockets of the subscribers may be separated by any number of spaces or tabs:",
+      "code": "\tvirtual:PARALLEL rabbitmq:guest:guest@127.0.0.1:5672/pike flatstore:/var/log/opensips\\_proxy.log"
+    }
+  ]
+}

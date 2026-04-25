@@ -1,0 +1,129 @@
+{
+  "id": "module-db_text-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "db_text Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/db_text.html",
+  "content_markdown": "The module implements a simplified database engine based on text files. It can be used by OpenSIPS DB interface instead of other database module (like MySQL).\n\nThe module is meant for use in demos or small devices that do not support other DB modules. It keeps everything in memory and if you deal with large amount of data you may run quickly out of memory. Also, it has not implemented all standard database facilities (like order by), it includes minimal functionality to work properly with OpenSIPS\n\nNOTE: the timestamp is printed in an integer value from time_t structure. If you use it in a system that cannot do this conversion, it will fail (support for such situation is in to-do list).\n\nNOTE: even when is in non-caching mode, the module does not write back to hard drive after changes. In this mode, the module checks if the corresponding file on disk has changed, and reloads it. The write on disk happens at OpenSIPS shut down.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:46:39.469Z",
+  "module_name": "db_text",
+  "overview": "The module implements a simplified database engine based on text files. It can be used by OpenSIPS DB interface instead of other database module (like MySQL).\n\nThe module is meant for use in demos or small devices that do not support other DB modules. It keeps everything in memory and if you deal with large amount of data you may run quickly out of memory. Also, it has not implemented all standard database facilities (like order by), it includes minimal functionality to work properly with OpenSIPS\n\nNOTE: the timestamp is printed in an integer value from time_t structure. If you use it in a system that cannot do this conversion, it will fail (support for such situation is in to-do list).\n\nNOTE: even when is in non-caching mode, the module does not write back to hard drive after changes. In this mode, the module checks if the corresponding file on disk has changed, and reloads it. The write on disk happens at OpenSIPS shut down.",
+  "how_it_works": "The db_text database system architecture:\n\n*   a database is represented by a directory in the local file system. NOTE: when you use _db_text_ in OpenSIPS, the database URL for modules must be the path to the directory where the table-files are located, prefixed by “text://”, e.g., “text:///var/dbtext/opensips”. If there is no “/” after “text://” then “CFG_DIR/” is inserted at the beginning of the database path. So, either you provide an absolute path to database directory or a relative one to “CFG_DIR” directory.\n    \n*   a table is represented by a text file inside database directory.",
+  "dependencies_required": [],
+  "dependencies_optional": [],
+  "exported_parameters": [
+    {
+      "name": "db_mode",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Set caching mode (0) or non-caching mode (1). In caching mode, data is loaded at startup. In non-caching mode, the module check every time a table is requested whether the corresponding file on disk has changed, and if yes, will re-load table from file.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_text\", \"db\\_mode\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "dbt_dump",
+      "parameters": [],
+      "description": "Write back to hard drive modified tables.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dbt_dump",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "dbt_reload",
+      "parameters": [
+        {
+          "name": "db_name",
+          "type": "string",
+          "required": false,
+          "description": "database name to reload."
+        },
+        {
+          "name": "table_name",
+          "type": "string",
+          "required": false,
+          "description": "specific table to reload."
+        }
+      ],
+      "description": "Causes db_text module to reload cached tables from disk. Depending on parameters it could be a whole cache or a specified database or a single table. If any table cannot be reloaded from disk - the old version preserved and error reported.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dbt_reload",
+          "description": ""
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dbt_reload /path/to/dbtext/database",
+          "description": ""
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dbt_reload /path/to/dbtext/database table_name",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Sample of a db_text table",
+      "description": "Demonstrates the internal format of a db_text table including column definitions and data rows.",
+      "code": "id(int,auto) name(str) flag(double) desc(str,null)\n1:nick:0.34:a\\tgood\\: friend\n2:cole:-3.75:colleague\n3:bob:2.50:"
+    },
+    {
+      "title": "Minimal OpenSIPS location db_text table definition",
+      "description": "Shows the column definition for a minimal location table.",
+      "code": "username(str) contact(str) expires(int) q(double) callid(str) cseq(int)"
+    },
+    {
+      "title": "Minimal OpenSIPS subscriber db_text table example",
+      "description": "Shows the column definition and a sample row for a subscriber table.",
+      "code": "username(str) password(str) ha1(str) domain(str) ha1b(str)\nsuser:supasswd:xxx:alpha.org:xxx"
+    },
+    {
+      "title": "Set `db_mode` parameter",
+      "description": "Sets the db_mode parameter to 1 (non-caching mode).",
+      "code": "modparam(\"db_text\", \"db_mode\", 1)"
+    },
+    {
+      "title": "Load the db_text module",
+      "description": "Shows how to load the module and set the database URL.",
+      "code": "loadmodule \"/path/to/opensips/modules/db_text.so\"\n...\nmodparam(\"module_name\", \"database_URL\", \"text:///path/to/dbtext/database\")"
+    },
+    {
+      "title": "Definition of 'subscriber' table (one line)",
+      "description": "Defines the columns for the subscriber table.",
+      "code": "username(str) domain(str) password(str) first_name(str) last_name(str) phone(str) email_address(str) datetime_created(int) datetime_modified(int) confirmation(str) flag(str) sendnotification(str) greeting(str) ha1(str) ha1b(str) perms(str) allow_find(str) timezone(str,null) rpid(str,null)"
+    },
+    {
+      "title": "Definition of 'location' and 'aliases' tables (one line)",
+      "description": "Defines the columns for location and aliases tables.",
+      "code": "username(str) domain(str,null) contact(str,null) received(str) expires(int,null) q(double,null) callid(str,null) cseq(int,null) last_modified(str) flags(int) user_agent(str) socket(str)"
+    },
+    {
+      "title": "Definition of 'version' table and sample records",
+      "description": "Defines the version table structure and sample records.",
+      "code": "table_name(str) table_version(int)\nsubscriber:3\nlocation:6\naliases:6"
+    },
+    {
+      "title": "Configuration file",
+      "description": "A basic configuration file to use db_text with OpenSIPS.",
+      "code": "#\n# simple quick-start config script with dbtext\n#\n\n# ----------- global configuration parameters ------------------------\n\n#debug_mode=yes\nudp_workers=4\n\ncheck_via=no    # (cmd. line: -v)\ndns=no          # (cmd. line: -r)\nrev_dns=no      # (cmd. line: -R)\n\nsocket=udp:10.100.100.1:5060\n\n# ------------------ module loading ----------------------------------\n\n# use dbtext database\nloadmodule \"modules/dbtext/dbtext.so\"\n\nloadmodule \"modules/sl/sl.so\"\nloadmodule \"modules/tm/tm.so\"\nloadmodule \"modules/rr/rr.so\"\nloadmodule \"modules/maxfwd/maxfwd.so\"\nloadmodule \"modules/usrloc/usrloc.so\"\nloadmodule \"modules/registrar/registrar.so\"\nloadmodule \"modules/textops/textops.so\"\nloadmodule \"modules/textops/mi_fifo.so\"\n\n# modules for digest authentication\nloadmodule \"modules/auth/auth.so\"\nloadmodule \"modules/auth_db/auth_db.so\"\n\n# ----------------- setting module-specific parameters ---------------\n\n# -- mi_fifo params --\n\nmodparam(\"mi_fifo\", \"fifo_name\", \"/tmp/opensips_fifo\")\n\n# -- usrloc params --\n\n# use dbtext database for persistent storage\nmodparam(\"usrloc\", \"db_mode\", 2)\nmodparam(\"usrloc|auth_db\", \"db_url\", \"text:///tmp/opensipsdb\")\n\n# -- auth params --\n#\nmodparam(\"auth_db\", \"calculate_ha1\", 1)\nmodparam(\"auth_db\", \"password_column\", \"password\")\nmodparam(\"auth_db\", \"user_column\", \"username\")\nmodparam(\"auth_db\", \"domain_column\", \"domain\")\n\n# -------------------------  request routing logic -------------------\n\n# main routing logic\n\nroute{\n    # initial sanity checks -- messages with\n    # max_forwards==0, or excessively long requests\n    if (!mf_process_maxfwd_header(\"10\")) {\n        sl_send_reply(483,\"Too Many Hops\");\n        exit;\n    };\n    if ($ml >=  65535 ) {\n        sl_send_reply(513, \"Message too big\");\n        exit;\n    };\n\n    # we record-route all messages -- to make sure that\n    # subsequent messages will go through our proxy; that's\n    # particularly good if upstream and downstream entities\n    # use different transport protocol\n    if (!$rm==\"REGISTER\") record_route();\n\n    # subsequent messages withing a dialog should take the\n    # path determined by record-routing\n    if (loose_route()) {\n        # mark routing logic in request\n        append_hf(\"P-hint: rr-enforced\\r\\n\");\n        route(1);\n        exit;\n    };\n\n    if (!is_myself(\"$rd\")) {\n        # mark routing logic in request\n        append_hf(\"P-hint: outbound\\r\\n\");\n        route(1);\n        exit;\n    };\n\n    # if the request is for other domain use UsrLoc\n    # (in case, it does not work, use the following command\n    # with proper names and addresses in it)\n    if (is_myself(\"$rd\")) {\n        if ($rm==\"REGISTER\") {\n            # digest authentication\n            if (!www_authorize(\"\", \"subscriber\")) {\n                www_challenge(\"\", \"0\");\n                exit;\n            };\n\n            save(\"location\");\n            exit;\n        };\n\n        lookup(\"aliases\");\n        if (!is_myself(\"$rd\")) {\n            append_hf(\"P-hint: outbound alias\\r\\n\");\n            route(1);\n            exit;\n        };\n\n        # native SIP destinations are handled using our USRLOC DB\n        if (!lookup(\"location\")) {\n            sl_send_reply(404, \"Not Found\");\n            exit;\n        };\n    };\n    append_hf(\"P-hint: usrloc applied\\r\\n\");\n    route(1);\n}\n\nroute[1]\n{\n    # send it out now; use stateful forwarding as it works reliably\n    # even for UDP2TCP\n    if (!t_relay()) {\n        sl_reply_error();\n    };\n}"
+    }
+  ]
+}

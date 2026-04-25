@@ -1,0 +1,137 @@
+{
+  "id": "module-proto_ws-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "proto_ws Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/proto_ws.html",
+  "content_markdown": "The WebSocket protocol ([RFC 6455](http://tools.ietf.org/html/rfc6455)) provides an end-to-end full-duplex communication channel between two web-based applications. This allows WebSocket enabled browsers to connect to a WebSocket server and exchange any type of data. [RFC 7118](http://tools.ietf.org/html/rfc7118) provides the specifications for transporting SIP messages over the WebSocket protocol.\n\nThe **proto\\_ws** module is transport module that provides communication over the WebSocket protocol. This module is fully compliant with the [RFC 7118](http://tools.ietf.org/html/rfc7118), thus allowing browsers to act as SIP clients for the OpenSIPS proxy.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:45:57.213Z",
+  "module_name": "proto_ws",
+  "overview": "The WebSocket protocol ([RFC 6455](http://tools.ietf.org/html/rfc6455)) provides an end-to-end full-duplex communication channel between two web-based applications. This allows WebSocket enabled browsers to connect to a WebSocket server and exchange any type of data. [RFC 7118](http://tools.ietf.org/html/rfc7118) provides the specifications for transporting SIP messages over the WebSocket protocol.\n\nThe **proto\\_ws** module is transport module that provides communication over the WebSocket protocol. This module is fully compliant with the [RFC 7118](http://tools.ietf.org/html/rfc7118), thus allowing browsers to act as SIP clients for the OpenSIPS proxy.",
+  "how_it_works": "The current implementation acts both as WebSocket server and client, thus it can accept connections from WebSocket clients and can also initiate connections to another WebSocket server. After the connection is established, messages can flow in both directions.\n\nOpenSIPS supports the following WebSocket operations:\n\n*   text and binary - can both send and receive WebSocket messages that contain text or binary body\n    \n*   close - messages used to safely close the WebSocket communication using a 2-messages handshake\n    \n*   ping - responds with pong messages. There is no mechanism to trigger ping messages.\n    \n*   pong - sent when a ping message is received. OpenSIPS, absorbes the pong messages received.\n    \n\nOnce loaded, you will be able to define WebSocket listeners in your script. To add a listener, you have to add its IP, and optionally the listening port, _after_ the `mpath` parameter, similar to this example:\n\n...\nmpath=/path/to/modules\n...\nsocket=ws:127.0.0.1\t\t# change with the listening IP\nsocket=ws:127.0.0.1:5060\t# change with the listening IP and port\n...",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "ws_port",
+      "type": "integer",
+      "default_value": "80",
+      "description": "The default port to be used for all WS related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the WS listeners) and the SIP sending part (if the destination WS URI has no explicit port).\n\nIf you want to change only the listening port for WS, use the port option in the SIP listener defintion.",
+      "example_value": "8080",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"ws\\_port\", 8080)\n..."
+    },
+    {
+      "name": "ws_send_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "Time in milliseconds after a WebSocket connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "example_value": "200",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"ws\\_send\\_timeout\", 200)\n..."
+    },
+    {
+      "name": "ws_max_msg_chunks",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of chunks in which a SIP message is expected to arrive via WebSocket. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "example_value": "8",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"ws\\_max\\_msg\\_chunks\", 8)\n..."
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto\\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about http request and reply belonging to web socket protocol handshake and network layer information shall be sent.",
+      "example_value": "hep\\_dest",
+      "example_code": "...\nmodparam(\"proto\\_hep\", \"hep\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto\\_ws\", \"trace\\_destination\", \"hep\\_dest\")\n...",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\\_hep**)."
+    },
+    {
+      "name": "trace_on",
+      "type": "integer",
+      "default_value": "0(tracing inactive)",
+      "description": "This controls whether tracing for ws is on or not. You still need to define [trace\\_destination](#param_trace_destination \"1.3.4.�trace_destination (string)\")in order to work, but this value will be controlled using mi function [ws\\_trace](#mi_ws_trace \"1.4.1.� ws_trace\").",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"trace\\_on\", 1)\n..."
+    },
+    {
+      "name": "trace_filter_route",
+      "type": "string",
+      "default_value": "none(no route is set)",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace\\_destination](#param_trace_destination \"1.3.4.�trace_destination (string)\") and trace must be on at the time this connection is opened).",
+      "example_value": "ws\\_filter",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"trace\\_filter\\_route\", \"ws\\_filter\")\n...\n/* all ws connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[ws\\_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket\\_in(ip) == \"1.1.1.10\"  && $socket\\_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}\n...",
+      "notes": "IMPORTANT: Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket\\_in(ip)** (ip) and **$socket\\_in(port)** (port) can be used.\n\nWARNING: IF [trace\\_on](#param_trace_on \"1.3.5.�trace\\_on (int)\") is set to 0 or tracing is deactived via the mi command [ws\\_trace](#mi_ws_trace \"1.4.1.� ws_trace\") this route won't be called."
+    },
+    {
+      "name": "require_origin",
+      "type": "integer",
+      "default_value": "1(require Origin header)",
+      "description": "Controls whether the module should require the Origin header or not.",
+      "example_value": "no",
+      "example_code": "...\nmodparam(\"proto\\_ws\", \"require\\_origin\", no)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "ws_trace",
+      "parameters": [
+        {
+          "name": "trace_mode",
+          "type": "string",
+          "required": false,
+          "description": "set ws tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off ); Possible values: on, off"
+        }
+      ],
+      "description": "",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi ws\\_trace on",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `ws_port` parameter",
+      "description": "The default port to be used for all WS related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the WS listeners) and the SIP sending part (if the destination WS URI has no explicit port).",
+      "code": "...\nmodparam(\"proto\\_ws\", \"ws\\_port\", 8080)\n..."
+    },
+    {
+      "title": "Set `ws_send_timeout` parameter",
+      "description": "Time in milliseconds after a WebSocket connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "code": "...\nmodparam(\"proto\\_ws\", \"ws\\_send\\_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `ws_max_msg_chunks` parameter",
+      "description": "The maximum number of chunks in which a SIP message is expected to arrive via WebSocket. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "code": "...\nmodparam(\"proto\\_ws\", \"ws\\_max\\_msg\\_chunks\", 8)\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto\\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about http request and reply belonging to web socket protocol handshake and network layer information shall be sent.",
+      "code": "...\nmodparam(\"proto\\_hep\", \"hep\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto\\_ws\", \"trace\\_destination\", \"hep\\_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "This controls whether tracing for ws is on or not. You still need to define [trace\\_destination](#param_trace_destination \"1.3.4.�trace_destination (string)\")in order to work, but this value will be controlled using mi function [ws\\_trace](#mi_ws_trace \"1.4.1.� ws_trace\").",
+      "code": "...\nmodparam(\"proto\\_ws\", \"trace\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_filter_route` parameter",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [trace\\_destination](#param_trace_destination \"1.3.4.�trace_destination (string)\") and trace must be on at the time this connection is opened).",
+      "code": "...\nmodparam(\"proto\\_ws\", \"trace\\_filter\\_route\", \"ws\\_filter\")\n...\n/* all ws connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[ws\\_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket\\_in(ip) == \"1.1.1.10\"  && $socket\\_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}\n..."
+    },
+    {
+      "title": "Set `require_origin` parameter",
+      "description": "Controls whether the module should require the Origin header or not.",
+      "code": "...\nmodparam(\"proto\\_ws\", \"require\\_origin\", no)\n..."
+    }
+  ]
+}

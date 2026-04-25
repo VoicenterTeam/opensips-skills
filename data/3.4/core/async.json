@@ -1,0 +1,98 @@
+{
+  "id": "async_statement-Script-Async-3.4",
+  "document_type": "async_statement",
+  "version": "3.4",
+  "title": "Asynchronous Statements v3.4",
+  "url": "https://www.opensips.org/Documentation/Script-Async-3-4",
+  "content_markdown": "[](https://www.opensips.org)\n\n\n*   [About](/About/About \"About\")\n*   [Downloads](/Downloads/Downloads \"Download\")\n*   [Documentation](/Documentation/Manuals \"Documentation\")\n*   [Community](/Community/OpenSIPS-CE \"Community\")\n*   [Development](/Development/Development \"Development\")\n*   [Training](/Training/Trainings \"Training\")\n\nDocumentation\n\n*   [Manuals](https://www.opensips.org/Documentation/Manuals \"Manuals\")\n*   [Advanced Tutorials](https://www.opensips.org/Documentation/Tutorials \"Tutorials\")\n*   [Tips & FAQ](https://www.opensips.org/Documentation/TipsFAQ \"TipsFAQ\")\n*   [Version Migration](https://www.opensips.org/Documentation/Migration \"Migration\")\n*   [OpenSIPS Webinars](https://www.opensips.org/Documentation/Webinars \"Webinars\")\n*   [Troubleshooting](https://www.opensips.org/Documentation/Troubleshooting \"Troubleshooting\")\n*   [OpenSIPS Tools](https://www.opensips.org/Documentation/Tools \"Tools\")\n*   [Devel Tutorial](https://www.opensips.org/Documentation/Development-Tutorials \"Development-Tutorials\")\n\n\nThis page has been visited 4459 times.\n\n---\n\nPages for other versions: [devel](https://www.opensips.org/Documentation/Script-Async-4-0 \"Asynchronous Statements - 4.0\") [3.6](https://www.opensips.org/Documentation/Script-Async-3-6 \"Asynchronous Statements - 3.6\") [3.5](https://www.opensips.org/Documentation/Script-Async-3-5 \"Asynchronous Statements - 3.5\") 3.4 Older versions: [3.3](https://www.opensips.org/Documentation/Script-Async-3-3 \"Asynchronous Statements - 3.3\") [3.2](https://www.opensips.org/Documentation/Script-Async-3-2 \"Asynchronous Statements - 3.2\") [3.1](https://www.opensips.org/Documentation/Script-Async-3-1 \"Asynchronous Statements - 3.1\") [3.0](https://www.opensips.org/Documentation/Script-Async-3-0 \"Asynchronous Statements - 3.0\") [2.4](https://www.opensips.org/Documentation/Script-Async-2-4 \"Asynchronous Statements - 2.4\") [2.3](https://www.opensips.org/Documentation/Script-Async-2-3 \"Asynchronous Statements - 2.3\") [2.2](https://www.opensips.org/Documentation/Script-Async-2-2 \"Asynchronous Statements - 2.2\") [2.1](https://www.opensips.org/Documentation/Script-Async-2-1 \"Asynchronous Statements - 2.1\")\n  \n\n**Asynchronous Statements v3.4**\n\n[Prev](https://www.opensips.org/Documentation/Script-Tran-3-4 \"Script Transformations - 3.4\")\n\n[Next](https://www.opensips.org/Documentation/Modules-3-4 \"Modules - 3.4\")\n\n---\n\n**Table of Content** ([hide](javascript:toggle\\('tocid'\\);))\n\n### 1.  Description\n\nAsynchronous statements are one of the key features of OpenSIPS 2.X. One of the main reasons to use them is that they allow the performance of the OpenSIPS script to scale with a high number of requests per second even when doing blocking I/O operations such as MySQL queries, exec commands or HTTP requests.\n\n  \nUsing the asynchronous, \"suspend-resume\" logic instead of forking a large number of processes in order to scale also has the advantage of optimizing system resource usage, increasing its maximal throughput. By requiring less processes to complete the same amount of work in the same amount of time, process context switching is minimized and overall CPU usage is improved. Less processes will also eat up less system memory.\n\n### 2.  Serial asynchronous operations, async() [🔗](#async)\n\nThe **async()** statement of the OpenSIPS script can be used in situations where the script writer both needs to perform blocking I/O and also depends on the result of this operation. Some example scenarios:\n\n*   fetch SIP authentication data from a database\n*   perform an HTTP query and act upon its result\n*   pause script execution for X seconds\n*   exec an external script and use its result\n\n#### 2.1  Requirements\n\nThe **async()** statement depends on the transaction module (**tm**) - it must be loaded. The SIP transaction will be automatically and transparently created when an async operation is started, if necessary. This transaction contains all the necessary information to suspend script execution (e.g. it stores the updated SIP message, along with all $avp variables).\n\n#### 2.2  Script syntax and usage\n\nUsage is straightforward: if your blocking function supports asynchronous mode (read the module documentation for this), then you can just throw it in the following function call:\n\nasync(blocking\\_function(...), resume\\_route \\[,timeout\\]);\n\n_Note that resume\\_route must be a **[simple route](http://www.opensips.org/Documentation/Script-Routes-3-4#toc1)**_.\n\n  \nBecause the **async()** statement is serial with script execution (see below), the script will be immediately halted when calling it, so any code placed after the async() call will be ignored! The current OpenSIPS worker will launch the asynchronous operation, after which it will continue to process other pending tasks (queued SIP messages, timer jobs or possibly other async operations!). As soon as all data is available, it will run the resume route - thus resuming script execution with a minimum of idle time.\n\n  \nThe return code of the function executed in async mode is available in the very beginning of the resume route in the **$rc** or **$retcode** variable. Also, all output parameters (variables in function parameters used to carry output values) will be available in resume route.\n\n  \nThe optional 'timeout' parameter is to control for how long the script should wait for the blocking function to complete (independently from its implementation). If the blocking I/O is not completed before the given timeout, the async layer will force the function to complete (with timeout) its I/O and to resume the script.\n\n  \n\nroute\n{\n    /\\* preparation code \\*/\n    ...\n    async(avp\\_db\\_query(\"SELECT credit FROM users WHERE uid='$avp(uid)'\", \"$avp(credit)\"), resume\\_credit);\n    /\\* script execution is paused right away! \\*/\n}\n\nroute \\[resume\\_credit\\]\n{\n    if ($rc < 0) {\n        xlog(\"error $rc in avp\\_db\\_query()\\\\n\");\n        exit;\n    }\n\n    xlog(\"Credit of user $avp(uid) is $avp(credit)\\\\n\");\n    ...\n    t\\_relay();\n}\n\n  \nData is copied over to the resume route as follows:\n\n  \n**Preserved data (still available in resume route)**\n\n*   **all $avp variables**\n*   **all changes in current SIP message**\n\n**Ignored data (not available anymore in resume route)**\n\n*   **all $var variables**\n\n### 3.  Parallel asynchronous operations, launch() [🔗](#launch)\n\nThe **launch()** statement of the OpenSIPS script can be used in situations where the script writer needs to perform blocking I/O, but does not depend on the result of this operation in order to continue the current SIP routing decision flow. Some example scenarios:\n\n*   execute an external push notification trigger\n*   push data into a custom database (e.g. call statistics, CDRs, etc.)\n*   notify an HTTP service of the occurrence of an event (e.g. SIP traffic pattern, fraud detection, etc.)\n\n  \nThe **launch()** statement comes with no additional module dependencies.\n\n#### 3.1  Script syntax and usage\n\nSimilarly to the **async()** statement, if your blocking function supports asynchronous mode (read the module documentation for this), then you can just throw it in the following function calls:\n\nlaunch(blocking\\_function(...));\nor\nlaunch(blocking\\_function(...), report\\_route);\nroute[report\\_route] {}\nor\nlaunch(blocking\\_function(...), report\\_route, \"Something with $var(xx) to be passed to report route\");\nroute[report\\_route] {\n   xlog(\"received as input the <$param(1)> string\\\\n\");\n}\n\n_Note that report\\_route must be a **[simple route](http://www.opensips.org/Documentation/Script-Routes-3-4#toc1)**_.\n\n  \nThe **launch()** statement is both asynchronous and parallel with the script execution that follows it (see below). Notice how the _\"report\\_route\"_ can be omitted, as script execution does not depend on it. This route may be triggered at any of the following points in time:\n\n*   right before the next code line following the **launch()** call\n*   during the routing of the current SIP message\n*   after the routing of the current SIP message\n\n  \nThe return code of the function executed in async mode is available in the very beginning of the report route in the **$rc** or **$retcode** variable. Also, only the output parameters (variables in function parameters used to carry output values) will be available inside this route.\n\n  \n\nroute\n{\n    /\\* preparation code \\*/\n    ...\n\n    # send a push notification asynchronously, in parallel\n    launch(exec(\"/usr/local/bin/send-google-pn.py\"), pn\\_counter);\n    t\\_relay();\n}\n\nroute \\[pn\\_counter\\]\n{\n    if ($rc < 0) {\n        xlog(\"error $rc in pn script!\\\\n\");\n        update\\_stat(\"pn-failure\", \"1\");\n        exit;\n    }\n\n    update\\_stat(\"pn-success\", \"1\");\n}\n\n  \n**Preserved data (still available in report route)**\n\n*   output variables set by the async function\n\n**Ignored data (not available anymore in report route)**\n\n*   **any other variable**\n*   **the initial SIP message**\n\n### 4.  List of async functions [🔗](#async_functions)\n\nThe following functions may also be called asynchronously:\n\n*   [avp\\_db\\_query](http://www.opensips.org/html/docs/modules/3.4.x/avpops.html#id294986)\n*   [rest\\_get](http://www.opensips.org/html/docs/modules/3.4.x/rest_client.html#id293741)\n*   [rest\\_post](http://www.opensips.org/html/docs/modules/3.4.x/rest_client.html#id293886)\n*   [rest\\_put](http://www.opensips.org/html/docs/modules/3.4.x/rest_client.html#id293886)\n*   [exec](http://www.opensips.org/html/docs/modules/3.4.x/exec#id294052)\n*   [ldap\\_search](http://www.opensips.org/html/docs/modules/3.4.x/ldap.html#ldap-search-async-fn)\n*   [sleep](http://www.opensips.org/html/docs/modules/3.4.x/cfgutils.html#id294676)\n\nThe async implementation is not limited to the above functions, but these are the first ones migrated to async support. More I/O related functions will be ported to the async support.\n\n### 5.  Limitations [🔗](#async_limitations)\n\n#### 5.1  Async Engine Compatibility\n\nThe async engine is heavily dependent on non-blocking I/O features exposed by the underlying libraries -- a blocking I/O operation, such as an HTTP or an SQL query can only be made asynchronous if the library additionally provides both:\n\n*   a non-blocking equivalent of the same, originally blocking function\n*   after the non-blocking equivalent function is launched, the library must also provide a mechanism to extract a valid Linux file descriptor corresponding to the data transfer operation that has just been launched. The OpenSIPS async engine will poll on this fd, and will trigger internal state updates each time new data is available. When the blocking operation is finished, the \"resume route\" gets called, and the async operation is finalized.\n\n#### 5.2  TCP Connect Issues\n\nAlthough they provide async functionality, some libraries only do this for the \"transfer\" part of the I/O operation, and NOT the initial TCP connect. Consequently, on some corner-case scenarios (e.g. the TCP connect hangs due to an unresponsive server, an in-between firewall which drops packets instead of rejecting them, etc.) the async operation may actually block!\n\n  \nExamples of modules which are affected by this limitation:\n\n*   rest\\_client - although it reuses TCP connections on further requests, libcurl will block until a TCP connection is established from a given OpenSIPS worker. Should these TCP connects ever hang, so will the corresponding OpenSIPS worker.\n    \n*   db\\_mysql - similar to rest\\_client: although it reuses DB connections heavily, establishing each connection is a blocking operation, and cannot be made async due to the nature of the library.\n\n**Mitigation**: depending on your specific setup, you may be severely impacted by these blocking TCP connects or hardly at all. For the former case, we suggest forking external processes responsible for your blocking operations and invoke them asynchronously, using constructs such as:\n\n  \n`async(exec(\"curl my_host\", $var(response_body)), resume_route);`\n\nor\n\n`async(exec(\"mysql-query 'SELECT * FROM subscriber...'\", $var(result_row)), resume_route);`\n\n#### 5.3  Allowed Routes [🔗](#async_routes)\n\nSince the **async** operations are tightly coupled with the transactional engine, they can only be performed in routes where a SIP transaction is present and is awaiting completion:\n\n*   request\\_route\n*   branch\\_route (_may be included in the future_)\n*   onreply\\_route (_may be included in the future_)\n*   local\\_route (_may be included in the future_)\n\nOn the other hand, the **launch** statement should work from **any route**, as it is not dependent on the underlying SIP transaction.\n\n---\n\n| | | |",
+  "category": "Script",
+  "section": "Asynchronous Statements",
+  "synopsis": "Asynchronous statements allow the performance of the OpenSIPS script to scale with a high number of requests per second even when doing blocking I/O operations such as MySQL queries, exec commands or HTTP requests.",
+  "keywords": [
+    "async",
+    "launch",
+    "suspend",
+    "resume",
+    "blocking I/O",
+    "parallel",
+    "serial",
+    "tm",
+    "transaction"
+  ],
+  "extracted_at": "2024-05-21T12:00:00.000Z",
+  "statements": [
+    {
+      "name": "async",
+      "syntax": "async(blocking_function(...), resume_route [,timeout]);",
+      "description": "The async() statement of the OpenSIPS script can be used in situations where the script writer both needs to perform blocking I/O and also depends on the result of this operation. The script is immediately halted when calling it, and execution resumes in the specified route.",
+      "parameters": [
+        {
+          "name": "blocking_function(...)",
+          "type": "function_call",
+          "required": true,
+          "description": "The blocking function to be executed asynchronously."
+        },
+        {
+          "name": "resume_route",
+          "type": "string",
+          "required": true,
+          "description": "The route to be executed after the async operation completes. Must be a simple route."
+        },
+        {
+          "name": "timeout",
+          "type": "integer",
+          "required": false,
+          "description": "Optional timeout (in seconds) to control how long the script waits for the blocking function to complete."
+        }
+      ],
+      "usage_context": [
+        "request_route",
+        "branch_route",
+        "onreply_route",
+        "local_route"
+      ],
+      "examples": [
+        {
+          "language": "opensips_script",
+          "code": "route\n{\n    /* preparation code */\n    ...\n    async(avp_db_query(\"SELECT credit FROM users WHERE uid='$avp(uid)'\", \"$avp(credit)\"), resume_credit);\n    /* script execution is paused right away! */\n}\n\nroute [resume_credit]\n{\n    if ($rc < 0) {\n        xlog(\"error $rc in avp_db_query()\\n\");\n        exit;\n    }\n\n    xlog(\"Credit of user $avp(uid) is $avp(credit)\\n\");\n    ...\n    t_relay();\n}",
+          "description": "Example of using async() to query a database and resume processing in a specific route."
+        }
+      ]
+    },
+    {
+      "name": "launch",
+      "syntax": "launch(blocking_function(...));\nlaunch(blocking_function(...), report_route);\nlaunch(blocking_function(...), report_route, \"string\");",
+      "description": "The launch() statement can be used to perform blocking I/O without depending on the result to continue the current SIP routing decision flow. It is asynchronous and parallel with the script execution.",
+      "parameters": [
+        {
+          "name": "blocking_function(...)",
+          "type": "function_call",
+          "required": true,
+          "description": "The blocking function to be executed asynchronously."
+        },
+        {
+          "name": "report_route",
+          "type": "string",
+          "required": false,
+          "description": "Optional route to be triggered upon completion. Must be a simple route."
+        },
+        {
+          "name": "string",
+          "type": "string",
+          "required": false,
+          "description": "Optional string parameter to be passed to the report route."
+        }
+      ],
+      "usage_context": [
+        "any_route"
+      ],
+      "examples": [
+        {
+          "language": "opensips_script",
+          "code": "route\n{\n    /* preparation code */\n    ...\n\n    # send a push notification asynchronously, in parallel\n    launch(exec(\"/usr/local/bin/send-google-pn.py\"), pn_counter);\n    t_relay();\n}\n\nroute [pn_counter]\n{\n    if ($rc < 0) {\n        xlog(\"error $rc in pn script!\\n\");\n        update_stat(\"pn-failure\", \"1\");\n        exit;\n    }\n\n    update_stat(\"pn-success\", \"1\");\n}",
+          "description": "Example of using launch() to send a push notification in parallel without blocking the main script flow."
+        }
+      ]
+    }
+  ]
+}

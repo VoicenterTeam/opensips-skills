@@ -1,0 +1,98 @@
+{
+  "id": "installation_guide-CompileAndInstall-3.4",
+  "document_type": "installation_guide",
+  "version": "3.4",
+  "title": "Compile and Install v3.4",
+  "url": "https://www.opensips.org/Documentation/Install-CompileAndInstall-3-4",
+  "content_markdown": "[](https://www.opensips.org)\n\n\n*   [About](/About/About \"About\")\n*   [Downloads](/Downloads/Downloads \"Download\")\n*   [Documentation](/Documentation/Manuals \"Documentation\")\n*   [Community](/Community/OpenSIPS-CE \"Community\")\n*   [Development](/Development/Development \"Development\")\n*   [Training](/Training/Trainings \"Training\")\n\nDocumentation\n\n*   [Manuals](https://www.opensips.org/Documentation/Manuals \"Manuals\")\n*   [Advanced Tutorials](https://www.opensips.org/Documentation/Tutorials \"Tutorials\")\n*   [Tips & FAQ](https://www.opensips.org/Documentation/TipsFAQ \"TipsFAQ\")\n*   [Version Migration](https://www.opensips.org/Documentation/Migration \"Migration\")\n*   [OpenSIPS Webinars](https://www.opensips.org/Documentation/Webinars \"Webinars\")\n*   [Troubleshooting](https://www.opensips.org/Documentation/Troubleshooting \"Troubleshooting\")\n*   [OpenSIPS Tools](https://www.opensips.org/Documentation/Tools \"Tools\")\n*   [Devel Tutorial](https://www.opensips.org/Documentation/Development-Tutorials \"Development-Tutorials\")\n\n\n---\n\nPages for other versions: [devel](https://www.opensips.org/Documentation/Install-CompileAndInstall-4-1 \"Compile and Install - 4.1\") [4.0](https://www.opensips.org/Documentation/Install-CompileAndInstall-4-0 \"Compile and Install - 4.0\") [3.6](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-6 \"Compile and Install - 3.6\") 3.4 Older versions: [3.5](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-5 \"Compile and Install - 3.5\") [3.3](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-3 \"Compile and Install - 3.3\") [3.2](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-2 \"Compile and Install - 3.2\") [3.1](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-1 \"Compile and Install - 3.1\") [3.0](https://www.opensips.org/Documentation/Install-CompileAndInstall-3-0 \"Compile and Install - 3.0\") [2.4](https://www.opensips.org/Documentation/Install-CompileAndInstall-2-4 \"Compile and Install - 2.4\") [2.3](https://www.opensips.org/Documentation/Install-CompileAndInstall-2-3 \"Compile and Install - 2.3\") [2.2](https://www.opensips.org/Documentation/Install-CompileAndInstall-2-2 \"Compile and Install - 2.2\") [2.1](https://www.opensips.org/Documentation/Install-CompileAndInstall-2-1 \"Compile and Install - 2.1\") [1.11](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-11 \"Compile and Install - 1.11\") [1.10](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-10 \"Compile and Install - ver 1.10\") [1.9](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-9 \"Compile and Install - ver 1.9\") [1.8](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-8 \"Compile and Install - ver 1.8\") [1.7](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-7 \"Compile and Install - ver 1.7\") [1.6](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-6 \"Compile and Install - ver 1.6\") [1.5](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-5 \"Compile and Install - ver 1.5\") [1.4](https://www.opensips.org/Documentation/Install-CompileAndInstall-1-4 \"Compile and Install - ver 1.4\")\n\n  \n\n**Compile and Install v3.4**\n\n[Prev](https://www.opensips.org/Documentation/Install-Download-3-4 \"Download OpenSIPS - 3.4\")\n\n[Next](https://www.opensips.org/Documentation/Install-DBDeployment-3-4 \"Database Deployment - 3.4\")\n\n---\n\n**Table of Content** ([hide](javascript:toggle\\('tocid'\\);))\n\nThe following page of the manual is addressed to users that want to compile and install OpenSIPS 3.4 from sources.\n\nIf you have download an OpenSIPS package, than please feel free to skip this page, and install your package according to your platform ( dpkg for Debian, rpm for CentOS, etc ).\n\nGo for the **OpenSIPS** [install instructions](https://github.com/OpenSIPS/opensips/blob/master/INSTALL) - this is a link directly to the INSTALL file from the SVN repository, which contains the up-to-date version.\n\nThe INSTALL file provides information about:\n\n1.  Supported Architectures and Requirements\n2.  Howto Build OpenSIPS From Source Distribution\n3.  Quick-Start Installation Guide\n    1.  Getting Help\n    2.  Disclaimers\n    3.  Quick Start\n    4.  OpenSIPS with Persistent Data Storage\n4.  Troubleshooting\n\n---\n\n### 1.  Video Tutorial\n\nThe OpenSIPS team has held a webinar, which will guide you through the process of doing a quick installation of OpenSIPS ( downloading sources, compiling, installing, etc ) and OpenSIPS Control Panel ( installing, provisioning users ), and will show you what you have to do in order to get a fully functional platform in a matter of minutes. If you find video tutorials easier that text based ones, please feel free to go to the [OpenSIPS Installation Webinar](https://www.opensips.org/Documentation/Tutorials-GettingStarted \"Tutorials-GettingStarted\") page and download the webinar recording.\n\n### 2.  Compile\n\nNavigate to the OpenSIPS sources root folder. From this folder you can simply run\n\nmake all\n\nand the OpenSIPS core, along with all it's configured modules, will be compiled.\n\n#### 2.1  Configuring Compilation Flags\n\nOpenSIPS has various compile-time options, that affect it's capabilities. For example, you can opt to enable the memory debugging allocator, or to enable TLS ( which is by default disabled ), etc.\n\nIn order to change such compile-time options, you should use the 'menuconfig' tool. Since the menuconfig tool is curses-based, before attempting to run it you should install the ncurses development library. On Debian based system, you can usually do this by running\n\napt-get install libncurses5-dev\n\nAfter that you can go to the OpenSIPS sources root folder, and run\n\nmake menuconfig\n\nNavigate to the 'Configure Compile Options' menu, Here you can simply use the arrows keys ( UP + DOWN ) to go through all the Options ( they are explained briefly at the bottom of the console ). Enabling or disabling an option is done via the SpaceBar key. After finishing your configurations, you can go back via the 'q' key and then hit 'Save Changes'.\n\nAfter any changes to the Compilation Flags, you should re-compile & re-install your OpenSIPS.\n\n#### 2.2  Compiling Modules with External Dependencies\n\nThere are some OpenSIPS modules which are not compiled by default, since they require external dependencies which may or not come by default on your system. Thus, such modules require your manual attention when downloading & installing from sources. Some examples of such modules are DB\\_MYSQL ( depends on the mysql devel library ), JSON ( depends on the external JSON parser ), etc.\n\nTo enable the compilation of such modules, you should use the menuconfig tool as well.\n\nRun 'make menuconfig' from the OpenSIPS sources root folder, and then go to 'Configure Excluded Modules'. In that section you will see the list of all the modules that are not enabled by default, along with a brief explanation of the module functionality shown at the bottom of the console.\n\nEnabling / disabling a specific module is done with the SpaceBar key. Once you have selected all your needed modules, you should hit the 'q' key in order to go back to the previous menu, and then hit 'Save Changes'. The tool will display that you have enabled certain modules, and it will tell you what are the dependencies that you need to install in order to succesfully compile the modules.\n\nAfter any changes to the Compilation Flags, you should re-compile & re-install your OpenSIPS.\n\n### 3.  Install\n\nIn order to install OpenSIPS, go to the sources root folder and run\n\nmake install\n\nBy default, OpenSIPS will be installed in the / directory.\n\n#### 3.1  Reduce compile time\n\nIn order to reduce the compile time of OpenSIPS, one can use the FASTER variable. This functionality leverages multi-core machines by compiling all modules in parallel, using make -jNR\\_OF\\_CORES. Note that this method might use a large amount of resources and the number of processes used should be equal or less than the number of cores. Also, this variable suppresses most of the compile output.\n\nFor example, in order to install OpenSIPS on a 4 core machine, go to the sources root folder and run\n\nFASTER=1 make -j4 install\n\n#### 3.2  Configuring Install Path\n\nSometimes, you might want to change the OpenSIPS installation path, due to various reasons ( like having to deploy two OpenSIPS instances on the same machine ). In order to do that, you should have to use the menuconfig tool.\n\nRun 'make menuconfig' and go to 'Configure Install Prefix'. Then type in your custom OpenSIPS installation directory and hit enter. Then navigate down to 'Save Changes' and hit enter. Afterwards you can do 'make install' again and OpenSIPS will be deployed in your newly configured directory.\n\n---\n\n| | | |",
+  "category": "Installation",
+  "section": "Compile and Install",
+  "synopsis": "The following page of the manual is addressed to users that want to compile and install OpenSIPS 3.4 from sources.",
+  "keywords": [
+    "compile",
+    "install",
+    "sources",
+    "menuconfig",
+    "modules",
+    "make",
+    "ncurses",
+    "dependencies",
+    "TLS",
+    "FASTER"
+  ],
+  "extracted_at": "2024-05-21T12:00:00.000Z",
+  "installation_steps": [
+    {
+      "step_number": 1,
+      "title": "Compile OpenSIPS",
+      "description": "Navigate to the OpenSIPS sources root folder and compile the core and configured modules.",
+      "commands": [
+        "make all"
+      ],
+      "notes": ""
+    },
+    {
+      "step_number": 2,
+      "title": "Configure Compilation Flags",
+      "description": "Install ncurses and use menuconfig to change compile-time options like memory debugging or TLS support.",
+      "commands": [
+        "apt-get install libncurses5-dev",
+        "make menuconfig"
+      ],
+      "notes": "Navigate to 'Configure Compile Options'. Use SpaceBar to toggle options. Save changes and re-compile."
+    },
+    {
+      "step_number": 3,
+      "title": "Compiling Modules with External Dependencies",
+      "description": "Use menuconfig to enable modules that require external libraries (e.g., DB_MYSQL, JSON).",
+      "commands": [
+        "make menuconfig"
+      ],
+      "notes": "Go to 'Configure Excluded Modules'. Select modules with SpaceBar. Save changes. The tool will list required dependencies to install."
+    },
+    {
+      "step_number": 4,
+      "title": "Install OpenSIPS",
+      "description": "Install the compiled OpenSIPS binaries and files to the system.",
+      "commands": [
+        "make install"
+      ],
+      "notes": "By default, OpenSIPS will be installed in the / directory."
+    },
+    {
+      "step_number": 5,
+      "title": "Reduce Compile Time",
+      "description": "Use parallel compilation to speed up the build process on multi-core machines.",
+      "commands": [
+        "FASTER=1 make -j4 install"
+      ],
+      "notes": "Replace '4' with the number of cores. This method uses significant resources and suppresses most compile output."
+    },
+    {
+      "step_number": 6,
+      "title": "Configure Install Path",
+      "description": "Change the default installation directory using menuconfig.",
+      "commands": [
+        "make menuconfig"
+      ],
+      "notes": "Go to 'Configure Install Prefix', type the custom directory, save, and run 'make install'."
+    }
+  ],
+  "prerequisites": [
+    {
+      "name": "ncurses development library",
+      "description": "Required for running the curses-based menuconfig tool to configure compilation options.",
+      "required": true
+    },
+    {
+      "name": "mysql devel library",
+      "description": "Required for compiling the DB_MYSQL module.",
+      "required": false
+    },
+    {
+      "name": "external JSON parser",
+      "description": "Required for compiling the JSON module.",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "id": "module-db_http-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "db_http Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/db_http.html",
+  "content_markdown": "This module provides access to a database that is implemented as a HTTP server. It may be used in special cases where traversing firewalls is a problem, or where data encryption is required.\n\nIn order to use this module you must have a server that can communicate via HTTP or HTTPS with this module that follows exactly the format decribed in the specifications section.\n\nThe module can provide SSL, authentication, and all the functionalities of an opensips db as long as the server supports them ( except result_fetch).\n\nThere is a slight difference between the url of db_http and the urls of the other db modules. The url doesn't have to contain the database name. Instead, everything that is after the address is considered to be a path to the db resource, it may be missing.\n\nEven if using HTTPS the url must begin with \"http://\" , and the SSL parameter for the module must be set to 1.\n\n**Example 1.1. Setting db_url for a module**\n\n...\nmodparam(\"presence\", \"db_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db_url\",\"http://user:pass@www.some.com/some/some\")\n...",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:40:10.111Z",
+  "module_name": "db_http",
+  "overview": "This module provides access to a database that is implemented as a HTTP server. It may be used in special cases where traversing firewalls is a problem, or where data encryption is required.\n\nIn order to use this module you must have a server that can communicate via HTTP or HTTPS with this module that follows exactly the format decribed in the specifications section.\n\nThe module can provide SSL, authentication, and all the functionalities of an opensips db as long as the server supports them ( except result_fetch).\n\nThere is a slight difference between the url of db_http and the urls of the other db modules. The url doesn't have to contain the database name. Instead, everything that is after the address is considered to be a path to the db resource, it may be missing.\n\nEven if using HTTPS the url must begin with \"http://\" , and the SSL parameter for the module must be set to 1.\n\n**Example 1.1. Setting db_url for a module**\n\n...\nmodparam(\"presence\", \"db_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db_url\",\"http://user:pass@www.some.com/some/some\")\n...",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libcurl",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "SSL",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not to use SSL. If value is 1 the module will use https otherwise it will use http.",
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_http\", \"SSL\",1)"
+    },
+    {
+      "name": "cap_raw_query",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports raw queries.",
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_http\", \"cap\\_raw\\_query\", 1)"
+    },
+    {
+      "name": "cap_replace",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports replace capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_http\", \"cap\\_replace\", 1)"
+    },
+    {
+      "name": "cap_insert_update",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports insert_update capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_http\", \"cap\\_insert\\_update\", 1)"
+    },
+    {
+      "name": "cap_last_inserted_id",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports last_inserted_id capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_http\", \"cap\\_last\\_inserted\\_id\", 1)"
+    },
+    {
+      "name": "field_delimiter",
+      "type": "string",
+      "default_value": ";",
+      "description": "Character to be used to delimit fields in the reply.Only one char may be set.",
+      "example_value": ";",
+      "example_code": "...\nmodparam(\"db_http\", \"field_delimiter\",\";\")\n..."
+    },
+    {
+      "name": "row_delimiter",
+      "type": "string",
+      "default_value": "\\n",
+      "description": "Character to be used to delimit rows in the reply.Only one char may be set.",
+      "example_value": "\\n",
+      "example_code": "...\nmodparam(\"db_http\", \"row_delimiter\",\"\\n\")\n..."
+    },
+    {
+      "name": "quote_delimiter",
+      "type": "string",
+      "default_value": "|",
+      "description": "Character to be used to quote fields that require quoting in the reply.Only one char may be set.",
+      "example_value": "|",
+      "example_code": "...\nmodparam(\"db_http\", \"quote_delimiter\",\"|\")\n..."
+    },
+    {
+      "name": "value_delimiter",
+      "type": "string",
+      "default_value": ",",
+      "description": "The delimiter used to separate multiple fields of a single variable (see Section 1.5.2, “Variables”). Only one char may be set.",
+      "example_value": ";",
+      "example_code": "...\nmodparam(\"db_http\", \"value_delimiter\",\";\")\n..."
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "default_value": "30000 ( 30 seconds )",
+      "description": "The maximum number of milliseconds that the HTTP ops are allowed to last",
+      "example_value": "5000",
+      "example_code": "...\nmodparam(\"db_http\", \"timeout\",5000)\n..."
+    },
+    {
+      "name": "disable_expect",
+      "type": "integer",
+      "default_value": "0 (off)",
+      "description": "Disables automatic 'Expect: 100-continue' behavior in libcurl for requests over 1024 bytes in size. This can help reduce latency by saving a network round-trip for large records. For more information on this behavior please seee rfc2616 section 8.2.3.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"disable_expect\",1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting db_url for a module",
+      "description": "There is a slight difference between the url of db_http and the urls of the other db modules. The url doesn't have to contain the database name. Instead, everything that is after the address is considered to be a path to the db resource, it may be missing. Even if using HTTPS the url must begin with \"http://\" , and the SSL parameter for the module must be set to 1.",
+      "code": "...\nmodparam(\"presence\", \"db\\_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db\\_url\",\"http://user:pass@www.some.com/some/some\")\n..."
+    },
+    {
+      "title": "Set `SSL` parameter",
+      "description": "Whether or not to use SSL. If value is 1 the module will use https otherwise it will use http.",
+      "code": "...\nmodparam(\"db\\_http\", \"SSL\",1)\n..."
+    },
+    {
+      "title": "Set `cap_raw_query` parameter",
+      "description": "Whether or not the server supports raw queries.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_raw\\_query\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_replace` parameter",
+      "description": "Whether or not the server supports replace capabilities.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_replace\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_insert_update` parameter",
+      "description": "Whether or not the server supports insert_update capabilities.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_insert\\_update\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_last_inserted_id` parameter",
+      "description": "Whether or not the server supports last_inserted_id capabilities.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_last\\_inserted\\_id\", 1)\n..."
+    },
+    {
+      "title": "Set `field_delimiter` parameter",
+      "description": "Character to be used to delimit fields in the reply.Only one char may be set.",
+      "code": "...\nmodparam(\"db\\_http\", \"field\\_delimiter\",\";\")\n..."
+    },
+    {
+      "title": "Set `row_delimiter` parameter",
+      "description": "Character to be used to delimit rows in the reply.Only one char may be set.",
+      "code": "...\nmodparam(\"db\\_http\", \"row\\_delimiter\",\"\\\\n\")\n..."
+    },
+    {
+      "title": "Set `quote_delimiter` parameter",
+      "description": "Character to be used to quote fields that require quoting in the reply.Only one char may be set.",
+      "code": "...\nmodparam(\"db\\_http\", \"quote\\_delimiter\",\"|\")\n..."
+    },
+    {
+      "title": "Set `value_delimiter` parameter",
+      "description": "The delimiter used to separate multiple fields of a single variable (see Section 1.5.2, “Variables”). Only one char may be set.",
+      "code": "...\nmodparam(\"db\\_http\", \"value\\_delimiter\",\";\")\n..."
+    },
+    {
+      "title": "Set `timeout` parameter",
+      "description": "The maximum number of milliseconds that the HTTP ops are allowed to last",
+      "code": "...\nmodparam(\"db\\_http\", \"timeout\",5000)\n..."
+    },
+    {
+      "title": "Set `disable_expect` parameter",
+      "description": "Disables automatic 'Expect: 100-continue' behavior in libcurl for requests over 1024 bytes in size. This can help reduce latency by saving a network round-trip for large records. For more information on this behavior please seee rfc2616 section 8.2.3.",
+      "code": "...\nmodparam(\"db\\_http\", \"disable\\_expect\",1)\n..."
+    }
+  ]
+}

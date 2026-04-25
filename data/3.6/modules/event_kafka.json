@@ -1,0 +1,114 @@
+{
+  "id": "module-event_kafka-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "event_kafka Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/event_kafka.html",
+  "content_markdown": "This module is an implementation of an [Apache Kafka](https://kafka.apache.org/) producer. It serves as a transport backend for the Event Interface and also provides a stand-alone connector to be used from the OpenSIPS script in order to publish messages to Kafka brokers.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:30:44.762Z",
+  "module_name": "event_kafka",
+  "overview": "This module is an implementation of an [Apache Kafka](https://kafka.apache.org/) producer. It serves as a transport backend for the Event Interface and also provides a stand-alone connector to be used from the OpenSIPS script in order to publish messages to Kafka brokers.",
+  "how_it_works": "Kafka socket syntax: 'kafka:' brokers '/' topic ['?' properties]\n\nMeaning of the socket fields:\n\n* brokers - comma-separated list of the addresses (as host:port) of the Kafka brokers to connect to. These are the \"bootstrap\" servers used by the client to discover the Kafka cluster. This corresponds to the bootstrap.servers / metadata.broker.list configuration property.\n* topic - Kafka topic used to publish messages to.\n* properties - configuration properties to be transparently passed to the Kafka client library. The syntax is: 'g.'|'t.' property '=' value ['&' 'g.'|'t.' property '=' value] ...\n\nThe g. or t. prefix before each property name specifies whether it's a global or topic level property, as classified by the Kafka library. Documentation for the supported properties can be found here.\n\nNote that some library properties have the topic. prefix as part of their name, but still fall under the global category.\n\nkey=callid is an extra property that is not passed to the Kafka library and is interpreted by OpenSIPS itself. When enabling this property the record published to Kafka will also include the Call-ID of the current SIP message as key.\n\nThe event payload is formated as a JSON-RPC notification, with the event name as the method field and the event parameters as the params field.\n\nThe record published to Kafka will also include the Call-ID of the current SIP message as key, if the key=callid property is provided in the event socket.",
+  "dependencies_required": [
+    {
+      "name": "librdkafka-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "broker_id",
+      "type": "string",
+      "description": "This parameter specifies the configuration for a Kafka broker (or cluster) that can be used to publish messages directly from the script, using the kafka_publish() function. The format of the parameter is: [ID]kafka_socket_, where ID is an identifier for this broker instance and kafka_socket is a specification similar to the Kafka socket syntax.",
+      "example_value": "[k1]127.0.0.1:9092/topic1?g.linger.ms=100&t.acks=all",
+      "example_code": "modparam(\"event_kafka\", \"broker_id\", \"[k1]127.0.0.1:9092/topic1?g.linger.ms=100&t.acks=all\")",
+      "notes": "The key=callid property does not have an effect for brokers configured through this parameter. This parameter can be set multiple times."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "kafka_publish",
+      "signature": "kafka_publish(broker_id, message, [key], [report_route])",
+      "parameters": [
+        {
+          "name": "broker_id",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the Kafka broker (or cluster). Must be one of the IDs defined through the broker_id modparam."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "the payload of the Kafka message to publish."
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "required": false,
+          "description": "the key of the Kafka record to publish."
+        },
+        {
+          "name": "report_route",
+          "type": "string",
+          "required": false,
+          "description": "name of a script route to be executed when the message delivery status is available. Information about the message publishing will be available in this route through the following AVP variables: $avp(kafka_id) - broker ID, $avp(kafka_status) - delivery status, 0 if succesfull, -1 othewise, $avp(kafka_key) - message key, $avp(kafka_msg) - message payload"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if the message was succesfully queued for sending"
+        },
+        {
+          "value": "-1",
+          "condition": "otherwise"
+        }
+      ],
+      "description": "Publishes a message to a Kafka broker (or cluster). As the actual send operation is done in an asynchronous manner, a report route may be provided in order to check the message delivery status.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$var(msg) = \"my msg content\";\nkafka\\_publish(\"k1\", $var(kmsg), $ci, \"kafka\\_report\");\n...\nroute\\[kafka\\_report\\] {\n\txlog(\"Delivery status: $avp(kafka\\_status) for broker: $avp(kafka\\_id)\\\\n\");\n}\n...",
+          "description": "kafka_publish() function usage"
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `broker_id` parameter",
+      "description": "Sets the `broker_id` parameter.",
+      "code": "...\nmodparam(\"event\\_kafka\", \"broker\\_id\", \"\\[k1\\]127.0.0.1:9092/topic1?g.linger.ms=100&t.acks=all\")\n..."
+    },
+    {
+      "title": "`kafka_publish()` function usage",
+      "description": "Demonstrates usage of the `kafka_publish()` function.",
+      "code": "...\n$var(msg) = \"my msg content\";\nkafka\\_publish(\"k1\", $var(kmsg), $ci, \"kafka\\_report\");\n...\nroute[kafka\\_report] {\n\txlog(\"Delivery status: $avp(kafka\\_status) for broker: $avp(kafka\\_id)\\n\");\n}\n..."
+    },
+    {
+      "title": "Kafka socket",
+      "description": "Example of a Kafka socket string.",
+      "code": "kafka:127.0.0.1:9092/topic1?t.message.timeout.ms=1000&key=callid"
+    }
+  ]
+}

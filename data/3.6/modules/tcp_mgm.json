@@ -1,0 +1,85 @@
+{
+  "id": "module-tcp_mgm-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "tcp_mgm Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/tcp_mgm.html",
+  "content_markdown": "This module provides optional, SQL-based support for fine-grained management of all TCP connections taking place on OpenSIPS.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T13:25:12.159Z",
+  "module_name": "tcp_mgm",
+  "overview": "This module provides optional, SQL-based support for fine-grained management of all TCP connections taking place on OpenSIPS.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "SQL database module",
+      "type": "module",
+      "reason": "At least one must be loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "description": "Mandatory URL to the SQL database.",
+      "example_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "example_code": "modparam(\"tcp\\_mgm\", \"db\\_url\", \"mysql://opensips:opensipsrw@localhost/opensips\")"
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "tcp_mgm",
+      "description": "The name of the table holding the TCP paths (rules).",
+      "example_value": "tcp\\_mgm",
+      "example_code": "modparam(\"tcp\\_mgm\", \"db\\_table\", \"tcp\\_mgm\")"
+    },
+    {
+      "name": "[column-name]_col",
+      "type": "string",
+      "description": "Use a different name for column \"column-name\".",
+      "example_value": "connect\\_to",
+      "example_code": "modparam(\"tcp\\_mgm\", \"connect\\_timeout\\_col\", \"connect\\_to\")"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "tcp_reload",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "OK"
+      },
+      "description": "Reload all TCP paths from the _tcp\\_mgm_ table without disrupting ongoing traffic. Note that the reloaded rules will NOT immediately apply to existing TCP connections, rather only to newly established ones.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "\\# reload all TCP paths\n$ opensips-cli -x mi tcp\\_reload\n$ \"OK\"",
+          "description": "reload all TCP paths"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `db_url` parameter",
+      "description": "Mandatory URL to the SQL database.",
+      "code": "modparam(\"tcp\\_mgm\", \"db\\_url\", \"mysql://opensips:opensipsrw@localhost/opensips\")"
+    },
+    {
+      "title": "Setting the `db_table` parameter",
+      "description": "The name of the table holding the TCP paths (rules). Default value is \"tcp_mgm\".",
+      "code": "modparam(\"tcp\\_mgm\", \"db\\_table\", \"tcp\\_mgm\")"
+    },
+    {
+      "title": "Setting the `[column-name]_col` parameter",
+      "description": "Use a different name for column \"column-name\".",
+      "code": "modparam(\"tcp\\_mgm\", \"connect\\_timeout\\_col\", \"connect\\_to\")"
+    }
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "id": "module-event_flatstore-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "event_flatstore Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/event_flatstore.html",
+  "content_markdown": "The event_flatstore module provides a logging facility for different events, triggered through the OpenSIPS Event Interface, directly from the OpenSIPS script. The module logs the events along with their parameters in plain text files.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:48:28.021Z",
+  "module_name": "event_flatstore",
+  "overview": "The event_flatstore module provides a logging facility for different events, triggered through the OpenSIPS Event Interface, directly from the OpenSIPS script. The module logs the events along with their parameters in plain text files.",
+  "how_it_works": "flatstore:path_to_file\n\nMeanings:\n\n* flatstore: - informs the Event Interface that the events sent to this subscriber should be handled by the event_flatstore module.\n* path_to_file - path to the file where the logged events will be appended to. The file will be created if it does not exist. It must be a valid path and not a directory.",
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "max_open_sockets",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Defines the maximum number of simultaneously opened files by the module. If the maximum limit is reached, an error message will be thrown, and further subscriptions will only be possible after at least one of the current subscriptions will expire.",
+      "example_value": "200",
+      "example_code": "modparam(\"event\\_flatstore\", \"max\\_open\\_sockets\", 200)"
+    },
+    {
+      "name": "delimiter",
+      "type": "string",
+      "default_value": ",",
+      "description": "Sets the separator between the parameters of the event in the logging file.",
+      "example_value": ";",
+      "example_code": "modparam(\"event\\_flatstore\", \"delimiter\", \";\")"
+    },
+    {
+      "name": "file_permissions",
+      "type": "string",
+      "default_value": "644",
+      "description": "Sets the permissions for the newly created logs. It expects a string representation of a octal value.",
+      "example_value": "664",
+      "example_code": "modparam(\"event\\_flatstore\", \"file\\_permissions\", \"664\")"
+    },
+    {
+      "name": "suppress_event_name",
+      "type": "int",
+      "default_value": "0/OFF",
+      "description": "Suppresses the name of the event in the log file.",
+      "example_value": "1",
+      "example_code": "modparam(\"event\\_flatstore\", \"suppress\\_event\\_name\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "evi_flat_rotate",
+      "parameters": [
+        {
+          "name": "path_to_file",
+          "type": "string",
+          "required": true,
+          "description": "The file specified as a parameter to the command."
+        }
+      ],
+      "description": "It makes the processes reopen the file specified as a parameter to the command in order to be compatible with a logrotate command. If the function is not called after the mv command is executed, the module will continue to write in the renamed file.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi evi_flat_rotate _path_to_log_file_",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `max_open_sockets` parameter",
+      "description": "Defines the maximum number of simultaneously opened files by the module. If the maximum limit is reached, an error message will be thrown, and further subscriptions will only be possible after at least one of the current subscriptions will expire.",
+      "code": "...\nmodparam(\"event\\_flatstore\", \"max\\_open\\_sockets\", 200)\n..."
+    },
+    {
+      "title": "Set `delimiter` parameter",
+      "description": "Sets the separator between the parameters of the event in the logging file.",
+      "code": "...\nmodparam(\"event\\_flatstore\", \"delimiter\", \";\")\n..."
+    },
+    {
+      "title": "Set `file_permissions` parameter",
+      "description": "Sets the permissions for the newly created logs. It expects a string representation of a octal value.",
+      "code": "...\nmodparam(\"event\\_flatstore\", \"file\\_permissions\", \"664\")\n..."
+    },
+    {
+      "title": "Set `suppress_event_name` parameter",
+      "description": "Suppresses the name of the event in the log file.",
+      "code": "...\nmodparam(\"event\\_flatstore\", \"suppress\\_event\\_name\", 1)\n..."
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "id": "module-launch_darkly-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "launch_darkly Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/launch_darkly.html",
+  "content_markdown": "This module implements support for the [Launch Darkly](https://launchdarkly.com/) feature management cloud. The module provide the conectivity to the cloud and the ability to query for feature flags.\n\nOpenSIPS uses the [server side C/C++ SDK](https://launchdarkly.com/features/sdk/) provided by Launch Darkly.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T13:01:47.407Z",
+  "module_name": "launch_darkly",
+  "overview": "This module implements support for the [Launch Darkly](https://launchdarkly.com/) feature management cloud. The module provide the conectivity to the cloud and the ability to query for feature flags.\n\nOpenSIPS uses the [server side C/C++ SDK](https://launchdarkly.com/features/sdk/) provided by Launch Darkly.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "ldserverapi",
+      "type": "library",
+      "reason": "Must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "sdk_key",
+      "type": "string",
+      "description": "The LaunchDarkly SDK key used to connect to the service. This is a mandatory parameter.",
+      "example_value": "sdk-12345678-abcd-12ab-1234-0123456789abc",
+      "example_code": "modparam(\"launch\\_darkly\", \"sdk\\_key\", \"sdk-12345678-abcd-12ab-1234-0123456789abc\")",
+      "notes": "Mandatory parameter."
+    },
+    {
+      "name": "ld_log_level",
+      "type": "string",
+      "default_value": "LD_LOG_WARNING",
+      "description": "The LaunchDarkly specific log level to be used by the LD SDK/libray to log its internal messages. Note that these log produced by the LD library (according to this ld\\_log\\_level) will be further subject to filtering according to the overall OpenSIPS log\\_level.",
+      "possible_values": [
+        "LD_LOG_FATAL",
+        "LD_LOG_CRITICAL",
+        "LD_LOG_ERROR",
+        "LD_LOG_WARNING",
+        "LD_LOG_INFO",
+        "LD_LOG_DEBUG",
+        "LD_LOG_TRACE"
+      ],
+      "example_value": "LD_LOG_CRITICAL",
+      "example_code": "modparam(\"launch\\_darkly\", \"ld\\_log\\_level\", \"LD\\_LOG\\_CRITICAL\")"
+    },
+    {
+      "name": "connect_wait",
+      "type": "integer",
+      "default_value": "500",
+      "description": "The time to wait (in miliseconds) when connecting to the LD service. An initial failure in connecting to the LD service may be addressed by increasing this wait value.",
+      "example_value": "100",
+      "example_code": "modparam(\"launch\\_darkly\", \"connect\\_wait\", 100)"
+    },
+    {
+      "name": "re_init_interval",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The minimum time interval (in seconds) to try again to init the LD client in the situation when the module was not able to init the LC connection at startup. In case of such failure, the module will automatically re-try to init its LD client on-demand, whnever the feature flag is checked from script, but not sooner than \\`re\\_init\\_interval\\`. Note: if there are no flag checkings to be performed, the re-init may be attempted longer than \\`re\\_init\\_interval\\`.",
+      "example_value": "30",
+      "example_code": "modparam(\"launch\\_darkly\", \"re\\_init\\_interval\", 30)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "ld_feature_enabled",
+      "signature": "ld_feature_enabled( flag, user, [user_extra], [fallback])",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "string",
+          "required": true,
+          "description": "the key of the flag to evaluate. May not be NULL or empty."
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "required": true,
+          "description": "the user to evaluate the flag against. May not be NULL or empty."
+        },
+        {
+          "name": "user_extra",
+          "type": "AVP",
+          "required": false,
+          "description": "an AVP holding one or multiple key-value attributes to be attached to the user. The format of the AVP value is \"key=value\"."
+        },
+        {
+          "name": "fallback",
+          "type": "int",
+          "required": false,
+          "default": "FALSE",
+          "description": "the value to be returned on error. By default FALSE will be returned."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "flag was found TRUE"
+        },
+        {
+          "value": "-1",
+          "condition": "flag was found FALSE"
+        },
+        {
+          "value": "2",
+          "condition": "fallback TRUE on error"
+        },
+        {
+          "value": "-2",
+          "condition": "fallback FALSE on error"
+        }
+      ],
+      "description": "Function to evaluate a LaunchDarkly boolean feature flag\n\nReturns 1 if the flag was found TRUE or -1 otherwise.\n\nIn case of error, the fallback (TRUE or FALSE) value will be returned In such cases, a \"fallback\" TRUE is returned as 2 and a fallback FALSE as -2, so you can may a difference between a real TRUE (returned by the LD service) and a fallback TRUE due to an error.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$avp(extra) = \"domainId=123456\";\nif (ld\\_feature\\_enabled(\"my-flag\",\"opensips\", $avp(extra), false))\n\txlog(\"-------TRUE\\\\n\");\nelse\n\txlog(\"-------FALSE\\\\n\");\n...",
+          "description": "ld_feature_enabled() function usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `sdk_key` parameter",
+      "description": "Demonstrates setting the `sdk_key` parameter.",
+      "code": "...\nmodparam(\"launch_darkly\", \"sdk_key\", \"sdk-12345678-abcd-12ab-1234-0123456789abc\")\n..."
+    },
+    {
+      "title": "Set `log_level` parameter",
+      "description": "Demonstrates setting the `log_level` parameter.",
+      "code": "...\nmodparam(\"launch_darkly\", \"ld_log_level\", \"LD_LOG_CRITICAL\")\n..."
+    },
+    {
+      "title": "Set `connect_wait` parameter",
+      "description": "Demonstrates setting the `connect_wait` parameter.",
+      "code": "...\nmodparam(\"launch_darkly\", \"connect_wait\", 100)\n..."
+    },
+    {
+      "title": "Set `re_init_interval` parameter",
+      "description": "Demonstrates setting the `re_init_interval` parameter.",
+      "code": "...\nmodparam(\"launch_darkly\", \"re_init_interval\", 30)\n..."
+    },
+    {
+      "title": "`ld_feature_enabled()` function usage",
+      "description": "Demonstrates usage of the `ld_feature_enabled()` function.",
+      "code": "\t...\n\t$avp(extra) = \"domainId=123456\";\n\tif (ld_feature_enabled(\"my-flag\",\"opensips\", $avp(extra), false))\n\t\txlog(\"-------TRUE\\\\n\");\n\telse\n\t\txlog(\"-------FALSE\\\\n\");\n\t..."
+    }
+  ]
+}

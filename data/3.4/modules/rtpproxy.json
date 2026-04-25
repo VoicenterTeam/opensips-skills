@@ -1,0 +1,947 @@
+{
+  "id": "module-rtpproxy-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "rtpproxy Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/rtpproxy.html",
+  "content_markdown": "This module is used by OpenSIPS to communicate with RTPProxy, a media relay proxy used to make the communication between user agents behind NAT possible. This module is also used along with RTPProxy to record media streams between user agents or to play media to either UAc or UAs.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:09:40.977Z",
+  "module_name": "rtpproxy",
+  "overview": "This module is used by OpenSIPS to communicate with RTPProxy, a media relay proxy used to make the communication between user agents behind NAT possible. This module is also used along with RTPProxy to record media streams between user agents or to play media to either UAc or UAs.",
+  "how_it_works": "Currently, the rtpproxy module can support multiple rtpproxies for balancing/distribution and control/selection purposes. The module allows the definition of several sets of rtpproxies - load-balancing will be performed over a set and the user has the ability to choose what set should be used. The balancing inside a set is done automatically by the module based on the weight of each rtpproxy from the set. The module can also receive timeout notifications from multiple rtpproxies. RTPProxy can be configured to send notifications when a session doesn't receive any media for a configurable interval of time. The rtpproxy modules has implemented a listener for such notifications and when received it terminates the dialog at SIP level (send BYE to both ends), with the help of dialog module.",
+  "dependencies_required": [
+    {
+      "name": "a database module",
+      "type": "module",
+      "reason": "only if you want to load use a database table from where to load the rtp proxies sets.",
+      "optional": true
+    },
+    {
+      "name": "dialog module",
+      "type": "module",
+      "reason": "if using the rtpproxy_engage functions or RTPProxy timeout notifications.",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "rtpproxy_sock",
+      "type": "string",
+      "default_value": "NONE",
+      "description": "Definition of socket(s) used to connect to (a set) RTPProxy. It may specify a UNIX socket, an IPv4/IPv6 UDP socket or an IPv4/IPv6 TCP socket. If the protocol part (i.e. “udp:”) is missing, the socket is treated as a UNIX socket.\n\nThe definition also supports to specify a different IP that will be advertised instead of the one returned by RTPProxy. This is useful when having multiple RTPProxy servers that are located behind NAT, and listen only on private intefaces, but need to advertise a public one.",
+      "example_value": "udp:localhost:22222=2",
+      "example_code": "# single rtpproxy with specific weight\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"udp:localhost:22222=2\")\n\n# single rtpproxy with advertised address + weight\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"udp:localhost:22222|8.8.8.8=2\")\n\n# multiple rtproxies for LB\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\",\n\t\"udp:localhost:22222 udp:localhost:22223 tcp:remote1:33422 tcp6:remote2:32322\")\n\n# multiple sets of multiple rtproxies\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"1 == udp:localhost:22222 udp:localhost:22223\")\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"2 == udp:localhost:22223\")\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"2 == udp:localhost:22223|8.8.8.8\")"
+    },
+    {
+      "name": "rtpproxy_disable_tout",
+      "type": "integer",
+      "default_value": "60",
+      "description": "Once RTPProxy was found unreachable and marked as disable, rtpproxy will not attempt to establish communication to RTPProxy for rtpproxy\\_disable\\_tout seconds.",
+      "example_value": "20",
+      "example_code": "modparam(\"rtpproxy\", \"rtpproxy\\_disable\\_tout\", 20)"
+    },
+    {
+      "name": "rtpproxy_timeout",
+      "type": "string",
+      "default_value": "1",
+      "description": "Timeout value in waiting for reply from RTPProxy.",
+      "example_value": "0.2",
+      "example_code": "modparam(\"rtpproxy\", \"rtpproxy\\_timeout\", \"0.2\")"
+    },
+    {
+      "name": "rtpproxy_autobridge",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Enable auto-bridging feature. Does not properly function when doing serial/parallel forking!",
+      "example_value": "1",
+      "example_code": "modparam(\"rtpproxy\", \"rtpproxy\\_autobridge\", 1)"
+    },
+    {
+      "name": "rtpproxy_retr",
+      "type": "integer",
+      "default_value": "5",
+      "description": "How many times rtpproxy should retry to send and receive after timeout was generated.",
+      "example_value": "2",
+      "example_code": "modparam(\"rtpproxy\", \"rtpproxy\\_retr\", 2)"
+    },
+    {
+      "name": "default_set",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The parameter indicates the default RTPProxy set to be used when provisioning an engine in the config file without an explicit set, or when calling one of the _rtpproxy\\_*()_ functions without an explicit set.",
+      "example_value": "1",
+      "example_code": "modparam(\"rtpproxy\", \"default\\_set\", 1)"
+    },
+    {
+      "name": "nortpproxy_str",
+      "type": "string",
+      "default_value": "a=nortpproxy:yes\\r\\n",
+      "description": "The parameter sets the SDP attribute used by rtpproxy to mark the packet SDP informations have already been mangled.\n\nIf empty string, no marker will be added or checked.",
+      "example_value": "a=sdpmangled:yes\\r\\n",
+      "example_code": "modparam(\"rtpproxy\", \"nortpproxy\\_str\", \"a=sdpmangled:yes\\r\\n\")",
+      "notes": "The string must be a complete SDP line, including the EOH (\\r\\n)."
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The database url. This parameter should be set if you want to use a database table from where to load or reload definitions of socket(s) used to connect to (a set) RTPProxy. The record from the database table will be read at start up (added to the ones defined with the rtpproxy\\_sock module parameter) and when the MI command rtpproxy\\_reload is issued(the definitions will be replaced with the ones from the database table).",
+      "example_value": "mysql://opensips:opensipsrw@192.168.2.132/opensips",
+      "example_code": "modparam(\"rtpproxy\", \"db\\_url\", \n\t\t\"mysql://opensips:opensipsrw@192.168.2.132/opensips\")"
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "rtpproxy\\_sockets",
+      "description": "The name of the database table containing definitions of socket(s) used to connect to (a set) RTPProxy.",
+      "example_value": "nh\\_sockets",
+      "example_code": "modparam(\"rtpproxy\", \"db\\_table\", \"nh\\_sockets\")"
+    },
+    {
+      "name": "rtpp_socket_col",
+      "type": "string",
+      "default_value": "rtpproxy\\_sock",
+      "description": "The name rtpp socket column in the database table.",
+      "example_value": "rtpp\\_socket",
+      "example_code": "modparam(\"rtpproxy\", \"rtpp\\_socket\\_col\", \"rtpp\\_socket\")"
+    },
+    {
+      "name": "set_id_col",
+      "type": "string",
+      "default_value": "set_id",
+      "description": "The name set id column in the database table.",
+      "example_value": "rtpp_set_id",
+      "example_code": "modparam(\"rtpproxy\", \"set_id_col\", \"rtpp_set_id\")"
+    },
+    {
+      "name": "rtpp_notify_socket",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The socket OpenSIPS listens for notifications from RTPProxy. Currently OpenSIPS can receive RTP timeout and DTMF events.",
+      "example_value": "tcp:10.10.10.10:9999",
+      "example_code": "modparam(\"rtpproxy\", \"rtpp_notify_socket\", \"tcp:10.10.10.10:9999\")\n\n# use an UNIX socket\nmodparam(\"rtpproxy\", \"rtpp_notify_socket\", \"unix:/tmp/rtpproxy.unix\")\n# or\nmodparam(\"rtpproxy\", \"rtpp_notify_socket\", \"/tmp/rtpproxy.unix\")"
+    },
+    {
+      "name": "generated_sdp_port_min",
+      "type": "integer",
+      "default_value": "35000",
+      "description": "When RTPProxy module needs to generate an SDP body, use this value as the minimum value of the port.",
+      "example_value": "10000",
+      "example_code": "modparam(\"rtpproxy\", \"generated_sdp_port_min\", 10000)"
+    },
+    {
+      "name": "generated_sdp_port_max",
+      "type": "integer",
+      "default_value": "65000",
+      "description": "When RTPProxy module needs to generate an SDP body, use this value as the maximum value of the port.",
+      "example_value": "30000",
+      "example_code": "modparam(\"rtpproxy\", \"generated_sdp_port_max\", 30000)"
+    },
+    {
+      "name": "generated_sdp_media_ip",
+      "type": "string",
+      "default_value": "127.0.0.1",
+      "description": "When RTPProxy module needs to generate an SDP body, use this value as the media_ip in the c= and the o=.",
+      "example_value": "10.0.0.1",
+      "example_code": "modparam(\"rtpproxy\", \"generated_sdp_media_ip\", \"10.0.0.1\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "rtpproxy_engage",
+      "signature": "rtpproxy_engage([[flags][, [ip_address][, [set_id][, [sock_var][, ret_var]]]]])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags to turn on some features.",
+          "valid_values": [
+            "a",
+            "l",
+            "k",
+            "i",
+            "e",
+            "f",
+            "r",
+            "o",
+            "c",
+            "s",
+            "w",
+            "n[<SOCKET>]",
+            "d[NNN]",
+            "tNN",
+            "TNN",
+            "zNN"
+          ]
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "required": false,
+          "description": "new SDP IP address."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call. Note that the variable will only be populated in the initial request."
+        },
+        {
+          "name": "ret_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to print the IP and port the RTPProxy server is using for this call. This is useful especially when using the _rtp_cluster_, which can advertise multiple servers behind it. The format of the value returned is _IP:port_. Note that the variable will only be populated in the initial request."
+        }
+      ],
+      "return_type": "int",
+      "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy. It uses the dialog module facilities to keep track when the rtpproxy session must be updated. Function must only be called for the initial INVITE and internally takes care of rewriting the body of 200 OKs and ACKs. Note that when used in bridge mode, this function might advertise wrong interfaces in SDP (due to the fact that OpenSIPS is not aware of the RTPProxy configuration), so you might face an undefined behavior.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_method(\"INVITE\") && has_totag()) {\n\tif ($var(setid) != 0) {\n\t\trtpproxy_engage(,,$var(setid), $var(proxy));\n\t\txlog(\"SCRIPT: RTPProxy server used is $var(proxy)\\n\");\n\t} else {\n\t\trtpproxy_engage();\n\t\txlog(\"SCRIPT: using default RTPProxy set\\n\");\n\t}\n}\n...",
+          "description": "rtpproxy_engage usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_offer",
+      "signature": "rtpproxy_offer([[flags][, [ip_address][, [set_id][, [sock_var][, [ret_var][, [body_var]]]]]])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags to turn on some features.",
+          "valid_values": [
+            "a",
+            "l",
+            "k",
+            "i",
+            "e",
+            "f",
+            "r",
+            "o",
+            "c",
+            "s",
+            "w",
+            "n[<SOCKET>]",
+            "d[NNN]",
+            "tNN",
+            "TNN",
+            "zNN"
+          ]
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "required": false,
+          "description": "new SDP IP address."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        },
+        {
+          "name": "ret_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to print the IP and port the RTPProxy server is using for this call."
+        },
+        {
+          "name": "body_var",
+          "type": "var",
+          "required": false,
+          "description": "this parameter is used as an in-out variable for the body that should be used to challenge RTP proxy server. If the variable is specified, it is the function uses its content as the body to challenge, and returns the resulted body in it. If not used, the message's body is used, and the outgoing body is changed."
+        }
+      ],
+      "return_type": "int",
+      "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy. To be invoked on INVITE for the cases the SDPs are in INVITE and 200 OK and on 200 OK when SDPs are in 200 OK and ACK.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n...\n    if (is_method(\"INVITE\")) {\n        if (has_body(\"application/sdp\")) {\n            if (rtpproxy_offer())\n                t_on_reply(\"1\");\n        } else {\n            t_on_reply(\"2\");\n        }\n    }\n    if (is_method(\"ACK\") && has_body(\"application/sdp\"))\n        rtpproxy_answer();\n...\n}\n\nonreply_route[1]\n{\n...\n    if (has_body(\"application/sdp\"))\n        rtpproxy_answer();\n...\n}\n\nonreply_route[2]\n{\n...\n    if (has_body(\"application/sdp\"))\n        rtpproxy_offer();\n...\n}",
+          "description": "rtpproxy_offer usage",
+          "context": "REQUEST_ROUTE, ONREPLY_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "rtpproxy_engage",
+        "rtpproxy_answer"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_answer",
+      "signature": "rtpproxy_answer([[flags][, [ip_address][, [set_id][, [sock_var][, [ret_var][, [body_var]]]]]]])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags to turn on some features."
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "required": false,
+          "description": "new SDP IP address."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        },
+        {
+          "name": "ret_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to print the IP and port the RTPProxy server is using for this call."
+        },
+        {
+          "name": "body_var",
+          "type": "var",
+          "required": false,
+          "description": "this parameter is used as an in-out variable for the body that should be used to challenge RTP proxy server."
+        }
+      ],
+      "return_type": "int",
+      "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy. To be invoked on 200 OK for the cases the SDPs are in INVITE and 200 OK and on ACK when SDPs are in 200 OK and ACK.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n...\n    if (is_method(\"INVITE\")) {\n        if (has_body(\"application/sdp\")) {\n            if (rtpproxy_offer())\n                t_on_reply(\"1\");\n        } else {\n            t_on_reply(\"2\");\n        }\n    }\n    if (is_method(\"ACK\") && has_body(\"application/sdp\"))\n        rtpproxy_answer();\n...\n}\n\nonreply_route[1]\n{\n...\n    if (has_body(\"application/sdp\"))\n        rtpproxy_answer();\n...\n}\n\nonreply_route[2]\n{\n...\n    if (has_body(\"application/sdp\"))\n        rtpproxy_offer();\n...\n}",
+          "description": "See rtpproxy_offer() function example above for example.",
+          "context": "REQUEST_ROUTE, ONREPLY_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "rtpproxy_offer"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_unforce",
+      "signature": "rtpproxy_unforce([[set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "Tears down the RTPProxy session for the current call.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nrtpproxy_unforce();\n...",
+          "description": "rtpproxy_unforce usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_stream2uac",
+      "signature": "rtpproxy_stream2uac(prompt_name, count[, [set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "prompt_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the prompt to stream. Should be either absolute pathname or pathname relative to the directory where RTPproxy runs."
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "required": true,
+          "description": "number of times the prompt should be repeated. The value of -1 means that it will be streaming in loop indefinitely, until appropriate `rtpproxy_stop_stream2xxx` is issued."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "Instruct the RTPproxy to stream prompt/announcement pre-encoded with the makeann command from the RTPproxy distribution. The uac/uas suffix selects who will hear the announcement relatively to the current transaction - UAC or UAS. For example invoking the `rtpproxy_stream2uac` in the request processing block on ACK transaction will play the prompt to the UA that has generated original INVITE and ACK while `rtpproxy_stop_stream2uas` on 183 in reply processing block will play the prompt to the UA that has generated 183. Apart from generating announcements, another possible application of this function is implementing music on hold (MOH) functionality. When count is -1, the streaming will be in loop indefinitely until the appropriate `rtpproxy_stop_stream2xxx` is issued. In order to work correctly, functions require that the session in the RTPproxy already exists. Also those functions don't alted SDP, so that they are not substitute for calling `rtpproxy_offer` or `rtpproxy_answer`.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n    if (is_method(\"INVITE\")) {\n        rtpproxy_offer();\n        if ($rb=~ \"0\\\\.0\\\\.0\\\\.0\") {\n            rtpproxy_stream2uas(\"/var/rtpproxy/prompts/music_on_hold\", -1);\n        } else {\n            rtpproxy_stop_stream2uas();\n        };\n    };\n...",
+          "description": "rtpproxy_stream2xxx usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "rtpproxy_stop_stream2xxx",
+        "rtpproxy_offer",
+        "rtpproxy_answer"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_stream2uas",
+      "signature": "rtpproxy_stream2uas(prompt_name, count[, [set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "prompt_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the prompt to stream. Should be either absolute pathname or pathname relative to the directory where RTPproxy runs."
+        },
+        {
+          "name": "count",
+          "type": "int",
+          "required": true,
+          "description": "number of times the prompt should be repeated. The value of -1 means that it will be streaming in loop indefinitely, until appropriate `rtpproxy_stop_stream2xxx` is issued."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "Instruct the RTPproxy to stream prompt/announcement pre-encoded with the makeann command from the RTPproxy distribution. The uac/uas suffix selects who will hear the announcement relatively to the current transaction - UAC or UAS. For example invoking the `rtpproxy_stream2uac` in the request processing block on ACK transaction will play the prompt to the UA that has generated original INVITE and ACK while `rtpproxy_stop_stream2uas` on 183 in reply processing block will play the prompt to the UA that has generated 183.\n\nApart from generating announcements, another possible application of this function is implementing music on hold (MOH) functionality. When count is -1, the streaming will be in loop indefinitely until the appropriate `rtpproxy_stop_stream2xxx` is issued.\n\nIn order to work correctly, functions require that the session in the RTPproxy already exists. Also those functions don't alted SDP, so that they are not substitute for calling `rtpproxy_offer` or `rtpproxy_answer`.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (is_method(\"INVITE\")) {\n    rtpproxy_offer();\n    if ($rb=~ \"0\\\\.0\\\\.0\\\\.0\") {\n        rtpproxy_stream2uas(\"/var/rtpproxy/prompts/music_on_hold\", -1);\n    } else {\n        rtpproxy_stop_stream2uas();\n    };\n};",
+          "description": "Example 1.20 usage of rtpproxy_stream2xxx",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "rtpproxy_stop_stream2xxx",
+        "rtpproxy_offer",
+        "rtpproxy_answer"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_stop_stream2uac",
+      "signature": "rtpproxy_stop_stream2uac([[set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "Stop streaming of announcement/prompt/MOH started previously by the respective `rtpproxy_stream2xxx`. The uac/uas suffix selects whose announcement relatively to tha current transaction should be stopped - UAC or UAS.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [],
+      "related_functions": [
+        "rtpproxy_stream2xxx"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_stop_stream2uas",
+      "signature": "rtpproxy_stop_stream2uas([[set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "Stop streaming of announcement/prompt/MOH started previously by the respective `rtpproxy_stream2xxx`. The uac/uas suffix selects whose announcement relatively to tha current transaction should be stopped - UAC or UAS.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [],
+      "related_functions": [
+        "rtpproxy_stream2xxx"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_start_recording",
+      "signature": "rtpproxy_start_recording([[set_id][, [sock_var][, [flags][, [destination][, mediastream]]]]])",
+      "parameters": [
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "a list of flags passed to RTPProxy for the recording. Currently only _s_ is supported, and it indicates that RTPProxy should record both audio legs in a single file. Note that this feature is available starting with RTPProxy 2.0.",
+          "valid_values": [
+            "s"
+          ]
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "required": false,
+          "description": "the destination of the recording. If it has the _udp:IP:port_ format, RTPProxy sends the RTP stream to that _IP:port_ remote destination. Otherwise, destination represents the name of the file in the recording directory."
+        },
+        {
+          "name": "mediastream",
+          "type": "int",
+          "required": false,
+          "description": "this parameter is only used if the _destination_ is specified, and represents the index of media stream to record/copy, starting from 1. If this parameter is missing, OpenSIPS instructs RTPProxy to copy all the streams."
+        }
+      ],
+      "return_type": "int",
+      "description": "This command will send a signal to the RTP-Proxy to record the RTP stream on the RTP-Proxy.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "rtpproxy_start_recording();\n\n# copy RTP stream to a different listener\nrtpproxy_start_recording(,,,\"udp:127.0.0.1:60000\");\n\n# copy only first RTP stream (audio stream)\nrtpproxy_start_recording(,,,\"udp:127.0.0.1:60000\", 1);",
+          "description": "Example 1.21 usage of rtpproxy_start_recording",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_stats",
+      "signature": "rtpproxy_stats(up_pvar, down_var, sent_var, fail_var[, [set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "up_pvar",
+          "type": "var",
+          "required": true,
+          "description": "the variable used to return the packets sent by _upstream_ for this call."
+        },
+        {
+          "name": "down_var",
+          "type": "var",
+          "required": true,
+          "description": "the variable used to return the packets sent by _downstream_ for this call."
+        },
+        {
+          "name": "sent_var",
+          "type": "var",
+          "required": true,
+          "description": "the variable used to return the total number of packets sent for this call."
+        },
+        {
+          "name": "fail_var",
+          "type": "var",
+          "required": true,
+          "description": "the variable used to return the number of failed packets for this call."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "int",
+      "description": "This command gathers call RTP statistics from RTP-Proxy.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "rtpproxy_stats($var(up),$var(down),$var(sent),$var(fail));\nxlog(\"RTP statistics for $ci: up=$var(up) down=$var(down) sent=$var(sent) fail=$var(fail)\\n\");",
+          "description": "Example 1.22 usage of rtpproxy_stats",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "rtpproxy_all_stats",
+      "signature": "rtpproxy_all_stats(stats_avp[, [set_id][, sock_var]])",
+      "parameters": [
+        {
+          "name": "stats_avp",
+          "type": "var",
+          "required": true,
+          "description": "an AVP where the statistics will be stored. This AVP can be further indexed to get a specific statistic."
+        },
+        {
+          "name": "set_id",
+          "type": "int",
+          "required": false,
+          "description": "the set used for this call."
+        },
+        {
+          "name": "sock_var",
+          "type": "var",
+          "required": false,
+          "description": "variable used to store the RTPProxy socket chosen for this call."
+        }
+      ],
+      "return_type": "",
+      "description": "This command gathers all RTP statistics available from RTP-Proxy. All the returned values stored in an AVP that can be further read by indexing the AVP.\n\nThis command is only available starting with RTPProxy 2.1 realease.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nrtpproxy_all_stats($avp(stats));\nxlog(\"RTP statistics for $ci: dropped=$(avp(stats)[4])\\\\n\");\n...",
+          "description": "rtpproxy_all_stats usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "rtpproxy_enable",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "required": true,
+          "description": "the rtp proxy url (exactly as defined in the config file)."
+        },
+        {
+          "name": "enable",
+          "type": "integer",
+          "required": true,
+          "description": "1 - enable, 0 - disable. the config file)."
+        },
+        {
+          "name": "setid",
+          "type": "integer",
+          "required": false,
+          "description": "the rtpproxy set ID (used for better indentification of the rtpproxy instance to be enabled, for example when a rtpproxy is used in multiple sets)."
+        }
+      ],
+      "description": "Enables/Disables a rtp proxy.\n\nNOTE: if a rtpproxy is defined multiple times (in the same or different set), all its instances will be enables/disabled IF no set ID provided (as second param).",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi rtpproxy\\_enable udp:192.168.2.133:8081 0",
+          "description": "disable a RTPProxy by URL only"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi rtpproxy\\_enable udp:192.168.2.133:8081 0 3",
+          "description": "disable a RTPProxy by URL and set ID (3)"
+        }
+      ]
+    },
+    {
+      "name": "rtpproxy_show",
+      "parameters": [],
+      "description": "Displays all the rtp proxies and their information: set and status (disabled or not, weight and recheck\\_ticks).",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi rtpproxy\\_show",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "rtpproxy_reload",
+      "parameters": [],
+      "description": "Reload rtp proxies sets from database. The function will delete all previous records and populate the list with the entries from the database table. The db\\_url parameter must be set if you want to use this command.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi rtpproxy\\_reload",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_RTPPROXY_STATUS",
+      "description": "This event is raised when a RTPProxy server changes it's status to enabled/disabled.",
+      "parameters": [
+        {
+          "name": "socket",
+          "type": "string",
+          "description": "the socket that identifies the RTPProxy instance."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "active if the RTPProxy instance responds to probing or inactive if the instance was deactivated."
+        }
+      ]
+    },
+    {
+      "name": "E_RTPPROXY_DTMF",
+      "description": "This event is raised when a RTPProxy server sends a DTMF notification to OpenSIPS. In order to catch RFC 2833/4733 DTMF events, you need to provide the d flag to rtpproxy_offer()/ rtpproxy_answer().",
+      "parameters": [
+        {
+          "name": "digit",
+          "type": "string",
+          "description": "the digit pressed."
+        },
+        {
+          "name": "duration",
+          "type": "integer",
+          "description": "the duration of the event."
+        },
+        {
+          "name": "volume",
+          "type": "integer",
+          "description": "the volume of the event."
+        },
+        {
+          "name": "id",
+          "type": "string",
+          "description": "represents the identifier of the call for which that event was received."
+        },
+        {
+          "name": "is_callid",
+          "type": "integer",
+          "description": "is 0 if the id parameter represents the Dialog ID, or 1 if it is a callid."
+        },
+        {
+          "name": "stream",
+          "type": "integer",
+          "description": "indicates the stream index of the RTPProxy session. It is normally 0 if the caller sent the DTMF, or 1 if the callee sent it."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `rtpproxy_sock` parameter",
+      "description": "Set `rtpproxy_sock` parameter",
+      "code": "...\n# single rtpproxy with specific weight\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"udp:localhost:22222=2\")\n\n# single rtpproxy with advertised address + weight\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"udp:localhost:22222|8.8.8.8=2\")\n\n# multiple rtproxies for LB\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\",\n\t\"udp:localhost:22222 udp:localhost:22223 tcp:remote1:33422 tcp6:remote2:32322\")\n\n# multiple sets of multiple rtproxies\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"1 == udp:localhost:22222 udp:localhost:22223\")\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"2 == udp:localhost:22223\")\nmodparam(\"rtpproxy\", \"rtpproxy\\_sock\", \"2 == udp:localhost:22223|8.8.8.8\")\n..."
+    },
+    {
+      "title": "Set `rtpproxy_disable_tout` parameter",
+      "description": "Set `rtpproxy_disable_tout` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpproxy\\_disable\\_tout\", 20)\n..."
+    },
+    {
+      "title": "Set `rtpproxy_timeout` parameter to 200ms",
+      "description": "Set `rtpproxy_timeout` parameter to 200ms",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpproxy\\_timeout\", \"0.2\")\n..."
+    },
+    {
+      "title": "Enable auto-bridging feature",
+      "description": "Enable auto-bridging feature",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpproxy\\_autobridge\", 1)\n..."
+    },
+    {
+      "title": "Set `rtpproxy_retr` parameter",
+      "description": "Set `rtpproxy_retr` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpproxy\\_retr\", 2)\n..."
+    },
+    {
+      "title": "Set `default_set` parameter",
+      "description": "Set `default_set` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"default\\_set\", 1)\n..."
+    },
+    {
+      "title": "Set `nortpproxy_str` parameter",
+      "description": "Set `nortpproxy_str` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"nortpproxy\\_str\", \"a=sdpmangled:yes\\\\r\\\\n\")\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"db\\_url\", \n\t\t\"mysql://opensips:opensipsrw@192.168.2.132/opensips\")\n..."
+    },
+    {
+      "title": "Set `db_table` parameter",
+      "description": "Set `db_table` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"db\\_table\", \"nh\\_sockets\") \n..."
+    },
+    {
+      "title": "Set `rtpp_socket_col` parameter",
+      "description": "Set `rtpp_socket_col` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpp\\_socket\\_col\", \"rtpp\\_socket\") \n..."
+    },
+    {
+      "title": "Set `set_id` parameter",
+      "description": "Set `set_id` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"set\\_id\\_col\", \"rtpp\\_set\\_id\") \n..."
+    },
+    {
+      "title": "Set `rtpp_notify_socket` parameter",
+      "description": "Set `rtpp_notify_socket` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"rtpp\\_notify\\_socket\", \"tcp:10.10.10.10:9999\")\n\n# use an UNIX socket\nmodparam(\"rtpproxy\", \"rtpp\\_notify\\_socket\", \"unix:/tmp/rtpproxy.unix\")\n# or\nmodparam(\"rtpproxy\", \"rtpp\\_notify\\_socket\", \"/tmp/rtpproxy.unix\")\n..."
+    },
+    {
+      "title": "Set `generated_sdp_port_min` parameter",
+      "description": "Set `generated_sdp_port_min` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"generated\\_sdp\\_port\\_min\", 10000)\n..."
+    },
+    {
+      "title": "Set `generated_sdp_port_max` parameter",
+      "description": "Set `generated_sdp_port_max` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"generated\\_sdp\\_port\\_max\", 30000)\n..."
+    },
+    {
+      "title": "Set `generated_sdp_media_ip` parameter",
+      "description": "Set `generated_sdp_media_ip` parameter",
+      "code": "...\nmodparam(\"rtpproxy\", \"generated\\_sdp\\_media\\_ip\", \"10.0.0.1\")\n..."
+    },
+    {
+      "title": "`rtpproxy_engage` usage",
+      "description": "`rtpproxy_engage` usage",
+      "code": "...\nif (is\\_method(\"INVITE\") && has\\_totag()) {\n\tif ($var(setid) != 0) {\n\t\trtpproxy\\_engage(,,$var(setid), $var(proxy));\n\t\txlog(\"SCRIPT: RTPProxy server used is $var(proxy)\\\\n\");\n\t} else {\n\t\trtpproxy\\_engage();\n\t\txlog(\"SCRIPT: using default RTPProxy set\\\\n\");\n\t}\n}\n..."
+    },
+    {
+      "title": "`rtpproxy_offer` usage",
+      "description": "`rtpproxy_offer` usage",
+      "code": "route {\n...\n    if (is\\_method(\"INVITE\")) {\n        if (has\\_body(\"application/sdp\")) {\n            if (rtpproxy\\_offer())\n                t\\_on\\_reply(\"1\");\n        } else {\n            t\\_on\\_reply(\"2\");\n        }\n    }\n    if (is\\_method(\"ACK\") && has\\_body(\"application/sdp\"))\n        rtpproxy\\_answer();\n...\n}\n\nonreply\\_route\\[1\\]\n{\n...\n    if (has\\_body(\"application/sdp\"))\n        rtpproxy\\_answer();\n...\n}\n\nonreply\\_route\\[2\\]\n{\n...\n    if (has\\_body(\"application/sdp\"))\n        rtpproxy\\_offer();\n...\n}"
+    },
+    {
+      "title": "`rtpproxy_unforce` usage",
+      "description": "`rtpproxy_unforce` usage",
+      "code": "...\nrtpproxy\\_unforce();\n..."
+    },
+    {
+      "title": "`rtpproxy_stream2xxx` usage",
+      "description": "`rtpproxy_stream2xxx` usage",
+      "code": "...\n    if (is\\_method(\"INVITE\")) {\n        rtpproxy\\_offer();\n        if ($rb=~ \"0\\\\.0\\\\.0\\\\.0\") {\n            rtpproxy\\_stream2uas(\"/var/rtpproxy/prompts/music\\_on\\_hold\", -1);\n        } else {\n            rtpproxy\\_stop\\_stream2uas();\n        };\n    };\n..."
+    },
+    {
+      "title": "`rtpproxy_start_recording` usage",
+      "description": "`rtpproxy_start_recording` usage",
+      "code": "...\nrtpproxy\\_start\\_recording();\n\n# copy RTP stream to a different listener\nrtpproxy\\_start\\_recording(,,,\"udp:127.0.0.1:60000\");\n\n# copy only first RTP stream (audio stream)\nrtpproxy\\_start\\_recording(,,,\"udp:127.0.0.1:60000\", 1);\n..."
+    },
+    {
+      "title": "`rtpproxy_stats` usage",
+      "description": "`rtpproxy_stats` usage",
+      "code": "...\nrtpproxy\\_stats($var(up),$var(down),$var(sent),$var(fail));\nxlog(\"RTP statistics for $ci: up=$var(up) down=$var(down) sent=$var(sent) fail=$var(fail)\\\\n\");\n..."
+    },
+    {
+      "title": "`rtpproxy_all_stats` usage",
+      "description": "`rtpproxy_all_stats` usage",
+      "code": "...\nrtpproxy\\_all\\_stats($avp(stats));\nxlog(\"RTP statistics for $ci: dropped=$(avp(stats)\\[4\\])\\\\n\");\n..."
+    }
+  ]
+}

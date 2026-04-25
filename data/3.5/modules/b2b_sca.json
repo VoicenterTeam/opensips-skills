@@ -1,0 +1,334 @@
+{
+  "id": "module-b2b_sca-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "b2b_sca Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/b2b_sca.html",
+  "content_markdown": "This module provides core SCA (Shared Call Appearance) functionality for OpenSIPS. It is designed to work in tandem with the presence\\_callinfo module.\n\nThe module handles the basic SIP signalling for call controll while publishing callinfo events to a presence server. It is built on top of the b2b\\_logic module and it is using the 'top hiding' scenario to control SIP signalling.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:06:51.347Z",
+  "module_name": "b2b_sca",
+  "overview": "This module provides core SCA (Shared Call Appearance) functionality for OpenSIPS. It is designed to work in tandem with the presence\\_callinfo module.\n\nThe module handles the basic SIP signalling for call controll while publishing callinfo events to a presence server. It is built on top of the b2b\\_logic module and it is using the 'top hiding' scenario to control SIP signalling.",
+  "how_it_works": "A typical usage example is provided below, where Alice makes a call to Bob. The call leg between Alice and the b2b\\_sca server is an \"appearance\" call of the \"shared\" call between the b2b\\_sca server and Bob.\n\n   caller         caller      b2b\\_sca     callee   presence server\nalice1@example alice2@example  server   bob@example watcher@example\n     |              |             |           |           |\n     |--INV bob------------------>|           |           |\n     |              |             |--INV bob->|           |\n     |              |             |--PUBLISH(alerting)--->|\n     |              |             |<-----200 OK-----------|\n     |              |             |           |           |\n     |              |             |<-180 ring-|           |\n     |<-180 ring------------------|           |           |\n     |              |             |           |           |\n     |              |             |           |           |\n     |              |             |<-200 OK---|           |\n     |<-200 OK--------------------|--ACK----->|           |\n     |--ACK---------------------->|--PUBLISH(active)----->|\n     |              |             |<-----200 OK-----------|\n     |              |             |           |           |\n     |--INV bob (hold)----------->|           |           |\n     |              |             |--INV bob->|           |\n     |              |             |--PUBLISH(held)------->|\n     |              |             |<-----200 OK-----------|\n     |              |             |<-200 OK---|           |\n     |<--200 OK-------------------|           |           |\n     |              |             |           |           |\n     |              |--INV------->|           |           |\n     |              |             |--INV bob->|           |\n     |<-BYE-----------------------|--PUBLISH(active)----->|\n     |--200 OK------------------->|<-----200 OK-----------|\n     |              |             |<-200 OK---|           |\n     |              |<-200 OK-----|           |\n\n\t\n\n*   Alice calls Bob from her desk IP phone (alice1).\n    \n*   Bob answers the call.\n    \n*   Alice decide to carry the conversation from a meeting room and she put's BOB on hold.\n    \n*   Alice arrives to the meeting room and retrieves the call on the conference room IP phone (alice2).",
+  "dependencies_required": [
+    {
+      "name": "tm",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    },
+    {
+      "name": "pua",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    },
+    {
+      "name": "b2b_logic",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The size of the hash table internally used to keep the shared calls. A larger table means faster acces at the expense of memory. The hash size is a power of number two.",
+      "example_value": "5",
+      "example_code": "modparam(\"b2b\\_sca\", \"hash\\_size\", \"5\")"
+    },
+    {
+      "name": "presence_server",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The address of the presence server, where the PUBLISH messages should be sent (not compulsory). If not set, the PUBLISH requests will be routed based on watcher's URI.",
+      "example_value": "sip:opensips.org",
+      "example_code": "modparam(\"b2b\\_sca\", \"presence\\_server\", \"sip:opensips.org\")"
+    },
+    {
+      "name": "watchers_avp_spec",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "AVP that will hold one or more watcher URI(s). If not set, no PUBLISH requests will be sent out. The watchers_avp_spec MUST be set before calling sca_init_request();",
+      "example_value": "$avp(watchers_avp_spec)",
+      "example_code": "modparam(\"b2b\\_sca\", \"watchers\\_avp\\_spec\", \"$avp(watchers\\_avp\\_spec)\")\n...\nroute {\n\t...\n\t$avp(watchers\\_avp\\_spec) = \"sip:first\\_watcher@opensip.org\";\n\t$avp(watchers\\_avp\\_spec) = \"sip:second\\_watcher@opensip.org\";\n\t...\n}"
+    },
+    {
+      "name": "shared_line_spec_param",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Mandatory parameter. Opaque string identifing the shared line/call. The shared_line_spec_param MUST be set before calling sca_init_request();",
+      "example_value": "$var(shared_line)",
+      "example_code": "modparam(\"b2b\\_sca\", \"shared\\_line\\_spec\\_param\", \"$var(shared\\_line)\")"
+    },
+    {
+      "name": "appearance_name_addr_spec_param",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Mandatory parameter. It must be a valid SIP URI. It will populate the _appearance-uri_ SIP parameter inside the _Call-Info_ SIP header. The appearance_name_addr_spec_param MUST be set before calling sca_init_request();",
+      "example_value": "",
+      "example_code": "modparam(\"b2b\\_sca\", \"appearance\\_name\\_addr\\_spec\\_param\", \"\")"
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "This is URL of the database to be used.",
+      "possible_values": [],
+      "example_value": "[dbdriver]://[[username]:[password]]@[dbhost]/[dbname]",
+      "example_code": "modparam(\"b2b\\_sca\", \"db\\_url\", \"\\[dbdriver\\]://\\[\\[username\\]:\\[password\\]\\]@\\[dbhost\\]/\\[dbname\\]\")"
+    },
+    {
+      "name": "db_mode",
+      "type": "integer",
+      "default_value": "0 (NO DB STORAGE)",
+      "description": "The b2b\\_sca module can utilize database for persistent call appearance storage. Using a database ensure that active call appearances will survive machine restarts or SW crashes. The following databse accessing modes are available for b2b\\_sca module:",
+      "possible_values": [
+        "NO DB STORAGE - set this parameter to 0",
+        "WRITE THROUGH (synchronous write in database) - set this parameter to 1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"b2b\\_sca\", \"db\\_mode\", 1)"
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "b2b_sca",
+      "description": "Identifies the table name from the defined database.",
+      "possible_values": [],
+      "example_value": "sla",
+      "example_code": "modparam(\"b2b\\_sca\", \"table\\_name\", \"sla\")"
+    },
+    {
+      "name": "shared_line_column",
+      "type": "string",
+      "default_value": "shared_line",
+      "description": "The column's name in the database storing the shared call/line id. See \"shared\\_line\\_spec\\_param\" parameter.",
+      "possible_values": [],
+      "example_value": "",
+      "example_code": "modparam(\"b2b\\_sca\", \"shared\\_line\\_column\", \"\")"
+    },
+    {
+      "name": "watchers_column",
+      "type": "string",
+      "default_value": "watchers",
+      "description": "The column's name in the database storing the list of watchers. See \"watchers\\_avp\\_spec\" parameter.",
+      "possible_values": [],
+      "example_value": "",
+      "example_code": "modparam(\"b2b\\_sca\", \"watchers\\_column\", \"\")"
+    },
+    {
+      "name": "app[index]_shared_entity_column",
+      "type": "string",
+      "default_value": "app[index]_shared_entity",
+      "description": "The column's name in the database storing the shared entity of a particular appearance. See \"sca\\_init\\_request\" for more info.",
+      "valid_range_min": 1,
+      "valid_range_max": 10,
+      "example_value": "first_shared_entity",
+      "example_code": "modparam(\"b2b\\_sca\", \"app1\\_shared\\_entity\\_column\", \"first\\_shared\\_entity\")\nmodparam(\"b2b\\_sca\", \"app2\\_shared\\_entity\\_column\", \"second\\_shared\\_entity\")",
+      "notes": "Index is an integer between 1 and 10."
+    },
+    {
+      "name": "app[index]_call_state_column",
+      "type": "string",
+      "default_value": "app[index]_call_state",
+      "description": "The column's name in the database storing the call state of a particular appearance. The following states are stored:\n*   1 - alerting,\n*   2 - active,\n*   3 - held,\n*   4 - held-private.",
+      "valid_range_min": 1,
+      "valid_range_max": 10,
+      "example_value": "first_call_state",
+      "example_code": "modparam(\"b2b\\_sca\", \"app1\\_call\\_state\\_column\", \"first\\_call\\_state\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_state\\_column\", \"second\\_call\\_state\")",
+      "notes": "Index is an integer between 1 and 10."
+    },
+    {
+      "name": "app[index]_call_info_uri_column",
+      "type": "string",
+      "default_value": "app[index]_call_info_uri",
+      "description": "The column's name in the database storing the call info URI of a particular appearance.",
+      "valid_range_min": 1,
+      "valid_range_max": 10,
+      "example_value": "first_call_info_uri",
+      "example_code": "modparam(\"b2b\\_sca\", \"app1\\_call\\_info\\_uri\\_column\", \"first\\_call\\_info\\_uri\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_info\\_uri\\_column\", \"second\\_call\\_info\\_uri\")",
+      "notes": "Index is an integer between 1 and 10."
+    },
+    {
+      "name": "app[index]_call_info_appearance_uri_column",
+      "type": "string",
+      "default_value": "app[index]_call_info_appearance_uri",
+      "description": "The column's name in the database storing the call info appearance URI of a particular appearance. For each appearance, the value is extracted from the \"appearance\\_name\\_addr\\_spec\\_param\" parameter.",
+      "valid_range_min": 1,
+      "valid_range_max": 10,
+      "example_value": "first_call_info_appearance_uri",
+      "example_code": "modparam(\"b2b\\_sca\", \"app1\\_call\\_info\\_appearance\\_uri\\_column\", \"first\\_call\\_info\\_appearance\\_uri\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_info\\_appearance\\_uri\\_column\", \"second\\_call\\_info\\_appearance\\_uri\")",
+      "notes": "Index is an integer between 1 and 10."
+    },
+    {
+      "name": "app[index]_b2bl_key_column",
+      "type": "string",
+      "default_value": "app[index]_b2bl_key",
+      "description": "The column's name in the database storing the b2b\\_logic key of a particular appearance.",
+      "valid_range_min": 1,
+      "valid_range_max": 10,
+      "example_value": "first_b2bl_key",
+      "example_code": "modparam(\"b2b\\_sca\", \"app1\\_b2bl\\_key\\_column\", \"first\\_b2bl\\_key\")\nmodparam(\"b2b\\_sca\", \"app2\\_b2bl\\_key\\_column\", \"second\\_b2bl\\_key\")",
+      "notes": "Index is an integer between 1 and 10."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sca_init_request",
+      "signature": "sca_init_request(shared_line)",
+      "parameters": [
+        {
+          "name": "shared_line",
+          "type": "int",
+          "required": true,
+          "description": "an integer identifying the call leg as being an \"appearnace\" call or a \"shared\" call",
+          "valid_values": [
+            "0",
+            "1"
+          ]
+        }
+      ],
+      "return_type": "int",
+      "description": "This is the function that must be called by the script writer on an initial INVITE for which an SCA call must be instantiated (see the call from alice1 in the above diagram).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmodparam(\"b2b\\_sca\",\n\t\"shared\\_line\\_spec\\_param\",\"$var(shared\\_line)\")\nmodparam(\"b2b\\_sca\",\n\t\"appearance\\_name\\_addr\\_spec\\_param\",\"$var(appearance\\_name\\_addr)\")\nmodparam(\"b2b\\_sca\",\n\t\"watchers\\_avp\\_spec\",\"$avp(watchers\\_avp\\_spec)\")\n\n...\n\n\t# Setting the shared call identifier\n\t$var(shared\\_line) = \"alice\";\n\n\t# Setting the watchers\n\t$avp(watchers\\_avp\\_spec) = \"sip:alice1@example.com\";\n\t$avp(watchers\\_avp\\_spec) = \"sip:alice2@example.com\";\n\n\tif (INCOMING\\_SHARED\\_CALL) {\n\t\t# The incoming call is a 'shared' call\n\t\t$var(shared\\_line\\_entity) = 0;\n\t\t# Setting the appearance name address\n\t\t$var(appearance\\_name\\_addr) = $fu;\n\t}\n\telse {\n\t\t# The incoming call is an 'appearance' call\n\t\t# - see Alice's initial call leg in the given example\n\t\t$var(shared\\_line\\_entity) = 1;\n\t\t# Setting the appearance name address\n\t\t$var(appearance\\_name\\_addr) = $tu;\n\t}\n\n\t# Initiate the call\n\tif (!sca\\_init\\_request($var(shared\\_line\\_entity))) {\n\t\tsend\\_reply(403, \"Internal Server Error (SLA)\");\n\t\texit;\n\t}\n...",
+          "description": "sca_init_request() usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "sca_bridge_request",
+      "signature": "sca_bridge_request(shared_line_to_bridge)",
+      "parameters": [
+        {
+          "name": "shared_line_to_bridge",
+          "type": "string",
+          "required": true,
+          "description": "a string identifying the shared line/call that was previously set by sca_init_request()."
+        }
+      ],
+      "return_type": "int",
+      "description": "This is the function that must be called by the script writer on an initial \"appearance\" INVITE for an existing shared call. It will bridge the current \"appearance\" call with the existing \"shared\" call and the old \"appearance\" call will be disconnected (see the call from alice2 in the above diagram).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif ($rU==NULL && is\\_method(\"INVITE\") &&\n\t\t$fU==$tU && is\\_present\\_hf(\"Call-Info\")) {\n\t\t# The incoming call is an 'appearance' call\n\t\t# - see Alice's call from alice2 in the given example\n\t\t$var(shared\\_line\\_to\\_bridge) = \"alice\";\n\t\tif (!sca\\_bridge\\_request($var(shared\\_line\\_to\\_bridge)))\n\t\t\tsend\\_reply(403, \"Internal SLA Error\");\n\t\t\texit;\n\t\t}\n\t}\n...",
+          "description": "",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "sca_list",
+      "parameters": [],
+      "description": "It lists the appearances belonging to a shared line/call.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi sca_list",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "Set `hash_size` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"hash\\_size\", \"5\")\n..."
+    },
+    {
+      "title": "Set `presence_server` parameter",
+      "description": "Set `presence_server` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"presence\\_server\", \"sip:opensips.org\")\n..."
+    },
+    {
+      "title": "Set `watchers_avp_spec` parameter",
+      "description": "Set `watchers_avp_spec` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"watchers\\_avp\\_spec\", \"$avp(watchers\\_avp\\_spec)\")\n...\nroute {\n\t...\n\t$avp(watchers\\_avp\\_spec) = \"sip:first\\_watcher@opensip.org\";\n\t$avp(watchers\\_avp\\_spec) = \"sip:second\\_watcher@opensip.org\";\n\t...\n}"
+    },
+    {
+      "title": "Set `shared_line_spec_param` parameter",
+      "description": "Set `shared_line_spec_param` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"shared\\_line\\_spec\\_param\", \"$var(shared\\_line)\")\n..."
+    },
+    {
+      "title": "Set `appearance_name_addr_spec_param` parameter",
+      "description": "Set `appearance_name_addr_spec_param` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"appearance\\_name\\_addr\\_spec\\_param\", \"\")\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"db\\_url\", \"[dbdriver]://[[username]:[password]]@[dbhost]/[dbname]\")\n..."
+    },
+    {
+      "title": "Set `db_mode` parameter",
+      "description": "Set `db_mode` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"db\\_mode\", 1)\n..."
+    },
+    {
+      "title": "Set `table_name` parameter",
+      "description": "Set `table_name` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"table\\_name\", \"sla\")\n..."
+    },
+    {
+      "title": "Set `shared_line_column` parameter",
+      "description": "Set `shared_line_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"shared\\_line\\_column\", \"\")\n..."
+    },
+    {
+      "title": "Set `watchers_column` parameter",
+      "description": "Set `watchers_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"watchers\\_column\", \"\")\n..."
+    },
+    {
+      "title": "Set `app[index]_shared_entity_column` parameter",
+      "description": "Set `app[index]_shared_entity_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"app1\\_shared\\_entity\\_column\", \"first\\_shared\\_entity\")\nmodparam(\"b2b\\_sca\", \"app2\\_shared\\_entity\\_column\", \"second\\_shared\\_entity\")\n..."
+    },
+    {
+      "title": "Set `app[index]_call_state_column` parameter",
+      "description": "Set `app[index]_call_state_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"app1\\_call\\_state\\_column\", \"first\\_call\\_state\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_state\\_column\", \"second\\_call\\_state\")\n..."
+    },
+    {
+      "title": "Set `app[index]_call_info_uri_column` parameter",
+      "description": "Set `app[index]_call_info_uri_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"app1\\_call\\_info\\_uri\\_column\", \"first\\_call\\_info\\_uri\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_info\\_uri\\_column\", \"second\\_call\\_info\\_uri\")\n..."
+    },
+    {
+      "title": "Set `app[index]_call_info_appearance_uri_column` parameter",
+      "description": "Set `app[index]_call_info_appearance_uri_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"app1\\_call\\_info\\_appearance\\_uri\\_column\", \"first\\_call\\_info\\_appearance\\_uri\")\nmodparam(\"b2b\\_sca\", \"app2\\_call\\_info\\_appearance\\_uri\\_column\", \"second\\_call\\_info\\_appearance\\_uri\")\n..."
+    },
+    {
+      "title": "Set `app[index]_b2bl_key_column` parameter",
+      "description": "Set `app[index]_b2bl_key_column` parameter",
+      "code": "...\nmodparam(\"b2b\\_sca\", \"app1\\_b2bl\\_key\\_column\", \"first\\_b2bl\\_key\")\nmodparam(\"b2b\\_sca\", \"app2\\_b2bl\\_key\\_column\", \"second\\_b2bl\\_key\")\n..."
+    },
+    {
+      "title": "`sca_init_request()` usage",
+      "description": "`sca_init_request()` usage",
+      "code": "...\nmodparam(\"b2b\\_sca\",\n\t\"shared\\_line\\_spec\\_param\",\"$var(shared\\_line)\")\nmodparam(\"b2b\\_sca\",\n\t\"appearance\\_name\\_addr\\_spec\\_param\",\"$var(appearance\\_name\\_addr)\")\nmodparam(\"b2b\\_sca\",\n\t\"watchers\\_avp\\_spec\",\"$avp(watchers\\_avp\\_spec)\")\n\n...\n\n\t# Setting the shared call identifier\n\t$var(shared\\_line) = \"alice\";\n\n\t# Setting the watchers\n\t$avp(watchers\\_avp\\_spec) = \"sip:alice1@example.com\";\n\t$avp(watchers\\_avp\\_spec) = \"sip:alice2@example.com\";\n\n\tif (INCOMING\\_SHARED\\_CALL) {\n\t\t# The incoming call is a 'shared' call\n\t\t$var(shared\\_line\\_entity) = 0;\n\t\t# Setting the appearance name address\n\t\t$var(appearance\\_name\\_addr) = $fu;\n\t}\n\telse {\n\t\t# The incoming call is an 'appearance' call\n\t\t# - see Alice's initial call leg in the given example\n\t\t$var(shared\\_line\\_entity) = 1;\n\t\t# Setting the appearance name address\n\t\t$var(appearance\\_name\\_addr) = $tu;\n\t}\n\n\t# Initiate the call\n\tif (!sca\\_init\\_request($var(shared\\_line\\_entity))) {\n\t\tsend\\_reply(403, \"Internal Server Error (SLA)\");\n\t\texit;\n\t}\n..."
+    }
+  ]
+}

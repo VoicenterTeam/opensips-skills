@@ -1,0 +1,26 @@
+{
+  "name": "opensips-skills",
+  "version": "0.1.0",
+  "description": "Claude Code plugin: three coordinated Agent Skills for working with OpenSIPs",
+  "type": "module",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "validate": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "clean": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "test": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "test:watch": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "test:coverage": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "test:golden": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "test:e2e": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "lint": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "schemas:hash": "node -e \"console.error('Not yet implemented'); process.exit(1)\"",
+    "baseline:update": "node -e \"console.error('Not yet implemented'); process.exit(1)\""
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

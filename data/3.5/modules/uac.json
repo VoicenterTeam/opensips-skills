@@ -1,0 +1,313 @@
+{
+  "id": "module-uac-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "uac Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/uac.html",
+  "content_markdown": "UAC (User Agent Client) module provides some basic UAC functionalities like FROM / TO header manipulation (anonymization) or client authentication.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:57:59.753Z",
+  "module_name": "uac",
+  "overview": "UAC (User Agent Client) module provides some basic UAC functionalities like FROM / TO header manipulation (anonymization) or client authentication.",
+  "how_it_works": "If the dialog module is loaded and a dialog can be created, then the auto mode can be done more efficiently.",
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction Module",
+      "optional": false
+    },
+    {
+      "name": "RR",
+      "type": "module",
+      "reason": "Record-Route Module, but only if restore mode for FROM URI is set to “auto”",
+      "optional": false
+    },
+    {
+      "name": "UAC_AUTH",
+      "type": "module",
+      "reason": "UAC Authentication Module",
+      "optional": false
+    },
+    {
+      "name": "Dialog Module",
+      "type": "module",
+      "reason": "Required if “force_dialog” module parameter is enabled, or a dialog is created from the configuration script",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "restore_mode",
+      "type": "string",
+      "default_value": "“auto”",
+      "description": "There are 3 mode of restoring the original headers (FROM/TO) URI:\n\n*   “none” - no information about original URI is stored; restoration is not possible.\n    \n*   “manual” - all following replies will be restored, except for the sequential requests - these must be manually updated based on original URI.\n    \n*   “auto” - all sequential requests and replies will be automatically updated based on stored original URI.",
+      "possible_values": [
+        "“none”",
+        "“manual”",
+        "“auto”"
+      ],
+      "example_value": "auto",
+      "example_code": "modparam(\"uac\",\"restore\\_mode\",\"auto\")",
+      "notes": "This parameter is optional, it's default value being “auto”."
+    },
+    {
+      "name": "restore_passwd",
+      "type": "string",
+      "default_value": "empty",
+      "description": "String password to be used to encrypt the RR storing parameter (when replacing the TO/FROM headers). If empty, no encryption will be used.",
+      "example_value": "my\\_secret\\_passwd",
+      "example_code": "modparam(\"uac\",\"restore\\_passwd\",\"my\\_secret\\_passwd\")",
+      "notes": "Default value of this parameter is empty."
+    },
+    {
+      "name": "rr_from_store_param",
+      "type": "string",
+      "default_value": "“vsf”",
+      "description": "Name of Record-Route header parameter that will be used to store (encoded) the original FROM URI.",
+      "example_value": "my\\_Fparam",
+      "example_code": "modparam(\"uac\",\"rr\\_from\\_store\\_param\",\"my\\_Fparam\")",
+      "notes": "This parameter is optional, it's default value being “vsf”."
+    },
+    {
+      "name": "rr_to_store_param",
+      "type": "string",
+      "default_value": "“vst”",
+      "description": "Name of Record-Route header parameter that will be used to store (encoded) the original TO URI.",
+      "example_value": "my\\_Tparam",
+      "example_code": "modparam(\"uac\",\"rr\\_to\\_store\\_param\",\"my\\_Tparam\")",
+      "notes": "This parameter is optional, it's default value being “vst”."
+    },
+    {
+      "name": "force_dialog",
+      "type": "integer",
+      "default_value": "no",
+      "description": "Force create dialog if it is not created from the configuration script.",
+      "example_value": "yes",
+      "example_code": "modparam(\"uac\", \"force\\_dialog\", yes)",
+      "notes": "Default value is no."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "uac_replace_from",
+      "signature": "uac_replace_from([display],uri)",
+      "parameters": [
+        {
+          "name": "display",
+          "type": "string",
+          "required": false,
+          "description": "The display name to replace."
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "The URI to replace."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replace in FROM header the display name or/and the URI part. Both parameters are string. The display is optional. If missing, only the URI will be changed in the message. IMPORTANT: calling the function more than once per branch will lead to inconsistent changes over the request.Be sure you do the change only ONCE per branch. Note that calling the function from REQUEST ROUTE affects all the branches!, so no other change will be possible in the future. For per branch changes use BRANCH and FAILURE route.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# replace both display and uri\nuac\\_replace\\_from($avp(display),$avp(uri));\n# replace only display and do not touch uri\nuac\\_replace\\_from(\"batman\",\"\");\n# remove display and replace uri\nuac\\_replace\\_from(\"\",\"sip:robin@gotham.org\");\n# remove display and do not touch uri\nuac\\_replace\\_from(\"\",\"\");\n# replace the URI without touching the display\nuac\\_replace\\_from( , \"sip:batman@gotham.org\");\n...",
+          "description": "Example 1.6. uac_replace_from/uac_replace_to usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "uac_replace_to",
+      "signature": "uac_replace_to([display],uri)",
+      "parameters": [
+        {
+          "name": "display",
+          "type": "string",
+          "required": false,
+          "description": "The display name to replace."
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "The URI to replace."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replace in TO header the display name or/and the URI part. Both parameters are string. The display is optional. If missing, only the URI will be changed in the message. IMPORTANT: calling the function more than once per branch will lead to inconsistent changes over the request.Be sure you do the change only ONCE per branch. Note that calling the function from REQUEST ROUTE affects all the branches!, so no other change will be possible in the future. For per branch changes use BRANCH and FAILURE route.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# replace both display and uri\nuac\\_replace\\_from($avp(display),$avp(uri));\n# replace only display and do not touch uri\nuac\\_replace\\_from(\"batman\",\"\");\n# remove display and replace uri\nuac\\_replace\\_from(\"\",\"sip:robin@gotham.org\");\n# remove display and do not touch uri\nuac\\_replace\\_from(\"\",\"\");\n# replace the URI without touching the display\nuac\\_replace\\_from( , \"sip:batman@gotham.org\");\n...",
+          "description": "Example 1.6. uac_replace_from/uac_replace_to usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "uac_restore_from",
+      "signature": "uac_restore_from()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function will check if the FROM URI was modified and will use the information stored in header parameter to restore the original FROM URI value. NOTE - this function should be used only if you configured MANUAL restoring of the headers (see restore_mode param). For AUTO and NONE, there is no need to use this function.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nuac\\_restore\\_from();\n...",
+          "description": "Example 1.7. uac_restore_from/uac_restore_to usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "uac_restore_to",
+      "signature": "uac_restore_to()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function will check if the TO URI was modified and will use the information stored in header parameter to restore the original TO URI value. NOTE - this function should be used only if you configured MANUAL restoring of the headers (see restore_mode param). For AUTO and NONE, there is no need to use this function.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nuac\\_restore\\_from();\n...",
+          "description": "Example 1.7. uac_restore_from/uac_restore_to usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "uac_auth",
+      "signature": "uac_auth([algorithms])",
+      "parameters": [
+        {
+          "name": "algorithms",
+          "type": "string",
+          "required": false,
+          "description": "A list of auth algorithms to be considered / supported during authentication.",
+          "valid_values": [
+            "MD5",
+            "MD5-sess",
+            "SHA-256",
+            "SHA-256-sess",
+            "SHA-512-256",
+            "SHA-512-256-sess"
+          ]
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function can be called only from failure route and will build the authentication response header and insert it into the request without sending anything. Credentials for buiding the authentication response will be taken from the list of credentials provided by the uac_auth module (static or via AVPs). As optional parameter, the function may receive a list of auth algorithms to be considered / supported during authentication: MD5, MD5-sess, SHA-256, SHA-256-sess (may be missing, depends on lib support), SHA-512-256, SHA-512-256-sess (may be missing, depends on lib support). Note that the CSeq is automatically increased during authentication. NOTE: when used without dialog support, the uac_auth() function cannot be used for authenticating in-dialog requests, as there is no mechanism to store the CSeq changes that are required for ensuring the correctness of the dialog. The only exception are BYE messages, which are the last messages within a call, hence no further adjustments are needed. The function can still be used for authenticating the initial INVITE though.",
+      "usage_context": [
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nuac\\_auth();\n...\nfailure\\_route[check\\_auth] {\n    ...\n    if ($T\\_reply\\_code==407) {\n        if (uac\\_auth(\"MD5,MD5-sess\")) {\n            # auth is succesful, just relay\n            t\\_relay();\n            exit;\n        }\n        # auth failed (no credentials maybe)\n        # so continue handling the 407 reply\n    }\n    ...\n}\n...",
+          "description": "Example 1.8. uac_auth usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "uac_inc_cseq",
+      "signature": "uac_inc_cseq(cseq)",
+      "parameters": [
+        {
+          "name": "cseq",
+          "type": "integer",
+          "required": true,
+          "description": "The value that the CSeq should be incremented with."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function can be called to increase the CSeq of an ongoing request. It receives as the cseq parameter the value that the CSeq should be incremented with.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nuac\\_inc\\_cseq(1);\n...",
+          "description": "Example 1.9. uac_inc_cseq usage",
+          "context": ""
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `restore_mode` parameter",
+      "description": "Sets the restore_mode parameter to 'auto'.",
+      "code": "...\nmodparam(\"uac\",\"restore\\_mode\",\"auto\")\n..."
+    },
+    {
+      "title": "Set `restore_passwd` parameter",
+      "description": "Sets the restore_passwd parameter to 'my_secret_passwd'.",
+      "code": "...\nmodparam(\"uac\",\"restore\\_passwd\",\"my\\_secret\\_passwd\")\n..."
+    },
+    {
+      "title": "Set `rr_from_store_param` parameter",
+      "description": "Sets the rr_from_store_param parameter to 'my_Fparam'.",
+      "code": "...\nmodparam(\"uac\",\"rr\\_from\\_store\\_param\",\"my\\_Fparam\")\n..."
+    },
+    {
+      "title": "Set `rr_to_store_param` parameter",
+      "description": "Sets the rr_to_store_param parameter to 'my_Tparam'.",
+      "code": "...\nmodparam(\"uac\",\"rr\\_to\\_store\\_param\",\"my\\_Tparam\")\n..."
+    },
+    {
+      "title": "Set `force_dialog` parameter",
+      "description": "Sets the force_dialog parameter to 'yes'.",
+      "code": "...\nmodparam(\"uac\", \"force\\_dialog\", yes)\n..."
+    },
+    {
+      "title": "`uac_replace_from`/`uac_replace_to` usage",
+      "description": "Demonstrates various ways to replace display names and URIs in FROM/TO headers.",
+      "code": "...\n# replace both display and uri\nuac\\_replace\\_from($avp(display),$avp(uri));\n# replace only display and do not touch uri\nuac\\_replace\\_from(\"batman\",\"\");\n# remove display and replace uri\nuac\\_replace\\_from(\"\",\"sip:robin@gotham.org\");\n# remove display and do not touch uri\nuac\\_replace\\_from(\"\",\"\");\n# replace the URI without touching the display\nuac\\_replace\\_from( , \"sip:batman@gotham.org\");\n..."
+    },
+    {
+      "title": "`uac_restore_from`/`uac_restore_to` usage",
+      "description": "Demonstrates restoring the original FROM URI.",
+      "code": "...\nuac\\_restore\\_from();\n..."
+    },
+    {
+      "title": "`uac_auth` usage",
+      "description": "Demonstrates using uac_auth in a failure route with specific algorithms.",
+      "code": "...\nuac\\_auth();\n...\nfailure\\_route\\[check\\_auth\\] {\n    ...\n    if ($T\\_reply\\_code==407) {\n        if (uac\\_auth(\"MD5,MD5-sess\")) {\n            # auth is succesful, just relay\n            t\\_relay();\n            exit;\n        }\n        # auth failed (no credentials maybe)\n        # so continue handling the 407 reply\n    }\n    ...\n}\n..."
+    },
+    {
+      "title": "`uac_inc_cseq` usage",
+      "description": "Demonstrates incrementing the CSeq.",
+      "code": "...\nuac\\_inc\\_cseq(1);\n..."
+    }
+  ]
+}

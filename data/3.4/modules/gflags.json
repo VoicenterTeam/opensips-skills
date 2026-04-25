@@ -1,0 +1,232 @@
+{
+  "id": "module-gflags-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "gflags Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/gflags.html",
+  "content_markdown": "gflags module (global flags) keeps a bitmap of flags in shared memory and may be used to change behaviour of server based on value of the flags. Example:\n\nif (is\\_gflag(1)) {\n\tt\\_relay(\"udp:10.0.0.1:5060\");\n} else {\n\tt\\_relay(\"udp:10.0.0.2:5060\");\n}\n\nThe benefit of this module is the value of the switch flags can be manipulated by external applications such as web interface or command line tools. The size of bitmap is 32.\n\nThe module exports external commands that can be used to change the global flags via Management Interface. The MI commands are: “set\\_gflag”, “reset\\_gflag” and “is\\_gflag”.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:03:47.994Z",
+  "module_name": "gflags",
+  "overview": "gflags module (global flags) keeps a bitmap of flags in shared memory and may be used to change behaviour of server based on value of the flags. Example:\n\nif (is\\_gflag(1)) {\n\tt\\_relay(\"udp:10.0.0.1:5060\");\n} else {\n\tt\\_relay(\"udp:10.0.0.2:5060\");\n}\n\nThe benefit of this module is the value of the switch flags can be manipulated by external applications such as web interface or command line tools. The size of bitmap is 32.\n\nThe module exports external commands that can be used to change the global flags via Management Interface. The MI commands are: “set\\_gflag”, “reset\\_gflag” and “is\\_gflag”.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "initial",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The initial value of global flags bitmap.",
+      "example_value": "15",
+      "example_code": "modparam(\"gflags\", \"initial\", 15)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "set_gflag",
+      "signature": "set_gflag(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "int",
+          "required": true,
+          "description": "The “flag” (int) parameter can have a value in the range of 0..31.",
+          "valid_values": [
+            "0..31"
+          ]
+        }
+      ],
+      "return_type": "void",
+      "description": "Set the bit at the position “flag” in global flags.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nset\\_gflag(4);\n...",
+          "description": "set_gflag() usage"
+        }
+      ]
+    },
+    {
+      "name": "reset_gflag",
+      "signature": "reset_gflag(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "int",
+          "required": true,
+          "description": "The “flag” (int) parameter can have a value in the range of 0..31.",
+          "valid_values": [
+            "0..31"
+          ]
+        }
+      ],
+      "return_type": "void",
+      "description": "Reset the bit at the position “flag” in global flags.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nreset\\_gflag(4);\n...",
+          "description": "reset_gflag() usage"
+        }
+      ]
+    },
+    {
+      "name": "is_gflag",
+      "signature": "is_gflag(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "int",
+          "required": true,
+          "description": "The “flag” (int) parameter can have a value in the range of 0..31.",
+          "valid_values": [
+            "0..31"
+          ]
+        }
+      ],
+      "return_type": "int",
+      "description": "Check if bit at the position “flag” in global flags is set.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif(is\\_gflag(4))\n{\n\tlog(\"global flag 4 is set\\\\n\");\n} else {\n\tlog(\"global flag 4 is not set\\\\n\");\n};\n...",
+          "description": "is_gflag() usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "set_gflag",
+      "parameters": [
+        {
+          "name": "bitmask",
+          "type": "string",
+          "required": true,
+          "description": "The parameter value must be a bitmask in decimal or hexa format. The bitmaks has a 32 bit size."
+        }
+      ],
+      "description": "Set the value of some flags (specified by bitmask) to 1.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi set\\_gflag 1\n$ opensips-cli -x mi set\\_gflag 0x3",
+          "description": "set_gflag usage"
+        }
+      ]
+    },
+    {
+      "name": "reset_gflag",
+      "parameters": [
+        {
+          "name": "bitmask",
+          "type": "string",
+          "required": true,
+          "description": "The parameter value must be a bitmask in decimal or hexa format. The bitmaks has a 32 bit size."
+        }
+      ],
+      "description": "Reset the value of some flags to 0.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi reset\\_gflag 1\n$ opensips-cli -x mi reset\\_gflag 0x3",
+          "description": "reset_gflag usage"
+        }
+      ]
+    },
+    {
+      "name": "is_gflag",
+      "parameters": [
+        {
+          "name": "bitmask",
+          "type": "string",
+          "required": true,
+          "description": "The parameter value must be a bitmask in decimal or hexa format. The bitmaks has a 32 bit size."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "The function returns TRUE if all the flags from the set are set and FALSE if at least one is not set."
+      },
+      "description": "Returns true if the all the flags from the bitmask are set.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi set\\_gflag 1024\n$ opensips-cli -x mi is\\_gflag 1024\nTRUE\n$ opensips-cli -x mi is\\_gflag 1025\nTRUE\n$ opensips-cli -x mi is\\_gflag 1023\nFALSE\n$ opensips-cli -x mi set\\_gflag 0x10\n$ opensips-cli -x mi is\\_gflag 1023\nTRUE\n$ opensips-cli -x mi is\\_gflag 1007\nFALSE\n$ opensips-cli -x mi is\\_gflag 16\nTRUE",
+          "description": "is_gflag usage"
+        }
+      ]
+    },
+    {
+      "name": "get_gflags",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Returns the bitmap in hexa and decimal format."
+      },
+      "description": "Return the bitmap with all flags. The function gets no parameters and returns the bitmap in hexa and decimal format.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi get\\_gflags\n0x3039\n12345",
+          "description": "get_gflags usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`initial` parameter usage",
+      "description": "Sets the initial value of global flags bitmap.",
+      "code": "modparam(\"gflags\", \"initial\", 15)"
+    },
+    {
+      "title": "`set_gflag()` usage",
+      "description": "Sets the bit at the position “flag” in global flags.",
+      "code": "...\nset_gflag(4);\n..."
+    },
+    {
+      "title": "`reset_gflag()` usage",
+      "description": "Resets the bit at the position “flag” in global flags.",
+      "code": "...\nreset_gflag(4);\n..."
+    },
+    {
+      "title": "`is_gflag()` usage",
+      "description": "Checks if bit at the position “flag” in global flags is set.",
+      "code": "...\nif(is_gflag(4))\n{\n\tlog(\"global flag 4 is set\\\\n\");\n} else {\n\tlog(\"global flag 4 is not set\\\\n\");\n};\n..."
+    },
+    {
+      "title": "`set_gflag` usage",
+      "description": "Sets the value of some flags (specified by bitmask) to 1 via Management Interface.",
+      "code": "...\n$ opensips-cli -x mi set_gflag 1\n$ opensips-cli -x mi set_gflag 0x3\n..."
+    },
+    {
+      "title": "`reset_gflag` usage",
+      "description": "Resets the value of some flags to 0 via Management Interface.",
+      "code": "...\n$ opensips-cli -x mi reset_gflag 1\n$ opensips-cli -x mi reset_gflag 0x3\n..."
+    },
+    {
+      "title": "`is_gflag` usage",
+      "description": "Returns true if all the flags from the bitmask are set via Management Interface.",
+      "code": "...\n$ opensips-cli -x mi set_gflag 1024\n$ opensips-cli -x mi is_gflag 1024\nTRUE\n$ opensips-cli -x mi is_gflag 1025\nTRUE\n$ opensips-cli -x mi is_gflag 1023\nFALSE\n$ opensips-cli -x mi set_gflag 0x10\n$ opensips-cli -x mi is_gflag 1023\nTRUE\n$ opensips-cli -x mi is_gflag 1007\nFALSE\n$ opensips-cli -x mi is_gflag 16\nTRUE\n..."
+    },
+    {
+      "title": "`get_gflags` usage",
+      "description": "Returns the bitmap with all flags via Management Interface.",
+      "code": "...\n$ opensips-cli -x mi get_gflags\n0x3039\n12345\n..."
+    }
+  ]
+}

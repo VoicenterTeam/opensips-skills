@@ -1,0 +1,303 @@
+{
+  "id": "module-topology_hiding-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "topology_hiding Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/topology_hiding.html",
+  "content_markdown": "This is a module which provides topology hiding capabilities. The module can work on top of the dialog module, or as a standalone module ( thus alowing topology hiding for all types of requests )",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:51:33.175Z",
+  "module_name": "topology_hiding",
+  "overview": "This is a module which provides topology hiding capabilities. The module can work on top of the dialog module, or as a standalone module ( thus alowing topology hiding for all types of requests )",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction Module",
+      "optional": false
+    },
+    {
+      "name": "Dialog Module",
+      "type": "module",
+      "reason": "Required if “force_dialog” module parameter is enabled, or a dialog is created from the configuration script",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "th_callid_passwd",
+      "type": "string",
+      "default_value": "\"OpenSIPS\"",
+      "description": "The string password that will be used for encoding/decoding the callid in case of topology\\_hiding with callid mangling.",
+      "example_value": "my\\_topo\\_hiding\\_secret",
+      "example_code": "modparam(\"topology\\_hiding\", \"th\\_callid\\_passwd\", \"my\\_topo\\_hiding\\_secret\")"
+    },
+    {
+      "name": "th_callid_prefix",
+      "type": "string",
+      "default_value": "\"DLGCH\\_\"",
+      "description": "The prefix that will be used for detecting callids which have been encoded by the dialog topology hiding. Make sure to change this value in case your SIP path contains multiple OpenSIPS boxes with topology hiding.",
+      "example_value": "MYCALLIDPREFIX\\_",
+      "example_code": "modparam(\"topology\\_hiding\", \"th\\_callid\\_prefix\", \"MYCALLIDPREFIX\\_\")"
+    },
+    {
+      "name": "th_passed_contact_uri_params",
+      "type": "string",
+      "default_value": "empty - do not pass any parameters",
+      "description": "List of semicolon-separated Contact URI parameters that will be passed from one side to the other for topology hiding calls. To be used when end-to-end functionality uses such Contact URI parameters.",
+      "example_value": "paramname1;myparam;custom\\_param",
+      "example_code": "modparam(\"topology\\_hiding\", \"th\\_passed\\_contact\\_uri\\_params\", \"paramname1;myparam;custom\\_param\")"
+    },
+    {
+      "name": "th_passed_contact_params",
+      "type": "string",
+      "default_value": "empty - do not pass any parameters",
+      "description": "List of semicolon-separated Contact header parameters that will be passed from one side to the other for topology hiding calls. To be used when end-to-end functionality uses such Contact header parameters.",
+      "example_value": "paramname1;myparam;custom\\_param",
+      "example_code": "modparam(\"topology\\_hiding\", \"th\\_passed\\_contact\\_params\", \"paramname1;myparam;custom\\_param\")"
+    },
+    {
+      "name": "force_dialog",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If set to 1, the module will internally create the dialog ( if not already created ). This will only work for INVITE based dialogs, and the dialog module must be loaded.",
+      "example_value": "1",
+      "example_code": "modparam(\"topology\\_hiding\", \"force\\_dialog\", 1)"
+    },
+    {
+      "name": "th_contact_encode_passwd",
+      "type": "string",
+      "default_value": "ToPoCtPaSS",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. The parameter configures the string password that will be used for encoding/decoding that specific param .",
+      "example_value": "my_topoh_passwd",
+      "example_code": "modparam(\"topology_hiding\", \"th_contact_encode_passwd\", \"my_topoh_passwd\")"
+    },
+    {
+      "name": "th_contact_encode_param",
+      "type": "string",
+      "default_value": "thinfo",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. The parameter configures the respective parameter name.",
+      "example_value": "customparam",
+      "example_code": "modparam(\"topology_hiding\", \"th_contact_encode_param\", \"customparam\")"
+    },
+    {
+      "name": "th_contact_encode_scheme",
+      "type": "string",
+      "default_value": "base64",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. This parameter configures the encoding scheme to be used for the data stored in the Contact URI param.",
+      "possible_values": [
+        "base64",
+        "base32"
+      ],
+      "example_value": "base32",
+      "example_code": "modparam(\"topology_hiding\", \"th_contact_encode_scheme\", \"base32\")"
+    },
+    {
+      "name": "th_contact_caller_username_var",
+      "type": "string",
+      "default_value": "_th_contact_caller_username_var_",
+      "description": "Variable used to store the value of the contact username advertised to the caller.",
+      "example_value": "__topo_hiding_username_var__",
+      "example_code": "modparam(\"topology_hiding\", \"th_contact_caller_username_var\", \"__topo_hiding_username_var__\")"
+    },
+    {
+      "name": "th_contact_callee_username_var",
+      "type": "string",
+      "default_value": "_th_contact_callee_username_var_",
+      "description": "Variable used to store the value of the contact username advertised to the callee.",
+      "example_value": "__topo_hiding_username_var__",
+      "example_code": "modparam(\"topology_hiding\", \"th_contact_callee_username_var\", \"__topo_hiding_username_var__\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "topology_hiding",
+      "signature": "topology_hiding([flags], [contact_username])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "String flags to control topology hiding behavior.",
+          "valid_values": [
+            "U",
+            "D",
+            "a",
+            "A",
+            "C"
+          ]
+        },
+        {
+          "name": "contact_username",
+          "type": "string",
+          "required": false,
+          "description": "Advertise a particular username in the Contact header URI. Format: [caller_contact_username][/callee_contact_username]."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        }
+      ],
+      "description": "By calling this function on an initial request, the modules will hide the topology, meaning that it will strip and restore all the Via, Record-Route and Route headers and it will replace the contact with the IP address of the interface where the request was received.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(!has_totag() && is_method(\"INVITE\")) {\\n\\ttopology_hiding();\\n}",
+          "description": "Basic topology hiding usage on initial INVITE.",
+          "context": "initial request"
+        },
+        {
+          "language": "opensips",
+          "code": "if(!has_totag() && is_method(\"INVITE\")) {\\n\\ttopology_hiding(\"U\");\\n}",
+          "description": "Topology hiding with 'U' flag to propagate username.",
+          "context": "initial request"
+        },
+        {
+          "language": "opensips",
+          "code": "if(!has_totag() && is_method(\"INVITE\")) {\\n\\ttopology_hiding(\"U\", \"opensips\");\\n}",
+          "description": "Set 'opensips' for both caller and callee Contact username.",
+          "context": "initial request"
+        },
+        {
+          "language": "opensips",
+          "code": "if(!has_totag() && is_method(\"INVITE\")) {\\n\\ttopology_hiding(\"U\", \"/caller/callee\");\\n}",
+          "description": "Set specific usernames for caller and callee legs.",
+          "context": "initial request"
+        }
+      ],
+      "related_functions": [
+        "topology_hiding_match"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "topology_hiding_match",
+      "signature": "topology_hiding_match([dlg_match_mode])",
+      "parameters": [
+        {
+          "name": "dlg_match_mode",
+          "type": "string",
+          "required": false,
+          "description": "Dialog matching mode, behaves identically to match_dialog()."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if a topology hiding dialog exists for the request and the request has been successfully fixed."
+        }
+      ],
+      "description": "This function is to be used to match and fix a sequential request belong to an existing topology hiding dialog. The in-dialog topology requests are requests with a to tag, RURI pointing to opensips and with a method specific to a Invite dialog.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (has_totag()) {\\n        if(topology_hiding_match())\\n        {\\n                xlog(\"Found a request $rm belonging to an existing topology hiding dialog\\\\n\");\\n                route(relay);\\n                exit;\\n        }\\n}",
+          "description": "Matching sequential requests for topology hiding.",
+          "context": "sequential request"
+        },
+        {
+          "language": "opensips",
+          "code": "if (has_totag()) {\\n    if (!topology_hiding_match() ) {\\n        xlog(\" cannot match request to a dialog \\\\n\");\\n        send_reply(404,\"Not found\");\\n    } else\\n        route(RELAY);\\n}",
+          "description": "Handling sequential requests with error checking.",
+          "context": "sequential request"
+        }
+      ],
+      "related_functions": [
+        "match_dialog"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$TH_callee_callid",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Read only variable that will contain the callid as it is propagated towards the callee side, in case topology\\_hiding(\"C\") is called. NULL will be returned if there is no topology hiding dialog for the request or if topology\\_hiding with callid encoding was not used for the current dialog."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `th_callid_passwd` parameter",
+      "description": "The string password that will be used for encoding/decoding the callid in case of topology_hiding with callid mangling.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_callid\\_passwd\", \"my\\_topo\\_hiding\\_secret\")\n..."
+    },
+    {
+      "title": "Set `th_callid_prefix` parameter",
+      "description": "The prefix that will be used for detecting callids which have been encoded by the dialog topology hiding. Make sure to change this value in case your SIP path contains multiple OpenSIPS boxes with topology hiding.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_callid\\_prefix\", \"MYCALLIDPREFIX\\_\")\n..."
+    },
+    {
+      "title": "Set `th_passed_contact_uri_params` parameter",
+      "description": "List of semicolon-separated Contact URI parameters that will be passed from one side to the other for topology hiding calls. To be used when end-to-end functionality uses such Contact URI parameters.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_passed\\_contact\\_uri\\_params\", \"paramname1;myparam;custom\\_param\")\n..."
+    },
+    {
+      "title": "Set `th_passed_contact_params` parameter",
+      "description": "List of semicolon-separated Contact header parameters that will be passed from one side to the other for topology hiding calls. To be used when end-to-end functionality uses such Contact header parameters.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_passed\\_contact\\_params\", \"paramname1;myparam;custom\\_param\")\n..."
+    },
+    {
+      "title": "Set `force_dialog` parameter",
+      "description": "If set to 1, the module will internally create the dialog ( if not already created ). This will only work for INVITE based dialogs, and the dialog module must be loaded.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"force\\_dialog\", 1)\n..."
+    },
+    {
+      "title": "Set `th_contact_encode_passwd` parameter",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. The parameter configures the string password that will be used for encoding/decoding that specific param .",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_contact\\_encode\\_passwd\", \"my\\_topoh\\_passwd\")\n..."
+    },
+    {
+      "title": "Set `th_contact_encode_param` parameter",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. The parameter configures the respective parameter name.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_contact\\_encode\\_param\", \"customparam\")\n..."
+    },
+    {
+      "title": "Set `th_contact_encode_scheme` parameter",
+      "description": "When not relying on the dialog module ( due to script writer preference or simply when doing topo hiding for non INVITE dialogs ), the module will store the needed information in a Contact URI param. This parameter configures the encoding scheme to be used for the data stored in the Contact URI param.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_contact\\_encode\\_scheme\", \"base32\")\n..."
+    },
+    {
+      "title": "Set `th_contact_caller_username_var` parameter",
+      "description": "Variable used to store the value of the contact username advertised to the caller.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_contact\\_caller\\_username\\_var\", \"\\_\\_topo\\_hiding\\_username\\_var\\_\\_\")\n..."
+    },
+    {
+      "title": "Set `th_contact_callee_username_var` parameter",
+      "description": "Variable used to store the value of the contact username advertised to the callee.",
+      "code": "...\nmodparam(\"topology\\_hiding\", \"th\\_contact\\_callee\\_username\\_var\", \"\\_\\_topo\\_hiding\\_username\\_var\\_\\_\")\n..."
+    },
+    {
+      "title": "`topology_hiding` usage",
+      "description": "By calling this function on an initial request, the modules will hide the topology, meaning that it will strip and restore all the Via, Record-Route and Route headers and it will replace the contact with the IP address of the interface where the request was received.",
+      "code": "...\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding();\n}\n...\n...\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding(\"U\");\n}\n...\n# set \"opensips\" for both caller and the callee's Contact username\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding(\"U\", \"opensips\");\n}\n...\n# set \"caller\" in the caller's Contact username\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding(\"U\", \"/caller\");\n}\n...\n# set \"callee\" in the callee's Contact username\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding(\"U\", \"//callee\");\n}\n...\n# set \"caller\" in the caller's Contact username and\n# \"callee\" in the callee's Contact username\nif(!has\\_totag() && is\\_method(\"INVITE\")) {\n\ttopology\\_hiding(\"U\", \"/caller/callee\");\n}\n..."
+    },
+    {
+      "title": "`Calling topology_hiding_match() function for topology hiding sequential requests`",
+      "description": "",
+      "code": "...\nif (has\\_totag())\n        if(topology\\_hiding\\_match())\n        {\n                xlog(\"Found a request $rm belonging to an existing topology hiding dialog\\n\");\n                route(relay);\n                exit;\n        }\n}\n..."
+    },
+    {
+      "title": "`topology_hiding_match_dialog()` usage",
+      "description": "This function is to be used to match and fix a sequential request belong to an existing topology hiding dialog. With regards to dialog matching (including the optional parameter), this function behaves identically to match_dialog(). Please see the dialog module documentation for further details regarding dialog matching options.",
+      "code": "...\n    if (has\\_totag()) {\n        if (!topology\\_hiding\\_match() ) {\n            xlog(\" cannot match request to a dialog \\n\");\n\t    send\\_reply(404,\"Not found\");\n        } else\n\t\troute(RELAY);\n    }\n..."
+    }
+  ]
+}

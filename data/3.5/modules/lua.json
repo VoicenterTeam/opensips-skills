@@ -1,0 +1,143 @@
+{
+  "id": "module-lua-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "lua Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/lua.html",
+  "content_markdown": "The time needed when writing a new OpenSIPS module unfortunately is quite high, while the options provided by the configuration file are limited to the features implemented in the modules.\n\nWith this Lua module, you can easily implement your own OpenSIPS extensions in Lua.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:18:15.203Z",
+  "module_name": "lua",
+  "overview": "The time needed when writing a new OpenSIPS module unfortunately is quite high, while the options provided by the configuration file are limited to the features implemented in the modules.\n\nWith this Lua module, you can easily implement your own OpenSIPS extensions in Lua.",
+  "how_it_works": "With the Lua module, you can access to lua function on the OpenSIPS side. You need to define a file to load and call a function from it. Write a function \"mongo_alias\" and then write in your opensips.cfg\n\n...\nif (lua_exec(\"mongo_alias\")) {\n\t...\n}\n...\n\nOn the Lua side, you have access to opensips functions and variables (AVP, pseudoVar, ...). Read the documentation below for further informations.",
+  "dependencies_required": [
+    {
+      "name": "Lua 5.1.x or later",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "memcached",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "luafilename",
+      "type": "string",
+      "default_value": "/etc/opensips/opensips.lua",
+      "description": "This is the file name of your script. This may be set once only, but it may include an arbitary number of functions and \"use\" as many Lua module as necessary.",
+      "example_code": "...\nmodparam(\"lua\", \"luafilename\", \"/etc/opensips/opensips.lua\")\n..."
+    },
+    {
+      "name": "lua_auto_reload",
+      "type": "integer",
+      "description": "Define this value to 1 if you want to reload automatically the lua script. Disabled by default."
+    },
+    {
+      "name": "warn_missing_free_fixup",
+      "type": "integer",
+      "description": "When you call a function via moduleFunc() you could have a memleak. Enable this warns you when you're doing it. Enabled by default."
+    },
+    {
+      "name": "lua_allocator",
+      "type": "string",
+      "default_value": "opensips",
+      "description": "Change the default memory allocator for the lua module. Possible values are :",
+      "possible_values": [
+        "opensips",
+        "malloc"
+      ]
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "lua_exec",
+      "signature": "lua_exec(func, [param])",
+      "parameters": [
+        {
+          "name": "func",
+          "type": "string",
+          "required": true,
+          "description": "Lua function name"
+        },
+        {
+          "name": "param",
+          "type": "string",
+          "required": false,
+          "description": "Parameter to be passed to the Lua function."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Calls a Lua function with passing it the current SIP message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (lua_exec(\"mongo_alias\")) {\n\t...\n}\n...",
+          "description": "lua_exec() usage"
+        }
+      ]
+    },
+    {
+      "name": "lua_meminfo",
+      "signature": "lua_meminfo()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "Logs informations about memory.",
+      "usage_context": [],
+      "examples": []
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "watch",
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": false,
+          "description": "'add' or 'delete'"
+        },
+        {
+          "name": "extension",
+          "type": "string",
+          "required": false,
+          "description": "required if action is provided"
+        }
+      ],
+      "description": "",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi watch",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set luafilename parameter",
+      "description": "Sets the luafilename parameter to the script file path.",
+      "code": "...\nmodparam(\"lua\", \"luafilename\", \"/etc/opensips/opensips.lua\")\n..."
+    },
+    {
+      "title": "lua_exec() usage",
+      "description": "Demonstrates calling a Lua function from the OpenSIPS configuration script.",
+      "code": "...\nif (lua_exec(\"mongo_alias\")) {\n\t...\n}\n..."
+    }
+  ]
+}

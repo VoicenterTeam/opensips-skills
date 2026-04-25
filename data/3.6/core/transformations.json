@@ -1,0 +1,1614 @@
+{
+  "id": "transformation-script-tran-3-6",
+  "document_type": "transformation",
+  "version": "3.6",
+  "title": "Script Transformations v3.6",
+  "url": "https://www.opensips.org/Documentation/Script-Tran-3-6",
+  "content_markdown": "# Script Transformations v3.6\n\nIntuitively, a **Transformation** is a function that is applied to a variable(script variable, pseudo-variable, AVP, static string) to get a special value from it. The input value is not altered.\n\nExamples of using different kinds of variables in **OpenSIPS script**:\n\n```opensips\n# check if username in From header is equal with username in To header\nif ($fU == $tU) {\n   ...\n}\n\n# Request-URI username based processing\nswitch ($rU) {\n   case \"1234\":\n      ...\n   break;\n   case \"5678\":\n      ...\n   break;\n   default:\n     ...\n}\n\n# assign an integer value to an variable\n$var(gw_count) = 1;\n\n# assign a string value to an AVP\n$avp(server) = \"opensips\";\n\n# store the Request-URI in a variable\n$var(ru_backup) = $ru;\n\n# concat \"sip:\" + From username + \"@\" + To domain in a script variable x\n$var(x) = \"sip:\" + $fU + \"@\" + $td;\n```\n\nThe transformations are intended to facilitate access to different attributes of variables (like strlen of value, parts of value, substrings) or complete different value of variables (encoded in hexa, md5 value, escape/unescape value for DB operations...).\n\nA transformation is represented in between **'{'** and **'}'** and follows the name of a variable. When using transformations, the variable name and transformations **must** be enclosed in between **'('** and **')'**.\n\nExample:\n\n```opensips\n# the length of From URI ($fu is pseudo-variable for From URI)\n$(fu{s.len})\n```\n\nMultiple transformations can be applied to a variable at the same time.\n\n```opensips\n# the length of escaped 'Test' header body\n$(hdr(Test){s.escape.common}{s.len})\n```\n\nAll transformations, unless otherwise specified, will return NULL in case of error or unsuccessful operation (e.g looking for an nonexistent parameter in an URI with the \"{uri.param,name}\" transformation). Also, NULL is accepted as input for transformations in order to support chaining with a previous one that would return NULL.\n\nThe transformations can be used anywhere, being considered parts of script variables support -- in xlog, avpops or other modules' functions and parameters, in right side assignment expressions or in comparisons.\n\nIMPORTANT: To learn what variables can be used with transformations see [Scripting variables list](https://www.opensips.org/Documentation/Script-CoreVar \"Script-CoreVar\").\n\n## 1. String Transformations\n\nThe name of these transformation starts with 's.'. They are intended to apply string operations to variables.\n\n### 1.1 {s.len}\n\nReturn strlen of variable value\n\n```opensips\n$var(x) = \"abc\";\nif($(var(x){s.len}) == 3)\n{\n   ...\n}\n```\n\n### 1.2 {s.int}\n\nConverts the initial part of the given string to an integer value. Returns 0 if there were no digits at all.\n\n```opensips\n$var(dur) = \"2868.12 sec\";\nif ($(var(dur){s.int}) < 3600) {\n  ...\n}\n```\n\n### 1.3 {s.md5}\n\nReturns the MD5 hash of the given input.\n\n```opensips\nxlog(\"MD5 over From username: $(fU{s.md5})\\n\");\n```\n\n### 1.4 {s.reverse}\n\nReturns the input string in revers order.\n\n```opensips\n$var(forward) = \"onetwothree\";\n$var(reverse) = $(var(forward){s.reverse}); //Contains \"eerhtowteno\";\n```\n\n### 1.5 {s.substr,offset,length}\n\nReturn the substring starting at _offset_ having size of _length_. If _offset_ is negative, then it is counted from the end of the value, -1 being the last char. In case of a positive value, _0_ is the first char. The _length_ must be positive and in case of both _0_ and _greater-than-string-length_ values, the substring to the end of the input string is returned. Both offset and length may be specified using variables.\n\nExample:\n\n```opensips\n$var(x) = \"abcd\";\n$(var(x){s.substr,1,0}) = \"bcd\"\n```\n\n### 1.6 {s.select,index,separator}\n\nReturn a field from the value of a variable. The field is selected based on separator and index. The separator must be a character used to identify the fields. Index must be a integer value or a variable. If index is negative, the count of fields starts from end of value, -1 being last field. If index is positive, 0 is the first field. Note that if a field is empty, an empty string will be returned and not NULL.\n\nExample:\n\n```opensips\n$var(x) = \"12,34,56\";\n$(var(x){s.select,1,,}) => \"34\" ;\n\n$var(x) = \"12,34,56\";\n$(var(x){s.select,-2,,}) => \"34\"\n```\n\n### 1.7 {s.encode.hexa}\n\nReturn encoding in hexa of variable's value\n\n### 1.8 {s.decode.hexa}\n\nReturn decoding from hexa of variable's value\n\n### 1.9 {s.escape.common}\n\nReturn escaped string of variable's value. Characters escaped are ', \", and 0. Useful when doing DB queries (care should be taken for non Latin character set).\n\n### 1.10 {s.unescape.common}\n\nReturn unescaped string of variable's value. Reverse of above transformation.\n\n### 1.11 {s.escape.user}\n\nReturn escaped string of variable's value, changing to '%hexa' the characters that are not allowed in user part of SIP URI following RFC requirements.\n\n### 1.12 {s.unescape.user}\n\nReturn unescaped string of variable's value, changing '%hexa' to character code. Reverse of above transformation.\n\n### 1.13 {s.escape.param}\n\nReturn escaped string of variable's value, changing to '%hexa' the characters that are not allowed in the param part of SIP URI following RFC requirements.\n\n### 1.14 {s.unescape.param}\n\nReturn unescaped string of variable's value, changing '%hexa' to character code. Reverse of above transformation.\n\n### 1.15 {s.tolower}\n\nReturn string with lower case ASCII letters.\n\n### 1.16 {s.toupper}\n\nReturn string with upper case ASCII letters.\n\n### 1.17 {s.index}\n\nSearches for one string within another starting at the beginning of the first string. Returns starting index of the string found or NULL if not found. The optional index specifies the offset to begin the search at in the string. Negative offsets are supported and will wrap.\n\n```opensips\n$var(strtosearch) = 'onetwothreeone';\n$var(str) = 'one';\n\n# Search the string starting at 0 index\n$(var(strtosearch){s.index, $var(str)}) # will return 0\n$(var(strtosearch){s.index, $var(str), 0}) # Same as above\n$(var(strtosearch){s.index, $var(str), 3}) # returns 11\n\n# Negative offset\n$(var(strtosearch){s.index, $var(str), -11}) # Same as above\n\n# Negative wrapping offset\n$(var(strtosearch){s.index, $var(str), -25}) # Same as above\n\n#Test for existence of string in another\nif ($(var(strtosearch){s.index, $var(str)}) != NULL)\n    xlog(\"found $var(sstr) in $var(strtosearch)\\n\");\n```\n\n### 1.18 {s.rindex}\n\nSearches for one string within another starting at the end of the first string. Returns starting index of the string found or NULL if not found. The optional index specifies an offset to start the search before, e.g the start of the found string will be before the supplied offset. Negative offsets are supported and will wrap.\n\n```opensips\n$(var(strtosearch){s.rindex, $var(str)}) # will return 11\n$(var(strtosearch){s.rindex, $var(str), -3}) # will return 11\n$(var(strtosearch){s.rindex, $var(str), 11}) # will return 11\n$(var(strtosearch){s.rindex, $var(str), -4}) # will return 0\n```\n\n### 1.19 {s.fill.left, tok, len}\n\nFills a string to the left with a char/string until the given final length is reached. The initial string is returned if its length is greater or equal to the given final length.\n\n```opensips\n$var(in) = \"485\"; (also works for integer PVs)\n\n$(var(in){s.fill.left, 0, 3})    => 485    \n$(var(in){s.fill.left, 0, 6})    => 000485\n$(var(in){s.fill.left, abc, 8})  => bcabc485\n```\n\n**Note**: currently optimized for speed. Does not support pseudo-variable parameters or successive \"s.fill\" cascading.\n\n### 1.20 {s.fill.right, tok, len}\n\nFills a string to the right with a char/string until the given final length is reached. The initial string is returned if its length is greater or equal to the given final length.\n\n```opensips\n$var(in) = 485; (also works for string PVs)\n\n$(var(in){s.fill.right, 0, 3})   => 485\n$(var(in){s.fill.right, 0, 6})   => 485000\n$(var(in){s.fill.right, abc, 8}) => 485abcab\n```\n\n### 1.21 {s.width, len}\n\nTruncates or expands the input to the given _len_. Expanding is done to the right with the space character ' '. Truncating is done in a similar manner, from the right. Examples:\n\nFills a string to the right with a char/string until the given final length is reached. The initial string is returned if its length is greater or equal to the given final length. If used on pseudo-variables containing integers, it will convert them to strings.\n\n```opensips\n$var(in) = \"transformation\";\n\n$(var(in){s.width, 14})   => \"transformation\"\n$(var(in){s.width, 16})  => \"transformation  \"\n$(var(in){s.width, 9})   => \"transform\"\n```\n\n### 1.22 {s.trim}\n\nStrips any leading or trailing whitespace from the input string. Trimmed characters are \" \" (space), \\t (tab), \\n (newline) and \\r (carriage return).\n\n```opensips\n$var(in) = \"\\t \\n input string  \\r  \";\n\n$(var(in){s.trim})   => \"input string\"\n```\n\n### 1.23 {s.trimr}\n\nStrips any trailing whitespace from the input string. Trimmed characters are \" \" (space), \\t (tab), \\n (newline) and \\r (carriage return).\n\n```opensips\n$var(in) = \"\\t \\n input string  \\r  \";\n\n$(var(in){s.trimr})   => \"\\t \\n input string\"\n```\n\n### 1.24 {s.triml}\n\nStrips any leading whitespace from the input string. Trimmed characters are \" \" (space), \\t (tab), \\n (newline) and \\r (carriage return).\n\n```opensips\n$var(in) = \"\\t \\n input string  \\r  \";\n\n$(var(in){s.triml})   => \"input string  \\r  \"\n```\n\n### 1.25 {s.dec2hex}\n\nConverts a decimal(base 10) number to hexadecimal (in base 16), represented as string.\n\n### 1.26 {s.hex2dec}\n\nConverts a hexadecimal number (base 16) represented as string to decimal (base 10).\n\n### 1.27 {s.b64encode}\n\nRepresents binary input data in an ASCII string format.\n\n```opensips\n$var(in) = \"\\x2\\x3\\x4\\x5!@#%^&*\";\n$(var(in){s.b64encode})   => \"AgMEBSFAIyVeJio=\"\n```\n\n### 1.28 {s.b64decode}\n\nAssumes input is a Base64 string and decodes as many characters as possible.\n\n```opensips\n$var(in) = \"AgMEBSFAIyVeJio=\";\n$(var(in){s.b64decode})   => \"\\x2\\x3\\x4\\x5!@#%^&*\"\n```\n\n### 1.29 {s.xor,secret}\n\nPerforms one or more logical XOR operations with (a part of) the \"secret\" string parameter and the input string, depending on the lengths of the two strings.\n\n```opensips\n$var(in) = \"aaaaaabbbbbb\";\n$(var(in){s.xor,x})   => \"!/>^P!/>^P!^U2^Q!^U2^Q\"\n```\n\n### 1.30 {s.eval}\n\nInterprets the string as a variable formatted string, evaluating all the variables declared in it.\n\n```opensips\n$var(in) = \"client\";\n$var(format) = \"Hello, $var(in)!\";\n$(var(format){s.eval})   => \"Hello, client!\"\n```\n\n### 1.31 {s.date2unix}\n\nAssumes the input is an RFC-3261 SIP \"Date\" header value, parses it accordingly and returns the equivalent UNIX timestamp.\n\n```opensips\n$var(date) = \"Thu, 13 Jun 2024 12:48:00 GMT\";\n$(var(date){s.date2unix})   => \"1718282880\";\n```\n\n### 1.32 {s.sha1}\n\nReturns the SHA1 hash of the given input.\n\n```opensips\nxlog(\"SHA1 over From username: $(fU{s.sha1})\\n\");\n```\n\n### 1.33 {s.sha224}\n\nReturns the SHA224 hash of the given input.\n\n```opensips\nxlog(\"SHA224 over From username: $(fU{s.sha224})\\n\");\n```\n\n### 1.34 {s.sha256}\n\nReturns the SHA256 hash of the given input.\n\n```opensips\nxlog(\"SHA256 over From username: $(fU{s.sha256})\\n\");\n```\n\n### 1.35 {s.sha384}\n\nReturns the SHA384 hash of the given input.\n\n```opensips\nxlog(\"SHA384 over From username: $(fU{s.sha384})\\n\");\n```\n\n### 1.36 {s.sha512}\n\nReturns the SHA512 hash of the given input.\n\n```opensips\nxlog(\"SHA512 over From username: $(fU{s.sha512})\\n\");\n```\n\n### 1.37 {s.sha1_hmac,key}\n\nReturns the SHA1 HMAC hash of the given input using key.\n\n```opensips\nxlog(\"SHA1 HMAC over From username using key 'secret': $(fU{s.sha1_hmac,secret})\\n\");\n```\n\n### 1.38 {s.sha224_hmac,key}\n\nReturns the SHA224 HMAC hash of the given input using key.\n\n```opensips\nxlog(\"SHA224 HMAC over From username using key 'secret': $(fU{s.sha224_hmac,secret})\\n\");\n```\n\n### 1.39 {s.sha256_hmac,key}\n\nReturns the SHA256 HMAC hash of the given input using key.\n\n```opensips\nxlog(\"SHA256 HMAC over From username using key 'secret': $(fU{s.sha256_hmac,secret})\\n\");\n```\n\n### 1.40 {s.sha384_hmac,key}\n\nReturns the SHA384 HMAC hash of the given input using key.\n\n```opensips\nxlog(\"SHA384 HMAC over From username using key 'secret': $(fU{s.sha384_hmac,secret})\\n\");\n```\n\n### 1.41 {s.sha512_hmac,key}\n\nReturns the SHA512 HMAC hash of the given input using key.\n\n```opensips\nxlog(\"SHA512 HMAC over From username using key 'secret': $(fU{s.sha512_hmac,secret})\\n\");\n```\n\n## 2. URI Transformations\n\nThe name of transformation starts with 'uri.'. The value of the variable is considered to be a SIP URI. This transformation returns parts of SIP URI (see struct sip_uri). If that part is missing, the returned value is an empty string.\n\n### 2.1 {uri.user}\n\nReturns the user part of the URI schema.\n\n### 2.2 {uri.host}\n\n(same as **{uri.domain}**)\n\nReturns the domain part of the URI schema.\n\n### 2.3 {uri.passwd}\n\nReturns the password part of the URI schema.\n\n### 2.4 {uri.port}\n\nReturns the port of the URI schema.\n\n### 2.5 {uri.params}\n\nReturns all the URI parameters into a single string.\n\n### 2.6 {uri.param,name}\n\nReturns the value of URI parameter with name \"name\"\n\n### 2.7 {uri.headers}\n\nReturns URI headers.\n\n### 2.8 {uri.transport}\n\nReturns the value of transport URI parameter.\n\n### 2.9 {uri.ttl}\n\nReturns the value of ttl URI parameter.\n\n### 2.10 {uri.uparam}\n\nReturns the value of user URI parameter\n\n### 2.11 {uri.maddr}\n\nReturns the value of maddr URI parameter.\n\n### 2.12 {uri.method}\n\nReturns the value of method URI parameter.\n\n### 2.13 {uri.lr}\n\nReturns the value of lr URI parameter.\n\n### 2.14 {uri.r2}\n\nReturns the value of r2 URI parameter.\n\n### 2.15 {uri.schema}\n\nReturns the schema part of the given URI.\n\n## 3. VIA Transformations\n\nThese transformations parse Via headers and all starts with `via.`. The value of the variable is considered to be a SIP Via header. This transformation returns parts of the via header (see struct via_body). If the requested part is missing, the returned value is an empty string. Transformation will fail (with script error) if variable holding the Via header is empty. Unless otherwise specified in descriptions below, the result of transform is a string (not an integer).\n\nExamples:\n\n```opensips\n$var(upstreamtransport) = $(hdr(Via)[1]{via.transport}{s.tolower});\n$var(upstreamip) = $(hdr(Via)[1]{via.param,received});\n$var(clientport) = $(hdr(Via)[-1]{via.param,rport});\n```\n\n### 3.1 {via.name}\n\nReturns the `protocol-name` (of RFC3261 BNF), generally `SIP`.\n\n### 3.2 {via.version}\n\nReturns the `protocol-version` (of RFC3261 BNF), generally `2.0`.\n\n### 3.3 {via.transport}\n\nReturns the `transport` (of RFC3261 BNF), e.g., `UDP`, `TCP`, `TLS`. This is the transport protocol used to send the request message.\n\n### 3.4 {via.host}\n\n(same as `{via.domain}`)\n\nReturns the `host` portion of the `sent-by` (of RFC3261 BNF). Typically this is the IP address of the sender of the request message, and is the address to which the response will be sent.\n\n### 3.5 {via.port}\n\nReturns the `port` portion of the `sent-by` (of RFC3261 BNF). Typically this is the IP port of the sender of the request message, and is the address to which the response will be sent. Result of transform is valid as both integer and string.\n\n### 3.6 {via.comment}\n\nThe comment associated with the via header. The `struct via_body` contains this field, but it isn't clear that RFC3261 allows Via headers to have comments (see text at top of page 221, and the BNF doesn't explicit allow comment within Via). The comment is the text enclosed within parens.\n\n### 3.7 {via.params}\n\nReturns all the Via headers parameters (`via-param` of RFC3261 BNF) as single string. Result can be processed using the `{param.*}` transforms. This is essentially everything after the host and port.\n\n### 3.8 {via.param,name}\n\nReturns the value of Via header parameter with name `name`. Typical parameters include `branch`, `rport` and `received`.\n\n### 3.9 {via.branch}\n\nReturns the value of the branch parameter in the VIA header.\n\n### 3.10 {via.received}\n\nReturns the value of the received parameter in the VIA header, if any.\n\n### 3.11 {via.rport}\n\nReturns the value of the rport parameter in the VIA header, if any.\n\n## 4. Parameters List Transformations\n\nThe name of the transformation starts with \"param.\". The value of the variable is considered to be a string like name1=value1;name2=value2;...\". The transformations returns the value for a specific parameter, or the name of a parameter at a specific index.\n\n### 4.1 {param.value,name}\n\nReturns the value of parameter 'name'\n\nExample:\n\n```opensips\n\"a=1;b=2;c=3\"{param.value,c} = \"3\"\n```\n\n'name' can be a variable\n\n### 4.2 {param.exist,name}\n\nReturns 1 if the parameter `name` exists (with or without value), else 0. Returned value is both string and integer. `name` can be variable. This can be used to test existence of parameters that do not have values.\n\nExample:\n\n```opensips\n\"a=0;b=2;ob;c=3\"{param.exist,ob};         # returns 1\n\"a=0;b=2;ob;c=3\"{param.exist,a};          # returns 1\n\"a=0;b=2;ob;c=3\"{param.exist,foo};        # returns 0\n```\n\n### 4.3 {param.valueat,index}\n\nReturns the value of parameter at position give by 'index' (0-based index)\n\nExample:\n\n```opensips\n\"a=1;b=2;c=3\"{param.valueat,1} = \"2\"\n```\n\n'index' can be a variable\n\n### 4.4 {param.name,index}\n\nReturns the name of parameter at position 'index'.\n\nExample:\n\n```opensips\n\"a=1;b=2;c=3\"{param.name,1} = \"b\"\n```\n\n### 4.5 {param.count}\n\nReturns the number of parameters in the list.\n\nExample:\n\n```opensips\n\"a=1;b=2;c=3\"{param.count} = 3\n```\n\n## 5. Name-address Transformations\n\nThe name of the transformation starts with 'nameaddr.'. The value of the variable is considered to be a string like '[display_name] uri'. The transformations returns the value for a specific field.\n\nEach transformation supports an optional 'index'. This can be used when passing a list of nameaddr specs, and represents the spec index that should be considered when extracting the value. Indexes start with 0 (the default value when missing), and can accept negative values (-1 represents the last nameaddr spec).\n\nExample:\n\n```opensips\n'\"first\" <first@opensips.org>, \"second\" <second@opensips.org>' {nameaddr.0.name} = \"first\"\n'\"first\" <first@opensips.org>, \"second\" <second@opensips.org>' {nameaddr.1.name} = \"second\"\n'\"first\" <first@opensips.org>, \"second\" <second@opensips.org>' {nameaddr.-1.name} = \"second\"\n```\n\n### 5.1 {nameaddr.name}\n\nReturns the value of display name\n\nExample:\n\n```opensips\n'\"test\" <sip:test@opensips.org>' {nameaddr.name} = \"test\"\n```\n\n### 5.2 {nameaddr.uri}\n\nReturns the value of URI\n\nExample:\n\n```opensips\n'\"test\" <sip:test@opensips.org>' {nameaddr.uri} = sip:test@opensips.org\n```\n\n### 5.3 {nameaddr.len}\n\nReturns the length of the entire name-addr part from the value.\n\n### 5.4 {nameaddr.param,param_name}\n\nReturns the value of the parameter with name param_name. Example:\n\n```opensips\n'\"test\" <sip:test@opensips.org>;tag=dat43h' {nameaddr.param,tag} = dat43h\n```\n\n### 5.5 {nameaddr.params}\n\nReturns all the parameters and their corresponding values. Example:\n\n```opensips\n'\"test\" <sip:test@opensips.org>;tag=dat43h;private=yes' {nameaddr.params} = \"tag=dat43h;private=yes\"\n```\n\n## 6. IP Transformations\n\nThe name of the transformation starts with 'ip.'. Available transformations in this class:\n\n### 6.1 {ip.pton}\n\nReturns a binary representation of a string represented IP. Example:\n\n```opensips\n\"193.668.3.634\" {ip.pton} returns a 4 byte binary representation of the IP provided\n```\n\n### 6.2 {ip.ntop}\n\nReturns a string representation of the binary IP provided Example:\n\n```opensips\n\"193.668.3.634\"{ip.pton}{ip.ntop} = \"193.668.3.634\"\n```\n\n### 6.3 {ip.isip}\n\nReturns `1` if the string provided is a valid IPv4 or IPv6 address, otherwise `0`. Example:\n\n```opensips\n\"193.668.3.634\" {ip.isip} = 1\n\"193.668.3.634.1\" {ip.isip} = 0\n```\n\n### 6.4 {ip.isip4}\n\nReturns `1` if the string provided is a valid IPv4, otherwise `0`. Example:\n\n```opensips\n\"193.668.3.634\" {ip.isip4} = 1\n```\n\n### 6.5 {ip.isip6}\n\nReturns `1` if the string provided is a valid IPv6, otherwise `0`. Example:\n\n```opensips\n\"193.668.3.634\" {ip.isip6} = 0\n\"2001:0db8:85a3:0000:0000:8a2e:0370:7334\" {ip.isip6} = 1\n```\n\n### 6.6 {ip.family}\n\nReturns INET or INET6 if the binary IP representation provided is IPv4 or IPv6. Example:\n\n```opensips\n\"193.668.3.634\" {ip.pton}{ip.family} = \"INET\"\n```\n\n### 6.7 {ip.resolve}\n\nReturns the resolved IP address corresponding to the string domain provided. Transformation has no effect if a string IP is provided. Example:\n\n```opensips\n\"opensips.org\" {ip.resolve} = \"78.46.64.50\"\n```\n\n### 6.8 {ip.matches}\n\nChecks if the input IP address matches a net mask given as IP/masklen (short format). It returns 1 if matches, 0 if not. NULL is returned on error (invalid input, invalid parameter, AF mismatch). Variables are supported for the parameter. Example:\n\n```opensips\nif ( $(si{ip.matches,10.10.0.1/24})==1 )\n\txlog(\"It DOES match \\n\");\nelse\n\txlog(\"It DOES NOT match \\n\");\n```\n\n### 6.9 {ip.isprivate}\n\nChecks if the input IP address is an IPv4 private IP, according to RFC 1918 and RFC 6598. It returns 1 if the IP is private, 0 if not. Example:\n\n```opensips\nif ( $(si{ip.isprivate})==1 )\n\txlog(\"source ip is private\\n\");\nelse\n\txlog(\"source ip is not private\\n\");\n```\n\n## 7. CSV Transformations\n\nThe name of the transformation starts with \"csv.\". The value of the variable is considered to be a string like \"field1,field2,...\". The transformations return the number of entries in the provided CSV, or the field at a specified position in the CSV.\n\n### 7.1 {csv.count}\n\nReturns the number of entries in the provided CSV. Example:\n\n```opensips\n\"a,b,c\" {csv.count} = 3\n```\n\n### 7.2 {csv.value}\n\nReturns the entry at the specified positions. Indexing starts from 0. Example:\n\n```opensips\n\"a,b,c\" {csv.value,2} = c\n```\n\n## 8. SDP Transformations\n\nThe name of the transformation starts with \"sdp.\". The value of the variable is considered to be a valid SDP body. The transformation returns a specific line in the SDP body.\n\n### 8.1 {sdp.line}\n\nReturns the specified line in the SDP body. The transformations also accepts a second parameter, that specifies the line number of the first parameter's type to get from the SDP body. Indexing starts from 0. If the second parameter is missing, it is assumed to be 0. Example:\n\n```opensips\nif (is_method(\"INVITE\"))\n   {\n      $var(aline) = $(rb{sdp.line,a,1});\n      xlog(\"The second a line in the SDP body is $var(aline)\\n\");\n   }\n\nif (is_method(\"INVITE\"))\n   {\n      $var(mline) = $(rb{sdp.line,m});\n      xlog(\"The first m line in the SDP body is $var(mline)\\n\");\n   }\n```\n\n### 8.2 {sdp.stream}\n\nReturns a specific stream (starting with the m= line) from an SDP body. The stream to be returned can be specified using its index within the body, or using on its media type. If specified as index, it starts at `0`, but it can also be negative, with `-1` being the last stream. If specified as media type, **only the first** stream of its type will be returned. If the media type or index does not exist, NULL is returned.\n\nExample:\n\n```opensips\nif (is_method(\"INVITE\"))\n   {\n      $var(first_stream) = $(rb{sdp.stream,0});\n      xlog(\"First stream is $var(first_stream)\\n\");\n   }\n\nif (is_method(\"INVITE\"))\n   {\n      $var(audio_stream) = $(rb{sdp.stream,audio});\n      xlog(\"Audio stream is $var(audio_stream)\\n\");\n   }\n```\n\n### 8.3 {sdp.stream-delete}\n\nReturns the specified SDP body with some of its streams deleted. The stream to be deleted can be specified using its index, or using on its media type. If specified as index, it starts at `0`, but it can also be negative, with `-1` being the last stream. If specified as media type, all streams matching will be deleted! If the media type or index does not exist, NULL is returned.\n\nExample:\n\n```opensips\nif (is_method(\"INVITE\"))\n   {\n      $var(new_body) = $(rb{sdp.stream-delete,0});\n      xlog(\"SDP body without first stream is $var(new_body)\\n\");\n   }\n\nif (is_method(\"INVITE\"))\n   {\n      $var(new_body) = $(rb{sdp.stream-delete,video});\n      xlog(\"SDP body without video stream is $var(new_body)\\n\");\n   }\n```\n\n## 9. Regular Expression Transformations\n\nThe name of the transformation starts with \"re.\". The input can be any string.\n\n### 9.1 {re.subst,reg_exp}\n\nThe reg_exp parameter can either be a plain string or a variable. The format of the reg_exp is :\n\n```\n/posix_match_expression/replacement_expression/flags\n```\n\nThe flags can be\n\n```\ni - match ignore case\ns - match within multi-lines strings\ng - replace all matches\n```\n\nExample:\n\n```opensips\n$var(reg_input)=\"abc\";\n$var(reg) = \"/a/A/g\";\nxlog(\"Applying reg exp $var(reg) to $var(reg_input) : $(var(reg_input){re.subst,$var(reg)})\\n\");\n\n...\n...\nxlog(\"Applying reg /b/B/g to $var(reg_input) : $(var(reg_input){re.subst,/b/B/g})\\n\");\n```\n\n## 10. Examples\n\nWithin a variable, many transformation can be applied, being executed from left to right.\n\n*   The length of the value of parameter at position 1 (remember 0 is first position, 1 is second position)\n\n```opensips\n$var(x) = \"a=1;b=22;c=333\";\n$(var(x){param.value,$(var(x){param.name,1})}{s.len}) = 2\n```\n\n*   Test if whether is un-registration or not\n\n```opensips\nif(is_method(\"REGISTER\") && is_present_hf(\"Expires\") && $(hdr(Expires){s.int})==0)\n    xlog(\"This is a de-registration\\n\");\n```",
+  "category": "Core",
+  "section": "Scripting",
+  "synopsis": "Transformations are functions applied to variables (script variables, pseudo-variables, AVPs, static strings) to extract or modify values without altering the original input. They are enclosed in '{' and '}' and follow the variable name, which must be enclosed in '(' and ')'.",
+  "keywords": [
+    "transformations",
+    "scripting",
+    "variables",
+    "pseudo-variables",
+    "string manipulation",
+    "uri parsing",
+    "sdp",
+    "csv",
+    "ip",
+    "via"
+  ],
+  "extracted_at": "2024-05-21T00:00:00.000Z",
+  "transformations": [
+    {
+      "name": "s.len",
+      "class": "s",
+      "description": "Return strlen of variable value",
+      "syntax": "{s.len}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(x) = \"abc\";\nif($(var(x){s.len}) == 3)\n{\n   ...\n}",
+          "description": "Check if string length is 3"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.int",
+      "class": "s",
+      "description": "Converts the initial part of the given string to an integer value. Returns 0 if there were no digits at all.",
+      "syntax": "{s.int}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(dur) = \"2868.12 sec\";\nif ($(var(dur){s.int}) < 3600) {\n  ...\n}",
+          "description": "Convert string to integer and compare"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.md5",
+      "class": "s",
+      "description": "Returns the MD5 hash of the given input.",
+      "syntax": "{s.md5}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"MD5 over From username: $(fU{s.md5})\\n\");",
+          "description": "Log MD5 hash of From username"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.reverse",
+      "class": "s",
+      "description": "Returns the input string in revers order.",
+      "syntax": "{s.reverse}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(forward) = \"onetwothree\";\n$var(reverse) = $(var(forward){s.reverse}); //Contains \"eerhtowteno\";",
+          "description": "Reverse a string"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.substr",
+      "class": "s",
+      "description": "Return the substring starting at offset having size of length.",
+      "syntax": "{s.substr,offset,length}",
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "integer",
+          "required": true,
+          "description": "Starting index. Negative values count from the end."
+        },
+        {
+          "name": "length",
+          "type": "integer",
+          "required": true,
+          "description": "Size of the substring. Must be positive."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(x) = \"abcd\";\n$(var(x){s.substr,1,0}) = \"bcd\"",
+          "description": "Get substring from index 1 to end"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.select",
+      "class": "s",
+      "description": "Return a field from the value of a variable based on separator and index.",
+      "syntax": "{s.select,index,separator}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": true,
+          "description": "Field index. Negative values count from the end."
+        },
+        {
+          "name": "separator",
+          "type": "string",
+          "required": true,
+          "description": "Character used to identify fields."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(x) = \"12,34,56\";\n$(var(x){s.select,1,,}) => \"34\" ;",
+          "description": "Select field at index 1"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.encode.hexa",
+      "class": "s",
+      "description": "Return encoding in hexa of variable's value",
+      "syntax": "{s.encode.hexa}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.decode.hexa",
+      "class": "s",
+      "description": "Return decoding from hexa of variable's value",
+      "syntax": "{s.decode.hexa}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.escape.common",
+      "class": "s",
+      "description": "Return escaped string of variable's value. Characters escaped are ', \", and 0.",
+      "syntax": "{s.escape.common}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.unescape.common",
+      "class": "s",
+      "description": "Return unescaped string of variable's value. Reverse of s.escape.common.",
+      "syntax": "{s.unescape.common}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.escape.user",
+      "class": "s",
+      "description": "Return escaped string of variable's value, changing to '%hexa' the characters that are not allowed in user part of SIP URI.",
+      "syntax": "{s.escape.user}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.unescape.user",
+      "class": "s",
+      "description": "Return unescaped string of variable's value, changing '%hexa' to character code.",
+      "syntax": "{s.unescape.user}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.escape.param",
+      "class": "s",
+      "description": "Return escaped string of variable's value, changing to '%hexa' the characters that are not allowed in the param part of SIP URI.",
+      "syntax": "{s.escape.param}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.unescape.param",
+      "class": "s",
+      "description": "Return unescaped string of variable's value, changing '%hexa' to character code.",
+      "syntax": "{s.unescape.param}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.tolower",
+      "class": "s",
+      "description": "Return string with lower case ASCII letters.",
+      "syntax": "{s.tolower}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.toupper",
+      "class": "s",
+      "description": "Return string with upper case ASCII letters.",
+      "syntax": "{s.toupper}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.index",
+      "class": "s",
+      "description": "Searches for one string within another starting at the beginning. Returns starting index or NULL.",
+      "syntax": "{s.index,substring,offset}",
+      "parameters": [
+        {
+          "name": "substring",
+          "type": "string",
+          "required": true,
+          "description": "String to search for."
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "required": false,
+          "description": "Offset to begin search. Optional."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(strtosearch){s.index, $var(str)}) # will return 0",
+          "description": "Find index of substring"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.rindex",
+      "class": "s",
+      "description": "Searches for one string within another starting at the end. Returns starting index or NULL.",
+      "syntax": "{s.rindex,substring,offset}",
+      "parameters": [
+        {
+          "name": "substring",
+          "type": "string",
+          "required": true,
+          "description": "String to search for."
+        },
+        {
+          "name": "offset",
+          "type": "integer",
+          "required": false,
+          "description": "Offset to start search before. Optional."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(strtosearch){s.rindex, $var(str)}) # will return 11",
+          "description": "Find last index of substring"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.fill.left",
+      "class": "s",
+      "description": "Fills a string to the left with a char/string until the given final length is reached.",
+      "syntax": "{s.fill.left,token,length}",
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "required": true,
+          "description": "Character or string to fill with."
+        },
+        {
+          "name": "length",
+          "type": "integer",
+          "required": true,
+          "description": "Final length of the string."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.fill.left, 0, 6})    => 000485",
+          "description": "Left pad string with zeros"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.fill.right",
+      "class": "s",
+      "description": "Fills a string to the right with a char/string until the given final length is reached.",
+      "syntax": "{s.fill.right,token,length}",
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "required": true,
+          "description": "Character or string to fill with."
+        },
+        {
+          "name": "length",
+          "type": "integer",
+          "required": true,
+          "description": "Final length of the string."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.fill.right, 0, 6})   => 485000",
+          "description": "Right pad string with zeros"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.width",
+      "class": "s",
+      "description": "Truncates or expands the input to the given len. Expanding is done to the right with spaces.",
+      "syntax": "{s.width,length}",
+      "parameters": [
+        {
+          "name": "length",
+          "type": "integer",
+          "required": true,
+          "description": "Target length."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.width, 16})  => \"transformation  \"",
+          "description": "Expand string to width 16"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.trim",
+      "class": "s",
+      "description": "Strips any leading or trailing whitespace from the input string.",
+      "syntax": "{s.trim}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.trim})   => \"input string\"",
+          "description": "Trim whitespace"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.trimr",
+      "class": "s",
+      "description": "Strips any trailing whitespace from the input string.",
+      "syntax": "{s.trimr}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.trimr})   => \"\\t \\n input string\"",
+          "description": "Trim right whitespace"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.triml",
+      "class": "s",
+      "description": "Strips any leading whitespace from the input string.",
+      "syntax": "{s.triml}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.triml})   => \"input string  \\r  \"",
+          "description": "Trim left whitespace"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.dec2hex",
+      "class": "s",
+      "description": "Converts a decimal(base 10) number to hexadecimal (in base 16), represented as string.",
+      "syntax": "{s.dec2hex}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.hex2dec",
+      "class": "s",
+      "description": "Converts a hexadecimal number (base 16) represented as string to decimal (base 10).",
+      "syntax": "{s.hex2dec}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "s.b64encode",
+      "class": "s",
+      "description": "Represents binary input data in an ASCII string format.",
+      "syntax": "{s.b64encode}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.b64encode})   => \"AgMEBSFAIyVeJio=\"",
+          "description": "Base64 encode input"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.b64decode",
+      "class": "s",
+      "description": "Assumes input is a Base64 string and decodes as many characters as possible.",
+      "syntax": "{s.b64decode}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.b64decode})   => \"\\x2\\x3\\x4\\x5!@#%^&*\"",
+          "description": "Base64 decode input"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.xor",
+      "class": "s",
+      "description": "Performs one or more logical XOR operations with the secret string parameter and the input string.",
+      "syntax": "{s.xor,secret}",
+      "parameters": [
+        {
+          "name": "secret",
+          "type": "string",
+          "required": true,
+          "description": "The secret string to XOR against."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(in){s.xor,x})   => \"!/>^P!/>^P!^U2^Q!^U2^Q\"",
+          "description": "XOR input with 'x'"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.eval",
+      "class": "s",
+      "description": "Interprets the string as a variable formatted string, evaluating all the variables declared in it.",
+      "syntax": "{s.eval}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(format){s.eval})   => \"Hello, client!\"",
+          "description": "Evaluate variables in string"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.date2unix",
+      "class": "s",
+      "description": "Assumes the input is an RFC-3261 SIP Date header value and returns the equivalent UNIX timestamp.",
+      "syntax": "{s.date2unix}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$(var(date){s.date2unix})   => \"1718282880\";",
+          "description": "Convert SIP Date to UNIX timestamp"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha1",
+      "class": "s",
+      "description": "Returns the SHA1 hash of the given input.",
+      "syntax": "{s.sha1}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA1 over From username: $(fU{s.sha1})\\n\");",
+          "description": "Log SHA1 hash"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha224",
+      "class": "s",
+      "description": "Returns the SHA224 hash of the given input.",
+      "syntax": "{s.sha224}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA224 over From username: $(fU{s.sha224})\\n\");",
+          "description": "Log SHA224 hash"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha256",
+      "class": "s",
+      "description": "Returns the SHA256 hash of the given input.",
+      "syntax": "{s.sha256}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA256 over From username: $(fU{s.sha256})\\n\");",
+          "description": "Log SHA256 hash"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha384",
+      "class": "s",
+      "description": "Returns the SHA384 hash of the given input.",
+      "syntax": "{s.sha384}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA384 over From username: $(fU{s.sha384})\\n\");",
+          "description": "Log SHA384 hash"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha512",
+      "class": "s",
+      "description": "Returns the SHA512 hash of the given input.",
+      "syntax": "{s.sha512}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA512 over From username: $(fU{s.sha512})\\n\");",
+          "description": "Log SHA512 hash"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha1_hmac",
+      "class": "s",
+      "description": "Returns the SHA1 HMAC hash of the given input using key.",
+      "syntax": "{s.sha1_hmac,key}",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key for HMAC."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA1 HMAC over From username using key 'secret': $(fU{s.sha1_hmac,secret})\\n\");",
+          "description": "Log SHA1 HMAC"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha224_hmac",
+      "class": "s",
+      "description": "Returns the SHA224 HMAC hash of the given input using key.",
+      "syntax": "{s.sha224_hmac,key}",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key for HMAC."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA224 HMAC over From username using key 'secret': $(fU{s.sha224_hmac,secret})\\n\");",
+          "description": "Log SHA224 HMAC"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha256_hmac",
+      "class": "s",
+      "description": "Returns the SHA256 HMAC hash of the given input using key.",
+      "syntax": "{s.sha256_hmac,key}",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key for HMAC."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA256 HMAC over From username using key 'secret': $(fU{s.sha256_hmac,secret})\\n\");",
+          "description": "Log SHA256 HMAC"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha384_hmac",
+      "class": "s",
+      "description": "Returns the SHA384 HMAC hash of the given input using key.",
+      "syntax": "{s.sha384_hmac,key}",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key for HMAC."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA384 HMAC over From username using key 'secret': $(fU{s.sha384_hmac,secret})\\n\");",
+          "description": "Log SHA384 HMAC"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "s.sha512_hmac",
+      "class": "s",
+      "description": "Returns the SHA512 HMAC hash of the given input using key.",
+      "syntax": "{s.sha512_hmac,key}",
+      "parameters": [
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key for HMAC."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"SHA512 HMAC over From username using key 'secret': $(fU{s.sha512_hmac,secret})\\n\");",
+          "description": "Log SHA512 HMAC"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "uri.user",
+      "class": "uri",
+      "description": "Returns the user part of the URI schema.",
+      "syntax": "{uri.user}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.host",
+      "class": "uri",
+      "description": "Returns the domain part of the URI schema.",
+      "syntax": "{uri.host}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.passwd",
+      "class": "uri",
+      "description": "Returns the password part of the URI schema.",
+      "syntax": "{uri.passwd}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.port",
+      "class": "uri",
+      "description": "Returns the port of the URI schema.",
+      "syntax": "{uri.port}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.params",
+      "class": "uri",
+      "description": "Returns all the URI parameters into a single string.",
+      "syntax": "{uri.params}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.param",
+      "class": "uri",
+      "description": "Returns the value of URI parameter with name 'name'.",
+      "syntax": "{uri.param,name}",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the parameter."
+        }
+      ],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.headers",
+      "class": "uri",
+      "description": "Returns URI headers.",
+      "syntax": "{uri.headers}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.transport",
+      "class": "uri",
+      "description": "Returns the value of transport URI parameter.",
+      "syntax": "{uri.transport}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.ttl",
+      "class": "uri",
+      "description": "Returns the value of ttl URI parameter.",
+      "syntax": "{uri.ttl}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.uparam",
+      "class": "uri",
+      "description": "Returns the value of user URI parameter.",
+      "syntax": "{uri.uparam}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.maddr",
+      "class": "uri",
+      "description": "Returns the value of maddr URI parameter.",
+      "syntax": "{uri.maddr}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.method",
+      "class": "uri",
+      "description": "Returns the value of method URI parameter.",
+      "syntax": "{uri.method}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.lr",
+      "class": "uri",
+      "description": "Returns the value of lr URI parameter.",
+      "syntax": "{uri.lr}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.r2",
+      "class": "uri",
+      "description": "Returns the value of r2 URI parameter.",
+      "syntax": "{uri.r2}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "uri.schema",
+      "class": "uri",
+      "description": "Returns the schema part of the given URI.",
+      "syntax": "{uri.schema}",
+      "parameters": [],
+      "input_type": "SIP URI",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.name",
+      "class": "via",
+      "description": "Returns the protocol-name (of RFC3261 BNF), generally SIP.",
+      "syntax": "{via.name}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.version",
+      "class": "via",
+      "description": "Returns the protocol-version (of RFC3261 BNF), generally 2.0.",
+      "syntax": "{via.version}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.transport",
+      "class": "via",
+      "description": "Returns the transport (of RFC3261 BNF), e.g., UDP, TCP, TLS.",
+      "syntax": "{via.transport}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.host",
+      "class": "via",
+      "description": "Returns the host portion of the sent-by (of RFC3261 BNF).",
+      "syntax": "{via.host}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.port",
+      "class": "via",
+      "description": "Returns the port portion of the sent-by (of RFC3261 BNF).",
+      "syntax": "{via.port}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "integer",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.comment",
+      "class": "via",
+      "description": "The comment associated with the via header.",
+      "syntax": "{via.comment}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.params",
+      "class": "via",
+      "description": "Returns all the Via headers parameters as single string.",
+      "syntax": "{via.params}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.param",
+      "class": "via",
+      "description": "Returns the value of Via header parameter with name 'name'.",
+      "syntax": "{via.param,name}",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the parameter."
+        }
+      ],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.branch",
+      "class": "via",
+      "description": "Returns the value of the branch parameter in the VIA header.",
+      "syntax": "{via.branch}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.received",
+      "class": "via",
+      "description": "Returns the value of the received parameter in the VIA header, if any.",
+      "syntax": "{via.received}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "via.rport",
+      "class": "via",
+      "description": "Returns the value of the rport parameter in the VIA header, if any.",
+      "syntax": "{via.rport}",
+      "parameters": [],
+      "input_type": "SIP Via Header",
+      "output_type": "string",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "param.value",
+      "class": "param",
+      "description": "Returns the value of parameter 'name'.",
+      "syntax": "{param.value,name}",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the parameter."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a=1;b=2;c=3\"{param.value,c} = \"3\"",
+          "description": "Get value of parameter 'c'"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "param.exist",
+      "class": "param",
+      "description": "Returns 1 if the parameter 'name' exists, else 0.",
+      "syntax": "{param.exist,name}",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the parameter."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a=0;b=2;ob;c=3\"{param.exist,ob};         # returns 1",
+          "description": "Check if parameter 'ob' exists"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "param.valueat",
+      "class": "param",
+      "description": "Returns the value of parameter at position give by 'index' (0-based index).",
+      "syntax": "{param.valueat,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": true,
+          "description": "0-based index of the parameter."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a=1;b=2;c=3\"{param.valueat,1} = \"2\"",
+          "description": "Get value of parameter at index 1"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "param.name",
+      "class": "param",
+      "description": "Returns the name of parameter at position 'index'.",
+      "syntax": "{param.name,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": true,
+          "description": "0-based index of the parameter."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a=1;b=2;c=3\"{param.name,1} = \"b\"",
+          "description": "Get name of parameter at index 1"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "param.count",
+      "class": "param",
+      "description": "Returns the number of parameters in the list.",
+      "syntax": "{param.count}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a=1;b=2;c=3\"{param.count} = 3",
+          "description": "Count parameters"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "nameaddr.name",
+      "class": "nameaddr",
+      "description": "Returns the value of display name.",
+      "syntax": "{nameaddr.name,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "Optional index for list of nameaddr specs."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "'\"test\" <sip:test@opensips.org>' {nameaddr.name} = \"test\"",
+          "description": "Get display name"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "nameaddr.uri",
+      "class": "nameaddr",
+      "description": "Returns the value of URI.",
+      "syntax": "{nameaddr.uri,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "Optional index for list of nameaddr specs."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "'\"test\" <sip:test@opensips.org>' {nameaddr.uri} = sip:test@opensips.org",
+          "description": "Get URI"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "nameaddr.len",
+      "class": "nameaddr",
+      "description": "Returns the length of the entire name-addr part from the value.",
+      "syntax": "{nameaddr.len,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "Optional index for list of nameaddr specs."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [],
+      "chainable": true
+    },
+    {
+      "name": "nameaddr.param",
+      "class": "nameaddr",
+      "description": "Returns the value of the parameter with name param_name.",
+      "syntax": "{nameaddr.param,param_name,index}",
+      "parameters": [
+        {
+          "name": "param_name",
+          "type": "string",
+          "required": true,
+          "description": "Name of the parameter."
+        },
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "Optional index for list of nameaddr specs."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "'\"test\" <sip:test@opensips.org>;tag=dat43h' {nameaddr.param,tag} = dat43h",
+          "description": "Get parameter value"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "nameaddr.params",
+      "class": "nameaddr",
+      "description": "Returns all the parameters and their corresponding values.",
+      "syntax": "{nameaddr.params,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "Optional index for list of nameaddr specs."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "'\"test\" <sip:test@opensips.org>;tag=dat43h;private=yes' {nameaddr.params} = \"tag=dat43h;private=yes\"",
+          "description": "Get all parameters"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.pton",
+      "class": "ip",
+      "description": "Returns a binary representation of a string represented IP.",
+      "syntax": "{ip.pton}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "binary",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"193.668.3.634\" {ip.pton} returns a 4 byte binary representation",
+          "description": "Convert IP to binary"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.ntop",
+      "class": "ip",
+      "description": "Returns a string representation of the binary IP provided.",
+      "syntax": "{ip.ntop}",
+      "parameters": [],
+      "input_type": "binary",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"193.668.3.634\"{ip.pton}{ip.ntop} = \"193.668.3.634\"",
+          "description": "Convert binary IP to string"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.isip",
+      "class": "ip",
+      "description": "Returns 1 if the string provided is a valid IPv4 or IPv6 address, otherwise 0.",
+      "syntax": "{ip.isip}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"193.668.3.634\" {ip.isip} = 1",
+          "description": "Check if valid IP"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.isip4",
+      "class": "ip",
+      "description": "Returns 1 if the string provided is a valid IPv4, otherwise 0.",
+      "syntax": "{ip.isip4}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"193.668.3.634\" {ip.isip4} = 1",
+          "description": "Check if valid IPv4"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.isip6",
+      "class": "ip",
+      "description": "Returns 1 if the string provided is a valid IPv6, otherwise 0.",
+      "syntax": "{ip.isip6}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"2001:0db8:85a3:0000:0000:8a2e:0370:7334\" {ip.isip6} = 1",
+          "description": "Check if valid IPv6"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.family",
+      "class": "ip",
+      "description": "Returns INET or INET6 if the binary IP representation provided is IPv4 or IPv6.",
+      "syntax": "{ip.family}",
+      "parameters": [],
+      "input_type": "binary",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"193.668.3.634\" {ip.pton}{ip.family} = \"INET\"",
+          "description": "Get IP family"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.resolve",
+      "class": "ip",
+      "description": "Returns the resolved IP address corresponding to the string domain provided.",
+      "syntax": "{ip.resolve}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"opensips.org\" {ip.resolve} = \"78.46.64.50\"",
+          "description": "Resolve domain to IP"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.matches",
+      "class": "ip",
+      "description": "Checks if the input IP address matches a net mask given as IP/masklen.",
+      "syntax": "{ip.matches,netmask}",
+      "parameters": [
+        {
+          "name": "netmask",
+          "type": "string",
+          "required": true,
+          "description": "Netmask in IP/masklen format."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( $(si{ip.matches,10.10.0.1/24})==1 )\n\txlog(\"It DOES match \\n\");",
+          "description": "Check if IP matches netmask"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "ip.isprivate",
+      "class": "ip",
+      "description": "Checks if the input IP address is an IPv4 private IP, according to RFC 1918 and RFC 6598.",
+      "syntax": "{ip.isprivate}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( $(si{ip.isprivate})==1 )\n\txlog(\"source ip is private\\n\");",
+          "description": "Check if IP is private"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "csv.count",
+      "class": "csv",
+      "description": "Returns the number of entries in the provided CSV.",
+      "syntax": "{csv.count}",
+      "parameters": [],
+      "input_type": "string",
+      "output_type": "integer",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a,b,c\" {csv.count} = 3",
+          "description": "Count CSV entries"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "csv.value",
+      "class": "csv",
+      "description": "Returns the entry at the specified positions. Indexing starts from 0.",
+      "syntax": "{csv.value,index}",
+      "parameters": [
+        {
+          "name": "index",
+          "type": "integer",
+          "required": true,
+          "description": "Index of the entry."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\"a,b,c\" {csv.value,2} = c",
+          "description": "Get CSV value at index"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "sdp.line",
+      "class": "sdp",
+      "description": "Returns the specified line in the SDP body.",
+      "syntax": "{sdp.line,type,index}",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "The line type (e.g., 'a', 'm')."
+        },
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "The line number of the type. Defaults to 0."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(aline) = $(rb{sdp.line,a,1});",
+          "description": "Get second 'a' line"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "sdp.stream",
+      "class": "sdp",
+      "description": "Returns a specific stream (starting with the m= line) from an SDP body.",
+      "syntax": "{sdp.stream,index_or_type}",
+      "parameters": [
+        {
+          "name": "index_or_type",
+          "type": "string",
+          "required": true,
+          "description": "Index (int) or media type (string) of the stream."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(audio_stream) = $(rb{sdp.stream,audio});",
+          "description": "Get audio stream"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "sdp.stream-delete",
+      "class": "sdp",
+      "description": "Returns the specified SDP body with some of its streams deleted.",
+      "syntax": "{sdp.stream-delete,index_or_type}",
+      "parameters": [
+        {
+          "name": "index_or_type",
+          "type": "string",
+          "required": true,
+          "description": "Index (int) or media type (string) of the stream to delete."
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(new_body) = $(rb{sdp.stream-delete,video});",
+          "description": "Delete video stream"
+        }
+      ],
+      "chainable": true
+    },
+    {
+      "name": "re.subst",
+      "class": "re",
+      "description": "Performs substitution using a regular expression.",
+      "syntax": "{re.subst,reg_exp}",
+      "parameters": [
+        {
+          "name": "reg_exp",
+          "type": "string",
+          "required": true,
+          "description": "Format: /posix_match_expression/replacement_expression/flags"
+        }
+      ],
+      "input_type": "string",
+      "output_type": "string",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"Applying reg exp $var(reg) to $var(reg_input) : $(var(reg_input){re.subst,$var(reg)})\\n\");",
+          "description": "Apply regex substitution"
+        }
+      ],
+      "chainable": true
+    }
+  ]
+}

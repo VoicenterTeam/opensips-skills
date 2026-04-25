@@ -1,0 +1,647 @@
+{
+  "id": "module-presence-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "presence Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/presence.html",
+  "content_markdown": "The modules handles PUBLISH and SUBSCRIBE messages and generates NOTIFY messages in a general, event independent way. It allows registering events from other OpenSIPS modules. Events that can currently be added are:\n\n*   _presence_, _presence.winfo_, _dialog;sla_ from presence_xml module\n    \n*   _message-summary_ from presence_mwi module\n    \n*   _call-info_, _line-seize_ from presence_callinfo module\n    \n*   _dialog_ from presence_dialoginfo module\n    \n*   _xcap-diff_ from presence_xcapdiff module\n    \n*   _as-feature-event_ from presence_dfks module",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:00:48.716Z",
+  "module_name": "presence",
+  "overview": "The modules handles PUBLISH and SUBSCRIBE messages and generates NOTIFY messages in a general, event independent way. It allows registering events from other OpenSIPS modules. Events that can currently be added are:\n\n*   _presence_, _presence.winfo_, _dialog;sla_ from presence_xml module\n    \n*   _message-summary_ from presence_mwi module\n    \n*   _call-info_, _line-seize_ from presence_callinfo module\n    \n*   _dialog_ from presence_dialoginfo module\n    \n*   _xcap-diff_ from presence_xcapdiff module\n    \n*   _as-feature-event_ from presence_dfks module",
+  "how_it_works": "The module uses database storage. It has later been improved with memory caching operations to improve performance. The Subscribe dialog information are stored in memory and are periodically updated in database, while for Publish only the presence or absence of stored info for a certain resource is maintained in memory to avoid unnecessary, costly db operations. It is possible to configure a fallback to database mode(by setting module parameter \"fallback2db\"). In this mode, in case a searched record is not found in cache, the search is continued in database. This is useful for an architecture in which processing and memory load might be divided on more machines using the same database.\n\nThe module can also work only with the functionality of a library, with no message processing and generation, but used only for the exported functions. This mode of operation is enabled if the db_url parameter is not set to any value.\n\nThe server follows the specifications in: RFC3265, RFC3856, RFC3857, RFC3858.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "reason": "Required for database storage",
+      "optional": false
+    },
+    {
+      "name": "signaling",
+      "type": "module",
+      "reason": "Required module",
+      "optional": false
+    },
+    {
+      "name": "libxml-dev",
+      "type": "library",
+      "reason": "External library requirement",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "clusterer"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The database url.\n\nIf set, the module is a fully operational presence server. Otherwise, it is used as a 'library', for its exported functions.",
+      "example_code": "...\nmodparam(\"presence\", \"db\\_url\", \n\t\"mysql://opensips:opensipsrw@192.168.2.132/opensips\")\n..."
+    },
+    {
+      "name": "fallback2db",
+      "type": "integer",
+      "description": "Setting this parameter enables a fallback to db mode of operation. In this mode, in case a searched record is not found in cache, the search is continued in database. Useful for an architecture in which processing and memory load might be divided on more machines using the same database.",
+      "example_code": "...\nmodparam(\"presence\", \"fallback2db\", 1)\n..."
+    },
+    {
+      "name": "cluster_id",
+      "type": "integer",
+      "default_value": "None",
+      "description": "The ID of the cluster this presence server belongs to. This parameter is to be used only if clustering mode is needed. In order to understand th concept of a cluster ID, please see the _clusterer_ module.\n\nThis OpenSIPS cluster exposes the **\"presence\"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **\"seed\"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.\n\nFor more on presence clustering see the [Section�1.2, “Presence clustering”](#presence_clustering \"1.2.�Presence clustering\") chapter.",
+      "example_code": "...\nmodparam(\"presence\", \"cluster\\_id\", 2)\n..."
+    },
+    {
+      "name": "cluster_federation_mode",
+      "type": "string",
+      "default_value": "disabled",
+      "description": "When enabling the federation mode, nodes inside the presence cluster will start broadcasting the data to other nodes via the clustering support.",
+      "possible_values": [
+        "disabled",
+        "on-demand-sharing",
+        "full-sharing"
+      ],
+      "example_code": "...\nmodparam(\"presence\", \"cluster\\_federation\\_mode\", \"full-sharing\")\n..."
+    },
+    {
+      "name": "cluster_pres_events",
+      "type": "string",
+      "default_value": "empty (meaning all)",
+      "description": "Comma Separated Value (CSV) list with the events to considered by the federated cluster - only presentities advertising one of these events will be broadcasted via the cluster.\n\nFor more on presence clustering see the [Section�1.2, “Presence clustering”](#presence_clustering \"1.2.�Presence clustering\") chapter.",
+      "example_code": "...\nmodparam(\"presence\", \"cluster\\_pres\\_events\" ,\"presence, dialog;sla, message-summary\")\n..."
+    },
+    {
+      "name": "cluster_be_active_shtag",
+      "type": "string",
+      "default_value": "empty",
+      "description": "The name of a cluster sharing tag to be used to indicate when this node (as part of the cluster) should be active or not. If the sharing tag is off (or as backup), the node will become inactive from clustering perspective, meaning not sending and not accepting any presence related cluster traffic. This ability of a node to become inactive may be used when creating a federated cluster where 2 nodes are acting as a local active-backup setup (for local High Availability purposes). This parameter has meaning only in clustering mode. If not defined, the node will be active all the time. For more on presence clustering see the [Section 1.2, “Presence clustering”](#presence_clustering \"1.2. Presence clustering\") chapter.",
+      "scope": "global",
+      "example_value": "local_ha",
+      "example_code": "modparam(\"presence\", \"cluster\\_be\\_active\\_shtag\" ,\"local\\_ha\")"
+    },
+    {
+      "name": "expires_offset",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The extra time to store a subscription/publication.",
+      "scope": "global",
+      "example_value": "10",
+      "example_code": "modparam(\"presence\", \"expires\\_offset\", 10)"
+    },
+    {
+      "name": "max_expires_subscribe",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "The the maximum admissible expires value for SUBSCRIBE messages.",
+      "scope": "global",
+      "example_value": "3600",
+      "example_code": "modparam(\"presence\", \"max\\_expires\\_subscribe\", 3600)"
+    },
+    {
+      "name": "max_expires_publish",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "The the maximum admissible expires value for PUBLISH messages.",
+      "scope": "global",
+      "example_value": "3600",
+      "example_code": "modparam(\"presence\", \"max\\_expires\\_publish\", 3600)"
+    },
+    {
+      "name": "contact_user",
+      "type": "string",
+      "default_value": "presence",
+      "description": "This is the username that will be used in the Contact header for the 200 OK replies to SUBSCRIBE and in the following in-dialog NOTIFY requests. The IP address, port and transport for the Contact will be automatically determined based on the interface where the SUBSCRIBE was received. If set to an empty string, no username will be added to the contact and the contact will be built just out of the IP, port and transport.",
+      "scope": "global",
+      "example_value": "presence",
+      "example_code": "modparam(\"presence\", \"contact\\_user\", \"presence\")"
+    },
+    {
+      "name": "enable_sphere_check",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This parameter is a flag that should be set if permission rules include sphere checking. The sphere information is expected to be present in the RPID body published by the presentity. The flag is introduced as this check requires extra processing that should be avoided if this feature is not supported by the clients.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"presence\", \"enable\\_sphere\\_check\", 1)\n..."
+    },
+    {
+      "name": "waiting_subs_daysno",
+      "type": "integer",
+      "default_value": "3",
+      "description": "The number of days to keep the record of a subscription in server database if the subscription is in pending or waiting state (no authorization policy was defined for it or the target user did not register sice the subscription and was not informed about it).",
+      "valid_range_max": 30,
+      "example_value": "2",
+      "example_code": "...\nmodparam(\"presence\", \"waiting\\_subs\\_daysno\", 2)\n..."
+    },
+    {
+      "name": "mix_dialog_presence",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This module parameter enables a very nice feature in the presence server - generating presence information from dialogs state. If this parameter is set, the presence server will tell you if a buddy is in a call even if his phone did not send a presence Publish with this information. You will need to load the dialoginfo modules, presence\\_dialoginfo, pua\\_dialoginfo, dialog and pua.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"presence\", \"mix\\_dialog\\_presence\", 1)\n..."
+    },
+    {
+      "name": "bla_presentity_spec",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "By default the presentity uri for BLA subscribes (event=dialog;sla) is computed from contact username + from domain. In some cases though, this way of computing the presentity might not be right (for example if you have a SBC in front that masquerades the contact). So we added this parameter that allows defining a custom uri to be used as presentity uri for BLA subscribes. You should set this parameter to the name of a pseudovariable and then set this pseudovariable to the desired URI before calling the [handle\\_subscribe()](#func_handle_subscribe \"1.5.2.� handle_subscribe([force_active] [,sharing_tag])\") function.",
+      "example_value": "$var(bla\\_pres)",
+      "example_code": "...\nmodparam(\"presence\", \"bla\\_presentity\\_spec\", \"$var(bla\\_pres)\")\n..."
+    },
+    {
+      "name": "bla_fix_remote_target",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Polycom has a bug in the bla implementation. It inserts the remote IP contact in the Notify body and when a phone picks up a call put on hold by another phone in the same BLA group, it sends an Invite directly to the remote IP. OpenSIPS BLA server tries to prevent this by replacing the IP contact with the domain, when this is possible.\n\nIn some cases(configurations) however this is not desirable, so this parameter was introduced to disable this behaviour when needed.",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"presence\", \"bla\\_fix\\_remote\\_target\", 0)\n..."
+    },
+    {
+      "name": "notify_offline_body",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If this parameter is set, when no published info is found for a user, the presence server will generate a dummy body with status 'closed' and use it when sending Notify, instead of notifying with no body.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"presence\", \"notify\\_offline\\_body\", 1)\n..."
+    },
+    {
+      "name": "end_sub_on_timeout",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If a presence subscription should be automatically terminated (destroyed) when receiving a SIP timeout (408) for a sent NOTIFY requests.",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"presence\", \"end\\_sub\\_on\\_timeout\", 0)\n...",
+      "notes": "Default value is “1” (enabled)."
+    },
+    {
+      "name": "clean_period",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The period at which to clean the expired subscription dialogs.",
+      "example_value": "100",
+      "example_code": "...\nmodparam(\"presence\", \"clean\\_period\", 100)\n...",
+      "notes": "A zero or negative value disables this activity."
+    },
+    {
+      "name": "db_update_period",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The period at which to synchronize cached subscriber info with the database.",
+      "example_value": "100",
+      "example_code": "...\nmodparam(\"presence\", \"db\\_update\\_period\", 100)\n...",
+      "notes": "A zero or negative value disables synchronization."
+    },
+    {
+      "name": "presentity_table",
+      "type": "string",
+      "default_value": "presentity",
+      "description": "The name of the db table where Publish information are stored.",
+      "example_value": "presentity",
+      "example_code": "...\nmodparam(\"presence\", \"presentity\\_table\", \"presentity\")\n..."
+    },
+    {
+      "name": "active_watchers_table",
+      "type": "string",
+      "default_value": "active_watchers",
+      "description": "The name of the db table where active subscription information are stored.",
+      "example_code": "...\nmodparam(\"presence\", \"active\\_watchers\\_table\", \"active\\_watchers\")\n..."
+    },
+    {
+      "name": "watchers_table",
+      "type": "string",
+      "default_value": "watchers",
+      "description": "The name of the db table where subscription states are stored.",
+      "example_code": "...\nmodparam(\"presence\", \"watchers\\_table\", \"watchers\")\n..."
+    },
+    {
+      "name": "subs_htable_size",
+      "type": "integer",
+      "default_value": "9 (512)",
+      "description": "The size of the hash table to store subscription dialogs. This parameter will be used as the power of 2 when computing table size.",
+      "example_code": "...\nmodparam(\"presence\", \"subs\\_htable\\_size\", 11)\n..."
+    },
+    {
+      "name": "pres_htable_size",
+      "type": "integer",
+      "default_value": "9 (512)",
+      "description": "The size of the hash table to store publish records. This parameter will be used as the power of 2 when computing table size.",
+      "example_code": "...\nmodparam(\"presence\", \"pres\\_htable\\_size\", 11)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "handle_publish",
+      "signature": "handle_publish([sender_uri])",
+      "parameters": [
+        {
+          "name": "sender_uri",
+          "type": "string",
+          "required": false,
+          "description": "The 'sender_uri' SIP URI. The parameter was added for enabling BLA implementation. If present, Notification of a change in published state is not sent to the respective uri even though a subscription exists. It should be taken from the Sender header. It was left at the decision of the administrator whether or not to transmit the content of this header as parameter for handle_publish, to prevent security problems."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if success"
+        },
+        {
+          "value": "-1",
+          "condition": "if error"
+        }
+      ],
+      "description": "The function handles PUBLISH requests. It stores and updates published information in database and calls functions to send NOTIFY messages when changes in the published information occur. The module sends an appropriate stateless reply in all cases.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif(is_method(\"PUBLISH\"))\n{\n\tif($hdr(Sender)!= NULL)\n\t\thandle_publish($hdr(Sender));\n\telse\n\t\thandle_publish();\n} \n...",
+          "description": "handle_publish usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "handle_subscribe",
+      "signature": "handle_subscribe([force_active] [,sharing_tag])",
+      "parameters": [
+        {
+          "name": "force_active",
+          "type": "int",
+          "required": false,
+          "description": "optional parameter that controls what is the default policy (of the presentity) on accepting new subscriptions (accept or reject) - of course, this parameter makes sense only when using a presence configuration with privacy rules enabled (force_active parameter in presence_xml module is not set). There are scenarios where the presentity (the party you subscribe to) can not upload an XCAP document with its privacy rules (to control which watchers are allowed to subscribe to it). In such cases, from script level, you can force the presence server to consider the current subscription allowed (with Subscription-Status:active) by calling the handle_subscribe() function with the integer parameter \"1\"."
+        },
+        {
+          "name": "sharing_tag",
+          "type": "string",
+          "required": false,
+          "description": "optional parameter telling the owner tag (for the subscription) in clusetering scenarios where the subscription data is shared between multiple servers - see the Section 1.2, “Presence clustering” chapter for more details."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if success"
+        },
+        {
+          "value": "-1",
+          "condition": "if error"
+        }
+      ],
+      "description": "This function is to be used for handling SUBSCRIBE requests. It stores or updates the watcher/subscriber information in database. Additionally, in response to initial SUBSCRIBE requests (creating a new subscription session), the function also sends back the NOTIFY (with the presence information) to the wathcer/subscriber. The module sends an appropriate stateless reply in all cases.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if($ru =~ \"kphone@opensips.org\")\n\thandle_subscribe(1);",
+          "description": "Example usage with force_active parameter",
+          "context": "REQUEST_ROUTE"
+        },
+        {
+          "language": "opensips",
+          "code": "...\nif($rm==\"SUBSCRIBE\")\n    handle_subscribe();\n...",
+          "description": "handle_subscribe usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "refresh_watchers",
+      "parameters": [
+        {
+          "name": "presentity_uri",
+          "type": "string",
+          "required": true,
+          "description": "the uri of the user who made the change and whose watchers should be informed"
+        },
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "the event package"
+        },
+        {
+          "name": "refresh type",
+          "type": "integer",
+          "required": true,
+          "description": "it distinguishes between the two different types of events that can trigger a refresh: a change in watchers authentication: refresh type= 0 ; a statical update in published state (either through direct update in db table or by modifying the pidf manipulation document, if pidf_manipulation parameter is set): refresh type!= 0."
+        }
+      ],
+      "description": "Triggers sending Notify messages to watchers if a change in watchers authorization or in published state occurred.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi refresh_watchers sip:11@192.168.2.132 presence 1",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "cleanup",
+      "parameters": [],
+      "description": "Manually triggers the cleanup functions for watchers and presentity tables. Useful if you have set clean_period to zero or less.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi cleanup",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "pres_phtable_list",
+      "parameters": [],
+      "description": "Lists all the presentity records.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi pres_phtable_list",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "subs_phtable_list",
+      "parameters": [
+        {
+          "name": "from",
+          "type": "string",
+          "required": false,
+          "description": "wildcard for \"From\" URI"
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "required": false,
+          "description": "wildcard for \"To\" URI"
+        }
+      ],
+      "description": "Lists all the subscription records, or the subscriptions for which the \"To\" and \"From\" URIs match the given parameters.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi subs_phtable_list sip:222@domain2.com sip:user_1@example.com",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "pres_expose",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "the desired presence event."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "a regular expression (REGEXP) used for filtering the presentities for that event. Only the presentities that match will be exposed. If not specified, all presentities for that event are exposed."
+        }
+      ],
+      "description": "Exposes in the script, by rasing an E_PRESENCE_EXPOSED event, all the presentities of a specific event that match a specified filter.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi pres_expose presence ^sip:10\\.0\\.5\\.[0-9]*",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_PRESENCE_PUBLISH",
+      "description": "This event is raised when the presence module receives a PUBLISH message.",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "the AOR of the user"
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "the domain"
+        },
+        {
+          "name": "event",
+          "type": "string",
+          "description": "the type of the event published"
+        },
+        {
+          "name": "expires",
+          "type": "integer",
+          "description": "the expire value of the publish"
+        },
+        {
+          "name": "etag",
+          "type": "string",
+          "description": "the entity tag"
+        },
+        {
+          "name": "old_etag",
+          "type": "string",
+          "description": "the entity tag to be refreshed"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "the body of the PUBLISH request"
+        }
+      ]
+    },
+    {
+      "name": "E_PRESENCE_EXPOSED",
+      "description": "This event is raised for each presentity exposeed by the _pres_expose_.",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "description": "the AOR of the user"
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "description": "the domain"
+        },
+        {
+          "name": "event",
+          "type": "string",
+          "description": "the type of the event published"
+        },
+        {
+          "name": "expires",
+          "type": "integer",
+          "description": "the expire value of the publish"
+        },
+        {
+          "name": "etag",
+          "type": "string",
+          "description": "the entity tag"
+        },
+        {
+          "name": "old_etag",
+          "type": "string",
+          "description": "the entity tag to be refreshed"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "the body of the PUBLISH request"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"presence\", \"db\\_url\", \n\t\"mysql://opensips:opensipsrw@192.168.2.132/opensips\")\n..."
+    },
+    {
+      "title": "Set `fallback2db` parameter",
+      "description": "Set `fallback2db` parameter",
+      "code": "...\nmodparam(\"presence\", \"fallback2db\", 1)\n..."
+    },
+    {
+      "title": "Set `cluster_id` parameter",
+      "description": "Set `cluster_id` parameter",
+      "code": "...\nmodparam(\"presence\", \"cluster\\_id\", 2)\n..."
+    },
+    {
+      "title": "Set `cluster_federation_mode` parameter",
+      "description": "Set `cluster_federation_mode` parameter",
+      "code": "...\nmodparam(\"presence\", \"cluster\\_federation\\_mode\", \"full-sharing\")\n..."
+    },
+    {
+      "title": "Set `cluster_pres_events` parameter",
+      "description": "Set `cluster_pres_events` parameter",
+      "code": "...\nmodparam(\"presence\", \"cluster\\_pres\\_events\" ,\"presence, dialog;sla, message-summary\")\n..."
+    },
+    {
+      "title": "Set `cluster_be_active_shtag` parameter",
+      "description": "Set `cluster_be_active_shtag` parameter",
+      "code": "...\nmodparam(\"presence\", \"cluster\\_be\\_active\\_shtag\" ,\"local\\_ha\")\n..."
+    },
+    {
+      "title": "Set `expires_offset` parameter",
+      "description": "Set `expires_offset` parameter",
+      "code": "...\nmodparam(\"presence\", \"expires\\_offset\", 10)\n..."
+    },
+    {
+      "title": "Set `max_expires_subscribe` parameter",
+      "description": "Set `max_expires_subscribe` parameter",
+      "code": "...\nmodparam(\"presence\", \"max\\_expires\\_subscribe\", 3600)\n..."
+    },
+    {
+      "title": "Set `max_expires_publish` parameter",
+      "description": "Set `max_expires_publish` parameter",
+      "code": "...\nmodparam(\"presence\", \"max\\_expires\\_publish\", 3600)\n..."
+    },
+    {
+      "title": "Set `contact_user` parameter",
+      "description": "Set `contact_user` parameter",
+      "code": "...\nmodparam(\"presence\", \"contact\\_user\", \"presence\")\n...\n\t\t\n"
+    },
+    {
+      "title": "Set `enable_sphere_check` parameter",
+      "description": "Set `enable_sphere_check` parameter",
+      "code": "...\nmodparam(\"presence\", \"enable\\_sphere\\_check\", 1)\n...\n\t\n"
+    },
+    {
+      "title": "Set `waiting_subs_daysno` parameter",
+      "description": "Set `waiting_subs_daysno` parameter",
+      "code": "...\nmodparam(\"presence\", \"waiting\\_subs\\_daysno\", 2)\n...\n\t\n"
+    },
+    {
+      "title": "Set `mix_dialog_presence` parameter",
+      "description": "Set `mix_dialog_presence` parameter",
+      "code": "...\nmodparam(\"presence\", \"mix\\_dialog\\_presence\", 1)\n...\n\t\n"
+    },
+    {
+      "title": "Set `bla_presentity_spec` parameter",
+      "description": "Set `bla_presentity_spec` parameter",
+      "code": "...\nmodparam(\"presence\", \"bla\\_presentity\\_spec\", \"$var(bla\\_pres)\")\n...\n\t\n"
+    },
+    {
+      "title": "Set `bla_fix_remote_target` parameter",
+      "description": "Set `bla_fix_remote_target` parameter",
+      "code": "...\nmodparam(\"presence\", \"bla\\_fix\\_remote\\_target\", 0)\n...\n\t\n"
+    },
+    {
+      "title": "Set `notify_offline_body` parameter",
+      "description": "Set `notify_offline_body` parameter",
+      "code": "...\nmodparam(\"presence\", \"notify\\_offline\\_body\", 1)\n...\n\t\n"
+    },
+    {
+      "title": "Set `end_sub_on_timeout` parameter",
+      "description": "Set `end_sub_on_timeout` parameter",
+      "code": "...\nmodparam(\"presence\", \"end\\_sub\\_on\\_timeout\", 0)\n...\n\t\n"
+    },
+    {
+      "title": "Set `clean_period` parameter",
+      "description": "Set `clean_period` parameter",
+      "code": "...\nmodparam(\"presence\", \"clean\\_period\", 100)\n..."
+    },
+    {
+      "title": "Set `db_update_period` parameter",
+      "description": "Set `db_update_period` parameter",
+      "code": "...\nmodparam(\"presence\", \"db\\_update\\_period\", 100)\n..."
+    },
+    {
+      "title": "Set `presentity_table` parameter",
+      "description": "Set `presentity_table` parameter",
+      "code": "...\nmodparam(\"presence\", \"presentity\\_table\", \"presentity\")\n..."
+    },
+    {
+      "title": "Set `active_watchers_table` parameter",
+      "description": "Set `active_watchers_table` parameter",
+      "code": "...\nmodparam(\"presence\", \"active\\_watchers\\_table\", \"active\\_watchers\")\n..."
+    },
+    {
+      "title": "Set `watchers_table` parameter",
+      "description": "Set `watchers_table` parameter",
+      "code": "...\nmodparam(\"presence\", \"watchers\\_table\", \"watchers\")\n..."
+    },
+    {
+      "title": "Set `subs_htable_size` parameter",
+      "description": "Set `subs_htable_size` parameter",
+      "code": "...\nmodparam(\"presence\", \"subs\\_htable\\_size\", 11)\n...\n\t\n"
+    },
+    {
+      "title": "Set `pres_htable_size` parameter",
+      "description": "Set `pres_htable_size` parameter",
+      "code": "...\nmodparam(\"presence\", \"pres\\_htable\\_size\", 11)\n...\n\t\n"
+    },
+    {
+      "title": "`handle_publish` usage",
+      "description": "`handle_publish` usage",
+      "code": "...\n\tif(is\\_method(\"PUBLISH\"))\n\t{\n\t\tif($hdr(Sender)!= NULL)\n\t\t\thandle\\_publish($hdr(Sender));\n\t\telse\n\t\t\thandle\\_publish();\n\t} \n..."
+    },
+    {
+      "title": "`handle_subscribe` usage",
+      "description": "`handle_subscribe` usage",
+      "code": "...\nif($rm==\"SUBSCRIBE\")\n    handle\\_subscribe();\n..."
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+coverage/
+plugins/opensips/skills/*/references/
+data/
+*.md
+LICENSE

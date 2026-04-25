@@ -1,0 +1,178 @@
+{
+  "id": "module-db_http-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "db_http Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/db_http.html",
+  "content_markdown": "This module provides access to a database that is implemented as a HTTP server. It may be used in special cases where traversing firewalls is a problem, or where data encryption is required.\n\nIn order to use this module you must have a server that can communicate via HTTP or HTTPS with this module that follows exactly the format decribed in the specifications section.\n\nThe module can provide SSL, authentication, and all the functionalities of an opensips db as long as the server supports them ( except result_fetch).\n\nThere is a slight difference between the url of db_http and the urls of the other db modules. The url doesn't have to contain the database name. Instead, everything that is after the address is considered to be a path to the db resource, it may be missing.\n\nEven if using HTTPS the url must begin with \"http://\" , and the SSL parameter for the module must be set to 1.\n\n**Example 1.1. Setting db_url for a module**\n\n...\nmodparam(\"presence\", \"db_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db_url\",\"http://user:pass@www.some.com/some/some\")\n...",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:21:09.939Z",
+  "module_name": "db_http",
+  "overview": "This module provides access to a database that is implemented as a HTTP server. It may be used in special cases where traversing firewalls is a problem, or where data encryption is required.\n\nIn order to use this module you must have a server that can communicate via HTTP or HTTPS with this module that follows exactly the format decribed in the specifications section.\n\nThe module can provide SSL, authentication, and all the functionalities of an opensips db as long as the server supports them ( except result_fetch).\n\nThere is a slight difference between the url of db_http and the urls of the other db modules. The url doesn't have to contain the database name. Instead, everything that is after the address is considered to be a path to the db resource, it may be missing.\n\nEven if using HTTPS the url must begin with \"http://\" , and the SSL parameter for the module must be set to 1.\n\n**Example 1.1. Setting db_url for a module**\n\n...\nmodparam(\"presence\", \"db_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db_url\",\"http://user:pass@www.some.com/some/some\")\n...",
+  "how_it_works": "## 1.5. Server specifications\n\n### 1.5.1. Queries\n\nThe server must accept queries as HTTP queries.\n\nThe queries are of 2 types : GET and POST.Both set variables that must be interpreted by the server. All values are URL-encoded.\n\nThere are several types of queries and the server can tell them apart by the query_type variable. Each type of query uses specific variables simillar to those in the opensips db_api.\n\n**Example 1.13. Example query.**\n\n...\nGET /presentity/?c=username,domain,event,expires HTTP/1.1\n...\n\n### 1.5.2. Variables\n\nA description of all the variables. Each variable can have either a single value or a comma-separated list of values. Each variable has a special meaning and can be used only with certain queries.\n\nThe table on which operations will take place will be encoded in the url as the end of the url ( www.some.com/users will point to the users table).\n\n*   k=\n    \n    Describes the keys (columns) that will be used for comparison.Can have multiple values.\n    \n*   op=\n    \n    Describes the operators that will be used for comparison.Can have multiple values.\n    \n*   v=\n    \n    Describes the values that columns will be compaired against. Can have multiple values.\n    \n*   c=\n    \n    Describes the columns that will be selected from the result.Can have multiple values.\n    \n*   o=\n    \n    The column that the result will be ordered by. Has a single value.\n    \n*   uk=\n    \n    The keys(columns) that will be updated. Can have multiple values.\n    \n*   uv=\n    \n    The new values that will be put in the columns. Can have multiple values.\n    \n*   q=\n    \n    Describes a raw query. Will only be used if the server supports raw queries. Has a single value.\n    \n*   query_type=\n    \n    Describes the type of the current query. Can have a single value as described in the Query Types section.Has a single value. Will be present in all queries except the \"SELECT\" (normal query).\n    \n\n**Example 1.14. Example query with variables.**\n\n...\nGET /presentity/?c=username,domain,event,expires HTTP/1.1\nGET /version/?k=table_name&v=xcap&c=table_version HTTP/1.1 \n...\n...\nPOST /active_watchers HTTP/1.1\n\nk=id&v=100&query_type=insert\n...\n\n### 1.5.3. Query Types\n\nThe types of the queries are described by the query_type variable. The value of the variable will be set to the exact name of the query.\n\nQueries for \"SELECT\" use GET and the rest use POST (insert, update, delete, replace, insert_update).\n\n*   normal query\n    \n    Uses the k, op, v, c and o variables. This will not set the query_type variable and will use GET.\n    \n*   delete\n    \n    Uses the k, op and v variables.\n    \n*   insert\n    \n    Uses the k and v variables.\n    \n*   update\n    \n    Uses the k,op,v,uk and uv variables.\n    \n*   replace\n    \n    Uses the k and v variables. This is an optional type of query. If the module is not configured to use it it will not.\n    \n*   insert_update\n    \n    Uses the k and v variables. This is an optional type of query. If the module is not configured to use it it will not.\n    \n*   custom\n    \n    Uses the q variable. This is an optional type of query. If the module is not configured to use it it will not.\n    \n\n**Example 1.15. More query examples.**\n\n...\nPOST /active_watchers HTTP/1.1\n\nk=id&op=%3D&v=100&query_type=delete\n...\n\n...\nPOST /active_watchers HTTP/1.1\n\nk=id&op=%3D&v=100&uk=id&uv=101&query_type=update\n...\n\n### 1.5.4. NULL values in queries\n\nNULL values in queries are represented as a string of length 1 containing a single character with value '\\0'.\n\n**Example 1.16. NULL query example.**\n\n...\nPOST /active_watchers HTTP/1.1\n\nk=id&op=%3D&v=%00&query_type=delete\n...\n\n### 1.5.5. Server Replies\n\nIf the query is ok (even if the answer is empty) the server must reply with a 200 OK HTTP reply with a body containing the types and values of the columns.\n\nThe server must reply with a delimiter separated list of values and columns.\n\nEach element in the list must be seperated from the one before it by a field delimiter that must be the same as the one set as a parameter from the script for the module. The last element of each line must not be followed by a field delimiter, but by a row delimiter.\n\nThe first line of the reply must contain a list of the types of values of each column. The types can be any from the list: integer, string, str, blob, date.\n\nEach following line contains the values of each row from the result.\n\nIf the query produced an error the server must reply with a HTTP 500 reply, or with a corresponding error code (404, 401).\n\n**Example 1.17. Example Reply.**\n\n...\nint;string;blob\n6;something=something;1000\n100;mine;10002030\n...\n\n### 1.5.6. Reply Quoting\n\nBecause the values may contain delimiters inside, the server must perform quoting when necessary (there is no problem if it does it even when it is not necessary).\n\nA quote delimiter must be defined and must be the same as the one set from the script ( by default it is \"|\" ).\n\nIf a value contains a field , row or a quote delimiter it must be placed under quotes. A quote delimiter inside a value must be preceeded by another quote delimiter.\n\n**Example 1.18. Quoting Example.**\n\n...\nint;string;blob\n6;|ana;maria|;1000\n100;mine;10002030\n3;mine;|some||more;|\n...\n\n### 1.5.7. Last inserted id\n\nThis is an optional feature and may be enabled if one wants to use it.\n\nIn order to use this feature the server must place the id of the last insert in the 200 reply for each insert query.\n\n### 1.5.8. Authentication and SSL\n\nIf the server supports authentication and SSL, the module can be enabled to use SSL. Authentication will always be used if needed.\n\nThe module will try to use the most secure type of authentication that is provided by the server from: Basic, Digest,GSSNEGOTIATE and NTLM.",
+  "dependencies_required": [
+    {
+      "name": "libcurl",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "SSL",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not to use SSL. If value is 1 the module will use https otherwise it will use http.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"SSL\",1)"
+    },
+    {
+      "name": "cap_raw_query",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports raw queries.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"cap_raw_query\", 1)"
+    },
+    {
+      "name": "cap_replace",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports replace capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"cap_replace\", 1)"
+    },
+    {
+      "name": "cap_insert_update",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports insert_update capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"cap_insert_update\", 1)"
+    },
+    {
+      "name": "cap_last_inserted_id",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether or not the server supports last_inserted_id capabilities.",
+      "example_value": "1",
+      "example_code": "modparam(\"db_http\", \"cap_last_inserted_id\", 1)"
+    },
+    {
+      "name": "field_delimiter",
+      "type": "string",
+      "default_value": ";",
+      "description": "Character to be used to delimit fields in the reply.Only one char may be set.",
+      "example_value": ";",
+      "example_code": "modparam(\"db\\_http\", \"field\\_delimiter\",\";\")"
+    },
+    {
+      "name": "row_delimiter",
+      "type": "string",
+      "default_value": "\\n",
+      "description": "Character to be used to delimit rows in the reply.Only one char may be set.",
+      "example_value": "\\n",
+      "example_code": "modparam(\"db\\_http\", \"row\\_delimiter\",\"\\\\n\")"
+    },
+    {
+      "name": "quote_delimiter",
+      "type": "string",
+      "default_value": "|",
+      "description": "Character to be used to quote fields that require quoting in the reply.Only one char may be set.",
+      "example_value": "|",
+      "example_code": "modparam(\"db\\_http\", \"quote\\_delimiter\",\"|\")"
+    },
+    {
+      "name": "value_delimiter",
+      "type": "string",
+      "default_value": ",",
+      "description": "The delimiter used to separate multiple fields of a single variable (see Section 1.5.2, “Variables”). Only one char may be set.",
+      "example_value": ";",
+      "example_code": "modparam(\"db\\_http\", \"value\\_delimiter\",\";\")"
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "default_value": "30000 ( 30 seconds )",
+      "description": "The maximum number of milliseconds that the HTTP ops are allowed to last",
+      "example_value": "5000",
+      "example_code": "modparam(\"db\\_http\", \"timeout\",5000)"
+    },
+    {
+      "name": "disable_expect",
+      "type": "integer",
+      "default_value": "0 (off)",
+      "description": "Disables automatic 'Expect: 100-continue' behavior in libcurl for requests over 1024 bytes in size. This can help reduce latency by saving a network round-trip for large records. For more information on this behavior please seee rfc2616 section 8.2.3.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"db_http\", \"disable_expect\",1)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting db_url for a module",
+      "description": "Demonstrates how to set the db_url parameter for a module using the http scheme.",
+      "code": "...\nmodparam(\"presence\", \"db\\_url\",\"http://user:pass@localhost:13100\")\nor\nmodparam(\"presence\", \"db\\_url\",\"http://user:pass@www.some.com/some/some\")\n..."
+    },
+    {
+      "title": "Set `SSL` parameter",
+      "description": "Demonstrates setting the SSL parameter to 1.",
+      "code": "...\nmodparam(\"db\\_http\", \"SSL\",1)\n..."
+    },
+    {
+      "title": "Set `cap_raw_query` parameter",
+      "description": "Demonstrates setting the cap_raw_query parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_raw\\_query\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_replace` parameter",
+      "description": "Demonstrates setting the cap_replace parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_replace\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_insert_update` parameter",
+      "description": "Demonstrates setting the cap_insert_update parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_insert\\_update\", 1)\n..."
+    },
+    {
+      "title": "Set `cap_last_inserted_id` parameter",
+      "description": "Demonstrates setting the cap_last_inserted_id parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"cap\\_last\\_inserted\\_id\", 1)\n..."
+    },
+    {
+      "title": "Set `field_delimiter` parameter",
+      "description": "Demonstrates setting the field_delimiter parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"field\\_delimiter\",\";\")\n..."
+    },
+    {
+      "title": "Set `row_delimiter` parameter",
+      "description": "Demonstrates setting the row_delimiter parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"row\\_delimiter\",\"\\\\n\")\n..."
+    },
+    {
+      "title": "Set `quote_delimiter` parameter",
+      "description": "Demonstrates setting the quote_delimiter parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"quote\\_delimiter\",\"|\")\n..."
+    },
+    {
+      "title": "Set `value_delimiter` parameter",
+      "description": "Demonstrates setting the value_delimiter parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"value\\_delimiter\",\";\")\n..."
+    },
+    {
+      "title": "Set `timeout` parameter",
+      "description": "Demonstrates setting the timeout parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"timeout\",5000)\n..."
+    },
+    {
+      "title": "Set `disable_expect` parameter",
+      "description": "Demonstrates setting the disable_expect parameter.",
+      "code": "...\nmodparam(\"db\\_http\", \"disable\\_expect\",1)\n..."
+    }
+  ]
+}

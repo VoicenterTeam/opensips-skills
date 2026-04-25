@@ -1,0 +1,288 @@
+{
+  "id": "module-auth_aaa-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "auth_aaa Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/auth_aaa.html",
+  "content_markdown": "This module contains functions that are used to perform digest authentication and some URI checks against an AAA server. In order to perform the authentication, the proxy will pass along the credentials to the AAA server which will in turn send a reply containing result of the authentication. So basically the whole authentication is done in the AAA server. Before sending the request to the AAA server we perform some sanity checks over the credentials to make sure that only well formed credentials will get to the server.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T11:41:19.364Z",
+  "module_name": "auth_aaa",
+  "overview": "This module contains functions that are used to perform digest authentication and some URI checks against an AAA server. In order to perform the authentication, the proxy will pass along the credentials to the AAA server which will in turn send a reply containing result of the authentication. So basically the whole authentication is done in the AAA server. Before sending the request to the AAA server we perform some sanity checks over the credentials to make sure that only well formed credentials will get to the server.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "auth",
+      "type": "module",
+      "reason": "Authentication framework, only if the auth functions are used from script",
+      "optional": false
+    },
+    {
+      "name": "an aaa implementing module",
+      "type": "module",
+      "reason": "for example aaa_radius",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "aaa_url",
+      "type": "string",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol.\n\nThe syntax for the url is the following: \"name\\_of\\_the\\_aaa\\_protocol\\_used:path\\_of\\_the\\_configuration\\_file\"",
+      "example_value": "radius:/etc/radiusclient-ng/radiusclient.conf",
+      "example_code": "modparam(\"auth\\_aaa\", \"aaa\\_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")"
+    },
+    {
+      "name": "auth_service_type",
+      "type": "integer",
+      "default_value": "15",
+      "description": "This is the value of the Service-Type aaa attribute to be used when performing an authentication operation. The default should be fine for most people. See your aaa client include files for numbers to be put in this parameter if you need to change it.",
+      "example_value": "15",
+      "example_code": "modparam(\"auth\\_aaa\", \"auth\\_service\\_type\", 15)"
+    },
+    {
+      "name": "check_service_type",
+      "type": "integer",
+      "default_value": "10",
+      "description": "AAA service type used by `aaa_does_uri_exist` and `aaa_does_uri_user_exist` checks.",
+      "example_value": "11",
+      "example_code": "modparam(\"auth\\_aaa\", \"check\\_service\\_type\", 11)"
+    },
+    {
+      "name": "use_ruri_flag",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "When this parameter is set to the value other than \"NULL\" and the request being authenticated has flag with matching number set via setflag() function, use Request URI instead of uri parameter value from the Authorization / Proxy-Authorization header field to perform AAA authentication. This is intended to provide workaround for misbehaving NAT / routers / ALGs that alter request in the transit, breaking authentication. At the time of this writing, certain versions of Linksys WRT54GL are known to do that.",
+      "example_value": "USE_RURI_FLAG",
+      "example_code": "modparam(\"auth\\_aaa\", \"use\\_ruri\\_flag\", \"USE\\_RURI\\_FLAG\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "aaa_www_authorize",
+      "signature": "aaa_www_authorize(realm, [uri_user])",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": true,
+          "description": "Realm is a opaque string that the user agent should present to the user so he can decide what username and password to use. Usually this is domain of the host the server is running on. If an empty string “” is used then the server will generate it from the request. In case of REGISTER requests To header field domain will be used (because this header field represents a user being registered), for all other messages From header field domain will be used. The string may contain pseudo variables.",
+          "valid_values": [
+            ""
+          ]
+        },
+        {
+          "name": "uri_user",
+          "type": "string",
+          "required": false,
+          "description": "value passed to the Radius server as value of the SIP-URI-User check item. If this parameter is not present, the server will generate the SIP-URI-User check item value from the username part of the To header field URI."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "credentials verified successfully"
+        },
+        {
+          "value": "-1",
+          "condition": "unable to verify credentials"
+        },
+        {
+          "value": "-5",
+          "condition": "generic error occurred and no reply was sent out"
+        },
+        {
+          "value": "-4",
+          "condition": "credentials were not found in request"
+        },
+        {
+          "value": "-3",
+          "condition": "stale nonce"
+        }
+      ],
+      "description": "The function verifies credentials according to RFC2617. If the credentials are verified successfully then the function will succeed and mark the credentials as authorized (marked credentials can be later used by some other functions). If the function was unable to verify the credentials for some reason then it will fail and the script should call `www_challenge` which will challenge the user again. Negative codes may be interpreted as follows: -5 (generic error) - some generic error occurred and no reply was sent out; -4 (no credentials) - credentials were not found in request; -3 (stale nonce) - stale nonce. This function will, in fact, perform sanity checks over the received credentials and then pass them along to the aaa server which will verify the credentials and return whether they are valid or not.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aaa_www_authorize(\"siphub.net\"))\n\twww_challenge(\"siphub.net\", \"auth\");\n...",
+          "description": "aaa_www_authorize usage"
+        }
+      ],
+      "related_functions": [
+        "www_challenge"
+      ]
+    },
+    {
+      "name": "aaa_proxy_authorize",
+      "signature": "aaa_proxy_authorize(realm, [uri_user])",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": true,
+          "description": "Realm is a opaque string that the user agent should present to the user so he can decide what username and password to use. This is usually one of the domains the proxy is responsible for. If an empty string “” is used then the server will generate realm from host part of From header field URI. The string may contain pseudo variables.",
+          "valid_values": [
+            ""
+          ]
+        },
+        {
+          "name": "uri_user",
+          "type": "string",
+          "required": false,
+          "description": "value passed to the Radius server as value of the SIP-URI-User check item. If this parameter is not present, the server will generate the SIP-URI-User check item value from the username part of the To header field URI."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "credentials verified successfully"
+        },
+        {
+          "value": "-1",
+          "condition": "unable to verify credentials"
+        },
+        {
+          "value": "-5",
+          "condition": "generic error occurred and no reply was sent out"
+        },
+        {
+          "value": "-4",
+          "condition": "credentials were not found in request"
+        },
+        {
+          "value": "-3",
+          "condition": "stale nonce"
+        }
+      ],
+      "description": "The function verifies credentials according to RFC2617. If the credentials are verified successfully then the function will succeed and mark the credentials as authorized (marked credentials can be later used by some other functions). If the function was unable to verify the credentials for some reason then it will fail and the script should call `proxy_challenge` which will challenge the user again. For more about the negative return codes, see the above function. This function will, in fact, perform sanity checks over the received credentials and then pass them along to the aaa server which will verify the credentials and return whether they are valid or not.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aaa_proxy_authorize(\"\"))    # Realm and URI user will be autogenerated\n\tproxy_challenge(\"\", \"auth\");\n...\nif (!aaa_proxy_authorize($pd, $pU))    # Realm and URI user are taken\n\tproxy_challenge($pd, \"auth\");  # from P-Preferred-Identity\n                                       # header field\n...",
+          "description": "proxy_authorize usage"
+        }
+      ],
+      "related_functions": [
+        "proxy_challenge"
+      ]
+    },
+    {
+      "name": "aaa_does_uri_exist",
+      "signature": "aaa_does_uri_exist([sip_uri])",
+      "parameters": [
+        {
+          "name": "sip_uri",
+          "type": "string",
+          "required": false,
+          "description": "SIP URI to check. If not given, user@host part of the Request-URI is used."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Radius returns Access-Accept"
+        },
+        {
+          "value": "-1",
+          "condition": "Radius returns Access-Reject"
+        },
+        {
+          "value": "-2",
+          "condition": "internal error"
+        }
+      ],
+      "description": "Checks from Radius if the SIP URI stored in the \"sip_uri\" parameter (or user@host part of the Request-URI if \"sip_uri\" is not given) belongs to a local user. Can be used to decide if 404 or 480 should be returned after lookup has failed. If yes, loads AVP based on SIP-AVP reply items returned from Radius. Each SIP-AVP reply item must have a string value of form: value = SIP_AVP_NAME SIP_AVP_VALUE; SIP_AVP_NAME = STRING_NAME | '#'ID_NUMBER; SIP_AVP_VALUE = ':'STRING_VALUE | '#'NUMBER_VALUE.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (aaa_does_uri_exist()) {\n\t...\n};\n...",
+          "description": "aaa_does_uri_exist usage"
+        }
+      ]
+    },
+    {
+      "name": "aaa_does_uri_user_exist",
+      "signature": "aaa_does_uri_user_exist([sip_uri])",
+      "parameters": [
+        {
+          "name": "sip_uri",
+          "type": "string",
+          "required": false,
+          "description": "User to check. If not given, Request-URI user part is used."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [],
+      "description": "Similar to aaa_does_uri_exist, but check is done based only on Request-URI user part or user stored in \"sip_uri\". The user should thus be unique among all users, such as an E.164 number.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (aaa_does_uri_user_exist()) {\n\t...\n};\n...",
+          "description": "aaa_does_uri_user_exist usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "aaa_url parameter usage",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol.",
+      "code": "modparam(\"auth_aaa\", \"aaa_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")"
+    },
+    {
+      "title": "auth_service_type parameter usage",
+      "description": "This is the value of the Service-Type aaa attribute to be used when performing an authentication operation.",
+      "code": "modparam(\"auth_aaa\", \"auth_service_type\", 15)"
+    },
+    {
+      "title": "Set check_service_type parameter",
+      "description": "AAA service type used by `aaa_does_uri_exist` and `aaa_does_uri_user_exist` checks.",
+      "code": "modparam(\"auth_aaa\", \"check_service_type\", 11)"
+    },
+    {
+      "title": "use_ruri_flag parameter usage",
+      "description": "When this parameter is set to the value other than \"NULL\" and the request being authenticated has flag with matching number set via setflag() function, use Request URI instead of uri parameter value from the Authorization / Proxy-Authorization header field to perform AAA authentication.",
+      "code": "modparam(\"auth_aaa\", \"use_ruri_flag\", \"USE_RURI_FLAG\")"
+    },
+    {
+      "title": "aaa_www_authorize usage",
+      "description": "The function verifies credentials according to RFC2617. If the credentials are verified successfully then the function will succeed and mark the credentials as authorized (marked credentials can be later used by some other functions).",
+      "code": "...\nif (!aaa_www_authorize(\"siphub.net\"))\n\twww_challenge(\"siphub.net\", \"auth\");\n..."
+    },
+    {
+      "title": "proxy_authorize usage",
+      "description": "The function verifies credentials according to RFC2617. If the credentials are verified successfully then the function will succeed and mark the credentials as authorized (marked credentials can be later used by some other functions).",
+      "code": "...\nif (!aaa_proxy_authorize(\"\"))    # Realm and URI user will be autogenerated\n\tproxy_challenge(\"\", \"auth\");\n...\nif (!aaa_proxy_authorize($pd, $pU))    # Realm and URI user are taken\n\tproxy_challenge($pd, \"auth\");  # from P-Preferred-Identity\n                                               # header field\n..."
+    },
+    {
+      "title": "aaa_does_uri_exist usage",
+      "description": "Checks from Radius if the SIP URI stored in the \"sip_uri\" parameter (or user@host part of the Request-URI if \"sip_uri\" is not given) belongs to a local user.",
+      "code": "...\nif (aaa_does_uri_exist()) {\n\t...\n};\n..."
+    },
+    {
+      "title": "aaa_does_uri_user_exist usage",
+      "description": "Similar to aaa_does_uri_exist, but check is done based only on Request-URI user part or user stored in \"sip_uri\".",
+      "code": "...\nif (aaa_does_uri_user_exist()) {\n\t...\n};\n..."
+    }
+  ]
+}

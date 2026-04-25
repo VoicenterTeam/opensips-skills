@@ -1,0 +1,366 @@
+# proto\_bin Module
+
+---
+
+**List of Tables**
+
+2.1. [Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)](#idp5592896)
+
+2.2. [Most recently active contributors(1) to this module](#idp5686480)
+
+**List of Examples**
+
+1.1. [Set `bin_port` parameter](#idp109392)
+
+1.2. [Set `bin_send_timeout` parameter](#idp103296)
+
+1.3. [Set `bin_max_msg_chunks` parameter](#idp171440)
+
+1.4. [Set `bin_async` parameter](#idp176512)
+
+1.5. [Set `bin_async_max_postponed_chunks` parameter](#idp5566704)
+
+1.6. [Set `bin_async_local_connect_timeout` parameter](#idp5571792)
+
+1.7. [Set `bin_async_local_write_timeout` parameter](#idp5576880)
+
+## Chapter�1.�Admin Guide
+
+## 1.1.�Overview
+
+The **proto\_bin** module is a transport module which implements Binary Interface TCP-based communication. It does not handle TCP connections management, but only offers higher-level primitives to read and write BIN messages over TCP. It calls registered callback functions for every complete message received.
+
+Once loaded, you will be able to define BIN listeners in your configuration file by adding their IP and, optionally, a listening port, similar to this example:
+
+...
+socket= bin:127.0.0.1 		# change the listening IP
+socket= bin:127.0.0.1:5080	# change the listening IP and port
+...
+
+## 1.2.�Dependencies
+
+### 1.2.1.�OpenSIPS Modules
+
+The following modules must be loaded before this module:
+
+*   _None_.
+    
+
+### 1.2.2.�External Libraries or Applications
+
+The following libraries or applications must be installed before running OpenSIPS with this module loaded:
+
+*   _None_.
+    
+
+## 1.3.�Exported Parameters
+
+### 1.3.1.�`bin_port` (integer)
+
+The default port to be used by all TCP listeners.
+
+_Default value is 5555._
+
+**Example�1.1.�Set `bin_port` parameter**
+
+...
+modparam("proto\_bin", "bin\_port", 6666)
+...
+
+  
+
+### 1.3.2.�`bin_send_timeout` (integer)
+
+Time in milliseconds after a TCP connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).
+
+_Default value is 100 ms._
+
+**Example�1.2.�Set `bin_send_timeout` parameter**
+
+...
+modparam("proto\_bin", "bin\_send\_timeout", 200)
+...
+
+  
+
+### 1.3.3.�`bin_max_msg_chunks` (integer)
+
+The maximum number of chunks in which a BIN message is expected to arrive via TCP. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).
+
+_Default value is 32._
+
+**Example�1.3.�Set `bin_max_msg_chunks` parameter**
+
+...
+modparam("proto\_bin", "bin\_max\_msg\_chunks", 8)
+...
+
+  
+
+### 1.3.4.�`bin_async` (integer)
+
+Specifies whether the TCP connect and write operations should be done in an asynchronous mode (non-blocking connect and write) or not. If disabled, OpenSIPS will block and wait for TCP operations like connect and write.
+
+_Default value is 1 (enabled)._
+
+**Example�1.4.�Set `bin_async` parameter**
+
+...
+modparam("proto\_bin", "bin\_async", 0)
+...
+
+  
+
+### 1.3.5.�`bin_async_max_postponed_chunks` (integer)
+
+If _bin\_async_ is enabled, this specifies the maximum number of BIN messages that can be stashed for later/async writing. If the connection pending writes exceed this number, the connection will be marked as broken and dropped.
+
+_Default value is 1024._
+
+**Example�1.5.�Set `bin_async_max_postponed_chunks` parameter**
+
+...
+modparam("proto\_bin", "bin\_async\_max\_postponed\_chunks", 1024)
+...
+
+  
+
+### 1.3.6.�`bin_async_local_connect_timeout` (integer)
+
+If _bin\_async_ is enabled, this specifies the number of milliseconds that a connect will be tried in blocking mode (optimization). If the connect operation lasts more than this, the connect will go to async mode and will be passed to TCP MAIN for polling.
+
+_Default value is 100 ms._
+
+**Example�1.6.�Set `bin_async_local_connect_timeout` parameter**
+
+...
+modparam("proto\_bin", "bin\_async\_local\_connect\_timeout", 200)
+...
+
+  
+
+### 1.3.7.�`bin_async_local_write_timeout` (integer)
+
+If _bin\_async_ is enabled, this specifies the number of milliseconds that a write op will be tried in blocking mode (optimization). If the write operation lasts more than this, the write will go to async mode and will be passed to bin MAIN for polling.
+
+_Default value is 10 ms._
+
+**Example�1.7.�Set `bin_async_local_write_timeout` parameter**
+
+...
+modparam("proto\_bin", "tcp\_async\_local\_write\_timeout", 100)
+...
+
+  
+
+## Chapter�2.�Contributors
+
+## 2.1.�By Commit Statistics
+
+**Table�2.1.�Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)**
+
+�
+
+Name
+
+DevScore
+
+Commits
+
+Lines ++
+
+Lines --
+
+1.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+28
+
+19
+
+60
+
+467
+
+2.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+15
+
+4
+
+954
+
+140
+
+3.
+
+Ionel Cerghit ([@ionel-cerghit](https://github.com/ionel-cerghit))
+
+14
+
+3
+
+1196
+
+38
+
+4.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+13
+
+10
+
+63
+
+63
+
+5.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+9
+
+7
+
+29
+
+9
+
+6.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+4
+
+2
+
+6
+
+8
+
+7.
+
+Eseanu Marius Cristian ([@eseanucristian](https://github.com/eseanucristian))
+
+4
+
+2
+
+1
+
+5
+
+8.
+
+Nick Altmann ([@nikbyte](https://github.com/nikbyte))
+
+3
+
+1
+
+4
+
+4
+
+9.
+
+Peter Lemenkov ([@lemenkov](https://github.com/lemenkov))
+
+3
+
+1
+
+1
+
+1
+
+  
+
+_(1) DevScore = author\_commits + author\_lines\_added / (project\_lines\_added / project\_commits) + author\_lines\_deleted / (project\_lines\_deleted / project\_commits)_
+
+_(2) including any documentation-related commits, excluding merge commits. Regarding imported patches/code, we do our best to count the work on behalf of the proper owner, as per the "fix\_authors" and "mod\_renames" arrays in opensips/doc/build-contrib.sh. If you identify any patches/commits which do not get properly attributed to you, please [_submit a pull request_](https://github.com/OpenSIPS/opensips/pulls)_ which extends "fix\_authors" and/or "mod\_renames".
+
+_(3) ignoring whitespace edits, renamed files and auto-generated files_
+
+## 2.2.�By Commit Activity
+
+**Table�2.2.�Most recently active contributors(1) to this module**
+
+�
+
+Name
+
+Commit Activity
+
+1.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+Mar 2016 - Dec 2024
+
+2.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+Aug 2015 - Jul 2023
+
+3.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+Feb 2023 - Feb 2023
+
+4.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+May 2017 - Oct 2021
+
+5.
+
+Nick Altmann ([@nikbyte](https://github.com/nikbyte))
+
+May 2021 - May 2021
+
+6.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+Mar 2017 - Apr 2021
+
+7.
+
+Peter Lemenkov ([@lemenkov](https://github.com/lemenkov))
+
+Jun 2018 - Jun 2018
+
+8.
+
+Ionel Cerghit ([@ionel-cerghit](https://github.com/ionel-cerghit))
+
+Jul 2015 - Dec 2016
+
+9.
+
+Eseanu Marius Cristian ([@eseanucristian](https://github.com/eseanucristian))
+
+Jul 2015 - Jul 2015
+
+  
+
+_(1) including any documentation-related commits, excluding merge commits_
+
+## Chapter�3.�Documentation
+
+## 3.1.�Contributors
+
+**Last edited by:** Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu)), Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu)), Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Ionel Cerghit ([@ionel-cerghit](https://github.com/ionel-cerghit)).
+
+_Documentation Copyrights:_
+
+Copyright � 2015 [www.opensips-solutions.com](http://www.opensips-solutions.com/)

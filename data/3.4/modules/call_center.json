@@ -1,0 +1,882 @@
+{
+  "id": "module-call_center-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "call_center Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/call_center.html",
+  "content_markdown": "The Call Center module implements an inbound call center system with call flows (for queuing the received calls) and agents (for answering the calls).\n\nThe module implements the queuing system, the call distribution to agents, agents managements, CDRs for the calls, statistics on call distribution and agent's activity - basically everything except the media playback (for the queue). This part must be provided via a third party media server (FreeSwitch, Asterisk or others).\n\nThis is actually a Contact Center and it is able to handle both RTP/audio calls and (multiple) MSRP/chat calls, in the same time.\n\nThe module provides an internal buit-in dispatching logic (for sending the calls/chats to the agents), but also offers the possibility to use an external logic to do the dispatching (see [cc_dispatch_call_to_agent](#mi_cc_dispatch_call_to_agent \"1.7.7.� cc_dispatch_call_to_agent\") MI command).",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T14:38:18.350Z",
+  "module_name": "call_center",
+  "overview": "The Call Center module implements an inbound call center system with call flows (for queuing the received calls) and agents (for answering the calls).\n\nThe module implements the queuing system, the call distribution to agents, agents managements, CDRs for the calls, statistics on call distribution and agent's activity - basically everything except the media playback (for the queue). This part must be provided via a third party media server (FreeSwitch, Asterisk or others).\n\nThis is actually a Contact Center and it is able to handle both RTP/audio calls and (multiple) MSRP/chat calls, in the same time.\n\nThe module provides an internal buit-in dispatching logic (for sending the calls/chats to the agents), but also offers the possibility to use an external logic to do the dispatching (see [cc_dispatch_call_to_agent](#mi_cc_dispatch_call_to_agent \"1.7.7.� cc_dispatch_call_to_agent\") MI command).",
+  "how_it_works": "The main entities in the modules are the flows (queues) and agents.\n\n### 1.2.1.�DB tables\n\nEach entity has a corresponding table in the database, for provisioning purposes - the _cc_flows_ and _cc_agents_ tables, see [DB schema](https://opensips.org/Documentation/Install-DBSchema--3-3#AEN2656). Data is loaded at startup and cached into memory ; runtime reload is possible via the MI commands (see the _cc_reload_ command in [Exported MI Functions](#exported_mi_functions \"1.7.�Exported MI Functions\")).\n\nAdditionally there is a table _cc_cdrs_ for writing the CDRs - this operation is done in realtime, after the call in completed, covering all possible cases: call was dropped while in queue, call was rejected by agent, call was accepted by agent, call terminated with error - NOTE that a call may generate more than one CDR (like call rejected by agent A, and redistributed and accepted by agent B).\n\nThe _cc_calls_ table is used to store ongoing calls, regardless it's state (in queue, to the agent, ended). It is populated at runtime by the module and queried at startup. This table should not be manually provisioned.\n\n### 1.2.2.�Call Flows\n\nA flow is defined by a unique alphanumerical ID - the main attribute of a flow is the _skill_ - the skill is a capability required by the flow for an agent to be able to answer the call ; the concept of _skills_ is the link between the flows and the agents - telling what agents are serving what flows - the flows require a skill, while the agents provide a set of skills. Agents matching the required skill of a flow will automatically receive calls from that flow.\n\nAdditional, the flow has a _priority_ - as agents may server multiple flows in the same time (based on skills), you can define priorities between the flows - if the flows has a higher priority, its calls will be pushed (in deliver to agents and queuing) in front of the calls from flows with a lower priority.\n\nConfigurable per flow, the module may do per-flow call dissuading; this means to redirect a call to another destination, if the queue/flow is overloaded:\n\n*   if the number of calls already in the queue exceeds the diss_qsize_th threshold\n    \n*   if the estimated time to wait of the queue exceeds the diss_ewt_th threshold\n    \n*   if the call was waiting in the queue for longer than diss_onhold_th threshold\n    \n\nOptionally, the flow may define a _prependcid_ - a prefix to be added to the CLI (Caller ID) when the call is delivered to the agents - as an agent may receive call from multiple flows, it is important for the user to see which was the queue a call was received.\n\nIn terms of media announcements, the flow defines the _message_welcome_ (optional, to be played in the call, before doing anything with the call) and _message_queue_ (mandatory, the looping message providing infinite on hold media IMPORTANT - this message must cycle and media server must never hung up on it. Both announcements are provided as SIP URIs (where the call has to be sent in order to get the playback).\n\nThe flow also has an optional _max_wrapup time_, which acts as an upper limit for the per-agent/global value (the flow forces a ceiling of the wrapup value for all its calls).\n\n### 1.2.3.�Agents\n\nAn agent is defined by a unique alphanumerical ID - the main attribute of an agent is its the set of _skills_. This set of skills will tell what calls to be received (from which flows, based on the skill matching).\n\nThe agent may provide support for different optional media types, like RTP/audio or MSRP/chat. Each supported media type comes with the maximum supported number of sessions. Of course, for audio the `1` value is hardocded. On the SIP side, each media type comes with a _locations_. The location is a SIP URI where to calls must be sent in order to be answered by the agent. At least one media type should be defined. To specify which media the agent support, just define the corresponding SIP location in his profile.\n\nSo, at a certain time, an agent may handle either a single call, either several chat sessions.\n\nAdditionally, the agent has a initial _logstate_ - if he is logged in or not (being logged in is a must in order to receive calls). The log state may be changed at runtime via a dedicated MI command _cc_agent_login_, see [Exported MI Functions](#exported_mi_functions \"1.7.�Exported MI Functions\").\n\nThere is an optional per-agent _wrapup_time_ defined, saying the time interval for an agent before getting a new call from the system (after he finished a call). If no value is defined for the agent, the global _wrapup_time_ will be used. Note that the resulting value may be upper limited by the per-flow _max_wrapup_time_ if defined.",
+  "dependencies_required": [
+    {
+      "name": "b2b_logic",
+      "type": "module",
+      "reason": "B2bUA module",
+      "optional": false
+    },
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "one of the SQL DB modules",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "description": "SQL address to the DB server -- database specific. This must be the Database holding the provisioning tables (cc_flows, cc_agents and cc_calls tables).",
+      "example_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "example_code": "modparam(\"call_center\", \"db_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips\")"
+    },
+    {
+      "name": "acc_db_url",
+      "type": "string",
+      "default_value": "If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "description": "SQL address to the DB server -- database specific. This must be the Database where the CDRs table (cc_cdrs) is located.",
+      "example_value": "mysql://opensips:opensipsrw@localhost/opensips_cdrs",
+      "example_code": "modparam(\"call_center\", \"acc_db_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips_cdrs\")"
+    },
+    {
+      "name": "rt_db_url",
+      "type": "string",
+      "default_value": "If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "description": "SQL address/URL of the DB server (database specific) where the runtime tables (non provisioning tables) are located. The runtime tables are the tables populated by OpenSIPS with data learned during runtime. To be more specific, the only runtime table we have so far is the \"cc_calls\" table.",
+      "example_value": "mysql://opensips:opensipsrw@localhost/opensips_runtime",
+      "example_code": "modparam(\"call_center\", \"rt_db_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips_runtime\")"
+    },
+    {
+      "name": "wrapup_time",
+      "type": "integer",
+      "default_value": "30 seconds",
+      "description": "Time for an agent between finishing a call and receiving the next call from the system. Even if there are queued calls, the module will not deliver call to agent during this wrapup interval.",
+      "example_value": "45",
+      "example_code": "modparam(\"call_center\", \"wrapup_time\", 45)",
+      "notes": "This value may be overwritten by the per-agent value (if defined) and furher more, by the per-flow value (if defined)."
+    },
+    {
+      "name": "queue_pos_param",
+      "type": "string",
+      "default_value": "empty(none)",
+      "description": "The name of an SIP URI parameter to be used to report the position in the waiting queue when sending the call to media server for onwait/queue playback. The position 0 means it is the next call to be delivered to an agent.",
+      "example_value": "cc_pos",
+      "example_code": "modparam(\"call_center\", \"queue_pos_param\", \"cc_pos\")"
+    },
+    {
+      "name": "reject_on_no_agents",
+      "type": "integer",
+      "default_value": "1 (true)",
+      "description": "A parameter to tell if an incoming call should be rejected or quueued if there are no logged in agents. Basically this allows call queueing on flows with no agents yet.",
+      "possible_values": [],
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"call\\_center\", \"reject\\_on\\_no\\_agents\", 0)\n..."
+    },
+    {
+      "name": "chat_dispatch_policy",
+      "type": "string",
+      "default_value": "balancing",
+      "description": "A parameter to tell what should be the policy on dispatching the chat/MSRP sessions to the agents, considering that an agent may handle multiple such sessions/chats in the same time. Options are: balancing - the distribution will try to be even across the agents, but by doing this you may end up waisting chat sessions on agents and call starvation - agents are partially used by chat sessions, so they cannot take calls (of course, if you have mixed agetns with audio/chat); full-load - the distribution will try to make usage of an agent in the best possible way when comes to chat sessions - once the agent take a chat, all the following chats will be assigned ot him - the idea is to try to be efficient in using the resource/sessions of an agents, to leave as much room as possible for calls. Of course, this may lead to an un-even loading of chat agents - some will be full, others empty.",
+      "possible_values": [
+        "balancing",
+        "full-load"
+      ],
+      "example_value": "balancing",
+      "example_code": "...\nmodparam(\"call\\_center\", \"chat\\_dispatch\\_policy\", \"balancing\")\n..."
+    },
+    {
+      "name": "internal_call_dispatching",
+      "type": "integer",
+      "default_value": "1",
+      "description": "A parameter to tell if the internal/buit-in call dispatching to agent should be used or not. If enabled, the module will automatically dispatch (by itself) the queued/incoming calls to the available agents. If disabled, the module will not do such dispaching by itself and it is expected to use the cc_dispatch_call_to_agent MI command to dispatch the queued calls to agents. This allows the implementation of an external, custom dispatching logic. The value of this setting may be changed during runtime via the cc_internal_call_dispatching MI command.",
+      "possible_values": [],
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"call\\_center\", \"internal\\_call\\_dispatching\", 0)\n..."
+    },
+    {
+      "name": "cc_agents_table",
+      "type": "string",
+      "default_value": "cc_agents",
+      "description": "Name to be used for the table holding the agents.",
+      "possible_values": [],
+      "example_value": "my_agents",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cc\\_agents\\_table\", \"my\\_agents\")\n..."
+    },
+    {
+      "name": "cca_agentid_column",
+      "type": "string",
+      "default_value": "agentid",
+      "description": "Name to be used for the \"agent id\" (unique DB id) column in the agents table.",
+      "possible_values": [],
+      "example_value": "cid",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_agentid\\_column\", \"cid\")\n..."
+    },
+    {
+      "name": "cca_location_column",
+      "type": "string",
+      "default_value": "location",
+      "description": "Name to be used for the calling/audio \"location\" (SIP URI) column in the agents table.",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_location\\_column\", \"sip\\_uri\")\n..."
+    },
+    {
+      "name": "cca_msrp_location_column",
+      "type": "string",
+      "default_value": "msrp_location",
+      "description": "Name to be used for the msrp/chat \"location\" (SIP URI) column in the agents table.",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_msrp\\_location\\_column\", \"sip\\_uri\")\n..."
+    },
+    {
+      "name": "cca_msrp_max_sessions_column",
+      "type": "string",
+      "default_value": "msrp_max_sessions",
+      "description": "Name to be used for the column (in the agents table) holding the maximum number of chat sessions that can be handled by the agent.",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_msrp\\_max\\_sessions\\_column\", \"max\\_chats\")\n..."
+    },
+    {
+      "name": "cca_skills_column",
+      "type": "string",
+      "default_value": "skills",
+      "description": "Name to be used for the \"skills\" (list of skills) column in the agents table.",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_skills\\_column\", \"skills\")\n..."
+    },
+    {
+      "name": "cca_logstate_column",
+      "type": "string",
+      "default_value": "logstate",
+      "description": "Name to be used for the \"logstate\" (original login state) column in the agents table.",
+      "example_code": "...\nmodparam(\"call\\_center\", \"cca\\_logstate\\_column\", \"log\\_state\")\n..."
+    },
+    {
+      "name": "cca_wrapuptime_column",
+      "type": "string",
+      "default_value": "wrapup_time",
+      "description": "Name to be used for the \"wrapuptime\" (per-agent wrapup time) column in the agents table.",
+      "example_value": "wtime",
+      "example_code": "...\nmodparam(\"call_center\", \"cca_wrapuptime_column\", \"wtime\")\n..."
+    },
+    {
+      "name": "cca_wrapupend_column",
+      "type": "string",
+      "default_value": "wrapup_end_time",
+      "description": "Name to be used for the \"wrapupend\" (timestamp when the wrapup ends) column in the agents table.",
+      "example_value": "wrapup_ends",
+      "example_code": "...\nmodparam(\"call_center\", \"cca_wrapupend_column\", \"wrapup_ends\")\n..."
+    },
+    {
+      "name": "cc_flows_table",
+      "type": "string",
+      "default_value": "cc_flows",
+      "description": "Name to be used for the table holding the definition of the flows/queues.",
+      "example_value": "queues",
+      "example_code": "...\nmodparam(\"call_center\", \"cc_flows_table\", \"queues\")\n..."
+    },
+    {
+      "name": "ccf_flowid_column",
+      "type": "string",
+      "default_value": "flowid",
+      "description": "Name to be used for the \"flow id\" (unique DB id) column in the flows table.",
+      "example_value": "queue_id",
+      "example_code": "...\nmodparam(\"call_center\", \"ccf_flowid_column\", \"queue_id\")\n..."
+    },
+    {
+      "name": "ccf_priority_column",
+      "type": "string",
+      "default_value": "priority",
+      "description": "Name to be used for the \"priority\" column in the flows table.",
+      "example_value": "queue_prio",
+      "example_code": "...\nmodparam(\"call_center\", \"ccf_priority_column\", \"queue_prio\")\n..."
+    },
+    {
+      "name": "ccf_skill_column",
+      "type": "string",
+      "default_value": "skill",
+      "description": "Name to be used for the \"skill\" column in the flows table.",
+      "example_value": "queue_skill",
+      "example_code": "modparam(\"call_center\", \"ccf_skill_column\", \"queue_skill\")"
+    },
+    {
+      "name": "ccf_cid_column",
+      "type": "string",
+      "default_value": "prependcid",
+      "description": "Name to be used for the \"caller ID prefix\" column in the flows table.",
+      "example_value": "queue_cli_prefix",
+      "example_code": "modparam(\"call_center\", \"ccf_cid_column\", \"queue_cli_prefix\")"
+    },
+    {
+      "name": "ccf_max_wrapup_column",
+      "type": "string",
+      "default_value": "max_wrapup_time",
+      "description": "Name to be used for the \"max limit for wrapup time\" column in the flows table.",
+      "example_value": "queue_wrapup",
+      "example_code": "modparam(\"call_center\", \"ccf_max_wrapup_column\", \"queue_wrapup\")"
+    },
+    {
+      "name": "ccf_dissuading_hangup_column",
+      "type": "string",
+      "default_value": "dissuading_hangup",
+      "description": "Name to be used for the \"hangup after dissuading\" column in the flows table.",
+      "example_value": "hangup_on_dissuading",
+      "example_code": "modparam(\"call_center\", \"ccf_dissuading_hangup_column\", \"hangup_on_dissuading\")"
+    },
+    {
+      "name": "ccf_dissuading_onhold_th_column",
+      "type": "string",
+      "default_value": "dissuading_onhold_th",
+      "description": "Name to be used for the \"on-hold dissuading threshold\" column in the flows table.",
+      "example_value": "th_diss_onhold",
+      "example_code": "modparam(\"call_center\", \"ccf_dissuading_onhold_th_column\", \"th_diss_onhold\")"
+    },
+    {
+      "name": "ccf_dissuading_ewt_th_column",
+      "type": "string",
+      "default_value": "dissuading_ewt_th",
+      "description": "Name to be used for the \"EWT dissuading threshold\" column in the flows table.",
+      "example_value": "th_diss_ewt",
+      "example_code": "modparam(\"call\\_center\", \"ccf\\_dissuading\\_ewt\\_th\\_column\", \"th\\_diss\\_ewt\")"
+    },
+    {
+      "name": "ccf_dissuading_qsize_th_column",
+      "type": "string",
+      "default_value": "dissuading_qsize_th",
+      "description": "Name to be used for the \"queue size dissuading threshold\" column in the flows table.",
+      "example_value": "th_diss_qsize",
+      "example_code": "modparam(\"call\\_center\", \"ccf\\_dissuading\\_qsize\\_th\\_column\", \"th\\_diss\\_qsize\")"
+    },
+    {
+      "name": "ccf_m_welcome_column",
+      "type": "string",
+      "default_value": "message_welcome",
+      "description": "Name to be used for the \"audio message on welcome\" column in the flows table.",
+      "example_value": "audio_welcome",
+      "example_code": "modparam(\"call\\_center\", \"ccf\\_m\\_welcome\\_column\", \"audio\\_welcome\")"
+    },
+    {
+      "name": "ccf_m_queue_column",
+      "type": "string",
+      "default_value": "message_queue",
+      "description": "Name to be used for the \"audio message on queueing\" column in the flows table.",
+      "example_value": "audio_queue",
+      "example_code": "modparam(\"call\\_center\", \"ccf\\_m\\_queue\\_column\", \"audio\\_queue\")"
+    },
+    {
+      "name": "ccf_m_dissuading_column",
+      "type": "string",
+      "default_value": "message_dissuading",
+      "description": "Name to be used for the \"audio message on dissuading\" column in the flows table.",
+      "example_value": "audio_dissuading",
+      "example_code": "modparam(\"call\\_center\", \"ccf\\_m\\_dissuading\\_column\", \"audio\\_dissuading\")"
+    },
+    {
+      "name": "ccf_m_flow_id_column",
+      "type": "string",
+      "default_value": "message_flow_id",
+      "description": "Name to be used for the \"audio message on identifying the flow\" column in the flows table.",
+      "example_value": "audio_flow_id",
+      "example_code": "...\nmodparam(\"call\\_center\", \"ccf\\_m\\_flow\\_id\\_column\", \"audio\\_flow\\_id\")\n..."
+    },
+    {
+      "name": "b2b_logic_ctx_param",
+      "type": "string",
+      "default_value": "call_center",
+      "description": "The name of the _$b2b\\_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the cc\\_handle\\_call function.\n\nThis parameter will be copied throughout all the B2B scenarios started by the call\\_center module. NOTE that you can change the value of the current scenario by writing into it, but the change will not be reflected in a different scenario.",
+      "example_value": "b2b_callid",
+      "example_code": "...\nmodparam(\"call\\_center\", \"b2b\\_logic\\_ctx\\_param\", \"b2b\\_callid\")\n...\nroute\\[handle\\_call\\_center\\] {\n    ...\n    cc\\_handle\\_call(\"flow\", $ci);\n    ...\n}\n...\nroute\\[b2b\\_handle\\_request\\] {\n    ...\n    xlog(\"Initial Callid is $b2b\\_logic.ctx(b2b\\_callid)\\\\n\");\n    ...\n}"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "cc_handle_call",
+      "signature": "cc_handle_call( flowID [,param])",
+      "parameters": [
+        {
+          "name": "flowID",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the flow to handle this call (push the call to that flow)."
+        },
+        {
+          "name": "param",
+          "type": "string",
+          "required": false,
+          "description": "an opaque string to be passed as parameter to the \"callcenter\" and \"agent\" B2B scenarios. It is intended for custom integration of the call center module and it is 100% up to the script writer about the value and purpose of this parameter, OpenSIPS will not touch or interpret it. You can retrieve the value of this parameter using the $b2b_logic.ctx variable with the name defined in the b2b_logic_ctx_param parameter."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "TRUE",
+          "condition": "the call was successfully pushed and handled by the Call Center engine. IMPORTANT: you must not do any signaling on the call (reply, relay) after this point."
+        },
+        {
+          "value": "FALSE (-1)",
+          "condition": "unable to get the flow ID from the parameter"
+        },
+        {
+          "value": "FALSE (-2)",
+          "condition": "unable to parse the FROM URI"
+        },
+        {
+          "value": "FALSE (-3)",
+          "condition": "flow with FlowID not found"
+        },
+        {
+          "value": "FALSE (-4)",
+          "condition": "no agents logged in the flow"
+        },
+        {
+          "value": "FALSE (-5)",
+          "condition": "internal error"
+        }
+      ],
+      "description": "This must be used only for initial INVITE requests - the function pushes the call to be handled by the call center module (via a certain flow/queue).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is\\_method(\"INVITE\") and !has\\_totag()) {\n\tif (!cc\\_handle\\_call(\"tech\\_support\")) {\n\t\tsend\\_reply(403,\"Cannot handle call\");\n\t\texit;\n\t}\n}\n...",
+          "description": "cc_handle_call usage"
+        }
+      ]
+    },
+    {
+      "name": "cc_agent_login",
+      "signature": "cc_agent_login(agentID, state)",
+      "parameters": [
+        {
+          "name": "agentID",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the agent"
+        },
+        {
+          "name": "state",
+          "type": "int",
+          "required": true,
+          "description": "an integer value giving the new state - 0 means logged off, anything else means logged in."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function sets the login (on or off) state for an agent.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# log off the 'agentX' agent\ncc\\_agent\\_login(\"agentX\",0);\n...",
+          "description": "cc_agent_login usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "cc_reload",
+      "parameters": [],
+      "description": "Command to reload flows and agents definition from database.\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_reload",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_agent_login",
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "required": true,
+          "description": "ID of the agent"
+        },
+        {
+          "name": "state",
+          "type": "integer",
+          "required": true,
+          "description": "the new login state (0 - log off, 1 - log in)"
+        }
+      ],
+      "description": "Command to login an agent into the Call Center engine.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_agent\\_login agentX 0",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_list_queue",
+      "parameters": [],
+      "description": "Command to list all the calls in queuing - for each call, the following attributes will be printed: the call id, the calling user info, the flow of the call, for how long the call is in the queue, the ETW for the call, call priority and the call skill (inherited from the flow).\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_list\\_queue",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_list_flows",
+      "parameters": [],
+      "description": "Command to list all the flows - for each flow, the following attributes will be printed: the flow ID, the avg. call duration, how many calls were processed, how many agents are logged, and how many onging calls are.\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_list\\_flows",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_list_agents",
+      "parameters": [],
+      "description": "Command to list all the agents - for each agent, the following attributes will be printed: agent ID, agent login state, agent state (free, wrapup, incall) and info on ongoing sessions.\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_list\\_agents",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_list_calls",
+      "parameters": [],
+      "description": "Command to list all the ongoing calls - for each call, the following attributes will be printed: call ID, call state (welcome, queued, toagent, ended), call duration, flow it belongs to, agent serving the call (if any).\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_list\\_agents",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_dispatch_call_to_agent",
+      "parameters": [
+        {
+          "name": "call_id",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the call, as provided by the queue listing MI command cc_list_queue"
+        },
+        {
+          "name": "agent_id",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the call, as provided by the agents listing MI command cc_list_agents"
+        }
+      ],
+      "description": "This function sends a given call (from the queue) to a given agent. For the operation to succeed, several conditions must be met:\n\n*   the call must be in the queue\n    \n*   the agent must be logged in\n    \n*   the agent must support the skill required by the call\n    \n*   the agent must support the media (RTP/MSRP) requiref by the call\n    \n*   the agent must have available sessions for the requested media\n    \n\nIMPORTANT: in order to be used, you need to be sure that the internal call dispatching is DISABLED via the chat_internal_call_dispatching module parameter or the cc_internal_call_dispatching MI command.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_dispatch\\_call\\_to\\_agent B2B452.dee2.33 agentX",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_internal_call_dispatching",
+      "parameters": [
+        {
+          "name": "dispatching",
+          "type": "integer",
+          "required": false,
+          "description": "It takes one optional parameter dispatching if the value of the setting should be changed. A 0 value means disabling the internal dispatching, a non zero means to enable it."
+        }
+      ],
+      "description": "Command to inspect and/or change the chat_internal_call_dispatching setting",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_internal\\_call\\_dispatching 0",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "cc_reset_stats",
+      "parameters": [],
+      "description": "Command to reset all counter-like statistics.\n\nIt takes no parameter.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi cc\\_reset\\_stats",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [
+    {
+      "name": "ccg_incalls",
+      "type": "counter",
+      "description": "Total number of received calls."
+    },
+    {
+      "name": "ccg_awt",
+      "type": "gauge",
+      "description": "Global avg. waiting time for calls."
+    },
+    {
+      "name": "ccg_load",
+      "type": "gauge",
+      "description": "Global load (across all flows)."
+    },
+    {
+      "name": "ccg_distributed_incalls",
+      "type": "counter",
+      "description": "Total number of distributed calls."
+    },
+    {
+      "name": "ccg_answered_incalls",
+      "type": "counter",
+      "description": "Total number of calls (audio/RTP and chat/MSRP) answered by agents."
+    },
+    {
+      "name": "ccg_answered_inchats",
+      "type": "counter",
+      "description": "Total number of chat/MSRP only calls answered by agents."
+    },
+    {
+      "name": "ccg_abandonned_incalls",
+      "type": "counter",
+      "description": "Total number of calls terminated by caller before being answered by agents."
+    },
+    {
+      "name": "ccg_onhold_calls",
+      "type": "gauge",
+      "description": "Total number of calls (audio/RTP and chat/MSRP) in the queues (onhold)."
+    },
+    {
+      "name": "ccg_onhold_chats",
+      "type": "gauge",
+      "description": "Total number of chat/MSRP only calls in the queues (onhold)."
+    },
+    {
+      "name": "ccg_free_agents",
+      "type": "gauge",
+      "description": "Total number of free agents (across all flows)."
+    },
+    {
+      "name": "ccf_incalls_flowID",
+      "type": "counter",
+      "description": "Number of received calls for the flow."
+    },
+    {
+      "name": "ccf_dist_incalls_flowID",
+      "type": "counter",
+      "description": "Number of distributed calls in this flow."
+    },
+    {
+      "name": "ccf_answ_incalls_flowID",
+      "type": "counter",
+      "description": "Nnumber of calls (audio/RTP and chat/MSRP) from the flow answered by agents."
+    },
+    {
+      "name": "ccf_answ_incalls_flowID",
+      "type": "counter",
+      "description": "Nnumber of chat/MSRP only calls from the flow answered by agents."
+    },
+    {
+      "name": "ccf_aban_incalls_flowID",
+      "type": "counter",
+      "description": "Number of calls (from the flow) terminated by caller before being answered by agents."
+    },
+    {
+      "name": "ccf_onhold_incalls_flowID",
+      "type": "gauge",
+      "description": "Number of calls (audio/RTP and chat/MSRP) -from the flow- which are onhold."
+    },
+    {
+      "name": "ccf_onhold_inchats_flowID",
+      "type": "gauge",
+      "description": "Number of chat/MSRP only calls -from the flow- which are onhold."
+    },
+    {
+      "name": "ccf_queued_calls_flowID",
+      "type": "gauge",
+      "description": "Number of calls which are queued for this flow."
+    },
+    {
+      "name": "ccf_free_agents_flowID",
+      "type": "gauge",
+      "description": "Number of free agents serving this flow."
+    },
+    {
+      "name": "ccf_etw_flowID",
+      "type": "gauge",
+      "description": "Estimated Time to Wait for this flow."
+    },
+    {
+      "name": "ccf_awt_flowID",
+      "type": "gauge",
+      "description": "Avg. Wating Time for this flow."
+    },
+    {
+      "name": "ccg_load_flowID",
+      "type": "gauge",
+      "description": "The load on the flow (number of queued calls versus number of logged agents)."
+    },
+    {
+      "name": "cca_dist_incalls_agnetID",
+      "type": "counter",
+      "description": "Number of distributed calls to this agent."
+    },
+    {
+      "name": "cca_answ_incalls_agentID",
+      "type": "counter",
+      "description": "Number of calls (audio/RTP and chat/MSRP) answered by the agent."
+    },
+    {
+      "name": "cca_answ_inchats_agentID",
+      "type": "counter",
+      "description": "Number of chat/MSRP only calls answered by the agent."
+    },
+    {
+      "name": "cca_aban_incalls_agentID",
+      "type": "counter",
+      "description": "Number of calls (sent to this agent) terminated by caller before being answered by agents."
+    },
+    {
+      "name": "cca_att_agentID",
+      "type": "gauge",
+      "description": "Avg. Talk Time for this agent"
+    }
+  ],
+  "exported_events": [
+    {
+      "name": "E_CALLCENTER_AGENT_REPORT",
+      "description": "This event is raised when the status of an agent changes.",
+      "parameters": [
+        {
+          "name": "agent_id",
+          "type": "string",
+          "description": "the id of the agent."
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "description": "the status of the agent: offline, free, incall, wrapup"
+        },
+        {
+          "name": "wrapup_ends",
+          "type": "integer",
+          "description": "the timestamp when the wrapup state will end; published only if the state is \"wrapup\""
+        },
+        {
+          "name": "flow_id",
+          "type": "string",
+          "description": "the flow ID that delivered the call for this agent; published only if the state is \"incall\""
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [
+    {
+      "name": "$cc_state",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Returns the state of a call.",
+      "possible_values": [
+        "welcome",
+        "dissuading1",
+        "dissuading2",
+        "queue",
+        "preagent",
+        "toagent"
+      ]
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "SQL address to the DB server -- database specific. This must be the Database holding the provisioning tables (cc_flows, cc_agents and cc_calls tables). If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "code": "...\nmodparam(\"call\\_center\", \"db\\_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips\")\n..."
+    },
+    {
+      "title": "Set `acc_db_url` parameter",
+      "description": "SQL address to the DB server -- database specific. This must be the Database where the CDRs table (cc_cdrs) is located. If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "code": "...\nmodparam(\"call\\_center\", \"acc\\_db\\_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips\\_cdrs\")\n..."
+    },
+    {
+      "title": "Set `rt_db_url` parameter",
+      "description": "SQL address/URL of the DB server (database specific) where the runtime tables (non provisioning tables) are located. The runtime tables are the tables populated by OpenSIPS with data learned during runtime. To be more specific, the only runtime table we have so far is the \"cc_calls\" table. If not explicitly set, the global OpenSIPS DB URL will be used.",
+      "code": "...\nmodparam(\"call\\_center\", \"rt\\_db\\_url\", \n\t\"mysql://opensips:opensipsrw@localhost/opensips\\_runtime\")\n..."
+    },
+    {
+      "title": "Set `wrapup_time` parameter",
+      "description": "Time for an agent between finishing a call and receiving the next call from the system. Even if there are queued calls, the module will not deliver call to agent during this wrapup interval. This value may be overwritten by the per-agent value (if defined) and furher more, by the per-flow value (if defined). Default value is “30 seconds”.",
+      "code": "...\nmodparam(\"call\\_center\", \"wrapup\\_time\", 45)\n..."
+    },
+    {
+      "title": "Set `queue_pos_param` parameter",
+      "description": "The name of an SIP URI parameter to be used to report the position in the waiting queue when sending the call to media server for onwait/queue playback. The position 0 means it is the next call to be delivered to an agent. Default value is “empty(none)”.",
+      "code": "...\nmodparam(\"call\\_center\", \"queue\\_pos\\_param\", \"cc\\_pos\")\n..."
+    },
+    {
+      "title": "Set `reject_on_no_agents` parameter",
+      "description": "A parameter to tell if an incoming call should be rejected or quueued if there are no logged in agents. Basically this allows call queueing on flows with no agents yet. Default value is “1 (true)”.",
+      "code": "...\nmodparam(\"call\\_center\", \"reject\\_on\\_no\\_agents\", 0)\n..."
+    },
+    {
+      "title": "Set `chat_dispatch_policy` parameter",
+      "description": "A parameter to tell what should be the policy on dispatching the chat/MSRP sessions to the agents, considering that an agent may handle multiple such sessions/chats in the same time. Options are: balancing - the distribution will try to be even across the agents, but by doing this you may end up waisting chat sessions on agents and call starvation - agents are partially used by chat sessions, so they cannot take calls (of course, if you have mixed agetns with audio/chat); full-load - the distribution will try to make usage of an agent in the best possible way when comes to chat sessions - once the agent take a chat, all the following chats will be assigned ot him - the idea is to try to be efficient in using the resource/sessions of an agents, to leave as much room as possible for calls. Of course, this may lead to an un-even loading of chat agents - some will be full, others empty. Default value is “balancing”.",
+      "code": "...\nmodparam(\"call\\_center\", \"chat\\_dispatch\\_policy\", \"balancing\")\n..."
+    },
+    {
+      "title": "Set `internal_call_dispatching` parameter",
+      "description": "A parameter to tell if the internal/buit-in call dispatching to agent should be used or not. If enabled, the module will automatically dispatch (by itself) the queued/incoming calls to the available agents. If disabled, the module will not do such dispaching by itself and it is expected to use the cc_dispatch_call_to_agent MI command to dispatch the queued calls to agents. This allows the implementation of an external, custom dispatching logic. The value of this setting may be changed during runtime via the cc_internal_call_dispatching MI command. Default value is “1” (enabled).",
+      "code": "...\nmodparam(\"call\\_center\", \"internal\\_call\\_dispatching\", 0)\n..."
+    },
+    {
+      "title": "Set `cc_agents_table` parameter",
+      "description": "Name to be used for the table holding the agents. Default value is “cc_agents”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cc\\_agents\\_table\", \"my\\_agents\")\n..."
+    },
+    {
+      "title": "Set `cca_agentid_column` parameter",
+      "description": "Name to be used for the \"agent id\" (unique DB id) column in the agents table. Default value is “agentid”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_agentid\\_column\", \"cid\")\n..."
+    },
+    {
+      "title": "Set `cca_location_column` parameter",
+      "description": "Name to be used for the calling/audio \"location\" (SIP URI) column in the agents table. Default value is “location”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_location\\_column\", \"sip\\_uri\")\n..."
+    },
+    {
+      "title": "Set `cca_msrp_location_column` parameter",
+      "description": "Name to be used for the msrp/chat \"location\" (SIP URI) column in the agents table. Default value is “msrp_location”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_msrp\\_location\\_column\", \"sip\\_uri\")\n..."
+    },
+    {
+      "title": "Set `cca_msrp_max_sessions_column` parameter",
+      "description": "Name to be used for the column (in the agents table) holding the maximum number of chat sessions that can be handled by the agent. Default value is “msrp_max_sessions”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_msrp\\_max\\_sessions\\_column\", \"max\\_chats\")\n..."
+    },
+    {
+      "title": "Set `cca_skills_column` parameter",
+      "description": "Name to be used for the \"skills\" (list of skills) column in the agents table. Default value is “skills”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_skills\\_column\", \"skills\")\n..."
+    },
+    {
+      "title": "Set `cca_logstate_column` parameter",
+      "description": "Name to be used for the \"logstate\" (original login state) column in the agents table. Default value is “logstate”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_logstate\\_column\", \"log\\_state\")\n..."
+    },
+    {
+      "title": "Set `cca_wrapuptime_column` parameter",
+      "description": "Name to be used for the \"wrapuptime\" (per-agent wrapup time) column in the agents table. Default value is “wrapup_time”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_wrapuptime\\_column\", \"wtime\")\n..."
+    },
+    {
+      "title": "Set `cca_wrapupend_column` parameter",
+      "description": "Name to be used for the \"wrapupend\" (timestamp when the wrapup ends) column in the agents table. Default value is “wrapup_end_time”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cca\\_wrapupend\\_column\", \"wrapup\\_ends\")\n..."
+    },
+    {
+      "title": "Set `cc_flows_table` parameter",
+      "description": "Name to be used for the table holding the definition of the flows/queues. Default value is “cc_flows”.",
+      "code": "...\nmodparam(\"call\\_center\", \"cc\\_flows\\_table\", \"queues\")\n..."
+    },
+    {
+      "title": "Set `ccf_flowid_column` parameter",
+      "description": "Name to be used for the \"flow id\" (unique DB id) column in the flows table. Default value is “flowid”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_flowid\\_column\", \"queue\\_id\")\n..."
+    },
+    {
+      "title": "Set `ccf_priority_column` parameter",
+      "description": "Name to be used for the \"priority\" column in the flows table. Default value is “priority”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_priority\\_column\", \"queue\\_prio\")\n..."
+    },
+    {
+      "title": "Set `ccf_skill_column` parameter",
+      "description": "Name to be used for the \"skill\" column in the flows table. Default value is “skill”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_skill\\_column\", \"queue\\_skill\")\n..."
+    },
+    {
+      "title": "Set `ccf_cid_column` parameter",
+      "description": "Name to be used for the \"caller ID prefix\" column in the flows table. Default value is “prependcid”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_cid\\_column\", \"queue\\_cli\\_prefix\")\n..."
+    },
+    {
+      "title": "Set `ccf_max_wrapup_column` parameter",
+      "description": "Name to be used for the \"max limit for wrapup time\" column in the flows table. Default value is “max_wrapup_time”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_max\\_wrapup\\_column\", \"queue\\_wrapup\")\n..."
+    },
+    {
+      "title": "Set `ccf_dissuading_hangup_column` parameter",
+      "description": "Name to be used for the \"hangup after dissuading\" column in the flows table. Default value is “dissuading_hangup”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_dissuading\\_hangup\\_column\", \"hangup\\_on\\_dissuading\")\n..."
+    },
+    {
+      "title": "Set `ccf_dissuading_onhold_th_column` parameter",
+      "description": "Name to be used for the \"on-hold dissuading threshold\" column in the flows table. Default value is “dissuading_onhold_th”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_dissuading\\_onhold\\_th\\_column\", \"th\\_diss\\_onhold\")\n..."
+    },
+    {
+      "title": "Set `ccf_dissuading_ewt_th_column` parameter",
+      "description": "Name to be used for the \"EWT dissuading threshold\" column in the flows table. Default value is “dissuading_ewt_th”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_dissuading\\_ewt\\_th\\_column\", \"th\\_diss\\_ewt\")\n..."
+    },
+    {
+      "title": "Set `ccf_dissuading_qsize_th_column` parameter",
+      "description": "Name to be used for the \"queue size dissuading threshold\" column in the flows table. Default value is “dissuading_qsize_th”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_dissuading\\_qsize\\_th\\_column\", \"th\\_diss\\_qsize\")\n..."
+    },
+    {
+      "title": "Set `ccf_m_welcome_column` parameter",
+      "description": "Name to be used for the \"audio message on welcome\" column in the flows table. Default value is “message_welcome”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_m\\_welcome\\_column\", \"audio\\_welcome\")\n..."
+    },
+    {
+      "title": "Set `ccf_m_queue_column` parameter",
+      "description": "Name to be used for the \"audio message on queueing\" column in the flows table. Default value is “message_queue”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_m\\_queue\\_column\", \"audio\\_queue\")\n..."
+    },
+    {
+      "title": "Set `ccf_m_dissuading_column` parameter",
+      "description": "Name to be used for the \"audio message on dissuading\" column in the flows table. Default value is “message_dissuading”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_m\\_dissuading\\_column\", \"audio\\_dissuading\")\n..."
+    },
+    {
+      "title": "Set `ccf_m_flow_id_column` parameter",
+      "description": "Name to be used for the \"audio message on identifying the flow\" column in the flows table. Default value is “message_flow_id”.",
+      "code": "...\nmodparam(\"call\\_center\", \"ccf\\_m\\_flow\\_id\\_column\", \"audio\\_flow\\_id\")\n..."
+    },
+    {
+      "title": "Set `b2b_logic_ctx_param` parameter",
+      "description": "The name of the _$b2b\\_logic.ctx_ variable that can be used to retrieve the value of the parameter passed to the cc_handle_call function. This parameter will be copied throughout all the B2B scenarios started by the call_center module. NOTE that you can change the value of the current scenario by writing into it, but the change will not be reflected in a different scenario. Default value is “call_center”.",
+      "code": "...\nmodparam(\"call\\_center\", \"b2b\\_logic\\_ctx\\_param\", \"b2b\\_callid\")\n...\nroute\\[handle\\_call\\_center\\] {\n    ...\n    cc\\_handle\\_call(\"flow\", $ci);\n    ...\n}\n...\nroute\\[b2b\\_handle\\_request\\] {\n    ...\n    xlog(\"Initial Callid is $b2b\\_logic.ctx(b2b\\_callid)\\\\n\");\n    ...\n}\n..."
+    },
+    {
+      "title": "`cc_handle_call` usage",
+      "description": "This must be used only for initial INVITE requests - the function pushes the call to be handled by the call center module (via a certain flow/queue). This function can be used from REQUEST_ROUTE. Parameters: flowID (string) - the ID of the flow to handle this call (push the call to that flow). param (string, optional) - an opaque string to be passed as parameter to the \"callcenter\" and \"agent\" B2B scenarios. It is intended for custom integration of the call center module and it is 100% up to the script writer about the value and purpose of this parameter, OpenSIPS will not touch or interpret it. You can retrieve the value of this parameter using the _$b2b\\_logic.ctx_ variable with the name defined in the b2b_logic_ctx_param parameter. The function returns TRUE back to the script if the call was successfully pushed and handled by the Call Center engine. IMPORTANT: you must not do any signaling on the call (reply, relay) after this point. In case of error, FALSE is returned to the script with the following return codes: -1 - unable to get the flow ID from the parameter; -2 - unable to parse the FROM URI; -3 - flow with FlowID not found; -4 - no agents logged in the flow; -5 - internal error.",
+      "code": "...\nif (is\\_method(\"INVITE\") and !has\\_totag()) {\n\tif (!cc\\_handle\\_call(\"tech\\_support\")) {\n\t\tsend\\_reply(403,\"Cannot handle call\");\n\t\texit;\n\t}\n}\n..."
+    },
+    {
+      "title": "`cc_agent_login` usage",
+      "description": "This function sets the login (on or off) state for an agent. This function can be used from REQUEST_ROUTE. Parameters: agentID (string) - the ID of the agent; state (int) - an integer value giving the new state - 0 means logged off, anything else means logged in.",
+      "code": "...\n# log off the 'agentX' agent\ncc\\_agent\\_login(\"agentX\",0);\n..."
+    },
+    {
+      "title": "$rtpquery Usage",
+      "description": "Returns the state of a call. Possible values returned are: _welcome_ - the welcome message is played. _dissuading1_ - the first dissuading message is played. _dissuading2_ - the second dissuading message is played. _queue_ - the call is in queue. _preagent_ - the agent is being called. _toagent_ - the agent is in call.",
+      "code": "...\n\t$json(reply) := $rtpquery;\n\txlog(\"Total RTP Stats: $json(reply/totals)\\\\n\");\n...\t\t"
+    }
+  ]
+}

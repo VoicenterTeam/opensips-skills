@@ -1,0 +1,219 @@
+{
+  "id": "module-proto_tcp-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "proto_tcp Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/proto_tcp.html",
+  "content_markdown": "The **proto\\_tcp** module is a built-in transport module which implements SIP TCP-based communication. It does not handle TCP connections management, but only offers higher-level primitives to read and write SIP messages over TCP.\n\nOnce loaded, you will be able to define TCP listeners in your script, by adding its IP, and optionally the listening port, in your configuration file, similar to this example:\n\n...\nsocket=tcp:127.0.0.1 \t\t# change the listening IP\nsocket=tcp:127.0.0.1:5080\t# change with the listening IP and port\n...",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T13:30:40.335Z",
+  "module_name": "proto_tcp",
+  "overview": "The **proto\\_tcp** module is a built-in transport module which implements SIP TCP-based communication. It does not handle TCP connections management, but only offers higher-level primitives to read and write SIP messages over TCP.\n\nOnce loaded, you will be able to define TCP listeners in your script, by adding its IP, and optionally the listening port, in your configuration file, similar to this example:\n\n...\nsocket=tcp:127.0.0.1 \t\t# change the listening IP\nsocket=tcp:127.0.0.1:5080\t# change with the listening IP and port\n...",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "tcp_port",
+      "type": "integer",
+      "default_value": "5060",
+      "description": "The default port to be used for all TCP related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the TCP listeners) and the SIP sending part (if the destination URI has no explicit port).\n\nIf you want to change only the listening port for TCP, use the port option in the SIP listener defintion.",
+      "example_value": "5065",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_port\", 5065)"
+    },
+    {
+      "name": "tcp_send_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "Time in milliseconds after a TCP connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "example_value": "200",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_send\\_timeout\", 200)"
+    },
+    {
+      "name": "tcp_max_msg_chunks",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of chunks that a SIP message is expected to arrive via TCP. If a packet is received more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending the traffic very fragmented in order to decrease our performance).",
+      "example_value": "8",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_max\\_msg\\_chunks\", 8)"
+    },
+    {
+      "name": "tcp_crlf_pingpong",
+      "type": "integer",
+      "default_value": "1 (enabled)",
+      "description": "Send CRLF pong (\\r\\n) to incoming CRLFCRLF ping messages over TCP. By default it is enabled (1).",
+      "example_value": "0",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_crlf\\_pingpong\", 0)"
+    },
+    {
+      "name": "tcp_crlf_drop",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Drop CRLF (\\r\\n) ping messages. When this parameter is enabled, the TCP layer drops packets that contains a single CRLF message. If a CRLFCRLF message is received, it is handled according to the _tcp\\_crlf\\_pingpong_ parameter.",
+      "example_value": "1",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_crlf\\_drop\", 1)"
+    },
+    {
+      "name": "tcp_async",
+      "type": "integer",
+      "default_value": "1 (enabled)",
+      "description": "If the TCP connect and write operations should be done in an asynchronous mode (non-blocking connect and write). If disabled, OpenSIPS will block and wait for TCP operations like connect and write.",
+      "example_value": "0",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_async\", 0)"
+    },
+    {
+      "name": "tcp_async_max_postponed_chunks",
+      "type": "integer",
+      "default_value": "32",
+      "description": "If tcp_async is enabled, this specifies the maximum number of SIP messages that can be stashed for later/async writing. If the connection pending writes exceed this number, the connection will be marked as broken and dropped.",
+      "example_value": "16",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_async\\_max\\_postponed\\_chunks\", 16)"
+    },
+    {
+      "name": "tcp_async_local_connect_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "If tcp_async is enabled, this specifies the number of milliseconds that a connect will be tried in blocking mode (optimization). If the connect operation lasts more than this, the connect will go to async mode and will be passed to TCP MAIN for polling.",
+      "example_value": "200",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_async\\_local\\_connect\\_timeout\", 200)"
+    },
+    {
+      "name": "tcp_async_local_write_timeout",
+      "type": "integer",
+      "default_value": "10 ms",
+      "description": "If tcp_async is enabled, this specifies the number of milliseconds that a write op will be tried in blocking mode (optimization). If the write operation lasts more than this, the write will go to async mode and will be passed to TCP MAIN for polling.",
+      "example_value": "100",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_async\\_local\\_write\\_timeout\", 100)"
+    },
+    {
+      "name": "tcp_parallel_handling",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "This parameter says if the handling/processing (NOT READING) of the SIP messages should be done in parallel (after one SIP msg is read, while processing it, another READ op may be performed).",
+      "example_value": "1",
+      "example_code": "modparam(\"proto\\_tcp\", \"tcp\\_parallel\\_handling\", 1)"
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none (not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process.",
+      "example_value": "hep_dest",
+      "example_code": "modparam(\"proto\\_hep\", \"hep\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto\\_tcp\", \"trace\\_destination\", \"hep\\_dest\")",
+      "notes": "**WARNING:** A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**)."
+    },
+    {
+      "name": "trace_on",
+      "type": "int",
+      "default_value": "0 (tracing inactive)",
+      "description": "This controls whether tracing for tcp is on or not. You still need to define [Section 1.3.11, “`trace_destination` (string)”](#trace-destination \"1.3.11.�trace_destination (string)\")in order to work, but this value will be controlled using mi function [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace \"1.4.1.� tcp_trace\").",
+      "example_value": "1",
+      "example_code": "modparam(\"proto\\_tcp\", \"trace\\_on\", 1)"
+    },
+    {
+      "name": "trace_filter_route",
+      "type": "string",
+      "default_value": "none (no route is set)",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.11, “`trace_destination` (string)”](#trace-destination \"1.3.11.�trace_destination (string)\") and trace must be on at the time this connection is opened.",
+      "example_value": "tcp_filter",
+      "example_code": "modparam(\"proto\\_tcp\", \"trace\\_filter\\_route\", \"tcp\\_filter\")\n...\n/* all tcp connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute\\[tcp\\_filter\\] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket\\_in(ip) == \"1.1.1.10\"  && $socket\\_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}",
+      "notes": "**IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket_in(ip)** (ip) and **$socket_in(port)** (port) can be used. **WARNING:** IF [Section 1.3.12, “`trace_on` (int)”](#trace-on \"1.3.12.�trace_on (int)\") is set to 0 or tracing is deactived via the mi command [Section 1.4.1, “ `tcp_trace` ”](#tcp-trace \"1.4.1.� tcp_trace\") this route won't be called."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "tcp_trace",
+      "parameters": [
+        {
+          "name": "trace_mode",
+          "type": "string",
+          "required": false,
+          "description": "set tcp tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off ); Possible values: on, off"
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "The current tracing status (on or off) if no parameter is provided."
+      },
+      "description": "Set tcp tracing on and off. If the parameter is missing, the command will show the current tracing status for this module.",
+      "examples": [
+        {
+          "language": "fifo",
+          "code": "\t\t\t:tcp\\_trace:\\_reply\\_fifo\\_file\\_\n\t\t\ttrace\\_mode\n\t\t\t\\_empty\\_line\\_",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `tcp_port` parameter",
+      "description": "Sets the `tcp_port` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_port\", 5065)\n..."
+    },
+    {
+      "title": "Set `tcp_send_timeout` parameter",
+      "description": "Sets the `tcp_send_timeout` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_send\\_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `tcp_max_msg_chunks` parameter",
+      "description": "Sets the `tcp_max_msg_chunks` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_max\\_msg\\_chunks\", 8)\n..."
+    },
+    {
+      "title": "Set `tcp_crlf_pingpong` parameter",
+      "description": "Sets the `tcp_crlf_pingpong` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_crlf\\_pingpong\", 0)\n..."
+    },
+    {
+      "title": "Set `tcp_crlf_drop` parameter",
+      "description": "Sets the `tcp_crlf_drop` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_crlf\\_drop\", 1)\n..."
+    },
+    {
+      "title": "Set `tcp_async` parameter",
+      "description": "Sets the `tcp_async` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_async\", 0)\n..."
+    },
+    {
+      "title": "Set `tcp_async_max_postponed_chunks` parameter",
+      "description": "Sets the `tcp_async_max_postponed_chunks` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_async\\_max\\_postponed\\_chunks\", 16)\n..."
+    },
+    {
+      "title": "Set `tcp_async_local_connect_timeout` parameter",
+      "description": "Sets the `tcp_async_local_connect_timeout` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_async\\_local\\_connect\\_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `tcp_async_local_write_timeout` parameter",
+      "description": "Sets the `tcp_async_local_write_timeout` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_async\\_local\\_write\\_timeout\", 100)\n..."
+    },
+    {
+      "title": "Set `tcp_parallel_handling` parameter",
+      "description": "Sets the `tcp_parallel_handling` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"tcp\\_parallel\\_handling\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Sets the `trace_destination` parameter.",
+      "code": "...\nmodparam(\"proto\\_hep\", \"hep\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto\\_tcp\", \"trace\\_destination\", \"hep\\_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "Sets the `trace_on` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"trace\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_filter_route` parameter",
+      "description": "Sets the `trace_filter_route` parameter.",
+      "code": "...\nmodparam(\"proto\\_tcp\", \"trace\\_filter\\_route\", \"tcp\\_filter\")\n...\n/* all tcp connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[tcp\\_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket\\_in(ip) == \"1.1.1.10\"  && $socket\\_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}\n..."
+    }
+  ]
+}

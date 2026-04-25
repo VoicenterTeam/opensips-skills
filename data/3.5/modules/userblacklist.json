@@ -1,0 +1,195 @@
+{
+  "id": "module-userblacklist-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "userblacklist Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/userblacklist.html",
+  "content_markdown": "The userblacklist module allows OpenSIPS to handle blacklists on a per user basis. This information is stored in a database table, which is queried to decide if the number (more exactly, the request URI user) is blacklisted or not.\n\nAn additional functionality that this module provides is the ability to handle global blacklists. This lists are loaded on startup into memory, thus providing a better performance then in the userblacklist case. This global blacklists are useful to only allow calls to certain international destinations, i.e. block all not whitelisted numbers. They could also used to prevent the blacklisting of important numbers, as whitelisting is supported too. This is useful for example to prevent the customer from blocking emergency call number or service hotlines.\n\nThe module exports two functions, check_blacklist and check_user_blacklist for usage in the config file. Furthermore its provide a FIFO function to reload the global blacklist cache.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:30:43.014Z",
+  "module_name": "userblacklist",
+  "overview": "The userblacklist module allows OpenSIPS to handle blacklists on a per user basis. This information is stored in a database table, which is queried to decide if the number (more exactly, the request URI user) is blacklisted or not.\n\nAn additional functionality that this module provides is the ability to handle global blacklists. This lists are loaded on startup into memory, thus providing a better performance then in the userblacklist case. This global blacklists are useful to only allow calls to certain international destinations, i.e. block all not whitelisted numbers. They could also used to prevent the blacklisting of important numbers, as whitelisting is supported too. This is useful for example to prevent the customer from blocking emergency call number or service hotlines.\n\nThe module exports two functions, check_blacklist and check_user_blacklist for usage in the config file. Furthermore its provide a FIFO function to reload the global blacklist cache.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "Any database module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensipsro:opensipsro@localhost/opensips",
+      "description": "Url to the database containing the routing data.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"userblacklist\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "userblacklist",
+      "description": "Name of the table where the user blacklist data is stored.",
+      "example_value": "userblacklist",
+      "example_code": "modparam(\"userblacklist\", \"db\\_table\", \"userblacklist\")"
+    },
+    {
+      "name": "use_domain",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If set to non-zero value, the domain column in the userblacklist is used.",
+      "example_value": "0",
+      "example_code": "modparam(\"userblacklist\", \"use\\_domain\", 0)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "check_user_blacklist",
+      "signature": "check_user_blacklist (user, domain, [number], [table])",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "domain",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": false,
+          "description": "If ommited, the defalut is used."
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": false,
+          "description": "If ommited, the defalut is used."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "false",
+          "condition": "If a match is found and it is not set to whitelist"
+        },
+        {
+          "value": "true",
+          "condition": "Otherwise"
+        }
+      ],
+      "description": "Finds the longest prefix that matches the request URI user (or the number parameter) for the given user and domain name in the database. If a match is found and it is not set to whitelist, false is returned. Otherwise, true is returned. The number parameter can be used to check for example against the from URI user.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (!check_user_blacklist(\"user\", \"domain.com\"))\n\tsl_send_reply(403, \"Forbidden\");\n\texit;\n}\n",
+          "description": "check_user_blacklist usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "check_blacklist",
+      "signature": "check_blacklist (table)",
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "false",
+          "condition": "If a match is found and it is not set to whitelist"
+        },
+        {
+          "value": "true",
+          "condition": "Otherwise"
+        }
+      ],
+      "description": "Finds the longest prefix that matches the request URI for the given table. If a match is found and it is not set to whitelist, false is returned. Otherwise, true is returned.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (!check_blacklist(\"global_blacklist\")))\n\tsl_send_reply(403, \"Forbidden\");\n\texit;\n}\n",
+          "description": "check_blacklist usage",
+          "context": ""
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "reload_blacklist",
+      "parameters": [],
+      "description": "Reload the internal global blacklist cache. This is necessary after the database tables for the global blacklist have been changed.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi reload_blacklist",
+          "description": "reload_blacklists usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Demonstrates setting the `db_url` parameter.",
+      "code": "...\nmodparam(\"userblacklist\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `db_table` parameter",
+      "description": "Demonstrates setting the `db_table` parameter.",
+      "code": "...\nmodparam(\"userblacklist\", \"db\\_table\", \"userblacklist\")\n..."
+    },
+    {
+      "title": "Set `use_domain` parameter",
+      "description": "Demonstrates setting the `use_domain` parameter.",
+      "code": "...\nmodparam(\"userblacklist\", \"use\\_domain\", 0)\n..."
+    },
+    {
+      "title": "`check_user_blacklist` usage",
+      "description": "Demonstrates usage of the `check_user_blacklist` function.",
+      "code": "...\nif (!check\\_user\\_blacklist(\"user\", \"domain.com\"))\n\tsl\\_send\\_reply(403, \"Forbidden\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`check_blacklist` usage",
+      "description": "Demonstrates usage of the `check_blacklist` function.",
+      "code": "...\nif (!check\\_blacklist(\"global\\_blacklist\")))\n\tsl\\_send\\_reply(403, \"Forbidden\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`reload_blacklists` usage",
+      "description": "Demonstrates usage of the `reload_blacklists` MI function.",
+      "code": "...\nopensips-cli -x mi reload\\_blacklist\n..."
+    },
+    {
+      "title": "Example database content - globalblacklist table",
+      "description": "Demonstrates example database content for the globalblacklist table.",
+      "code": "...\n+----+-----------+-----------+\n| id | prefix    | whitelist |\n+----+-----------+-----------+\n|  1 |           |         0 |\n|  2 | 1         |         1 |\n|  3 | 123456    |         0 |\n|  4 | 123455787 |         0 |\n+----+-----------+-----------+\n...",
+      "explanation": "This table will setup a global blacklist for all numbers, only allowing calls starting with “1”. Numbers that starting with “123456” and “123455787” are also blacklisted, because the longest prefix will be matched."
+    },
+    {
+      "title": "Example database content - userblacklist table",
+      "description": "Demonstrates example database content for the userblacklist table.",
+      "code": "...\n+----+----------------+-------------+-----------+-----------+\n| id | username       | domain      | prefix    | whitelist |\n+----+----------------+-------------+-----------+-----------+\n| 23 | 49721123456788 |             | 1234      |         0 |\n| 22 | 49721123456788 |             | 123456788 |         1 |\n| 21 | 49721123456789 |             | 12345     |         0 |\n| 20 | 494675231      |             | 499034133 |         1 |\n| 19 | 494675231      | test        | 499034132 |         0 |\n| 18 | 494675453      | test.domain | 49901     |         0 |\n| 17 | 494675454      |             | 49900     |         0 |\n+----+----------------+-------------+-----------+-----------+\n...",
+      "explanation": "This table will setup user specific blacklists for certain usernames. For example for user “49721123456788” the prefix “1234” will be not allowed, but the number “123456788” is allowed. Additionally a domain could be specified that is used for username matching if the “use\\_domain” parameter is set."
+    }
+  ]
+}

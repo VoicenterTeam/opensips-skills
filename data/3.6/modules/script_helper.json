@@ -1,0 +1,73 @@
+{
+  "id": "module-script_helper-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "Script Helper Module Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/script_helper.html",
+  "content_markdown": "The purpose of the **Script Helper module** is to simplify the scripting process in OpenSIPS when doing basic scenarios. At the same time, it is useful to script writers as it contains basic SIP routing logic, and thus it allows them to focus more on the particular aspects of their OpenSIPS routing code.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:37:14.644Z",
+  "module_name": "Script Helper Module",
+  "overview": "The purpose of the **Script Helper module** is to simplify the scripting process in OpenSIPS when doing basic scenarios. At the same time, it is useful to script writers as it contains basic SIP routing logic, and thus it allows them to focus more on the particular aspects of their OpenSIPS routing code.",
+  "how_it_works": "By simply loading the module, the following **default logic** will be embedded:\n\n*   for initial SIP requests, the module will perform _record routing_ before running the main _request_ route\n    \n*   sequential SIP requests will be transparently handled - the module will perform _loose routing_, and the request route will not be run at all\n    \n\nCurrently, the module may be further configured to embed the following **optional logic**:\n\n*   _dialog_ support (dialog module dependency - must be loaded before this module)\n    \n*   an additional route to be run before relaying sequential requests",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "only if use_dialog is enabled",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "use_dialog",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Enables dialog support.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"script\\_helper\", \"use\\_dialog\", 1)\n...",
+      "notes": "Note that the dialog module must be loaded before this module when setting this parameter. Default value is 0 (disabled)."
+    },
+    {
+      "name": "create_dialog_flags",
+      "type": "string",
+      "default_value": "",
+      "description": "Flags used when creating dialogs. For details on these flags, please refer to the _create\\_dialog()_ function of the dialog module.",
+      "example_value": "PpB",
+      "example_code": "...\nmodparam(\"script\\_helper\", \"create\\_dialog\\_flags\", \"PpB\")\n...",
+      "notes": "Default value is \"\" (no flags are set)"
+    },
+    {
+      "name": "sequential_route",
+      "type": "string",
+      "default_value": "not set",
+      "description": "Optional route to be run just before sequential requests are relayed. If the _exit_ script statement is used inside this route, the module assumes that the relaying logic has been handled.",
+      "example_value": "sequential_handling",
+      "example_code": "...\nmodparam(\"script\\_helper\", \"sequential\\_route\", \"sequential\\_handling\")\n...\nroute \\[sequential\\_handling\\]\n{\n...\n}\n...",
+      "notes": "By default, this parameter is not set"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting `use_dialog`",
+      "description": "Enables dialog support.",
+      "code": "...\nmodparam(\"script\\_helper\", \"use\\_dialog\", 1)\n..."
+    },
+    {
+      "title": "Setting `create_dialog_flags`",
+      "description": "Sets the flags used when creating dialogs.",
+      "code": "...\nmodparam(\"script\\_helper\", \"create\\_dialog\\_flags\", \"PpB\")\n..."
+    },
+    {
+      "title": "Setting `sequential_route`",
+      "description": "Sets an optional route to be run just before sequential requests are relayed.",
+      "code": "...\nmodparam(\"script\\_helper\", \"sequential\\_route\", \"sequential\\_handling\")\n...\nroute \\[sequential\\_handling\\]\n{\n...\n}\n..."
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "id": "module-db_oracle-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "db_oracle Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/db_oracle.html",
+  "content_markdown": "This is a module which provides Oracle connectivity for OpenSIPS. It implements the DB API defined in OpenSIPS. If you want to use the nathelper module, or any other modules that calls the get_all_ucontacts API export from usrloc, then you need to set the _DORACLE_USRLOC_ define in the Makefile.defs file before compilation.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:40:47.418Z",
+  "module_name": "db_oracle",
+  "overview": "This is a module which provides Oracle connectivity for OpenSIPS. It implements the DB API defined in OpenSIPS. If you want to use the nathelper module, or any other modules that calls the get_all_ucontacts API export from usrloc, then you need to set the _DORACLE_USRLOC_ define in the Makefile.defs file before compilation.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "instantclient-sdk-10.2.0.3",
+      "type": "library",
+      "reason": "the development headers and libraries of OCI",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "timeout",
+      "type": "fixedpoint",
+      "default_value": "3.0",
+      "description": "Timeout value for any operation with BD.",
+      "valid_range_min": 0.1,
+      "valid_range_max": 10,
+      "example_value": "1.5",
+      "example_code": "modparam(\"db\\_oracle\", \"timeout\", 1.5)",
+      "notes": "If value of timeout parameter set to 0, module use synchronous mode (without timeout)."
+    },
+    {
+      "name": "reconnect",
+      "type": "fixedpoint",
+      "default_value": "0.2",
+      "description": "Timeout value for connect (create session) operation.",
+      "valid_range_min": 0.1,
+      "valid_range_max": 10,
+      "example_value": "0.5",
+      "example_code": "modparam(\"db\\_oracle\", \"reconnect\", 0.5)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `timeout` parameter",
+      "description": "Set `timeout` parameter",
+      "code": "...\nmodparam(\"db\\_oracle\", \"timeout\", 1.5)\n..."
+    },
+    {
+      "title": "Disable asynchronous mode",
+      "description": "Disable asynchronous mode",
+      "code": "...\nmodparam(\"db\\_oracle\", \"timeout\", 0)\n..."
+    },
+    {
+      "title": "Set `reconnect` parameter",
+      "description": "Set `reconnect` parameter",
+      "code": "...\nmodparam(\"db\\_oracle\", \"reconnect\", 0.5)\n..."
+    }
+  ]
+}

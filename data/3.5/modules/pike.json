@@ -1,0 +1,174 @@
+{
+  "id": "module-pike-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "pike Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/pike.html",
+  "content_markdown": "The module provides a simple mechanism for DOS protection - DOS based on floods at network level. The module keeps trace of all (or selected ones) IPs of incoming SIP traffic (as source IP) and blocks the ones that exceeded some limit. Works simultaneous for IPv4 and IPv6 addresses.\n\nThe module does not implement any actions on blocking - it just simply reports that there is a high traffic from an IP; what to do, is the administator decision (via scripting).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:36:31.892Z",
+  "module_name": "pike",
+  "overview": "The module provides a simple mechanism for DOS protection - DOS based on floods at network level. The module keeps trace of all (or selected ones) IPs of incoming SIP traffic (as source IP) and blocks the ones that exceeded some limit. Works simultaneous for IPv4 and IPv6 addresses.\n\nThe module does not implement any actions on blocking - it just simply reports that there is a high traffic from an IP; what to do, is the administator decision (via scripting).",
+  "how_it_works": "There are 2 ways of using this module (as detecting flood attacks and as taking the right action to limit the impact on the system):\n\n* _manual_ - from routing script you can force the check of the source IP of an incoming requests, using \"pike\\_check\\_req\" function. Note that this checking works only for SIP requests and you can decide (based on scripting logic) what source IPs to be monitored and what action to be taken when a flood is detected.\n* _automatic_ - the module will install internal hooks to catch all incoming requests and replies (even if not well formed from SIP point of view) - more or less the module will monitor all incoming packages (from the network) on the SIP sockets. Each time the source IP of a package needs to be analyse (to see if trusted or not), the module will run a script route - see \"check\\_route\" module parameter -, where, based on custom logic, you can decide if that IP needs to be monitored for flooding or not. As action, when flood is detected, the module will automatically drop the packages.",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "sampling_time_unit",
+      "type": "integer",
+      "default_value": "2",
+      "description": "Time period used for sampling (or the sampling accuracy ;-) ). The smaller the better, but slower. If you want to detect peaks, use a small one. To limit the access (like total number of requests on a long period of time) to a proxy resource (a gateway for ex), use a bigger value of this parameter.",
+      "example_value": "10",
+      "example_code": "...\nmodparam(\"pike\", \"sampling\\_time\\_unit\", 10)\n...",
+      "notes": "IMPORTANT: a too small value may lead to performance penalties due timer process overloading."
+    },
+    {
+      "name": "reqs_density_per_unit",
+      "type": "integer",
+      "default_value": "30",
+      "description": "How many requests should be allowed per sampling\\_time\\_unit before blocking all the incoming request from that IP. Practically, the blocking limit is between ( let's have x=reqs\\_density\\_per\\_unit) x and 3\\*x for IPv4 addresses and between x and 8\\*x for ipv6 addresses.",
+      "example_value": "30",
+      "example_code": "...\nmodparam(\"pike\", \"reqs\\_density\\_per\\_unit\", 30)\n..."
+    },
+    {
+      "name": "remove_latency",
+      "type": "integer",
+      "default_value": "120",
+      "description": "For how long the IP address will be kept in memory after the last request from that IP address. It's a sort of timeout value.",
+      "example_value": "130",
+      "example_code": "...\nmodparam(\"pike\", \"remove\\_latency\", 130)\n...",
+      "notes": "Note: If the _remove\\_latency_ value is lower than _sampling\\_time\\_unit_ value, nodes might expire before being unblocked, therefore losing some UNBLOCK events. In order to prevent this, if the _remove\\_latency_ is lower, OpenSIPS internally forces its value to _sampling\\_time\\_unit + 1_."
+    },
+    {
+      "name": "check_route",
+      "type": "string",
+      "default_value": "NONE (no auto mode).",
+      "description": "The name of the script route to be triggers (in automatic way) when a package is received from the network. If you do a \"drop\" in this route, it will indicate to the module that the source IP of the package does not need to be monitored. Otherwise, the source IP will be automatically monitered. By defining this parameter, the automatic checking mode is enabled.",
+      "example_value": "pike",
+      "example_code": "...\nmodparam(\"pike\", \"check\\_route\", \"pike\")\n...\nroute[pike]{\n    if ($si==111.222.111.222)  /*trusted, do not check it*/\n        drop;\n    /* all other IPs are checked*/\n}\n...."
+    },
+    {
+      "name": "pike_log_level",
+      "type": "integer",
+      "default_value": "1 (L\\_WARN).",
+      "description": "Log level to be used by module to auto report the blocking (only first time) and unblocking of IPs detected as source of floods.",
+      "example_value": "-1",
+      "example_code": "...\nmodparam(\"pike\", \"pike\\_log\\_level\", -1)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "pike_check_req",
+      "signature": "pike_check_req()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "IP is not to be blocked or internal error occurred."
+        },
+        {
+          "value": "-1",
+          "condition": "IP is source of flooding, being previously detected"
+        },
+        {
+          "value": "-2",
+          "condition": "IP is detected as a new source of flooding - first time detection"
+        }
+      ],
+      "description": "Process the source IP of the current request and returns false if the IP was exceeding the blocking limit.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!pike\\_check\\_req()) { exit; };\n...",
+          "description": "pike_check_req usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "pike_list",
+      "parameters": [],
+      "description": "Lists the nodes in the pike tree.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi pike\\_list",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "pike_rm",
+      "parameters": [
+        {
+          "name": "IP",
+          "type": "string",
+          "required": true,
+          "description": "IP address currently blocked."
+        }
+      ],
+      "description": "Remove a node from the pike tree by IP address.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi pike_rm 10.0.0.106",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_PIKE_BLOCKED",
+      "description": "This event is raised when the pike module decides that an IP should be blocked.",
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "description": "the IP address that has been blocked."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `sampling_time_unit` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"pike\", \"sampling\\_time\\_unit\", 10)\n..."
+    },
+    {
+      "title": "Set `reqs_density_per_unit` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"pike\", \"reqs\\_density\\_per\\_unit\", 30)\n..."
+    },
+    {
+      "title": "Set `remove_latency` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"pike\", \"remove\\_latency\", 130)\n..."
+    },
+    {
+      "title": "Set `check_route` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"pike\", \"check\\_route\", \"pike\")\n...\nroute[pike]{\n    if ($si==111.222.111.222)  /*trusted, do not check it*/\n        drop;\n    /* all other IPs are checked*/\n}\n...."
+    },
+    {
+      "title": "Set `pike_log_level` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"pike\", \"pike\\_log\\_level\", -1)\n..."
+    },
+    {
+      "title": "`pike_check_req` usage",
+      "description": "",
+      "code": "...\nif (!pike\\_check\\_req()) { exit; };\n..."
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "id": "module-db_sqlite-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "db_sqlite Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/db_sqlite.html",
+  "content_markdown": "This is a module which provides SQLite support for OpenSIPS. It implements the DB API defined in OpenSIPS.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:23:37.898Z",
+  "module_name": "db_sqlite",
+  "overview": "This is a module which provides SQLite support for OpenSIPS. It implements the DB API defined in OpenSIPS.",
+  "how_it_works": "Also this module provides two ways of creating the query. One is to use sqlite3_bind_* functions after opensips creates the prepared statement query. The second one directly uses only sqlite3_snprintf function to print the values into the opensips created query. In theory, the second one should be faster and should allow you to make more queries to the database in the same time, so by default this one will be active. You can use the sqlite3_bind_* interface by simply uncommenting the SQLITE_BIND line the Makefile.",
+  "dependencies_required": [
+    {
+      "name": "libsqlite3-dev",
+      "type": "library",
+      "reason": "the development libraries of sqlite",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "alloc_limit",
+      "type": "integer",
+      "default_value": "10",
+      "description": "Since the library does not support a function to return the number of rows in a query, this number is obtained using \"count(*)\" query. If we use multiple processes there is the risk ,since \"count(*)\" query and the actual \"select\" query, the number of rows in the result query to have changed, so realloc will be needed if the number is bigger. Using _alloc_limit_ parameter you can specify the number with which the number of allocated rows in the result is raised.",
+      "example_code": "modparam(\"db\\_sqlite\", \"alloc\\_limit\", 25)"
+    },
+    {
+      "name": "load_extension",
+      "type": "string",
+      "default_value": "no extension is loaded",
+      "description": "This parameter enables extension loading, similiar to \".load\" functionality in sqlite3, extenions like sqlite3-pcre which enables REGEX function. In order to use this functionality you must specify the library path (.so file) and the entry point which represents the function to be called by the sqlite library (read more at sqlite load_extension official documentation), separated by \";\" delimiter. The entry point paramter can miss, so you won't need to use the delimitier in this case.",
+      "example_code": "modparam(\"db\\_sqlite\", \"load\\_extension\", \"/usr/lib/sqlite3/pcre.so\")\nmodparam(\"db\\_sqlite\", \"load\\_extension\", \"/usr/lib/sqlite3/pcre.so;sqlite3\\_extension\\_init\")"
+    },
+    {
+      "name": "busy_timeout",
+      "type": "integer",
+      "default_value": "500",
+      "description": "This parameter sets the default busy_handler for the SQLite library, that sleeps for a specified amount of time when a table is locked. The handler will sleep multiple times until at least the specified \"busy_timeout\" duration (in milliseconds) has been reached. Setting this parameter to a value less than or equal to zero turns off all busy handlers. (read more in the SQLite official documentation)",
+      "example_code": "modparam(\"db\\_sqlite\", \"busy\\_timeout\", 5000)"
+    },
+    {
+      "name": "exec_pragma",
+      "type": "string",
+      "default_value": "no PRAGMA statements are executed",
+      "description": "This parameter allows configuring an SQLite database with \"PRAGMA\" statements, (read more in the SQLite official documentation) To use this functionality you must specify the exec_pragma parameter value as \"pragma-name=pragma-value\". Multiple parameters with the same name can be specified, and they will be executed one by one on every database connection. If a parameter has an incorrect name or syntax, it will be ignored by SQLite without any error messages.",
+      "example_code": "modparam(\"db\\_sqlite\", \"exec\\_pragma\", \"journal\\_mode=wal\")\nmodparam(\"db\\_sqlite\", \"exec\\_pragma\", \"synchronous=normal\")\nmodparam(\"db\\_sqlite\", \"exec\\_pragma\", \"cache\\_size=-2000\")"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `alloc_limit` parameter",
+      "description": "Using _alloc_limit_ parameter you can specify the number with which the number of allocated rows in the result is raised.",
+      "code": "...\nmodparam(\"db_sqlite\", \"alloc_limit\", 25)\n..."
+    },
+    {
+      "title": "Set `load_extension` parameter",
+      "description": "This parameter enables extension loading, similiar to \".load\" functionality in sqlite3, extenions like sqlite3-pcre which enables REGEX function.",
+      "code": "...\nmodparam(\"db_sqlite\", \"load_extension\", \"/usr/lib/sqlite3/pcre.so\")\nmodparam(\"db_sqlite\", \"load_extension\", \"/usr/lib/sqlite3/pcre.so;sqlite3_extension_init\")\n..."
+    },
+    {
+      "title": "Set `busy_timeout` parameter",
+      "description": "This parameter sets the default busy_handler for the SQLite library, that sleeps for a specified amount of time when a table is locked.",
+      "code": "...\nmodparam(\"db_sqlite\", \"busy_timeout\", 5000)\n..."
+    },
+    {
+      "title": "Set `exec_pragma` parameter",
+      "description": "This parameter allows configuring an SQLite database with \"PRAGMA\" statements.",
+      "code": "...\nmodparam(\"db_sqlite\", \"exec_pragma\", \"journal_mode=wal\")\nmodparam(\"db_sqlite\", \"exec_pragma\", \"synchronous=normal\")\nmodparam(\"db_sqlite\", \"exec_pragma\", \"cache_size=-2000\")\n..."
+    }
+  ]
+}

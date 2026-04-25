@@ -1,0 +1,71 @@
+{
+  "id": "module-tls_openssl-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "tls_openssl Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/tls_openssl.html",
+  "content_markdown": "This module implements TLS operations using the [_openSSL_](https://www.openssl.org/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_ etc.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:39:36.872Z",
+  "module_name": "tls_openssl",
+  "overview": "This module implements TLS operations using the [_openSSL_](https://www.openssl.org/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_ etc.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "openssl",
+      "type": "library",
+      "reason": "TLS v1.0 support requires >= 0.9.6",
+      "optional": false
+    },
+    {
+      "name": "libssl",
+      "type": "library",
+      "reason": "TLS v1.0 support requires >= 0.9.6",
+      "optional": false
+    },
+    {
+      "name": "openssl-dev",
+      "type": "library",
+      "reason": "TLS v1.0 support",
+      "optional": false
+    },
+    {
+      "name": "libssl-dev",
+      "type": "library",
+      "reason": "TLS v1.0 support",
+      "optional": false
+    },
+    {
+      "name": "openssl",
+      "type": "library",
+      "reason": "TLS v1.1/1.2 support requires >= 1.0.1e",
+      "optional": false
+    },
+    {
+      "name": "libssl",
+      "type": "library",
+      "reason": "TLS v1.1/1.2 support requires >= 1.0.1e",
+      "optional": false
+    },
+    {
+      "name": "openssl-dev",
+      "type": "library",
+      "reason": "TLS v1.1/1.2 support",
+      "optional": false
+    },
+    {
+      "name": "libssl-dev",
+      "type": "library",
+      "reason": "TLS v1.1/1.2 support",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": []
+}

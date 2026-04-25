@@ -1,0 +1,1497 @@
+{
+  "id": "core_parameter-core-3.5",
+  "document_type": "core_parameter",
+  "version": "3.5",
+  "title": "Core Parameters v3.5",
+  "url": "https://www.opensips.org/Documentation/Script-CoreParameters-3-5",
+  "content_markdown": "This section lists the all the parameters exported by OpenSIPS core for script usage (to be used in opensips.cfg).",
+  "category": "Core",
+  "extracted_at": "2023-10-25T00:00:00Z",
+  "parameters": [
+    {
+      "name": "abort_on_assert",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Only relevant if asserts are enabled. Set to true in order to make OpenSIPS shut down immediately in case a script assert fails.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "abort_on_assert = true",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "advertised_address",
+      "type": "string",
+      "default_value": "",
+      "description": "It can be an IP address or string and represents the address advertised in Via header and other destination lumps (e.g RR header). If empty or not set (default value) the socket address from where the request will be sent is used.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "advertised_address=\"opensips.org\"",
+          "description": "Example of usage"
+        }
+      ],
+      "notes": "Aside this global approach, you can also define an advertise IP and port in a per-interface manner (see the socket parameter). When advertise values are defined per interface, they will be used only for traffic leaving that interface only."
+    },
+    {
+      "name": "advertised_port",
+      "type": "integer",
+      "default_value": "",
+      "description": "The port advertised in Via header and other destination lumps (e.g. RR). If empty or not set (default value) the port from where the message will be sent is used.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "advertised_port=5080",
+          "description": "Example of usage"
+        }
+      ],
+      "notes": "Aside this global approach, you can also define an advertise IP and port in a per-interface manner (see the socket parameter)."
+    },
+    {
+      "name": "alias",
+      "type": "string",
+      "default_value": "",
+      "description": "Parameter to set alias hostnames for the server. It can be set many times, each value being added in a list to match the hostname when 'myself' is checked.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "alias=udp:other.domain.com:5060\nalias=tcp:another.domain.com:5060",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "auto_aliases",
+      "type": "boolean",
+      "default_value": "\"off\"/0",
+      "description": "This parameter controls if aliases should be automatically discovered and added during fixing listening sockets. The auto discovered aliases are result of the DNS lookup (if the 'socket' definition has a name and not IP) or of a reverse DNS lookup on the socket IP.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "auto_aliases=yes\nauto_aliases=1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "auto_scaling_cycle",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The number of seconds defining a auto-scaling cycle - the auto-scaling engine, at each cycle, is evaluating the internal load of the groups and decided if more processes needs to be created or if existing processes need to be terminated.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "auto_scaling_cycle=3  # do auto-scaling checks once every 3 seconds",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "auto_scaling_profile",
+      "type": "string",
+      "default_value": "",
+      "description": "Defines the behavior of the auto-scaling support, in terms of how many processes should be allowed and when to terminate or create new processes. These profiles may be used for the UDP processes, TCP processes or TIMER processes.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "auto_scaling_profile = PROFILE_SIP\n scale up to 6 on 70% for 4 cycles within 5   \n scale down to 2 on 18% for 10 cycles",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "check_via",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Check if the address in top most via of replies is local. Default value is 0 (check disabled).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "check_via=1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "chroot",
+      "type": "string",
+      "default_value": "",
+      "description": "The value must be a valid path in the system. If set, OpenSIPS will chroot (change root directory) to its value.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "chroot=/other/fakeroot",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "debug_mode",
+      "type": "boolean",
+      "default_value": "false/0",
+      "description": "Enabling the debug_mode option is a fast way to debug your OpenSIPS. This option will automatically force staying in foreground, set logging level to 4, set logging to standard error, enable core dumping, set UDP/TCP worker processes to 2.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "debug_mode=1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "db_version_table",
+      "type": "string",
+      "default_value": "\"version\"",
+      "description": "The name of the table version to be used by the DB API to check the version of the used tables.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "db_version_table=\"version_1_8\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "db_default_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The default DB URL to be used by modules if no per-module URL is given.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "db_default_url=\"mysql://opensips:opensipsrw@localhost/opensips\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "db_max_async_connections",
+      "type": "integer",
+      "default_value": "10",
+      "description": "Maximum number of TCP connections opened from a single OpenSIPS worker to each individual SQL backend.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "db_max_async_connections=220",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "disable_503_translation",
+      "type": "boolean",
+      "default_value": "'no'",
+      "description": "If 'yes', OpenSIPS will not translate the received 503 replies into 500 replies.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "disable_503_translation=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "disable_core_dump",
+      "type": "boolean",
+      "default_value": "'no'",
+      "description": "Can be 'yes' or 'no'. By default core dump limits are set to unlimited or a high enough value. Set this config variable to 'yes' to disable core dump-ing (will set core limits to 0).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "disable_core_dump=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "disable_dns_blacklist",
+      "type": "boolean",
+      "default_value": "'yes'",
+      "description": "The DNS resolver, when configured with failover, can automatically store in a temporary blacklist the failed destinations. Can be 'yes' or 'no'. By default the blacklist is disabled (Default value is 'yes').",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "disable_dns_blacklist=no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "disable_dns_failover",
+      "type": "boolean",
+      "default_value": "'no'",
+      "description": "Can be 'yes' or 'no'. By default DNS-based failover is enabled. Set this config variable to 'yes' to disable the DNS-based failover.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "disable_dns_failover=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "disable_stateless_fwd",
+      "type": "boolean",
+      "default_value": "'yes'",
+      "description": "Can be 'yes' or 'no'. This parameter controls the handling of stateless replies.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "disable_stateless_fwd=no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns",
+      "type": "boolean",
+      "default_value": "no",
+      "description": "This parameter controls if the SIP server should attempt to lookup its own domain name in DNS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_retr_time",
+      "type": "integer",
+      "default_value": "system specific (usually 5s)",
+      "description": "Time in seconds before retrying a dns request.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_retr_time=3",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_retr_no",
+      "type": "integer",
+      "default_value": "system specific (usually 4)",
+      "description": "Number of dns retransmissions before giving up.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_retr_no=3",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_servers_no",
+      "type": "integer",
+      "default_value": "use all of them",
+      "description": "How many dns servers from the ones defined in '/etc/resolv.conf' will be used.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_servers_no=2",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_try_ipv6",
+      "type": "boolean",
+      "default_value": "'no'",
+      "description": "Can be 'yes' or 'no'. If it is set to 'yes' and a DNS lookup fails, it will retry it for ipv6 (AAAA record).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_try_ipv6=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_try_naptr",
+      "type": "boolean",
+      "default_value": "'yes'",
+      "description": "Disables the NAPTR lookups when doing DNS based routing for SIP requests - if disabled, the DNS lookup will start with SRV lookups.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_try_naptr=no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dns_use_search_list",
+      "type": "boolean",
+      "default_value": "'yes'",
+      "description": "Can be 'yes' or 'no'. If set to 'no', the search list in '/etc/resolv.conf' will be ignored.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dns_use_search_list=no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "dst_blacklist",
+      "type": "string",
+      "default_value": "",
+      "description": "Definition of a IP/destination blacklist. These lists can be selected from script (at runtime) to filter the outgoing requests, based on IP, protocol, port, etc.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# filter out requests going to ips of my gws\ndst_blacklist = gw:{( tcp , 192.168.3.500 , 5060 , \"\" ),( any , 192.168.3.501 , 0 , \"\" )}\n# block requests going to \"evil\" networks\ndst_blacklist = net_filter:{ ( any , 192.168.1.120/255.255.255.0 , 0 , \"\" )}\n# block message requests with nasty words\ndst_blacklist = msg_filter:{ ( any , 192.168.20.0/255.255.255.0 , 0 , \"MESSAGE*ugly_word\" )}\n# block requests not going to a specific subnet\ndst_blacklist = net_filter2:{ !( any , 193.568.30.0/255.255.255.0 , 0 , \"\" )}\n# define a dynamic list that is built at runtime and has expire entries\ndst_blacklist = net_dynamic/expire",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "enable_asserts",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Set to true in order to enable the assert script statement.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "enable_asserts = true",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "event_pkg_threshold",
+      "type": "integer",
+      "default_value": "0",
+      "description": "A number representing the percentage threshold above which the E_CORE_PKG_THRESHOLD event is raised, warning about low amount of free private memory.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "event_pkg_threshold = 90",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "event_shm_threshold",
+      "type": "integer",
+      "default_value": "0",
+      "description": "A number representing the percentage threshold above which the E_CORE_SHM_THRESHOLD event is raised, warning about low amount of free shared memory.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "event_shm_threshold = 90",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "exec_dns_threshold",
+      "type": "integer",
+      "default_value": "0",
+      "description": "A number representing the maximum number of microseconds a DNS query is expected to last. Anything above the set number will trigger a warning message to the logging facility.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "exec_dns_threshold = 60000",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "exec_msg_threshold",
+      "type": "integer",
+      "default_value": "0",
+      "description": "A number representing the maximum number of microseconds the processing of a SIP msg is expected to last. Anything above the set number will trigger a warning message to the logging facility.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "exec_msg_threshold = 60000",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "include_file",
+      "type": "string",
+      "default_value": "",
+      "description": "Can be called from outside route blocks to load additional routes/blocks or from inside them to simply perform more functions. The file path can be relative or absolute.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "include_file \"proxy_regs.cfg\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "import_file",
+      "type": "string",
+      "default_value": "",
+      "description": "Same as include_file.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "import_file \"proxy_regs.cfg\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "listen",
+      "type": "string",
+      "default_value": "",
+      "description": "This parameter was replaced by the socket parameter, preserving exactly the same format and behavior.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "listen=udp:127.0.0.1:5060",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_facility",
+      "type": "string",
+      "default_value": "",
+      "description": "This parameter was replaced by the syslog_facility parameter, preserving exactly the same format and behavior.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_facility=LOG_LOCAL0",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_event_enabled",
+      "type": "boolean",
+      "default_value": "no",
+      "description": "Enables the triggering of the E_CORE_LOG event for every log message generated by opensips. By default this is disabled.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_event_enabled = yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_event_level_filter",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Extra log level filtering for the E_CORE_LOG event. This parameter may be useful when different levels of verbosity are desired between syslog/standard error logs and the logs delivered through the E_CORE_LOG event.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_event_level_filter = 3",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_json_buf_size",
+      "type": "integer",
+      "default_value": "6144",
+      "description": "Size of the buffer used for printing the JSON document corresponding to a log message. This parameter makes sense when the json or json_cee log formats are used.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_json_buf_size = 8192 #given in bytes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_level",
+      "type": "integer",
+      "default_value": "2",
+      "description": "Set the logging level (how verbose OpenSIPS should be). Higher values make OpenSIPS print more messages.",
+      "multiple_allowed": false,
+      "valid_values": [
+        "-3",
+        "-2",
+        "-1",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_level=1 -- print only important messages (like errors or more critical situations) \n- recommended for running proxy as daemon\n\nlog_level=4 -- print a lot of debug messages - use it only when doing debugging sessions",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_msg_buf_size",
+      "type": "integer",
+      "default_value": "4096",
+      "description": "Size of the buffer used for printing the log message's payload. This is used for printing the \"message\" field from a JSON document, when the json or json_cee log formats are used or when the E_CORE_LOG event is raised.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_msg_buf_size = 8192 #given in bytes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_name",
+      "type": "string",
+      "default_value": "",
+      "description": "This parameter was replaced by the syslog_name parameter, preserving exactly the same format and behavior.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_name=\"osips\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_stdout",
+      "type": "boolean",
+      "default_value": "\"no\"",
+      "description": "Although all OpenSIPS logs are done via standard error, enabling this parameter may be still be useful when trying to extract logs from 3rd party libraries.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_stdout = yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_stderror",
+      "type": "boolean",
+      "default_value": "\"yes\"",
+      "description": "This parameter is deprecated and it's behavior starting with OpenSIPS 3.4 is equivalent to setting the stderror_enabled and syslog_enabled parameters.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_stderror = yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "log_prefix",
+      "type": "string",
+      "default_value": "\"\"",
+      "description": "A string prefix which will be prepended to all logs produced by OpenSIPS (from both C code and script xlog() statements).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_prefix = \"opensips-backup\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "max_while_loops",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The parameters set the value of maximum loops that can be done within a \"while\". Comes as a protection to avoid infinite loops in config file execution.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "max_while_loops=200",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "maxbuffer",
+      "type": "integer",
+      "default_value": "262144",
+      "description": "The size in bytes not to be exceeded during the auto-probing procedure of discovering the maximum buffer size for receiving UDP messages.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "maxbuffer=65536",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mem-group",
+      "type": "string",
+      "default_value": "",
+      "description": "Defines a group of modules (by name) to get separate memory statistics. OpenSIPS will provide per-group memory information.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mem-group = \"interest\": \"core\" \"tm\"\nmem-group = \"runtime\": \"dialog\" \"usrloc\" \"tm\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mem_warming",
+      "type": "boolean",
+      "default_value": "off",
+      "description": "Only relevant when the HP_MALLOC compile flag is enabled. If set to \"on\", on each startup, OpenSIPS will attempt to restore the memory fragmentation pattern it had before the stop/restart.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mem_warming = on",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mem_warming_percentage",
+      "type": "integer",
+      "default_value": "75",
+      "description": "How much of OpenSIPS's memory should be fragmented with the pattern of the previous run, upon a restart. Used at startup, if mem_warming is enabled.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mem_warming_percentage = 50",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mem_warming_pattern_file",
+      "type": "string",
+      "default_value": "\"CFG_DIR/mem_warming_pattern\"",
+      "description": "Only relevant if mem_warming is enabled. It contains the memory fragmentation pattern of a previous OpenSIPS run.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mem_warming_pattern_file = \"/var/tmp/my_memory_pattern\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "memdump",
+      "type": "integer",
+      "default_value": "L_DBG (4)",
+      "description": "Log level to print memory status information (runtime and shutdown). It has to be less than the value of 'log_level' parameter if you want memory info to be logged.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "memdump=2",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "memlog",
+      "type": "integer",
+      "default_value": "L_DBG (4)",
+      "description": "Log level to print memory debug info. It has to be less than the value of 'log_level' parameter if you want memory info to be logged.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "memlog=2",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mcast_loopback",
+      "type": "boolean",
+      "default_value": "'no'",
+      "description": "It can be 'yes' or 'no'. If set to 'yes', multicast datagram are sent over loopback.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mcast_loopback=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mcast_ttl",
+      "type": "integer",
+      "default_value": "OS specific (usually 1)",
+      "description": "Set the value for multicast ttl.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mcast_ttl=32",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mhomed",
+      "type": "boolean",
+      "default_value": "0",
+      "description": "Set the server to try to locate outbound interface on multihomed host. By default is not (0) - it is rather time consuming.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mhomed=1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "mpath",
+      "type": "string",
+      "default_value": "",
+      "description": "Set the module search path. This can be used to simplify the loadmodule parameter",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mpath=\"/usr/local/lib/opensips/modules\"\nloadmodule \"mysql.so\"\nloadmodule \"uri.so\"\nloadmodule \"uri_db.so\"\nloadmodule \"sl.so\"\nloadmodule \"tm.so\"\n...",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "open_files_limit",
+      "type": "integer",
+      "default_value": "",
+      "description": "If set and bigger than the current open file limit, OpenSIPS will try to increase its open file limit to this number.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "open_files_limit=2048",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "poll_method",
+      "type": "string",
+      "default_value": "best one for the current OS",
+      "description": "The poll method to be used by the I/O internal reactor - by default the best one for the current OS is selected.",
+      "multiple_allowed": false,
+      "valid_values": [
+        "poll",
+        "epoll",
+        "sigio_rt",
+        "select",
+        "kqueue",
+        "/dev/poll"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "poll_method=select",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "default_value": "5060",
+      "description": "The port the SIP server listens to.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "port=5080",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "pv_print_buf_size",
+      "type": "integer",
+      "default_value": "20000",
+      "description": "The maximum size of an expanded formatted string containing variables and/or pseudo-variables.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "pv_print_buf_size = 60000",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "query_buffer_size",
+      "type": "integer",
+      "default_value": "",
+      "description": "If set to a value greater than 1, inserts to DB will not be flushed one by one. Rows to be inserted will be kept in memory until until they gather up to query_buffer_size rows, and only then they will be flushed to the database.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "query_buffer_size=5",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "query_flush_time",
+      "type": "integer",
+      "default_value": "",
+      "description": "If query_buffer_size is set to a value greater than 1, a timer will trigger once every query_flush_time seconds, ensuring that no row will be kept for too long in memory.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": " query_flush_time=10",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "restart_persistency_cache_file",
+      "type": "string",
+      "default_value": "\".restart_persistency.cache\"",
+      "description": "This parameter controls the name of the cache file that is used to store restart persistence memory.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "restart_persistency_cache_file=\".restart_persistency.cache\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "restart_persistency_size",
+      "type": "string",
+      "default_value": "value of the shared memory, 32MB",
+      "description": "This parameter controls the size of the cache file. If this parameter is not specified, it defaults to the size of the shared memory.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "restart_persistency_size=33554432",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "rev_dns",
+      "type": "boolean",
+      "default_value": "no",
+      "description": "This parameter controls if the SIP server should attempt to lookup its own IP address in DNS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "rev_dns=yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "server_header",
+      "type": "string",
+      "default_value": "\"OpenSIPS (<version> (<arch>/<os>))\"",
+      "description": "The body of Server header field generated by OpenSIPS when it sends a request as UAS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "server_header=\"Server: My Company SIP Proxy\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "server_signature",
+      "type": "boolean",
+      "default_value": "yes",
+      "description": "This parameter controls the \"Server\" header in any locally generated message.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "server_signature=no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "shm_hash_split_percentage",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Only relevant when the HP_MALLOC compile flag is enabled. It controls how many memory buckets will be optimized.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "shm_hash_split_percentage=2",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "shm_memlog_size",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Configures the maximum number of shm operations to keep in the in-memory history. A separate memory block, dedicated for this shm debug info will be allocated.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "shm_memlog_size=1000000",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "shm_secondary_hash_size",
+      "type": "integer",
+      "default_value": "8",
+      "description": "Only relevant when the HP_MALLOC compile flag is enabled. It represents the optimization factor of a single bucket.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "shm_secondary_hash_size=4",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "sip_warning",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Can be 0 or 1. If set to 1 (default value is 0) a 'Warning' header is added to each reply generated by OpenSIPS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sip_warning=0",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "socket",
+      "type": "string",
+      "default_value": "",
+      "description": "Set the network addresses/sockets the OpenSIPS server should listen on.",
+      "multiple_allowed": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "socket = udp:*\nsocket = udp:eth1\nsocket = tcp:eth1:5062\nsocket = tls:localhost:5061\nsocket = hep_udp:10.10.10.10:5064\nsocket = ws:127.0.0.1:5060 use_workers 5\nsocket = sctp:127.0.0.1:5060 as 99.88.44.33:5060 use_workers 3\nsocket = udp:10.10.10.10:5060 anycast\nsocket = udp:10.10.10.10:5060 use_workers 4 use_auto_scaling_profile PROFILE_SIP",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "stderror_enabled",
+      "type": "boolean",
+      "default_value": "yes/1",
+      "description": "Enables writing log messages to standard error.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "stderror_enabled = no",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "stderror_level_filter",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Extra log level filtering for the messages written to the standard error.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "stderror_level_filter = 2",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "syslog_enabled",
+      "type": "boolean",
+      "default_value": "no/disabled",
+      "description": "Enables writing log messages to syslog.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "syslog_enabled = yes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "stderror_log_format",
+      "type": "string",
+      "default_value": "plain_text",
+      "description": "Format of the log messages printed to standard error.",
+      "multiple_allowed": false,
+      "valid_values": [
+        "plain_text",
+        "json",
+        "json_cee"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "stderror_log_format = \"json\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "syslog_facility",
+      "type": "string",
+      "default_value": "LOG_DAEMON",
+      "description": "If OpenSIPS logs to syslog, you can control the facility for logging.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "syslog_facility=LOG_LOCAL0",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "syslog_level_filter",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Extra log level filtering for the messages sent to syslog.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "syslog_level_filter = 1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "syslog_log_format",
+      "type": "string",
+      "default_value": "plain_text",
+      "description": "Format of the log messages sent to syslog.",
+      "multiple_allowed": false,
+      "valid_values": [
+        "plain_text",
+        "json",
+        "json_cee"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "syslog_log_format = \"json\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "syslog_name",
+      "type": "string",
+      "default_value": "argv[0]",
+      "description": "Set the id to be printed in syslog. The value must be a string and has effect only when OpenSIPS runs in daemon mode (fork=yes), after daemonize.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "syslog_name=\"osips-5070\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_workers",
+      "type": "integer",
+      "default_value": "8",
+      "description": "Number of worker processes to be created for reading from TCP connections.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_workers= 4\ntcp_workers= 3 use_auto_scaling_profile PROFILE_SIP",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_accept_aliases",
+      "type": "boolean",
+      "default_value": "0",
+      "description": "If enabled, OpenSIPS will enforce RFC 5923 behaviour when detecting an \";alias\" Via header field parameter and will reuse any TCP (or TLS, WS, WSS) connection opened for such SIP requests.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_accept_aliases=1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_connect_timeout",
+      "type": "integer",
+      "default_value": "100ms",
+      "description": "Time in milliseconds before an ongoing blocking attempt to connect will be aborted.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_connect_timeout = 5",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_connection_lifetime",
+      "type": "integer",
+      "default_value": "120",
+      "description": "Lifetime in seconds for TCP sessions. TCP sessions which are inactive for >tcp_connection_lifetime will be closed by OpenSIPS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_connection_lifetime = 3600",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_max_connections",
+      "type": "integer",
+      "default_value": "2048",
+      "description": "Maximum number of active TCP accepted connections (i.e. initiated by remote endpoints).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_max_connections = 4096",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_max_msg_time",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of seconds that a SIP message is expected to arrive via TCP.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_max_msg_time = 8",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_no_new_conn_bflag",
+      "type": "string",
+      "default_value": "",
+      "description": "A branch flag to be used as marker to instruct OpenSIPS not to attempt to open a new TCP connection when delivering a request, but only to reuse an existing one (if available).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": " tcp_no_new_conn_bflag = TCP_NO_CONNECT\n ...\n route {\n     ...\n     if (isflagset(DST_NATED) && $socket_in(proto) == \"TCP\")\n         setbflag(TCP_NO_CONNECT);\n     ...\n     t_relay(\"no-auto-477 \");\n     $var(retcode) = $rc;\n     if ($var(retcode) == -6) {\n         #send error\n         xlog(\"unable to send request to destination\");\n         send_reply(\"404\", \"Not Found\");\n         exit;\n     } else if ($var(retcode) < 0) {\n         sl_reply_error();\n         exit;\n     }\n }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_no_new_conn_rplflag",
+      "type": "string",
+      "default_value": "",
+      "description": "A message flag, similar to tcp_no_new_conn_bflag, for preventing OpenSIPS to try to open a new TCP connection (if none available) when sending back a reply for the current request.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": " tcp_no_new_conn_msgflag = TCP_NO_RPL_CONNECT\n ...\n route {\n     ...\n     # if source is detected as NAT'ed, prevent opening back\n     # TCP conns for replying\n     if (isflagset(SRC_NATED) && $socket_in(proto) == \"TCP\")\n         setbflag(TCP_NO_RPL_CONNECT);\n     ...\n     # this may fail at transport layer if no\n     # TCP conn exists\n     t_reply(302,\"Redirected\");         \n }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_parallel_read_on_workers",
+      "type": "boolean",
+      "default_value": "",
+      "description": "This option will allow a TCP conn to perform read operations from different processes, not only from one.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_parallel_read_on_workers = 1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_socket_backlog",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The backlog argument defines the maximum length to which the queue of pending connections for the TCP listening sockets may grow.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_socket_backlog = 10",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_threshold",
+      "type": "integer",
+      "default_value": "0",
+      "description": "A number representing the maximum number of microseconds sending of a TCP request is expected to last.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_threshold = 60000",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_keepalive",
+      "type": "boolean",
+      "default_value": "1",
+      "description": "Enable or disable TCP keepalive (OS level).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_keepalive = 1",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_keepcount",
+      "type": "integer",
+      "default_value": "OS dependent (usually 9)",
+      "description": "Number of keepalives to send before closing the connection (Linux only).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_keepcount = 5",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_keepidle",
+      "type": "integer",
+      "default_value": "OS dependent (usually 7200)",
+      "description": "Amount of time before OpenSIPS will start to send keepalives if the connection is idle (Linux only).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_keepidle = 30",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tcp_keepinterval",
+      "type": "integer",
+      "default_value": "OS dependent (usually 75)",
+      "description": "Interval between keepalive probes, if the previous one failed (Linux only).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tcp_keepinterval = 10",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "timer_workers",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The number of worker processes to be created exclusively for timer related tasks/processing.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "timer_workers = 3\ntimer_workers = 3 use_auto_scaling_profile PROFILE_TIMER",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "tos",
+      "type": "string",
+      "default_value": "",
+      "description": "The TOS (Type Of Service) to be used for the sent IP packages (both TCP and UDP).",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "tos=IPTOS_LOWDELAY\ntos=0x10\ntos=IPTOS_RELIABILITY",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "udp_workers",
+      "type": "integer",
+      "default_value": "8",
+      "description": "Number of worker processes to be created for each UDP or SCTP interface you have defined.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "udp_workers=16\nudp_workers=4 use_auto_scaling_profile PROFILE_SIP",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "user_agent_header",
+      "type": "string",
+      "default_value": "\"OpenSIPS (<version> (<arch>/<os>))\"",
+      "description": "The body of User-Agent header field generated by OpenSIPS when it sends a request as UAC.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "user_agent_header=\"User-Agent: My Company SIP Proxy\"",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "wdir",
+      "type": "string",
+      "default_value": "",
+      "description": "The working directory used by OpenSIPS at runtime. You might find it useful when it comes to generating core files :)",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": " wdir=\"/usr/local/opensips\"\n or\n wdir=/usr/opensips_wd",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "xlog_buf_size",
+      "type": "integer",
+      "default_value": "4096",
+      "description": "Size of the buffer used to print a single line on the chosen logging facility of OpenSIPS.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog_buf_size = 8388608 #given in bytes",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "xlog_force_color",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Only relevant when xlog is set to true. Enables the use of the color escape sequences.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog_force_color = true",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "xlog_level",
+      "type": "integer",
+      "default_value": "2 / L_NOTICE",
+      "description": "Similar to log_level this parameter independently controls (from the rest of the OpenSIPS code) the verbosity of the xlog() functions.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog_level = 3 #L_DBG",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "xlog_print_level",
+      "type": "integer",
+      "default_value": "2 (L_NOTICE)",
+      "description": "Default level for printing the logs generated by xlog core function, when the log_level parameter is omitted.",
+      "multiple_allowed": false,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog_print_level = 2 #L_NOTICE",
+          "description": "Example of usage"
+        }
+      ]
+    }
+  ]
+}

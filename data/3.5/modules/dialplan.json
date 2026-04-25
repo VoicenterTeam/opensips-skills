@@ -1,0 +1,360 @@
+{
+  "id": "module-dialplan-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "dialplan Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/dialplan.html",
+  "content_markdown": "This module implements generic string translations based on matching and replacement rules. It can be used to manipulate R-URI or a PV and to translated to a new format/value.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:28:55.438Z",
+  "module_name": "dialplan",
+  "overview": "This module implements generic string translations based on matching and replacement rules. It can be used to manipulate R-URI or a PV and to translated to a new format/value.",
+  "how_it_works": "At startup, the module will load all transformation rules from one or more dialplan-compatible tables. The data of each table will be stored in a _partition_ (data source), which is defined by the \"db\\_url\" and \"table\\_name\" properties. Every table row will be stored in memory as a translation rule. Each rule will describe how the matching should be made, how the input value should be modified and which attributes should be set for the matching transformation.\n\nA dialplan rule can be of two types:\n\n*   _\"String matching\" rule_ - performs a string equality test against the input string. The case of the characters can be ignored by enabling bit 1 of the rule's \"match\\_flags\" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)\n    \n*   _\"Regex matching\" rule_ - uses Perl Compatible Regular Expressions, and will attempt to match the rule's expression against an input string. The regex maching can be done in a caseless manner by enabling bit 1 of the rule's \"match\\_flags\" bitmask column (i.e. set the column value to 1 or 0, for insensitive or sensitive)\n    \nThe module provides the _dp\\_translate()_ script function, which expects an input **string** value that will be matched, at worst, against all rules of a partition.\n\nInternally, the module groups a partition's rules into two sets, \"string\" and \"regex\". The matching logic will attempt to find the first match within each of these two sets of rules. Each set will be iterated in **ascending** order of priority. If an input string happens to match a rule in each of the two sets, the rule with the smallest priority will be chosen. Furthermore, should these two matching rules also have equal priorities, the one with the smallest \"id\" field (the unique key) will be chosen.\n\nOnce a single rule is decided upon, the defined transformation (if any) is applied and the result is returned as output value. Also, if any string attribute is associated to the rule, this will be returned to the script along with the output value.",
+  "dependencies_required": [
+    {
+      "name": "libpcre-dev",
+      "type": "library",
+      "reason": "the development libraries of PCRE",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "partition",
+      "type": "string",
+      "description": "Specify a new dialplan partition (data source). This parameter may be set multiple times. Each partition may have a specific \"db\\_url\" and \"table\\_name\". If not specified, these values will be inherited from [db\\_url](#param_db_url \"1.6.2.�db\\_url (string)\"), db\\_default\\_url or [table\\_name](#param_table_name \"1.6.3.�table\\_name (string)\"), respectively. The name of the default partition is 'default'.",
+      "example_code": "modparam(\"dialplan\", \"partition\", \"\n\tpstn:\n\t\ttable\\_name = dialplan;\n\t\tdb\\_url = mysql://opensips:opensipsrw@127.0.0.1/opensips\")",
+      "notes": "Note: OpenSIPS will validate each partition, so make sure to add any required entries in the \"version\" table of each database defined through the 'db\\_url' property."
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL (not set)",
+      "description": "The default DB connection of the module, overriding the global 'db\\_default\\_url' setting. Once specified, partitions which are missing the 'db\\_url' property will inherit their URL from this value.",
+      "example_code": "modparam(\"dialplan\", \"db_url\", \"mysql://user:passwd@localhost/db\")"
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "dialplan",
+      "description": "The default name of the table from which to load translation rules. Partitions which are missing the 'table\\_name' property will inherit their table name from this value.",
+      "example_code": "modparam(\"dialplan\", \"table_name\", \"my\\_table\")"
+    },
+    {
+      "name": "dpid_col",
+      "type": "string",
+      "default_value": "dpid",
+      "description": "The column name to store the dialplan ID group.",
+      "example_code": "modparam(\"dialplan\", \"dpid\\_col\", \"column\\_name\")"
+    },
+    {
+      "name": "pr_col",
+      "type": "string",
+      "default_value": "pr",
+      "description": "The column name to store the priority of the corresponding rule from the table row. Smaller priority values have higher precedence.",
+      "example_code": "modparam(\"dialplan\", \"pr\\_col\", \"column\\_name\")"
+    },
+    {
+      "name": "match_op_col",
+      "type": "string",
+      "default_value": "match_op",
+      "description": "The column name to store the type of matching of the rule.",
+      "example_value": "column_name",
+      "example_code": "modparam(\"dialplan\", \"match_op_col\", \"column_name\")"
+    },
+    {
+      "name": "match_exp_col",
+      "type": "string",
+      "default_value": "match_exp",
+      "description": "The column name to store the rule match expression.",
+      "example_value": "column_name",
+      "example_code": "modparam(\"dialplan\", \"match_exp_col\", \"column_name\")"
+    },
+    {
+      "name": "match_flags_col",
+      "type": "string",
+      "default_value": "match_flags",
+      "description": "The column name to store various matching flags. Currently 0 - case sensitive matching, 1 - case insensitive matching.",
+      "example_value": "column_name",
+      "example_code": "modparam(\"dialplan\", \"match_flags_col\", \"column_name\")"
+    },
+    {
+      "name": "subst_exp_col",
+      "type": "string",
+      "default_value": "subst_exp",
+      "description": "The column name to store the rule's substitution expression.",
+      "example_value": "column_name",
+      "example_code": "modparam(\"dialplan\", \"subst_exp_col\", \"column_name\")"
+    },
+    {
+      "name": "repl_exp_col",
+      "type": "string",
+      "default_value": "repl_exp",
+      "description": "The column name to store the rule's replacement expression.",
+      "example_value": "column_name",
+      "example_code": "modparam(\"dialplan\", \"repl_exp_col\", \"column_name\")"
+    },
+    {
+      "name": "timerec_col",
+      "type": "string",
+      "default_value": "timerec",
+      "description": "The column name that indicates an additional time recurrence check within the rule (column values are RFC 2445-compatible strings). The value format is identical to the input of the check_time_rec() function of the cfgutils module, including the optional use of logical operators linking multiple such strings into a larger expression.",
+      "example_value": "month_match",
+      "example_code": "...\nmodparam(\"dialplan\", \"timerec_col\", \"month_match\")\n..."
+    },
+    {
+      "name": "disabled_col",
+      "type": "string",
+      "default_value": "disabled",
+      "description": "The column name that indicates if the dialplan rule is disabled.",
+      "example_value": "disabled_column",
+      "example_code": "...\nmodparam(\"dialplan\", \"disabled_col\", \"disabled_column\")\n..."
+    },
+    {
+      "name": "attrs_col",
+      "type": "string",
+      "default_value": "attrs",
+      "description": "The column name to store rule-specific attributes.",
+      "example_value": "column_name",
+      "example_code": "...\nmodparam(\"dialplan\", \"attrs_col\", \"column_name\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "dp_translate",
+      "signature": "dp_translate(id, input, [out_var], [attrs_var], [partition])",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "int",
+          "required": true,
+          "description": "the dialplan id to be used for matching rules"
+        },
+        {
+          "name": "input",
+          "type": "string",
+          "required": true,
+          "description": "input string to be used for rule matching and for computing the output string."
+        },
+        {
+          "name": "out_var",
+          "type": "var",
+          "required": false,
+          "description": "variable to be populated/written with the output string (if provided by the translation rule), on a successful translation."
+        },
+        {
+          "name": "attrs_var",
+          "type": "var",
+          "required": false,
+          "description": "variable to be populated/written with the \"attributes\" field of the translation rule, on a successful translation. If the field is NULL or empty-string, the variable will be set to empty-string."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the partition (set of data) to be used for locating the DP ID."
+        }
+      ],
+      "return_type": "int",
+      "description": "Will try to translate the src string into dest string according to the translation rules with dialplan ID equal to id.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "LOCAL_ROUTE",
+        "BRANCH_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "dp_translate(240, $ru, $var(out));\nxlog(\"translated into '$var(out)' \\n\");",
+          "description": "dp_translate usage"
+        },
+        {
+          "language": "opensips",
+          "code": "$avp(src) = $ruri.user;\ndp_translate($var(x), $avp(src), $var(y), $var(attrs));\nxlog(\"translated to var $var(y) with attributes: '$var(attrs)'\\n\");",
+          "description": "dp_translate usage"
+        },
+        {
+          "language": "opensips",
+          "code": "$var(id) = 10;\ndp_translate($var(id), $avp(in), , $avp(attrs), \"example_partition\");\nxlog(\"matched with attributes '$avp(attrs) against example_partition'\\n\");",
+          "description": "dp_translate usage"
+        },
+        {
+          "language": "opensips",
+          "code": "dp_translate(10, $var(in), , , $var(part));\nxlog(\"'$var(in)' matched against partition '$var(part)'\\n\")",
+          "description": "dp_translate usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "dp_reload",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "Partition to be reloaded. If not specified, all partitions will be reloaded."
+        }
+      ],
+      "description": "It will update the translation rules, loading the database info.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dp_reload",
+          "description": "MI DATAGRAM Command Format"
+        }
+      ]
+    },
+    {
+      "name": "dp_translate",
+      "parameters": [
+        {
+          "name": "dpid",
+          "type": "integer",
+          "required": true,
+          "description": "the dpid of the rule set used for match the input string"
+        },
+        {
+          "name": "input",
+          "type": "string",
+          "required": true,
+          "description": "the input string"
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "(optional) the name of the partition when the dpid is located"
+        }
+      ],
+      "description": "It will apply a translation rule identified by a dialplan id on an input string.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dp_translate 10 +40123456789",
+          "description": "MI DATAGRAM Command Format"
+        }
+      ]
+    },
+    {
+      "name": "dp_show_partiton",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "The partition name. If no partition is specified, all known partitions will be listed."
+        }
+      ],
+      "description": "Display partition(s) details.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi dp_translate default",
+          "description": "MI DATAGRAM Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Defining the `'pstn'` partition",
+      "description": "Defining the `'pstn'` partition",
+      "code": "...\nmodparam(\"dialplan\", \"partition\", \"\n\tpstn:\n\t\ttable\\_name = dialplan;\n\t\tdb\\_url = mysql://opensips:opensipsrw@127.0.0.1/opensips\")\n..."
+    },
+    {
+      "title": "Define the 'pstn' partition and make it the 'default' partition, so we avoid loading the 'dialplan' table",
+      "description": "Define the 'pstn' partition and make it the 'default' partition, so we avoid loading the 'dialplan' table",
+      "code": "...\ndb\\_default\\_url = \"mysql://opensips:opensipsrw@localhost/opensips\"\n\nloadmodule \"dialplan.so\")\nmodparam(\"dialplan\", \"partition\", \"\n\tpstn:\n\t\ttable\\_name = dialplan\\_pstn\")\nmodparam(\"dialplan\", \"partition\", \"default: pstn\")\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"db_url\", \"mysql://user:passwd@localhost/db\")\n..."
+    },
+    {
+      "title": "Set `table_name` parameter",
+      "description": "Set `table_name` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"table_name\", \"my\\_table\")\n..."
+    },
+    {
+      "title": "Set `dpid_col` parameter",
+      "description": "Set `dpid_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"dpid\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `pr_col` parameter",
+      "description": "Set `pr_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"pr\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `match_op_col` parameter",
+      "description": "Set `match_op_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"match\\_op\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `match_exp_col` parameter",
+      "description": "Set `match_exp_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"match\\_exp\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `match_flags_col` parameter",
+      "description": "Set `match_flags_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"match\\_flags\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `subs_exp_col` parameter",
+      "description": "Set `subs_exp_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"subst\\_exp\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `repl_exp_col` parameter",
+      "description": "Set `repl_exp_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"repl\\_exp\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "Set `timerec_col` parameter",
+      "description": "Set `timerec_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"timerec\\_col\", \"month\\_match\")\n..."
+    },
+    {
+      "title": "Set `disabled_col` parameter",
+      "description": "Set `disabled_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"disabled\\_col\", \"disabled\\_column\")\n..."
+    },
+    {
+      "title": "Set `attrs_col` parameter",
+      "description": "Set `attrs_col` parameter",
+      "code": "...\nmodparam(\"dialplan\", \"attrs\\_col\", \"column\\_name\")\n..."
+    },
+    {
+      "title": "`dp_translate` usage",
+      "description": "`dp_translate` usage",
+      "code": "...\ndp\\_translate(240, $ru, $var(out));\nxlog(\"translated into '$var(out)' \\\\n\");\n..."
+    },
+    {
+      "title": "`dp_translate` usage",
+      "description": "`dp_translate` usage",
+      "code": "...\n$avp(src) = $ruri.user;\ndp\\_translate($var(x), $avp(src), $var(y), $var(attrs));\nxlog(\"translated to var $var(y) with attributes: '$var(attrs)'\\\\n\");\n..."
+    },
+    {
+      "title": "`dp_translate` usage",
+      "description": "`dp_translate` usage",
+      "code": "...\n$var(id) = 10;\ndp\\_translate($var(id), $avp(in), , $avp(attrs), \"example\\_partition\");\nxlog(\"matched with attributes '$avp(attrs) against example\\_partition'\\\\n\");\n..."
+    },
+    {
+      "title": "`dp_translate` usage",
+      "description": "`dp_translate` usage",
+      "code": "...\ndp\\_translate(10, $var(in), , , $var(part));\nxlog(\"'$var(in)' matched against partition '$var(part)'\\\\n\")\n..."
+    }
+  ]
+}

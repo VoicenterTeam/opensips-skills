@@ -1,0 +1,135 @@
+{
+  "id": "module-maxfwd-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "maxfwd Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/maxfwd.html",
+  "content_markdown": "The module implements all the operations regarding MaX-Forward header field, like adding it (if not present) or decrementing and checking the value of the existent one.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:52:21.812Z",
+  "module_name": "maxfwd",
+  "overview": "The module implements all the operations regarding MaX-Forward header field, like adding it (if not present) or decrementing and checking the value of the existent one.",
+  "how_it_works": null,
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "max_limit",
+      "type": "integer",
+      "default_value": "256",
+      "description": "Set an upper limit for the max-forward value in the outgoing requests. If the header is present, the decremented value is not allowed to exceed this max\\_limits - if it does, the header value will by decreased to “max\\_limit”.",
+      "valid_range_min": 1,
+      "valid_range_max": 256,
+      "example_value": "32",
+      "example_code": "...\nmodparam(\"maxfwd\", \"max\\_limit\", 32)\n...",
+      "notes": "Note: This check is done when calling the mf\\_process\\_maxfwd\\_header() header."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "mf_process_maxfwd_header",
+      "signature": "mf_process_maxfwd_header(max_value)",
+      "parameters": [
+        {
+          "name": "max_value",
+          "type": "int",
+          "required": true,
+          "description": "Value to be added if there is no Max-Forwards header field in the message."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "2",
+          "condition": "header was not found and a new header was successfully added"
+        },
+        {
+          "value": "1",
+          "condition": "header was found and its value was successfully decremented (had a non-0 value)"
+        },
+        {
+          "value": "-1",
+          "condition": "the header was found and its value is 0 (cannot be decremented)"
+        },
+        {
+          "value": "-2",
+          "condition": "error during processing"
+        }
+      ],
+      "description": "If no Max-Forward header is present in the received request, a header will be added having the original value equal with “max_value”. If a Max-Forward header is already present, its value will be decremented (if not 0).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# initial sanity checks -- messages with\n# max_forwards==0, or excessively long requests\nif (!mf_process_maxfwd_header(10) && $retcode==-1) {\n\tsl_send_reply(483,\"Too Many Hops\");\n\texit;\n};\n...",
+          "description": "mx_process_maxfwd_header usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "is_maxfwd_lt",
+      "signature": "is_maxfwd_lt(max_value)",
+      "parameters": [
+        {
+          "name": "max_value",
+          "type": "int",
+          "required": true,
+          "description": "value to check the Max-Forward.value against (as less than)."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "header was found or set and its value is strictly less than “max_value”"
+        },
+        {
+          "value": "-1",
+          "condition": "the header was found or set and its value is greater or equal to “max_value”"
+        },
+        {
+          "value": "-2",
+          "condition": "header was not found or not set"
+        },
+        {
+          "value": "-3",
+          "condition": "error during processing"
+        }
+      ],
+      "description": "Checks if the Max-Forward header value is less then the “max_value” parameter value. It considers also the value of the new inserted header (if locally added).",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# next hope is a gateway, so make no sens to\n# forward if MF is 0 (after decrement)\nif ( is_maxfwd_lt(1) ) {\n\tsl_send_reply(483,\"Too Many Hops\");\n\texit;\n};\n...",
+          "description": "is_maxfwd_lt usage",
+          "context": ""
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `max_limit` parameter",
+      "description": "Set an upper limit for the max-forward value in the outgoing requests.",
+      "code": "...\nmodparam(\"maxfwd\", \"max_limit\", 32)\n..."
+    },
+    {
+      "title": "`mx_process_maxfwd_header` usage",
+      "description": "Initial sanity checks -- messages with max_forwards==0, or excessively long requests.",
+      "code": "...\n# initial sanity checks -- messages with\n# max_forwards==0, or excessively long requests\nif (!mf_process_maxfwd_header(10) && $retcode==-1) {\n\tsl_send_reply(483,\"Too Many Hops\");\n\texit;\n};\n..."
+    },
+    {
+      "title": "`is_maxfwd_lt` usage",
+      "description": "Check if the Max-Forward header value is less than a specific value before forwarding to a gateway.",
+      "code": "...\n# next hope is a gateway, so make no sens to\n# forward if MF is 0 (after decrement)\nif ( is_maxfwd_lt(1) ) {\n\tsl_send_reply(483,\"Too Many Hops\");\n\texit;\n};\n..."
+    }
+  ]
+}

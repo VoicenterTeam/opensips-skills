@@ -1,0 +1,654 @@
+{
+  "id": "module-permissions-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "permissions Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/permissions.html",
+  "content_markdown": "The module can be used to determine if a call has appropriate permission to be established. Permission rules are stored in plaintext configuration files similar to `hosts.allow` and `hosts.deny` files used by tcpd.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:11:26.718Z",
+  "module_name": "permissions",
+  "overview": "The module can be used to determine if a call has appropriate permission to be established. Permission rules are stored in plaintext configuration files similar to `hosts.allow` and `hosts.deny` files used by tcpd.",
+  "how_it_works": "When `allow_routing` function is called it tries to find a rule that matches selected fields of the message.\n\nOpenSIPS is a forking proxy and therefore a single message can be sent to different destinations simultaneously. When checking permissions all the destinations must be checked and if one of them fails, the forwarding will fail.\n\nThe matching algorithm is as follows, first match wins:\n\n*   Create a set of pairs of form (From, R-URI of branch 1), (From, R-URI of branch 2), etc.\n    \n*   Routing will be allowed when all pairs match an entry in the allow file.\n    \n*   Otherwise routing will be denied when one of pairs matches an entry in the deny file.\n    \n*   Otherwise, routing will be allowed.\n    \nA non-existing permission control file is treated as if it were an empty file. Thus, permission control can be turned off by providing no permission control files.\n\nFrom header field and Request-URIs are always compared with regular expressions! For the syntax see the sample file: `config/permissions.allow`.\n\nIn addition to call routing it is also possible to check REGISTER messages and decide--based on the configuration files--whether the message should be allowed and the registration accepted or not.\n\nMain purpose of the function is to prevent registration of \"prohibited\" IP addresses. One example, when a malicious user registers a contact containing IP address of a PSTN gateway, he might be able to bypass authorization checks performed by the SIP proxy. That is undesirable and therefore attempts to register IP address of a PSTN gateway should be rejected. Files `config/register.allow` and `config/register.deny` contain an example configuration.\n\nFunction for registration checking is called `allow_register` and the algorithm is very similar to the algorithm described in Section 1.1.1, “Call Routing”. The only difference is in the way how pairs are created.\n\nInstead of From header field the function uses To header field because To header field in REGISTER messages contains the URI of the person being registered. Instead of the Request-URI of branches the function uses Contact header field.\n\nThus, pairs used in matching will look like this: (To, Contact 1), (To, Contact 2), (To, Contact 3), and so on..\n\nThe algorithm of matching is same as described in Section 1.1.1, “Call Routing”.\n\nThe module can be used to determine if request is allowed to the destination specified by an URI stored in a pvar. Permission rules are stored in plaintext configuration files similar to `hosts.allow` and `hosts.deny` used by tcpd.\n\nWhen `allow_uri` function is called, it tries to find a rule that matches selected fields of the message. The matching algorithm is as follows, first match wins:\n\n*   Create a pair <From URI, URI stored in pvar>.\n    \n*   Request will be allowed when the pair matches an entry in the allow file.\n    \n*   Otherwise request will be denied when the pair matches an entry in the deny file.\n    \n*   Otherwise, request will be allowed.\n    \nA non-existing permission control file is treated as if it were an empty file. Thus, permission control can be turned off by providing no permission control files.\n\nFrom URI and URI stored in pvar are always compared with regular expressions! For the syntax see the sample file: `config/permissions.allow`.\n\nThe module can be used to determine if an address (IP address and port) matches any of the IP subnets stored in cached OpenSIPS database table. Port 0 in cached database table matches any port. Group ID, IP address, port and transport protocol values to be matched can be either taken from the request (`check_source_address`) or given as pvar arguments or directly as strings(`check_address`).\n\nAddresses stored in cached database table can be grouped together into one or more groups specified by a group identifier (unsigned integer). Group identifier is given as argument to `check_address` and `check_source_address`.\n\nOtherwise the request is rejected.\n\nThe address database table is specified by module parameters.",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_allow_file",
+      "type": "string",
+      "default_value": "permissions.allow",
+      "description": "Default allow file used by functions without parameters. If you don't specify full pathname then the directory in which is the main config file is located will be used.",
+      "example_value": "/etc/permissions.allow",
+      "example_code": "modparam(\"permissions\", \"default\\_allow\\_file\", \"/etc/permissions.allow\")"
+    },
+    {
+      "name": "default_deny_file",
+      "type": "string",
+      "default_value": "permissions.deny",
+      "description": "Default file containing deny rules. The file is used by functions without parameters. If you don't specify full pathname then the directory in which the main config file is located will be used.",
+      "example_value": "/etc/permissions.deny",
+      "example_code": "modparam(\"permissions\", \"default\\_deny\\_file\", \"/etc/permissions.deny\")"
+    },
+    {
+      "name": "check_all_branches",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If set then allow_routing functions will check Request-URI of all branches (default). If disabled then only Request-URI of the first branch will be checked.",
+      "example_value": "0",
+      "example_code": "modparam(\"permissions\", \"check\\_all\\_branches\", 0)",
+      "notes": "Do not disable this parameter unless you really know what you are doing."
+    },
+    {
+      "name": "allow_suffix",
+      "type": "string",
+      "default_value": ".allow",
+      "description": "Suffix to be appended to basename to create filename of the allow file when version with one parameter of either allow_routing or allow_register is used.",
+      "example_value": ".allow",
+      "example_code": "modparam(\"permissions\", \"allow\\_suffix\", \".allow\")",
+      "notes": "Including leading dot."
+    },
+    {
+      "name": "deny_suffix",
+      "type": "string",
+      "default_value": ".deny",
+      "description": "Suffix to be appended to basename to create filename of the deny file when version with one parameter of either allow_routing or allow_register is used.",
+      "example_value": ".deny",
+      "example_code": "modparam(\"permissions\", \"deny\\_suffix\", \".deny\")",
+      "notes": "Including leading dot."
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The URL of the database to be used for loading the data related to IP-based checking (“address” table).\n\nThis parameter is optional and it is needed only if you use functions related to IP-based checking. If you do so, you need to explicitly set this parameter (it will not inherit from “db\\_default\\_url”)\n\nSince version 2.2, this URL represents the db\\_url for the “default” partition.",
+      "scope": "global",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"permissions\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "address_table",
+      "type": "string",
+      "default_value": "address",
+      "description": "Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table\\_name' setting.",
+      "scope": "global",
+      "example_value": "pbx",
+      "example_code": "modparam(\"permissions\", \"address\\_table\", \"pbx\")"
+    },
+    {
+      "name": "partition",
+      "type": "string",
+      "description": "Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific \"db\\_url\" and \"table\\_name\". If not specified, these values will be inherited from [db\\_url](#param_db_url \"1.3.6.�db_url (string)\"), db\\_default\\_url or [address\\_table](#param_address_table \"1.3.7.�address\\_table (string)\"), respectively. The name of the default partition is 'default'.",
+      "scope": "global",
+      "example_value": "\n\tinbound:\n\t\tdb\\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;\n\t\ttable\\_name = address",
+      "example_code": "modparam(\"permissions\", \"partition\", \"\n\tinbound:\n\t\tdb\\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;\n\t\ttable\\_name = address\")"
+    },
+    {
+      "name": "grp_col",
+      "type": "string",
+      "default_value": "grp",
+      "description": "Name of address table column containing group identifier of the address.",
+      "scope": "global",
+      "example_value": "group\\_id",
+      "example_code": "modparam(\"permissions\", \"grp\\_col\", \"group\\_id\")"
+    },
+    {
+      "name": "ip_col",
+      "type": "string",
+      "default_value": "ip",
+      "description": "Name of address table column containing IP address part of the address.",
+      "scope": "global",
+      "example_value": "ipess",
+      "example_code": "modparam(\"permissions\", \"ip\\_col\", \"ipess\")"
+    },
+    {
+      "name": "mask_col",
+      "type": "string",
+      "default_value": "mask",
+      "description": "Name of address table column containing network mask of the address. Possible values are 0-128. It should be up to 32 if the IP is v4 and up to 128 if the IP is v6.",
+      "example_value": "subnet_length",
+      "example_code": "modparam(\"permissions\", \"mask_col\", \"subnet_length\")"
+    },
+    {
+      "name": "port_col",
+      "type": "string",
+      "default_value": "port",
+      "description": "Name of address table column containing port part of the address.",
+      "example_value": "prt",
+      "example_code": "modparam(\"permissions\", \"port_col\", \"prt\")"
+    },
+    {
+      "name": "proto_col",
+      "type": "string",
+      "default_value": "proto",
+      "description": "Name of address table column containing transport protocol that is matched against transport protocol of received request. Possible values that can be stored in proto_col are “any”, “udp”, “tcp”, “tls”, “sctp”, and “none”. Value “any” matches always and value “none” never.",
+      "example_value": "transport",
+      "example_code": "modparam(\"permissions\", \"proto_col\", \"transport\")"
+    },
+    {
+      "name": "pattern_col",
+      "type": "string",
+      "default_value": "pattern",
+      "description": "Name of address table column containinga a pattern (a shell wildcard pattern, like the ones used for file name matching) that is matched against the arguments received by `check_address` or `check_source_address`.",
+      "example_value": "wildcard_col",
+      "example_code": "modparam(\"permissions\", \"pattern_col\", \"wildcard_col\")"
+    },
+    {
+      "name": "info_col",
+      "type": "string",
+      "default_value": "context_info",
+      "description": "Name of address table column containing a string that is added as value to a pvar given as argument to `check_address` or `check_source_address` in case the function succedes.",
+      "example_value": "info_col",
+      "example_code": "modparam(\"permissions\", \"info_col\", \"info_col\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "check_address",
+      "signature": "check_address(group_id, ip, port, proto [, context_info], [pattern], [partition])",
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "int",
+          "required": true,
+          "description": "This argument represents the group id to be matched. If the group_id argument is \"0\", the query can match any group in the cached address table."
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "required": true,
+          "description": "This argument represents the ip address to be matched. This argument cannot be null/empty."
+        },
+        {
+          "name": "port",
+          "type": "int",
+          "required": true,
+          "description": "This argument represents the port to be matched. Cached address table entry containing port value 0 matches any port. Also, a 0 value for the argument will match any port in the address table."
+        },
+        {
+          "name": "proto",
+          "type": "string",
+          "required": true,
+          "description": "This argument represents the protocol used for transport; Transport protocol is either \"ANY\" or any valid transport protocol value: \"UDP, \"TCP\", \"TLS\", and \"SCTP\".",
+          "valid_values": [
+            "ANY",
+            "UDP",
+            "TCP",
+            "TLS",
+            "SCTP"
+          ]
+        },
+        {
+          "name": "context_info",
+          "type": "var",
+          "required": false,
+          "description": "This argument represents the variable in wich the context_info field from the cached address table will be stored in case of match."
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "This argument is a string to be matched against the wildcard pattern field from the address table."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "An optional parition name for the group id. If no partition specified, the “default” one will be used."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "group id, IP address, port and protocol given as arguments match an IP subnet found in cached address table"
+        }
+      ],
+      "description": "Returns 1 if group id, IP address, port and protocol given as arguments match an IP subnet found in cached address table, as described in [Section 1.1.4, “Address Permissions”](#sec-address-permissions \"1.1.4. Address Permissions\") . The function takes 4 mandatory arguments and 3 optional ones. This function can be useful to check if a request can be allowed without authentication.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "LOCAL_ROUTE",
+        "BRANCH_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "// Checks if the tuple IP address/port (given as strings) and source protocol\n// (given as pvar), belongs to group 4, verifies if the string \"texttest\"\n// matches the wildcard pattern field in the database table and stores the\n// context information in $avp(ctx)\nif (check_address( 4, \"192.168.2.135\", 5700, \"$socket_in(proto)\", $avp(ctx), \"texttest\")) {\n\tt_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}",
+          "description": "Checks IP/port/proto, pattern match, and context storage."
+        },
+        {
+          "language": "opensips",
+          "code": "if (check_address( 4, \"192.168.2.135\", 5700, \"$socket_in(proto)\", , , \"my_part\")) {\n\tt_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}",
+          "description": "Checks IP/port/proto with partition."
+        },
+        {
+          "language": "opensips",
+          "code": "// Checks if the tuple IP address/port/protocol of the source message is in group 4\nif (check_address( 4, \"$si\", \"$sp\", \"$socket_in(proto)\")) {\n\tt_relay();\n}",
+          "description": "Checks source message tuple."
+        },
+        {
+          "language": "opensips",
+          "code": "// Checks if the tuple IP address/port/protocol stored in AVPs s:ip/s:port/s:proto\n// is in group 4 and stores context information in $avp(ctx)\n$avp(ip) = \"192.168.2.135\";\n$avp(port) = 5061;\n$avp(proto) = \"any\";\n$avp(partition)=\"my_part\";\nif (check_address( 4, $avp(ip), $avp(port), $avp(proto), $avp(ctx), , $avp(partition))) {\n\tt_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}",
+          "description": "Checks AVP stored tuple with partition."
+        },
+        {
+          "language": "opensips",
+          "code": "// Checks if the tuple IP address/port (given as strings) and source protocol\n// (given as pvar) is in group 4, verifies if string the \"texttest\" matches\n// the wildcard pattern field in the database table, without storing any\n// context information\nif (check_address( 4,$si, 5700, $socket_in(proto), ,\"texttest\")) {\n\tt_relay();\n}",
+          "description": "Checks IP/port/proto with pattern match, no context storage."
+        }
+      ]
+    },
+    {
+      "name": "check_source_address",
+      "signature": "check_source_address(group_id , [context_info], [pattern], [partition])",
+      "parameters": [
+        {
+          "name": "group_id",
+          "type": "int",
+          "required": true,
+          "description": "Group id to be matched."
+        },
+        {
+          "name": "context_info",
+          "type": "var",
+          "required": false,
+          "description": "Variable in which the context_info field from the cached address table will be stored in case of match."
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "String to be matched against the wildcard pattern field from the address table."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "Partition name for the group id. If no partition specified, the “default” one will be used."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Equivalent to check_address match"
+        }
+      ],
+      "description": "Equivalent to check_address(group_id, \"$si\", \"$sp\", \"$socket_in(proto)\", context_info, pattern, partition).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "LOCAL_ROUTE",
+        "BRANCH_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "// Check if source address/port/proto is in group 4 and stores\n// context information in $avp(ctx)\nif (check_source_address( 4,$avp(ctx), , , $avp(my_partition))) {\n\txlog(\"$avp(ctx)\\\\n\");\n}else {\n\tsl_send_reply(403, \"Forbidden\");\n}",
+          "description": "Check source address with context and partition."
+        }
+      ],
+      "related_functions": [
+        "check_address"
+      ]
+    },
+    {
+      "name": "get_source_group",
+      "signature": "get_source_group(var,[partition])",
+      "parameters": [
+        {
+          "name": "var",
+          "type": "var",
+          "required": true,
+          "description": "Variable to store the group id."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "Partition name. If no partition specified, the “default” one will be used."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "group id",
+          "condition": "entry with the source ip/port/protocol is found in cached address or subnet table in any group"
+        },
+        {
+          "value": "-1",
+          "condition": "not found"
+        }
+      ],
+      "description": "Checks if an entry with the source ip/port/protocol is found in cached address or subnet table in any group. If yes, returns that group in the variable parameter. If not returns -1. Port value 0 in cached address and subnet table matches any port. Optionally, you can also specify the partition. If no partition specified, the “default” one will be used.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "LOCAL_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( get_source_group( $var(group)) ) {\n   # do something with $var(group)\n   xlog(\"group is $var(group)\\\\n\");\n};",
+          "description": "Get source group into variable."
+        }
+      ]
+    },
+    {
+      "name": "allow_routing",
+      "signature": "allow_routing()",
+      "parameters": [],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files"
+        }
+      ],
+      "description": "Returns true if all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files. This function uses default configuration files specified in `default_allow_file` and `default_deny_file`.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (allow_routing()) {\n\tt_relay();\n};",
+          "description": "Check routing permissions using default files."
+        }
+      ]
+    },
+    {
+      "name": "allow_routing",
+      "signature": "allow_routing(basename)",
+      "parameters": [
+        {
+          "name": "basename",
+          "type": "string",
+          "required": true,
+          "description": "Basename from which allow and deny filenames will be created by appending contents of `allow_suffix` and `deny_suffix` parameters. If the parameter doesn't contain full pathname then the function expects the file to be located in the same directory as the main configuration file of the server."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files given as parameters"
+        }
+      ],
+      "description": "Returns true if all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files given as parameters.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (allow_routing(\"basename\")) {\n\tt_relay();\n};",
+          "description": "Check routing permissions using specified basename."
+        }
+      ]
+    },
+    {
+      "name": "allow_register",
+      "signature": "allow_register(basename)",
+      "parameters": [
+        {
+          "name": "basename",
+          "type": "string",
+          "required": true,
+          "description": "Basename from which allow and deny filenames will be created by appending contents of `allow_suffix` and `deny_suffix` parameters. If the parameter doesn't contain full pathname then the function expects the file to be located in the same directory as the main configuration file of the server."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "all pairs constructed as described in [Section 1.1.2, “Registration Permissions”](#sec-registration-permissions \"1.1.2. Registration Permissions\") have appropriate permissions according to the configuration files given as parameters"
+        }
+      ],
+      "description": "The function returns true if all pairs constructed as described in [Section 1.1.2, “Registration Permissions”](#sec-registration-permissions \"1.1.2. Registration Permissions\") have appropriate permissions according to the configuration files given as parameters.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ($rm==\"REGISTER\") {\n\tif (allow_register(\"register\")) {\n\t\tsave(\"location\");\n\t\texit;\n\t} else {\n\t\tsl_send_reply(403, \"Forbidden\");\n\t};\n};",
+          "description": "Check registration permissions."
+        }
+      ]
+    },
+    {
+      "name": "allow_uri",
+      "signature": "allow_uri(basename, uri)",
+      "parameters": [
+        {
+          "name": "basename",
+          "type": "string",
+          "required": true,
+          "description": "Basename from which allow and deny filenames will be created by appending contents of `allow_suffix` and `deny_suffix` parameters. If the parameter doesn't contain full pathname then the function expects the file to be located in the same directory as the main configuration file of the server."
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "SIP URI to be checked."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the pair constructed as described in [Section 1.1.3, “URI Permissions”](#sec-uri-permissions \"1.1.3. URI Permissions\") have appropriate permissions according to the configuration files specified by the parameter"
+        }
+      ],
+      "description": "Returns true if the pair constructed as described in [Section 1.1.3, “URI Permissions”](#sec-uri-permissions \"1.1.3. URI Permissions\") have appropriate permissions according to the configuration files specified by the parameter.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (allow_uri(\"basename\", $rt)) {  // Check Refer-To URI\n\tt_relay();\n};",
+          "description": "Check Refer-To URI."
+        },
+        {
+          "language": "opensips",
+          "code": "if (allow_uri(\"basename\", $avp(uri)) {  // Check URI stored in $avp(uri)\n\tt_relay();\n};",
+          "description": "Check URI stored in AVP."
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "address_reload",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the partition to be reloaded. If none specified all the partitions shall be reloaded."
+        }
+      ],
+      "description": "Causes permissions module to re-read the contents of the address database table into cache memory. In cache memory the entries are for performance reasons stored in two different tables: address table and subnet table depending on the value of the mask field (32 or smaller).",
+      "examples": []
+    },
+    {
+      "name": "address_dump",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the partition to be dumped. If none specified all the partitions shall be dumped."
+        }
+      ],
+      "description": "Causes permissions module to dump contents of the address table from cache memory.",
+      "examples": []
+    },
+    {
+      "name": "subnet_dump",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the partition to be dumped. If none specified all the partitions shall be dumped."
+        }
+      ],
+      "description": "Causes permissions module to dump contents of cache memory subnet table.",
+      "examples": []
+    },
+    {
+      "name": "allow_uri",
+      "parameters": [
+        {
+          "name": "basename",
+          "type": "string",
+          "required": true,
+          "description": "Basename from which allow and deny filenames will be created by appending contents of allow_suffix and deny_suffix parameters."
+        },
+        {
+          "name": "URI",
+          "type": "string",
+          "required": true,
+          "description": "URI to be tested"
+        },
+        {
+          "name": "Contact",
+          "type": "string",
+          "required": true,
+          "description": "Contact to be tested"
+        }
+      ],
+      "description": "Tests if (URI, Contact) pair is allowed according to allow/deny files. The files must already have been loaded by OpenSIPS.",
+      "examples": []
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `default_allow_file` parameter",
+      "description": "Default allow file used by functions without parameters. If you don't specify full pathname then the directory in which is the main config file is located will be used.",
+      "code": "...\nmodparam(\"permissions\", \"default\\_allow\\_file\", \"/etc/permissions.allow\")\n..."
+    },
+    {
+      "title": "Set `default_deny_file` parameter",
+      "description": "Default file containing deny rules. The file is used by functions without parameters. If you don't specify full pathname then the directory in which the main config file is located will be used.",
+      "code": "...\nmodparam(\"permissions\", \"default\\_deny\\_file\", \"/etc/permissions.deny\")\n..."
+    },
+    {
+      "title": "Set `check_all_branches` parameter",
+      "description": "If set then allow\\_routing functions will check Request-URI of all branches (default). If disabled then only Request-URI of the first branch will be checked.",
+      "code": "...\nmodparam(\"permissions\", \"check\\_all\\_branches\", 0)\n..."
+    },
+    {
+      "title": "Set `allow_suffix` parameter",
+      "description": "Suffix to be appended to basename to create filename of the allow file when version with one parameter of either `allow_routing` or `allow_register` is used.",
+      "code": "...\nmodparam(\"permissions\", \"allow\\_suffix\", \".allow\")\n..."
+    },
+    {
+      "title": "Set `deny_suffix` parameter",
+      "description": "Suffix to be appended to basename to create filename of the deny file when version with one parameter of either `allow_routing` or `allow_register` is used.",
+      "code": "...\nmodparam(\"permissions\", \"deny\\_suffix\", \".deny\")\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "The URL of the database to be used for loading the data related to IP-based checking (“address” table).",
+      "code": "...\nmodparam(\"permissions\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `address_table` parameter",
+      "description": "Name of database table containing matching rules used by `allow_register` function. Since version 2.2, this table name also represents the default table name for partitions without a 'table\\_name' setting.",
+      "code": "...\nmodparam(\"permissions\", \"address\\_table\", \"pbx\")\n..."
+    },
+    {
+      "title": "Set `partition` parameter",
+      "description": "Specify a new IP-based checking partition (data source). This parameter may be set multiple times. Each partition may have a specific \"db\\_url\" and \"table\\_name\".",
+      "code": "...\nmodparam(\"permissions\", \"partition\", \"\n\tinbound:\n\t\tdb\\_url = postgres://opensips:opensipsrw@127.0.0.1/opensips;\n\t\ttable\\_name = address\")\n..."
+    },
+    {
+      "title": "Set `grp_col` parameter",
+      "description": "Name of address table column containing group identifier of the address.",
+      "code": "...\nmodparam(\"permissions\", \"grp\\_col\", \"group\\_id\")\n..."
+    },
+    {
+      "title": "Set `ip_col` parameter",
+      "description": "Name of address table column containing IP address part of the address.",
+      "code": "...\nmodparam(\"permissions\", \"ip\\_col\", \"ipess\")\n..."
+    },
+    {
+      "title": "Set `mask_col` parameter",
+      "description": "Name of address table column containing network mask of the address. Possible values are 0-128. It should be up to 32 if the IP is v4 and up to 128 if the IP is v6.",
+      "code": "...\nmodparam(\"permissions\", \"mask\\_col\", \"subnet\\_length\")\n..."
+    },
+    {
+      "title": "Set `port_col` parameter",
+      "description": "Name of address table column containing port part of the address.",
+      "code": "...\nmodparam(\"permissions\", \"port\\_col\", \"prt\")\n..."
+    },
+    {
+      "title": "Set `proto_col` parameter",
+      "description": "Name of address table column containing transport protocol that is matched against transport protocol of received request.",
+      "code": "...\nmodparam(\"permissions\", \"proto\\_col\", \"transport\")\n..."
+    },
+    {
+      "title": "Set `pattern_col` parameter",
+      "description": "Name of address table column containinga a pattern (a shell wildcard pattern, like the ones used for file name matching) that is matched against the arguments received by `check_address` or `check_source_address`.",
+      "code": "...\nmodparam(\"permissions\", \"pattern\\_col\", \"wildcard\\_col\")\n..."
+    },
+    {
+      "title": "Set `info_col` parameter",
+      "description": "Name of address table column containing a string that is added as value to a pvar given as argument to `check_address` or `check_source_address` in case the function succedes.",
+      "code": "...\nmodparam(\"permissions\", \"info\\_col\", \"info\\_col\")\n..."
+    },
+    {
+      "title": "`check_address()` usage",
+      "description": "Returns 1 if group id, IP address, port and protocol given as arguments match an IP subnet found in cached address table, as described in [Section 1.1.4, “Address Permissions”](#sec-address-permissions \"1.1.4. Address Permissions\") . The function takes 4 mandatory arguments and 3 optional ones.",
+      "code": "...\n\n// Checks if the tuple IP address/port (given as strings) and source protocol\n// (given as pvar), belongs to group 4, verifies if the string \"texttest\"\n// matches the wildcard pattern field in the database table and stores the\n// context information in $avp(ctx)\nif (check\\_address( 4, \"192.168.2.135\", 5700, \"$socket\\_in(proto)\", $avp(ctx), \"texttest\")) {\n\tt\\_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}\n\nif (check\\_address( 4, \"192.168.2.135\", 5700, \"$socket\\_in(proto)\", , , \"my\\_part\")) {\n\tt\\_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}\n...\n\n// Checks if the tuple IP address/port/protocol of the source message is in group 4\nif (check\\_address( 4, \"$si\", \"$sp\", \"$socket\\_in(proto)\")) {\n\tt\\_relay();\n}\n\n...\n\n// Checks if the tuple IP address/port/protocol stored in AVPs s:ip/s:port/s:proto\n// is in group 4 and stores context information in $avp(ctx)\n$avp(ip) = \"192.168.2.135\";\n$avp(port) = 5061;\n$avp(proto) = \"any\";\n$avp(partition)=\"my\\_part\";\nif (check\\_address( 4, $avp(ip), $avp(port), $avp(proto), $avp(ctx), , $avp(partition))) {\n\tt\\_relay();\n\txlog(\"$avp(ctx)\\\\n\");\n}\n\n...\n\n// Checks if the tuple IP address/port (given as strings) and source protocol\n// (given as pvar) is in group 4, verifies if string the \"texttest\" matches\n// the wildcard pattern field in the database table, without storing any\n// context information\nif (check\\_address( 4,$si, 5700, $socket\\_in(proto), ,\"texttest\")) {\n\tt\\_relay();\n}\n\n..."
+    },
+    {
+      "title": "`check_source_address()` usage",
+      "description": "Equivalent to check\\_address(group\\_id, \"$si\", \"$sp\", \"$socket\\_in(proto)\", context\\_info, pattern, partition).",
+      "code": "...\n// Check if source address/port/proto is in group 4 and stores\n// context information in $avp(ctx)\nif (check\\_source\\_address( 4,$avp(ctx), , , $avp(my\\_partition))) {\n\txlog(\"$avp(ctx)\\\\n\");\n}else {\n\tsl\\_send\\_reply(403, \"Forbidden\");\n}\n..."
+    },
+    {
+      "title": "`get_source_group()` usage",
+      "description": "Checks if an entry with the source ip/port/protocol is found in cached address or subnet table in any group. If yes, returns that group in the variable parameter. If not returns -1.",
+      "code": "...\n\nif ( get\\_source\\_group( $var(group)) ) {\n   # do something with $var(group)\n   xlog(\"group is $var(group)\\\\n\");\n};\n..."
+    },
+    {
+      "title": "`allow_routing` usage",
+      "description": "Returns true if all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files. This function uses default configuration files specified in `default_allow_file` and `default_deny_file`.",
+      "code": "...\nif (allow\\_routing()) {\n\tt\\_relay();\n};\n..."
+    },
+    {
+      "title": "`allow_routing(basename)` usage",
+      "description": "Returns true if all pairs constructed as described in [Section 1.1.1, “Call Routing”](#sec-call-routing \"1.1.1. Call Routing\") have appropriate permissions according to the configuration files given as parameters.",
+      "code": "...\nif (allow\\_routing(\"basename\")) {\n\tt\\_relay();\n};\n..."
+    },
+    {
+      "title": "`allow_register(basename)` usage",
+      "description": "The function returns true if all pairs constructed as described in [Section 1.1.2, “Registration Permissions”](#sec-registration-permissions \"1.1.2. Registration Permissions\") have appropriate permissions according to the configuration files given as parameters.",
+      "code": "...\nif ($rm==\"REGISTER\") {\n\tif (allow\\_register(\"register\")) {\n\t\tsave(\"location\");\n\t\texit;\n\t} else {\n\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t};\n};\n..."
+    },
+    {
+      "title": "`allow_uri(basename, uri)` usage",
+      "description": "Returns true if the pair constructed as described in [Section 1.1.3, “URI Permissions”](#sec-uri-permissions \"1.1.3. URI Permissions\") have appropriate permissions according to the configuration files specified by the parameter.",
+      "code": "...\nif (allow\\_uri(\"basename\", $rt)) {  // Check Refer-To URI\n\tt\\_relay();\n};\nif (allow\\_uri(\"basename\", $avp(uri)) {  // Check URI stored in $avp(uri)\n\tt\\_relay();\n};\n..."
+    }
+  ]
+}

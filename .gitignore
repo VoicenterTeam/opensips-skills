@@ -1,0 +1,39 @@
+# Node.js
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vitest
+.vitest/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local Claude Code settings (per-user, not project)
+.claude/settings.local.json
+
+# IMPORTANT: Do NOT exclude the following — they are committed per project rules:
+#   data/                                 — upstream extraction snapshots (per ADR-009)
+#   plugins/opensips/skills/*/references/ — generated reference content (per ADR-002)
+#   scripts/schemas/.schema-hash          — schema-mirroring contract enforcement (per M1)

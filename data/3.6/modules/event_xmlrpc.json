@@ -1,0 +1,42 @@
+{
+  "id": "module-event_xmlrpc-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "event_xmlrpc Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/event_xmlrpc.html",
+  "content_markdown": "This module is an implementation of an XMLRPC client used to notify XMLRPC servers whenever certain notifications are raised by OpenSIPS. It acts as a transport layer for the Event Notification Interface.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:34:49.967Z",
+  "module_name": "event_xmlrpc",
+  "overview": "This module is an implementation of an XMLRPC client used to notify XMLRPC servers whenever certain notifications are raised by OpenSIPS. It acts as a transport layer for the Event Notification Interface.",
+  "how_it_works": "Basicly, the module executes a remote procedure call when an event is raised from OpenSIPS's script, core or modules using the Event Interface. In order to be notified, an XMLRPC server has to subscribe for a certain event provided by OpenSIPS. This can be done using the generic MI Interface (_event\\_subscribe_ function) or from OpenSIPS script (_subscribe\\_event_ core function).",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "use_struct_param",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "When raising an event, pack the name and value of the parameters in a XMLRPC structure. This provides an easier way for some XMLRPC server implementations to interpret the parameters. Set it to zero to disable or to non-zero to enable it.",
+      "example_value": "1",
+      "example_code": "modparam(\"event\\_xmlrpc\", \"use\\_struct\\_param\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.2. E_PIKE_BLOCKED event",
+      "description": "This is an example of an event raised by the pike module when it decides an ip should be blocked:",
+      "code": "POST /RPC2 HTTP/1.1.\nHost: 127.0.0.1:8081.\nConnection: close.\nUser-Agent: OpenSIPS XMLRPC Notifier.\nContent-type: text/xml.\nContent-length: 240.\n\t\t.\n<?xml version=\"1.0\"?>\n<methodCall>\n\t<methodName>e\\_dummy\\_h</methodName>\n\t<params>\n\t\t<param>\n\t\t\t<value><string>E\\_MY\\_EVENT</string></value>\n\t\t</param>\n\t\t<param>\n\t\t\t<name>ip</name>\n\t\t\t<value><string>192.168.2.11</string></value>\n\t\t</param>\n\t</params>\n</methodCall>"
+    },
+    {
+      "title": "Example 1.3. XMLRPC socket",
+      "description": "",
+      "code": "\t# calls the 'block\\_ip' function\n\txmlrpc:127.0.0.1:8080:block\\_ip"
+    }
+  ]
+}

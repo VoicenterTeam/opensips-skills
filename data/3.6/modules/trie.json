@@ -1,0 +1,307 @@
+{
+  "id": "module-trie-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "trie Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/trie.html",
+  "content_markdown": "Trie is a module for efficiently caching and lookup of a set of prefixes ( stored in a trie data structure )",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:01:56.032Z",
+  "module_name": "trie",
+  "overview": "Trie is a module for efficiently caching and lookup of a set of prefixes ( stored in a trie data structure )",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "a database module",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "trie_table",
+      "type": "string",
+      "default_value": "trie\\_table",
+      "description": "The name of the db table storing prefix rules.",
+      "example_value": "my\\_prefix\\_table",
+      "example_code": "modparam(\"trie\", \"trie\\_table\", \"my\\_prefix\\_table\")"
+    },
+    {
+      "name": "no_concurrent_reload",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "If enabled, the module will not allow do run multiple trie\\_reload MI commands in parallel (with overlapping) Any new reload will be rejected (and discarded) while an existing reload is in progress.\n\nIf you have a large routing set (millions of rules/prefixes), you should consider disabling concurrent reload as they will exhaust the shared memory (by reloading into memory, in the same time, multiple instances of routing data).",
+      "example_value": "1",
+      "example_code": "# do not allow parallel reload operations\nmodparam(\"trie\", \"no\\_concurrent\\_reload\", 1)"
+    },
+    {
+      "name": "use_partitions",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Flag to configure whether to use partitions for tries. If this flag is set then the `db_partitions_url` and `db_partitions_table` variables become mandatory.",
+      "example_value": "1",
+      "example_code": "modparam(\"trie\", \"use\\_partitions\", 1)"
+    },
+    {
+      "name": "db_partitions_url",
+      "type": "string",
+      "default_value": "\"NULL\"",
+      "description": "The url to the database containing partition-specific information.The `use_partitions` parameter must be set to 1.",
+      "example_value": "mysql://user:password@localhost/opensips\\_partitions",
+      "example_code": "modparam(\"trie\", \"db\\_partitions\\_url\", \"mysql://user:password@localhost/opensips\\_partitions\")"
+    },
+    {
+      "name": "db_partitions_table",
+      "type": "string",
+      "default_value": "trie\\_partitions",
+      "description": "The name of the table containing partition definitions. To be used with `use_partitions` and `db_partitions_url`.",
+      "example_value": "trie\\_partition\\_defs",
+      "example_code": "modparam(\"trie\", \"db\\_partitions\\_table\", \"trie\\_partition\\_defs\")"
+    },
+    {
+      "name": "extra_prefix_chars",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "List of ASCII (0-127) characters to be additionally accepted in the prefixes. By default only '0' - '9' chars (digits) are accepted.",
+      "example_value": "#-%",
+      "example_code": "modparam(\"trie\", \"extra\\_prefix\\_chars\", \"#-%\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "trie_search",
+      "signature": "trie_search(number, [flags], [trie_attrs_pvar], [match_prefix_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "str",
+          "required": true,
+          "description": "number to be searched in the trie"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "a list of letter-like flags for controlling the routing behavior. Possible flags are:",
+          "valid_values": [
+            "L"
+          ]
+        },
+        {
+          "name": "trie_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable which will be populated with the attributes of the matched trie rule."
+        },
+        {
+          "name": "match_prefix_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable which will be the actual prefix matched in the trie."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the trie partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Function to search for an entry ( number ) in a trie.\n\nThis function can be used from all routes.\n\nIf you set `use_partitions` to 1 the **partition** last parameter becomes mandatory.\n\nAll parameters are optional. Any of them may be ignored, provided the necessary separation marks \",\" are properly placed.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ERROR_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (trie_search(\"$rU\",\"L\",$avp(code_attrs),,\"my_partition\")) {\n    # we found it in the trie, it's a match\n    xlog(\"We found $rU in the trie with attrs $avp(code_attrs) \\\\n\");\n}",
+          "description": "trie_search usage",
+          "context": "All routes"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "trie_reload",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "if not provided all the partitions will be reloaded, otherwise just the partition given as parameter will be reloaded."
+        }
+      ],
+      "description": "Command to reload trie rules from database.\n\n* if `use_partition` is set to 0 - all routing rules will be reloaded.\n* if `use_partition` is set to 1, the parameters are:\n    * _partition_name_ (optional) - if not provided all the partitions will be reloaded, otherwise just the partition given as parameter will be reloaded.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trie\\_reload part\\_1",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "trie_reload_status",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "if not provided the function will list the time of the last update for every partition. Otherwise, the function will list the time of the last reload for the given partition."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "It will list the date of the last reload for the default (and only) partition."
+      },
+      "description": "Gets the time of the last reload for any partition.\n\n* if `use_partition` is set to 0 - the function doesn't receive any parameter. It will list the date of the last reload for the default (and only) partition.\n* if `use_partition` is set to 1, the parameters are:\n    * _partition_name_ (optional) - if not provided the function will list the time of the last update for every partition. Otherwise, the function will list the time of the last reload for the given partition.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi trie\\_reload\\_status\nDate:: Tue Aug 12 12:26:00 2014",
+          "description": "Example 1.8. `trie_reload_status` usage when `use_partitions` is 0"
+        }
+      ]
+    },
+    {
+      "name": "trie_search",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": ""
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "the number to test against"
+        }
+      ],
+      "description": "Tries to match a number in the existing tries loaded from the database.\n\n* if `use_partition` is set to 1 the function will have 2 parameters:\n    * _partition_name_\n    * _number_ - the number to test against\n* if `use_partition` is set to 0 the function will have 1 parameter:\n    * _number_ - the number to test against",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trie\\_search partition\\_name=part1 number=012340987",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "trie_number_delete",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": ""
+        },
+        {
+          "name": "number",
+          "type": "array",
+          "required": true,
+          "description": "the array of numbers to delete"
+        }
+      ],
+      "description": "Deletes individual entries in the trie, without reloading all of the data\n\n* if `use_partition` is set to 1 the function will have 2 parameters:\n    * _partition_name_\n    * _number_ - the array of numbers to delete",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trie\\_number\\_delete partition\\_name=part1 number=\\[\"012340987\",\"4858345\"\\]",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "trie_number_upsert",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": ""
+        },
+        {
+          "name": "number",
+          "type": "array",
+          "required": true,
+          "description": "the array of numbers to update"
+        },
+        {
+          "name": "attrs",
+          "type": "array",
+          "required": true,
+          "description": "the array of new attributes for the numbers"
+        }
+      ],
+      "description": "Upserts ( insert if not found, update is found ) an array of numbers in the trie, without reloading all of the data\n\n* if `use_partition` is set to 1 the function will have 3 parameters:\n    * _partition_name_\n    * _number_ - the array of numbers to update\n    * _attrs_ - the array of new attributes for the numbers",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trie\\_number\\_upsert partition\\_name=part1 number=\\[\"012340987\"\\] attrs=\\[\"my\\_attrs\"\\]",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `trie_table` parameter",
+      "description": "Sets the `trie_table` parameter to 'my_prefix_table'.",
+      "code": "...\nmodparam(\"trie\", \"trie\\_table\", \"my\\_prefix\\_table\")\n..."
+    },
+    {
+      "title": "Set `no_concurrent_reload` parameter",
+      "description": "Disables parallel reload operations by setting `no_concurrent_reload` to 1.",
+      "code": "...\n# do not allow parallel reload operations\nmodparam(\"trie\", \"no\\_concurrent\\_reload\", 1)\n..."
+    },
+    {
+      "title": "Set `use_partitions` parameter",
+      "description": "Enables the use of partitions by setting `use_partitions` to 1.",
+      "code": "...\nmodparam(\"trie\", \"use\\_partitions\", 1)\n..."
+    },
+    {
+      "title": "Set `db_partitions_url` parameter",
+      "description": "Sets the `db_partitions_url` parameter to a MySQL connection string.",
+      "code": "...\nmodparam(\"trie\", \"db\\_partitions\\_url\", \"mysql://user:password@localhost/opensips\\_partitions\")\n..."
+    },
+    {
+      "title": "Set `db_partitions_table` parameter",
+      "description": "Sets the `db_partitions_table` parameter to 'trie_partition_defs'.",
+      "code": "...\nmodparam(\"trie\", \"db\\_partitions\\_table\", \"trie\\_partition\\_defs\")\n..."
+    },
+    {
+      "title": "Set `extra_prefix_chars` parameter",
+      "description": "Sets the `extra_prefix_chars` parameter to '#-%'.",
+      "code": "...\nmodparam(\"trie\", \"extra\\_prefix\\_chars\", \"#-%\")\n..."
+    },
+    {
+      "title": "`trie_search` usage",
+      "description": "Demonstrates a script route using `trie_search` with strict length matching ('L') and a specific partition.",
+      "code": "...\nif (trie\\_search(\"$rU\",\"L\",$avp(code\\_attrs),,\"my\\_partition\")) {\n    # we found it in the trie, it's a match\n    xlog(\"We found $rU in the trie with attrs $avp(code\\_attrs) \\\\n\");\n}\n..."
+    },
+    {
+      "title": "`trie_reload_status` usage when `use_partitions` is 0",
+      "description": "Demonstrates the CLI command to check the reload status when partitions are not used.",
+      "code": "$ opensips-cli -x mi trie\\_reload\\_status\nDate:: Tue Aug 12 12:26:00 2014"
+    }
+  ]
+}

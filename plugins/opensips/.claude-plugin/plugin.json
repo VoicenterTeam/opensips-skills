@@ -1,0 +1,9 @@
+{
+  "name": "opensips",
+  "version": "0.1.0",
+  "description": "OpenSIPs Skills",
+  "author": "OpenSIPS",
+  "homepage": "https://opensips.org",
+  "repository": "https://github.com/OpenSIPS/opensips-skills",
+  "license": "GPL-3.0-or-later"
+}

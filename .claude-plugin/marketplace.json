@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-marketplace",
+  "name": "opensips-marketplace",
+  "version": "0.1.0",
+  "description": "OpenSIPs Agent Skills for Claude Code",
+  "owner": "OpenSIPS",
+  "homepage": "https://github.com/OpenSIPS/opensips-skills",
+  "license": "GPL-3.0-or-later",
+  "plugins": [
+    {
+      "name": "opensips",
+      "source": "./plugins/opensips",
+      "version": "0.1.0",
+      "description": "Three coordinated skills for working with OpenSIPs in Claude Code: route script authoring, module reference data, and security review.",
+      "category": "development"
+    }
+  ]
+}

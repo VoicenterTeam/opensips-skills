@@ -1,0 +1,833 @@
+{
+  "id": "module-sqlops-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "sqlops Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/sqlops.html",
+  "content_markdown": "SQLops (SQL-operations) modules implements a set of script functions for generic SQL standard queries (raw or structure queries). It also provides a dedicated set of functions for DB manipulation (loading/storing/removing) of user AVPs (preferences).",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T11:35:54.327Z",
+  "module_name": "sqlops",
+  "overview": "SQLops (SQL-operations) modules implements a set of script functions for generic SQL standard queries (raw or structure queries). It also provides a dedicated set of functions for DB manipulation (loading/storing/removing) of user AVPs (preferences).",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "a database module",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "DB URL for database connection. As the module allows the usage of multiple DBs (DB URLs), the actual DB URL may be preceded by an reference number. This reference number is to be passed to AVPOPS function that what to explicitly use this DB connection. If no reference number is given, 0 is assumed - this is the default DB URL.",
+      "example_value": "mysql://user:passwd@host/database",
+      "example_code": "# default URL\nmodparam(\"sqlops\",\"db\\_url\",\"mysql://user:passwd@host/database\")\n# an additional DB URL\nmodparam(\"sqlops\",\"db\\_url\",\"1 postgres://user:passwd@host2/opensips\")",
+      "notes": "This parameter is optional, it's default value being NULL."
+    },
+    {
+      "name": "usr_table",
+      "type": "string",
+      "default_value": "usr_preferences",
+      "description": "DB table to be used for user preferences (AVPs)",
+      "example_value": "avptable",
+      "example_code": "modparam(\"sqlops\",\"usr\\_table\",\"avptable\")",
+      "notes": "This parameter is optional, it's default value being “usr\\_preferences”."
+    },
+    {
+      "name": "db_scheme",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Definition of a DB scheme to be used for accessing a non-standard User Preference -like table. Definition of a DB scheme. Scheme syntax is: *db\\_scheme = name':'element\\[';'element\\]\\* *element* = 'uuid\\_col='string 'username\\_col='string 'domain\\_col='string 'value\\_col='string 'value\\_type='('integer'|'string') 'table='string",
+      "example_value": "scheme1:table=subscriber;uuid\\_col=uuid;value\\_col=first\\_name",
+      "example_code": "modparam(\"sqlops\",\"db\\_scheme\",\n\"scheme1:table=subscriber;uuid\\_col=uuid;value\\_col=first\\_name\")"
+    },
+    {
+      "name": "use_domain",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If the domain part of the a SIP URI should be used for identifying an AVP in DB operations.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"sqlops\",\"use\\_domain\",1)"
+    },
+    {
+      "name": "ps_id_max_buf_len",
+      "type": "integer",
+      "default_value": "1024",
+      "description": "The maximum size of the buffer used to build the query IDs which are used for managing the Prepare Statements when comes to the \"sql\\_select|update|insert|replace|delete()\" functions If the size is exceeded (when trying to build the PS query ID), the PS support will be dropped for the query. If set to 0, the PS support will be completly disabled.",
+      "example_value": "2048",
+      "example_code": "modparam(\"sqlops\",\"ps\\_id\\_max\\_buf\\_len\", 2048)"
+    },
+    {
+      "name": "bigint_to_str",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Controls bigint conversion. By default bigint values are returned as int. If the value stored in bigint is out of the int range, by enabling bigint to string conversion, the bigint value will be returned as string.",
+      "example_value": "1",
+      "example_code": "# Return bigint as string\nmodparam(\"sqlops\",\"bigint\\_to\\_str\",1)"
+    },
+    {
+      "name": "uuid_column",
+      "type": "string",
+      "default_value": "uuid",
+      "description": "Name of column containing the uuid (unique user id).",
+      "example_value": "uuid",
+      "example_code": "modparam(\"sqlops\",\"uuid\\_column\",\"uuid\")"
+    },
+    {
+      "name": "username_column",
+      "type": "string",
+      "default_value": "username",
+      "description": "Name of column containing the username.",
+      "example_value": "username",
+      "example_code": "modparam(\"sqlops\",\"username\\_column\",\"username\")"
+    },
+    {
+      "name": "domain_column",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of column containing the domain name.",
+      "example_value": "domain",
+      "example_code": "modparam(\"sqlops\",\"domain\\_column\",\"domain\")"
+    },
+    {
+      "name": "attribute_column",
+      "type": "string",
+      "default_value": "attribute",
+      "description": "Name of column containing the attribute name (AVP name).",
+      "example_value": "attribute",
+      "example_code": "modparam(\"sqlops\",\"attribute\\_column\",\"attribute\")"
+    },
+    {
+      "name": "value_column",
+      "type": "string",
+      "default_value": "value",
+      "description": "Name of column containing the AVP value.",
+      "example_value": "value",
+      "example_code": "modparam(\"sqlops\",\"value_column\",\"value\")"
+    },
+    {
+      "name": "type_column",
+      "type": "string",
+      "default_value": "type",
+      "description": "Name of column containing the AVP type.",
+      "example_value": "type",
+      "example_code": "modparam(\"sqlops\",\"type_column\",\"type\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sql_query",
+      "signature": "sql_query(query, [res_col_avps], [db_id])",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "must be a valid SQL query. The parameter can contain pseudo-variables. You must escape any pseudo-variables manually to prevent SQL injection attacks. You can use the existing transformations escape.common and unescape.common to escape and unescape the content of any pseudo-variable. Failing to escape the variables used in the query makes you vulnerable to SQL injection, e.g. make it possible for an outside attacker to alter your database content."
+        },
+        {
+          "name": "res_col_avps",
+          "type": "string",
+          "required": false,
+          "description": "a list with AVP names where to store the result. The format is \"$avp(name1);$avp(name2);...\". If this parameter is omitted, the result is stored in \"$avp(1);$avp(2);...\". If the result consists of multiple rows, then multiple AVPs with corresponding names will be added. The value type of the AVP (string or integer) will be derived from the type of the columns. If the value in the database is NULL, the returned avp will be a string with the <null> value."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the \"db_url\" module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "query was successful"
+        },
+        {
+          "value": "-2",
+          "condition": "query returned an empty result set"
+        },
+        {
+          "value": "-1",
+          "condition": "all other types of errors"
+        }
+      ],
+      "description": "Make a database query and store the result in AVPs.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nsql\\_query(\"SELECT password, ha1 FROM subscriber WHERE username='$tu'\",\n\t\"$avp(pass);$avp(hash)\");\nsql\\_query(\"DELETE FROM subscriber\");\nsql\\_query(\"DELETE FROM subscriber\", , 2);\n\n$avp(id) = 2;\nsql\\_query(\"DELETE FROM subscriber\", , $avp(id));\n...",
+          "description": "sql_query usage"
+        }
+      ]
+    },
+    {
+      "name": "sql_query_one",
+      "signature": "sql_query_one(query, [res_col_vars], [db_id])",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "must be a valid SQL query. The parameter can contain pseudo-variables."
+        },
+        {
+          "name": "res_col_vars",
+          "type": "string",
+          "required": false,
+          "description": "variables for returning the query result may any kind of variable, of course, as time as it is writeable. NOTE that the number of return vairable MUST match (as number) the number of returned columns. If less variables are provided, the query will fail."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the \"db_url\" module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "int",
+      "description": "Similar to sql_query(), it makes a generic raw database query and returns the results, but with the following differences: returns only one row - even if the query results in a multi row result, only the first row will be returned to script. return variables are not limited to AVPs - the variables for returning the query result may any kind of variable, of course, as time as it is writeable. NOTE that the number of return vairable MUST match (as number) the number of returned columns. If less variables are provided, the query will fail. NULL is returned - any a DB NULL value resulting from the query will be pushed as NULL indicator (and NOT as <null> string) to the script variables.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nsql\\_query\\_one(\"SELECT password, ha1 FROM subscriber WHERE username='$tU'\",\n\t\"$var(pass);$var(hash)\");\n# $var(pass) or $var(hash) may be NULL if the corresponding columns\n# are not populated\n...\nsql\\_query\\_one(\"SELECT value, type FROM usr\\_preferences WHERE username='$fU' and attribute='cfna'\",\n\t\"$var(cf\\_uri);$var(type)\");\n# the above query will return only one row, even if there are multiple `cfna`\n# attributes for the user\n...",
+          "description": "sql_query_one usage"
+        }
+      ],
+      "related_functions": [
+        "sql_query()"
+      ]
+    },
+    {
+      "name": "sql_select",
+      "signature": "sql_select([columns],table,[filter],[order],[res_col_avps], [db_id])",
+      "parameters": [
+        {
+          "name": "columns",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding an array of columns to be returned by the select. Ex: \"[\"col1\",\"col2\"]\". If missing, a \"*\" (all columns) select will be performed."
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to be queried."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding the \"where\" filter of the query. This must be an array of (column, operator,value) pairs. The exact JSON syntax of such a pair is \"{\"column\":{\"operator\":\"value\"}}\".; operators may be `>`, `<`, `=`, `!=` or custom string; The values may be string, integer or `null`. To simplify the usage with the `=` operator, you can use \"{\"column\":\"value\"}\" If missing, all rows will be selected.",
+          "valid_values": [
+            ">",
+            "<",
+            "=",
+            "!=",
+            "custom string"
+          ]
+        },
+        {
+          "name": "order",
+          "type": "string",
+          "required": false,
+          "description": "the name of the column to oder by (only ascending)."
+        },
+        {
+          "name": "res_col_avps",
+          "type": "string",
+          "required": false,
+          "description": "a list with AVP names where to store the result. The format is \"$avp(name1);$avp(name2);...\". If this parameter is omitted, the result is stored in \"$avp(1);$avp(2);...\". If the result consists of multiple rows, then multiple AVPs with corresponding names will be added. The value type of the AVP (string or integer) will be derived from the type of the columns. If the value in the database is NULL, the returned avp will be a string with the <null> value."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the db_url module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "query was successful"
+        },
+        {
+          "value": "-2",
+          "condition": "query returned an empty result set"
+        },
+        {
+          "value": "-1",
+          "condition": "all other types of errors"
+        }
+      ],
+      "description": "Function to perform a structured (not raw) SQL SELECT operation. The query is performed via OpenSIPS internal SQL interface, taking advantages of the prepared-statements support (if the db backend provides something like that). The selected columns are returned into a set of AVPs (one to one matching the selected columns).",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nsql\\_select('[\"password\",\"ha1\"]', 'subscriber',\n\t'[ {\"username\": \"$tu\"}, {\"domain\": {\"!=\", null}}]', ,\n\t'$avp(pass);$avp(hash)');\n...",
+          "description": "sql_select usage"
+        }
+      ]
+    },
+    {
+      "name": "sql_select_one",
+      "signature": "sql_select_one([columns],table,[filter],[order],[res_col_vars], [db_id])",
+      "parameters": [
+        {
+          "name": "columns",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding an array of columns to be returned by the select. Ex: \"[\"col1\",\"col2\"]\". If missing, a \"*\" (all columns) select will be performed."
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to be queried."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding the \"where\" filter of the query. This must be an array of (column, operator,value) pairs. The exact JSON syntax of such a pair is \"{\"column\":{\"operator\":\"value\"}}\".; operators may be `>`, `<`, `=`, `!=` or custom string; The values may be string, integer or `null`. To simplify the usage with the `=` operator, you can use \"{\"column\":\"value\"}\" If missing, all rows will be selected.",
+          "valid_values": [
+            ">",
+            "<",
+            "=",
+            "!=",
+            "custom string"
+          ]
+        },
+        {
+          "name": "order",
+          "type": "string",
+          "required": false,
+          "description": "the name of the column to oder by (only ascending)."
+        },
+        {
+          "name": "res_col_vars",
+          "type": "string",
+          "required": false,
+          "description": "variables for returning the query result may any kind of variable, of course, as time as it is writeable. NOTE that the number of return vairable MUST match (as number) the number of returned columns. If less variables are provided, the query will fail."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the db_url module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "int",
+      "description": "Similar to sql_select(), it makes a SELECT SQL query and returns the results, but with the following differences: returns only one row - even if the query results in a multi row result, only the first row will be returned to script. return variables are not limited to AVPs - the variables for returning the query result may any kind of variable, of course, as time as it is writeable. NOTE that the number of return vairable MUST match (as number) the number of returned columns. If less variables are provided, the query will fail. NULL is returned - any a DB NULL value resulting from the query will be pushed as NULL indicator (and NOT as <null> string) to the script variables.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nsql\\_select\\_one('[\"value\",\"type\"]', 'usr\\_preferences',\n\t'[ {\"username\": \"$tu\"}, {\"attribute\": \"cfna\"}]', ,\n\t'$var(cf\\_uri);$var(type)');\n# the above query will return only one row, even if there are multiple `cfna`\n# attributes for the user\n...",
+          "description": "sql_select_one usage"
+        }
+      ],
+      "related_functions": [
+        "sql_select()"
+      ]
+    },
+    {
+      "name": "sql_update",
+      "signature": "sql_update(columns,table,[filter],[db_id])",
+      "parameters": [
+        {
+          "name": "columns",
+          "type": "string",
+          "required": true,
+          "description": "JSON formated string holding an array of (column,value) pairs to be updated by the query. Ex: \"[{\"col1\":\"val1\"},{\"col2\":\"val1\"}]\"."
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to be queried."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding the \"where\" filter of the query. This must be an array of (column, operator,value) pairs. The exact JSON syntax of such a pair is \"{\"column\":{\"operator\":\"value\"}}\".; operators may be `>`, `<`, `=`, `!=` or custom string; The values may be string, integer or `null`. To simplify the usage with the `=` operator, you can use \"{\"column\":\"value\"}\" If missing, all rows will be updated.",
+          "valid_values": [
+            ">",
+            "<",
+            "=",
+            "!=",
+            "custom string"
+          ]
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the db_url module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "query was successful"
+        }
+      ],
+      "description": "Function to perform a structured (not raw) SQL UPDATE operation. IMPORTANT: please see all the general notes from the sql_select() function.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nsql\\_update( '[{\"password\":\"my\\_secret\"}]', 'subscriber',\n\t'[{\"username\": \"$tu\"}]');\n...",
+          "description": "sql_update usage"
+        }
+      ],
+      "related_functions": [
+        "sql_select()"
+      ]
+    },
+    {
+      "name": "sql_insert",
+      "signature": "sql_insert(table,columns,[db_id])",
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to be queried."
+        },
+        {
+          "name": "columns",
+          "type": "string",
+          "required": true,
+          "description": "JSON formated string holding an array of (column,value) pairs to be inserted. Ex: “[{\"col1\":\"val1\"},{\"col2\":\"val1\"}]”."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the query was successful"
+        }
+      ],
+      "description": "Function to perform a structured (not raw) SQL INSERT operation. IMPORTANT: please see all the general notes from the sql_select() function.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sql_insert( 'cc_agents', '[{\"agentid\":\"agentX\"},{\"skills\":\"info\"},{\"location\":null},{\"msrp_location\":\"sip:agentX@opensips.com\"},{\"msrp_max_sessions\":2}]' );",
+          "description": "sql_insert usage"
+        }
+      ],
+      "related_functions": [
+        "sql_select"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "sql_delete",
+      "signature": "sql_delete(table,[filter],[db_id])",
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to delete from."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "JSON formated string holding the \"where\" filter of the query. This must be an array of (column, operator,value) pairs. The exact JSON syntax of such a pair is “{\"column\":{\"operator\":\"value\"}}”.; operators may be `>`, `<`, `=`, `!=` or custom string; The values may be string, integer or `null`. To simplify the usage with the `=` operator, you can use “{\"column\":\"value\"}” If missing, all rows will be updated."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the query was successful"
+        }
+      ],
+      "description": "Function to perform a structured (not raw) SQL DELETE operation. IMPORTANT: please see all the general notes from the sql_select() function.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sql_delete( 'subscriber', '[{\"username\": \"$tu\"}]');",
+          "description": "sql_delete usage"
+        }
+      ],
+      "related_functions": [
+        "sql_select"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "sql_replace",
+      "signature": "sql_replace(table,columns,[db_id])",
+      "parameters": [
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to be queried."
+        },
+        {
+          "name": "columns",
+          "type": "string",
+          "required": true,
+          "description": "JSON formated string holding an array of (column,value) pairs to be inserted. Ex: “[{\"col1\":\"val1\"},{\"col2\":\"val1\"}]”."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the query was successful"
+        }
+      ],
+      "description": "Function very similar to sql_insert() function, but performing an SQL REPLACE operation instead. Note that not all SQL backend in OpenSIPS may support a REPLACE operation.",
+      "usage_context": [],
+      "examples": [],
+      "related_functions": [
+        "sql_insert"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "sql_avp_load",
+      "signature": "sql_avp_load(source, name, [db_id], [prefix])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "description": "what info is used for identifying the AVPs. Parameter syntax: source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]) pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be loaded from DB into memory. Parameter syntax is: name = avp_spec['/(table_name|'$'db_scheme)]"
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter."
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "required": false,
+          "description": "static string which will precede the names of the AVPs populated by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "it loaded some values in AVPs"
+        },
+        {
+          "value": "false",
+          "condition": "db error, no avp loaded"
+        }
+      ],
+      "description": "Loads from DB into memory the AVPs corresponding to the given source. If given, it sets the script flags for loaded AVPs. It returns true if it loaded some values in AVPs, false otherwise (db error, no avp loaded ...). AVPs may be preceded by an optional prefix, in order to avoid some conflicts.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sql_avp_load(\"$fu\", \"$avp(678)\");\nsql_avp_load(\"$ru/domain\", \"i/domain_preferences\");\nsql_avp_load(\"$avp(uuid)\", \"$avp(404fwd)/fwd_table\");\nsql_avp_load(\"$ru\", \"$avp(123)/$some_scheme\");\n\n# use DB URL id 3\nsql_avp_load(\"$ru\", \"$avp(1)\", 3);\n\n# precede all loaded AVPs by the \"caller_\" prefix\nsql_avp_load(\"$ru\", \"$avp(100)\", , \"caller_\");\nxlog(\"Loaded: $avp(caller_100)\\n\");",
+          "description": "sql_avp_load usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "sql_avp_store",
+      "signature": "sql_avp_store(source, name, [db_id])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "description": "what info is used for identifying the AVPs. Parameter syntax: source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]) pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'."
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be loaded from DB into memory. Parameter syntax is: name = avp_spec['/(table_name|'$'db_scheme)]"
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Stores to DB the AVPs corresponding to the given source. The meaning and usage of the parameters are identical as for sql_avp_load(source, name) function. Please refer to its description.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sql_avp_store(\"$tu\", \"$avp(678)\");\nsql_avp_store(\"$ru/username\", \"$avp(email)\");\n# use DB URL id 3\nsql_avp_store(\"$ru\", \"$avp(1)\", 3);",
+          "description": "sql_avp_store usage"
+        }
+      ],
+      "related_functions": [
+        "sql_avp_load"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "sql_avp_delete",
+      "signature": "sql_avp_delete(source, name, [db_id])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "what info is used for identifying the AVPs. Parameter syntax:\n    *   source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]\n    *   pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'.",
+          "valid_values": []
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "which AVPs will be loaded from DB into memory. Parameter syntax is:\n    *   name = avp_spec['/'(table_name|'$'db_scheme)]",
+          "valid_values": []
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "default": "",
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter.",
+          "valid_values": []
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the query was successful"
+        }
+      ],
+      "description": "Deletes from DB the AVPs corresponding to the given _source_.\n\nThe meaning and usage of the parameters are identical as for _sql_avp_load(source, name)_ function. Please refer to its description.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sql_avp_delete(\"$tu\", \"$avp(678)\");\nsql_avp_delete(\"$ru/username\", \"$avp(email)\");\nsql_avp_delete(\"$avp(uuid)\", \"$avp(404fwd)/fwd_table\");\n# use DB URL id 3\nsql_avp_delete(\"$ru\", \"$avp(1)\", 3);",
+          "description": "Example usage of sql_avp_delete.",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "sql_avp_load"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\n# default URL\nmodparam(\"sqlops\",\"db\\_url\",\"mysql://user:passwd@host/database\")\n# an additional DB URL\nmodparam(\"sqlops\",\"db\\_url\",\"1 postgres://user:passwd@host2/opensips\")\n..."
+    },
+    {
+      "title": "Set `usr_table` parameter",
+      "description": "Set `usr_table` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"usr\\_table\",\"avptable\")\n..."
+    },
+    {
+      "title": "Set `db_scheme` parameter",
+      "description": "Set `db_scheme` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"db\\_scheme\",\n\"scheme1:table=subscriber;uuid\\_col=uuid;value\\_col=first\\_name\")\n..."
+    },
+    {
+      "title": "Set `use_domain` parameter",
+      "description": "Set `use_domain` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"use\\_domain\",1)\n..."
+    },
+    {
+      "title": "Set `ps_id_max_buf_len` parameter",
+      "description": "Set `ps_id_max_buf_len` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"ps\\_id\\_max\\_buf\\_len\", 2048)\n..."
+    },
+    {
+      "title": "Set `bigint_to_str` parameter",
+      "description": "Set `bigint_to_str` parameter",
+      "code": "...\n# Return bigint as string\nmodparam(\"sqlops\",\"bigint\\_to\\_str\",1)\n..."
+    },
+    {
+      "title": "Set `uuid_column` parameter",
+      "description": "Set `uuid_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"uuid\\_column\",\"uuid\")\n..."
+    },
+    {
+      "title": "Set `username_column` parameter",
+      "description": "Set `username_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"username\\_column\",\"username\")\n..."
+    },
+    {
+      "title": "Set `domain_column` parameter",
+      "description": "Set `domain_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"domain\\_column\",\"domain\")\n..."
+    },
+    {
+      "title": "Set `attribute_column` parameter",
+      "description": "Set `attribute_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"attribute\\_column\",\"attribute\")\n..."
+    },
+    {
+      "title": "Set `value_column` parameter",
+      "description": "Set `value_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"value\\_column\",\"value\")\n..."
+    },
+    {
+      "title": "Set `type_column` parameter",
+      "description": "Set `type_column` parameter",
+      "code": "...\nmodparam(\"sqlops\",\"type\\_column\",\"type\")\n..."
+    },
+    {
+      "title": "`sql_query` usage",
+      "description": "`sql_query` usage",
+      "code": "...\nsql\\_query(\"SELECT password, ha1 FROM subscriber WHERE username='$tu'\",\n\t\"$avp(pass);$avp(hash)\");\nsql\\_query(\"DELETE FROM subscriber\");\nsql\\_query(\"DELETE FROM subscriber\", , 2);\n\n$avp(id) = 2;\nsql\\_query(\"DELETE FROM subscriber\", , $avp(id));\n..."
+    },
+    {
+      "title": "`sql_query_one` usage",
+      "description": "`sql_query_one` usage",
+      "code": "...\nsql\\_query\\_one(\"SELECT password, ha1 FROM subscriber WHERE username='$tU'\",\n\t\"$var(pass);$var(hash)\");\n# $var(pass) or $var(hash) may be NULL if the corresponding columns\n# are not populated\n...\nsql\\_query\\_one(\"SELECT value, type FROM usr\\_preferences WHERE username='$fU' and attribute='cfna'\",\n\t\"$var(cf\\_uri);$var(type)\");\n# the above query will return only one row, even if there are multiple \\`cfna\\`\n# attributes for the user\n..."
+    },
+    {
+      "title": "`sql_select` usage",
+      "description": "`sql_select` usage",
+      "code": "...\nsql\\_select('\\[\"password\",\"ha1\"\\]', 'subscriber',\n\t'\\[ {\"username\": \"$tu\"}, {\"domain\": {\"!=\", null}}\\]', ,\n\t'$avp(pass);$avp(hash)');\n..."
+    },
+    {
+      "title": "`sql_select_one` usage",
+      "description": "`sql_select_one` usage",
+      "code": "...\nsql\\_select\\_one('\\[\"value\",\"type\"\\]', 'usr\\_preferences',\n\t'\\[ {\"username\": \"$tu\"}, {\"attribute\": \"cfna\"}\\]', ,\n\t'$var(cf\\_uri);$var(type)');\n# the above query will return only one row, even if there are multiple \\`cfna\\`\n# attributes for the user\n..."
+    },
+    {
+      "title": "`sql_update` usage",
+      "description": "`sql_update` usage",
+      "code": "...\nsql\\_update( '\\[{\"password\":\"my\\_secret\"}\\]', 'subscriber',\n\t'\\[{\"username\": \"$tu\"}\\]');\n..."
+    },
+    {
+      "title": "`sql_insert` usage",
+      "description": "`sql_insert` usage",
+      "code": "...\nsql\\_insert( 'cc\\_agents', '\\[{\"agentid\":\"agentX\"},{\"skills\":\"info\"},{\"location\":null},{\"msrp\\_location\":\"sip:agentX@opensips.com\"},{\"msrp\\_max\\_sessions\":2}\\]' );\n..."
+    },
+    {
+      "title": "`sql_delete` usage",
+      "description": "`sql_delete` usage",
+      "code": "...\nsql\\_delete( 'subscriber', '\\[{\"username\": \"$tu\"}\\]');\n..."
+    },
+    {
+      "title": "`sql_avp_load` usage",
+      "description": "`sql_avp_load` usage",
+      "code": "...\nsql\\_avp\\_load(\"$fu\", \"$avp(678)\");\nsql\\_avp\\_load(\"$ru/domain\", \"i/domain\\_preferences\");\nsql\\_avp\\_load(\"$avp(uuid)\", \"$avp(404fwd)/fwd\\_table\");\nsql\\_avp\\_load(\"$ru\", \"$avp(123)/$some\\_scheme\");\n\n# use DB URL id 3\nsql\\_avp\\_load(\"$ru\", \"$avp(1)\", 3);\n\n# precede all loaded AVPs by the \"caller\\_\" prefix\nsql\\_avp\\_load(\"$ru\", \"$avp(100)\", , \"caller\\_\");\nxlog(\"Loaded: $avp(caller\\_100)\\\\n\");\n\n..."
+    },
+    {
+      "title": "`sql_avp_store` usage",
+      "description": "`sql_avp_store` usage",
+      "code": "...\nsql\\_avp\\_store(\"$tu\", \"$avp(678)\");\nsql\\_avp\\_store(\"$ru/username\", \"$avp(email)\");\n# use DB URL id 3\nsql\\_avp\\_store(\"$ru\", \"$avp(1)\", 3);\n..."
+    },
+    {
+      "title": "`sql_avp_delete` usage",
+      "description": "`sql_avp_delete` usage",
+      "code": "...\nsql\\_avp\\_delete(\"$tu\", \"$avp(678)\");\nsql\\_avp\\_delete(\"$ru/username\", \"$avp(email)\");\nsql\\_avp\\_delete(\"$avp(uuid)\", \"$avp(404fwd)/fwd\\_table\");\n# use DB URL id 3\nsql\\_avp\\_delete(\"$ru\", \"$avp(1)\", 3);\n..."
+    },
+    {
+      "title": "`async sql_query` usage",
+      "description": "`async sql_query` usage",
+      "code": "...\n{\n...\n/* Example of a slow MySQL query - it should take around 5 seconds */\nasync(\n\tsql\\_query(\n\t\t\"SELECT table\\_name, table\\_version, SLEEP(0.1) from version\",\n\t\t\"$avp(tb\\_name); $avp(tb\\_ver); $avp(retcode)\"),\n\tmy\\_resume\\_route);\n/* script execution is halted right after the async() call */\n}\n\n/* We will be called when data is ready - meanwhile, the worker is free */\nroute \\[my\\_resume\\_route\\]\n{\n\txlog(\"Results: \\\\n$(avp(tb\\_name)\\[\\*\\])\\\\n\n-------------------\\\\n$(avp(tb\\_ver)\\[\\*\\])\\\\n\n-------------------\\\\n$(avp(retcode)\\[\\*\\])\\\\n\");\n}\n..."
+    },
+    {
+      "title": "`async sql_query_one` usage",
+      "description": "`async sql_query_one` usage",
+      "code": "...\n{\n...\n/* Example of a slow MySQL query - it should take around 5 seconds */\nasync(\n\tsql\\_query\\_one(\n\t\t\"SELECT table\\_name, table\\_version, SLEEP(0.1) from version\",\n\t\t\"$var(tb\\_name); $var(tb\\_ver); $var(retcode)\"),\n\tmy\\_resume\\_route);\n/* script execution is halted right after the async() call */\n}\n\n/* We will be called when data is ready - meanwhile, the worker is free */\nroute \\[my\\_resume\\_route\\]\n{\n\txlog(\"Result: $var(tb\\_name) | $var(tb\\_ver) | $(var(retcode)\\\\n\");\n}\n..."
+    }
+  ]
+}

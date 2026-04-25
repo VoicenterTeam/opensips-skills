@@ -1,0 +1,285 @@
+{
+  "id": "module-rls-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "rls Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/rls.html",
+  "content_markdown": "The modules is a Resource List Server implementation following the specification in RFC 4662 and RFC 4826.\n\nThe server is independent from local presence servers, retrieving presence information with Subscribe-Notify messages.\n\nThe module uses the presence module as a library, as it requires a resembling mechanism for handling Subscribe. Therefore, in case the local presence server is not collocated on the same machine with the RL server, the presence module should be loaded in a library mode only (see doc for presence module).\n\nIt handles subscription to lists in an event independent way.The default event is presence, but if some other events are to be handled by the server, they should be added using the module parameter \"rls_events\".\n\nIt works with XCAP server for storage. There is also the possibility to configure it to work in an integrated_xcap server mode, when it only queries database for the resource lists documents. This is useful in a small architecture when all the clients use an integrated server and there are no references to exterior documents in their lists.\n\nThe same as presence module, it has a caching mode with periodical update in database for subscribe information. The information retrieved with Notify messages is stored in database only.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:46:38.956Z",
+  "module_name": "rls",
+  "overview": "The modules is a Resource List Server implementation following the specification in RFC 4662 and RFC 4826.\n\nThe server is independent from local presence servers, retrieving presence information with Subscribe-Notify messages.\n\nThe module uses the presence module as a library, as it requires a resembling mechanism for handling Subscribe. Therefore, in case the local presence server is not collocated on the same machine with the RL server, the presence module should be loaded in a library mode only (see doc for presence module).\n\nIt handles subscription to lists in an event independent way.The default event is presence, but if some other events are to be handled by the server, they should be added using the module parameter \"rls_events\".\n\nIt works with XCAP server for storage. There is also the possibility to configure it to work in an integrated_xcap server mode, when it only queries database for the resource lists documents. This is useful in a small architecture when all the clients use an integrated server and there are no references to exterior documents in their lists.\n\nThe same as presence module, it has a caching mode with periodical update in database for subscribe information. The information retrieved with Notify messages is stored in database only.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "signaling",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "presence",
+      "type": "module",
+      "reason": "in a library mode",
+      "optional": false
+    },
+    {
+      "name": "pua",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "xcap",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "rlsubs_table",
+      "type": "string",
+      "default_value": "rls_watchers",
+      "description": "The name of the db table where resource lists subscription information is stored.",
+      "example_value": "rls_subscriptions",
+      "example_code": "modparam(\"rls\", \"rlsubs_table\", \"rls_subscriptions\")"
+    },
+    {
+      "name": "rlpres_table",
+      "type": "string",
+      "default_value": "rls_presentity",
+      "description": "The name of the db table where notified event specific information is stored.",
+      "example_value": "rls_notify",
+      "example_code": "modparam(\"rls\", \"rlpres_table\", \"rls_notify\")"
+    },
+    {
+      "name": "clean_period",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The period at which to check for expired information.",
+      "example_value": "100",
+      "example_code": "modparam(\"rls\", \"clean_period\", 100)"
+    },
+    {
+      "name": "waitn_time",
+      "type": "integer",
+      "default_value": "50",
+      "description": "The timer period at which the server should attempt to send Notifies with the updated presence state of the subscribed list or watcher information.",
+      "example_value": "10",
+      "example_code": "modparam(\"rls\", \"waitn_time\", 10)"
+    },
+    {
+      "name": "max_expires",
+      "type": "integer",
+      "default_value": "7200",
+      "description": "The maximum accepted expires for a subscription to a list.",
+      "example_value": "10800",
+      "example_code": "modparam(\"rls\", \"max_expires\", 10800)"
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "9 (512)",
+      "description": "The dimension of the hash table used to store subscription to a list. This parameter will be used as the power of 2 when computing table size.",
+      "example_value": "11",
+      "example_code": "modparam(\"rls\", \"hash\\_size\", 11)"
+    },
+    {
+      "name": "xcap_root",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The address of the xcap server.",
+      "example_value": "http://192.168.2.132/xcap-root:800",
+      "example_code": "modparam(\"rls\", \"xcap\\_root\", \"http://192.168.2.132/xcap-root:800\")"
+    },
+    {
+      "name": "to_presence_code",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The code to be returned by rls_handle_subscribe function if the processed Subscribe is not a resource list Subscribe. This code can be used in an architecture with presence and rls servers collocated on the same machine, to call handle_subscribe on the message causing this code.",
+      "example_value": "10",
+      "example_code": "modparam(\"rls\", \"to\\_presence\\_code\", 10)"
+    },
+    {
+      "name": "rls_event",
+      "type": "string",
+      "default_value": "\"presence\"",
+      "description": "The default event that RLS handles is presence. If some other events should also be handled by RLS they should be added using this parameter. It can be set more than once.",
+      "example_value": "dialog;sla",
+      "example_code": "modparam(\"rls\", \"rls\\_event\", \"dialog;sla\")",
+      "notes": "It can be set more than once."
+    },
+    {
+      "name": "presence_server",
+      "type": "string",
+      "description": "The address of the presence server. It will be used as outbound proxy for Subscribe requests sent by the RLS server to bouncing on and off the proxy and having to include special processing for this messages in the proxy's configuration file.",
+      "example_value": "sip:pres@opensips.org:5060",
+      "example_code": "modparam(\"rls\", \"presence\\_server\", \"sip:pres@opensips.org:5060\")"
+    },
+    {
+      "name": "contact_user",
+      "type": "string",
+      "default_value": "rls",
+      "description": "This is the username that will be used in the Contact header for the 200 OK replies to SUBSCRIBE and in the following in-dialog NOTIFY requests, as well as for the SUBSCRIBE requests that are generated by the RLS server. The IP address, port and transport for the Contact will be automatically determined based on the interface where the SUBSCRIBE was received or sent from.\n\nIf set to an empty string, no username will be added to the contact and the contact will be built just out of the IP, port and transport.",
+      "example_value": "rls",
+      "example_code": "modparam(\"rls\", \"contact\\_user\", \"rls\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "rls_handle_subscribe",
+      "signature": "rls_handle_subscribe()",
+      "parameters": [],
+      "return_type": "int",
+      "description": "This function detects if a Subscribe message should be handled by RLS. If not it replies with the configured to_presence_code. If it is, it extracts the dialog info and sends aggregate Notify requests with information for the list.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "For presence and rls on the same machine:\n\tmodparam(rls, \"to_presence_code\", 10)\n\n\tif(is_method(\"SUBSCRIBE\"))\n\t{\t\n\t\t$var(ret_code)= rls_handle_subscribe();\n\n\t\tif($var(ret_code)== 10)\n\t\t\t\thandle_subscribe();\n\n\t\tt_release();\n\t}\n\nFor rls only:\n\tif(is_method(\"SUBSCRIBE\"))\n\t{\n\t\trls_handle_subscribe();\n\t\tt_release();\n\t}",
+          "description": "Example 1.12. rls_handle_subscribe usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "rls_handle_notify",
+      "signature": "rls_handle_notify()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "the Notify was inside a dialog that was recognized by the RLS server and was processed successfully."
+        },
+        {
+          "value": "2",
+          "condition": "the Notify did not belog to a dialog initiated by the RLS server."
+        },
+        {
+          "value": "-1",
+          "condition": "an error occurred during processing."
+        }
+      ],
+      "description": "This function has to be called for Notify messages sent by presence servers in reply to the Subscribe messages sent by RLS.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if($rm==\"NOTIFY\")\n    rls_handle_notify();",
+          "description": "Example 1.13. rls_handle_notify usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "rls_update_subscriptions",
+      "parameters": [
+        {
+          "name": "presentity_uri",
+          "type": "string",
+          "required": true,
+          "description": "the uri of the user who made the change and whose subscriptions should be updated"
+        }
+      ],
+      "description": "Triggers updating backend subscriptions after a resources-list or rls-services document has been updated.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi rls_update_subscriptions sip:alice@atlanta.com",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `rlsubs_table` parameter",
+      "description": "Set `rlsubs_table` parameter",
+      "code": "...\nmodparam(\"rls\", \"rlsubs_table\", \"rls_subscriptions\")\n..."
+    },
+    {
+      "title": "Set `rlpres_table` parameter",
+      "description": "Set `rlpres_table` parameter",
+      "code": "...\nmodparam(\"rls\", \"rlpres_table\", \"rls_notify\")\n..."
+    },
+    {
+      "title": "Set `clean_period` parameter",
+      "description": "Set `clean_period` parameter",
+      "code": "...\nmodparam(\"rls\", \"clean_period\", 100)\n..."
+    },
+    {
+      "title": "Set `waitn_time` parameter",
+      "description": "Set `waitn_time` parameter",
+      "code": "...\nmodparam(\"rls\", \"waitn_time\", 10)\n..."
+    },
+    {
+      "title": "Set `max_expires` parameter",
+      "description": "Set `max_expires` parameter",
+      "code": "...\nmodparam(\"rls\", \"max_expires\", 10800)\n..."
+    },
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "Set `hash_size` parameter",
+      "code": "...\nmodparam(\"rls\", \"hash_size\", 11)\n..."
+    },
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "Set `hash_size` parameter",
+      "code": "...\nmodparam(\"rls\", \"xcap_root\", \"http://192.168.2.132/xcap-root:800\")\n..."
+    },
+    {
+      "title": "Set `to_presence_code` parameter",
+      "description": "Set `to_presence_code` parameter",
+      "code": "...\nmodparam(\"rls\", \"to_presence_code\", 10)\n..."
+    },
+    {
+      "title": "Set `rls_event` parameter",
+      "description": "Set `rls_event` parameter",
+      "code": "...\nmodparam(\"rls\", \"rls_event\", \"dialog;sla\")\n..."
+    },
+    {
+      "title": "Set `presence_server` parameter",
+      "description": "Set `presence_server` parameter",
+      "code": "...\nmodparam(\"rls\", \"presence_server\", \"sip:pres@opensips.org:5060\")\n..."
+    },
+    {
+      "title": "Set `contact_user` parameter",
+      "description": "Set `contact_user` parameter",
+      "code": "...\nmodparam(\"rls\", \"contact_user\", \"rls\")\n..."
+    },
+    {
+      "title": "`rls_handle_subscribe` usage",
+      "description": "`rls_handle_subscribe` usage",
+      "code": "...\nFor presence and rls on the same machine:\n\tmodparam(rls, \"to_presence_code\", 10)\n\n\tif(is_method(\"SUBSCRIBE\"))\n\t{\t\n\t\t$var(ret_code)= rls_handle_subscribe();\n\n\t\tif($var(ret_code)== 10)\n\t\t\t\thandle_subscribe();\n\n\t\tt_release();\n\t}\n\nFor rls only:\n\tif(is_method(\"SUBSCRIBE\"))\n\t{\n\t\trls_handle_subscribe();\n\t\tt_release();\n\t}\n\n..."
+    },
+    {
+      "title": "`rls_handle_notify` usage",
+      "description": "`rls_handle_notify` usage",
+      "code": "...\nif($rm==\"NOTIFY\")\n    rls_handle_notify();\n..."
+    }
+  ]
+}

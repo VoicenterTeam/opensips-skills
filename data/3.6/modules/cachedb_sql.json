@@ -1,0 +1,114 @@
+{
+  "id": "module-cachedb_sql-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "cachedb_sql Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/cachedb_sql.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with a regular SQL-based server. It uses the internal DB interface to connect to the back-end, and also implements the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:29:17.842Z",
+  "module_name": "cachedb_sql",
+  "overview": "This module is an implementation of a cache system designed to work with a regular SQL-based server. It uses the internal DB interface to connect to the back-end, and also implements the Key-Value interface exported from the core.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The url of the Database that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations.\n\nThe format to follow is : sql:[conn_id]-dburl\n\nThe parameter can be set multiple times to create multiple connections accessible from the OpenSIPS script.",
+      "example_value": "sql:1st-mysql://root:vlad@localhost/opensips_sql",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"cachedb_url\", \"sql:1st-mysql://root:vlad@localhost/opensips_sql\")\n..."
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "description": "The table of the Database that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations.",
+      "example_value": "my_table",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"db_table\",\"my_table\");\n..."
+    },
+    {
+      "name": "key_column",
+      "type": "string",
+      "description": "The column where the key will be stored",
+      "example_value": "some_name",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"key_column\",\"some_name\");\n..."
+    },
+    {
+      "name": "value_column",
+      "type": "string",
+      "description": "The column where the value will be stored",
+      "example_value": "some_name",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"value_column\",\"some_name\");\n..."
+    },
+    {
+      "name": "counter_column",
+      "type": "string",
+      "description": "The column where the counter value will be stored",
+      "example_value": "some_name",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"counter_column\",\"some_name\");\n..."
+    },
+    {
+      "name": "expires_column",
+      "type": "string",
+      "description": "The column where the expires will be stored",
+      "example_value": "some_name",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"expires_column\",\"some_name\");\n..."
+    },
+    {
+      "name": "cache_clean_period",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The interval in seconds at which the expired keys will be removed from the database. Default value is 60 ( seconds )",
+      "example_value": "10",
+      "example_code": "...\nmodparam(\"cachedb_sql\", \"cache_clean_period\",10);\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"cachedb_url\", \"sql:1st-mysql://root:vlad@localhost/opensips_sql\")\n..."
+    },
+    {
+      "title": "Usage example",
+      "description": "Usage example",
+      "code": "...\nmodparam(\"cachedb_sql\", \"cachedb_url\", \"sql:1st-mysql://root:vlad@localhost/opensips_sql\")\nmodparam(\"cachedb_sql\", \"cachedb_url\", \"sql:2nd-postgres://root:vlad@localhost/opensips_pg\")\n...\ncache_store(\"sql:1st-mysql\",\"key\",\"$ru value\");\ncache_store(\"sql:2nd-postgres\",\"counter\",\"10\");\n..."
+    },
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_table` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"db_table\",\"my_table\");\n..."
+    },
+    {
+      "title": "Set `key_column` parameter",
+      "description": "Set `key_column` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"key_column\",\"some_name\");\n..."
+    },
+    {
+      "title": "Set `value_column` parameter",
+      "description": "Set `value_column` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"value_column\",\"some_name\");\n..."
+    },
+    {
+      "title": "Set `counter_column` parameter",
+      "description": "Set `counter_column` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"counter_column\",\"some_name\");\n..."
+    },
+    {
+      "title": "Set `expires_column` parameter",
+      "description": "Set `expires_column` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"expires_column\",\"some_name\");\n..."
+    },
+    {
+      "title": "Set `cache_clean_period` parameter",
+      "description": "Set `cache_clean_period` parameter",
+      "code": "...\nmodparam(\"cachedb_sql\", \"cache_clean_period\",10);\n..."
+    }
+  ]
+}

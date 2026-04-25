@@ -1,0 +1,208 @@
+{
+  "id": "module-xcap_client-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "xcap_client Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/xcap_client.html",
+  "content_markdown": "The modules is an XCAP client for OpenSIPS that can be used by other modules. It fetches XCAP elements, either documents or part of them, by sending HTTP GET requests. It also offers support for conditional queries. It uses libcurl library as a client-side HTTP transfer library.\n\nThe module offers an xcap client interface with general functions that allow requesting for an specific element from an xcap server. In addition to that it also offers the service of storing and update in database the documents it receives. In this case only an initial request to the module is required - xcapGetNewDoc-which is like a request to the module to handle from that point on the referenced document so as to promise that the newest version will always be present in database.\n\nThe update method is also configurable, either through periodical queries, applicable to any kind of xcap server or with an MI command that should be sent by the server upon an update.\n\nThe module is currently used by the presence_xml module, if the 'integrated_xcap_server' parameter is not set.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:51:14.689Z",
+  "module_name": "xcap_client",
+  "overview": "The modules is an XCAP client for OpenSIPS that can be used by other modules. It fetches XCAP elements, either documents or part of them, by sending HTTP GET requests. It also offers support for conditional queries. It uses libcurl library as a client-side HTTP transfer library.\n\nThe module offers an xcap client interface with general functions that allow requesting for an specific element from an xcap server. In addition to that it also offers the service of storing and update in database the documents it receives. In this case only an initial request to the module is required - xcapGetNewDoc-which is like a request to the module to handle from that point on the referenced document so as to promise that the newest version will always be present in database.\n\nThe update method is also configurable, either through periodical queries, applicable to any kind of xcap server or with an MI command that should be sent by the server upon an update.\n\nThe module is currently used by the presence_xml module, if the 'integrated_xcap_server' parameter is not set.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "xcap",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml-dev",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libcurl-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "periodical_query",
+      "type": "integer",
+      "default_value": "1",
+      "description": "A flag to disable periodical query as an update method for the documents the module is responsible for. It could be disabled when the xcap server is capable to send the exported MI command when a change occurs or when another module in OpenSIPS handles updates.\n\nTo disable it set this parameter to 0.",
+      "example_value": "0",
+      "example_code": "modparam(\"xcap\\_client\", \"periodical\\_query\", 0)"
+    },
+    {
+      "name": "query_period",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Should be set if periodical query is not disabled. Represents the time interval the xcap servers should be queried for an update\n\nTo disable it set this parameter to 0.",
+      "example_value": "50",
+      "example_code": "modparam(\"xcap\\_client\", \"query\\_period\", 50)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "refreshXcapDoc",
+      "signature": "refreshXcapDoc(doc_uri, port)",
+      "parameters": [
+        {
+          "name": "doc_uri",
+          "type": "string",
+          "required": true,
+          "description": "the uri of the document"
+        },
+        {
+          "name": "port",
+          "type": "integer",
+          "required": true,
+          "description": "the port of the xcap server"
+        }
+      ],
+      "return_type": "",
+      "description": "MI command that should be sent by an xcap server when a stored document changes.",
+      "usage_context": [
+        "MI_COMMAND"
+      ],
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi refreshXcapDoc /xcap-root/resource-lists/users/eyebeam/buddies-resource-list.xml 8000",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "bind_xcap_client_api",
+      "signature": "bind_xcap_client_api(xcap_client_api_t* api)",
+      "parameters": [
+        {
+          "name": "api",
+          "type": "xcap_client_api_t*",
+          "required": true,
+          "description": "Pointer to the API structure."
+        }
+      ],
+      "return_type": "",
+      "description": "This function allows binding the needed functions.",
+      "usage_context": [
+        "C_API"
+      ],
+      "examples": [
+        {
+          "language": "c",
+          "code": "typedef struct xcap_client_api {\n\n\t/* xcap node selection and retrieving functions*/\n\txcap_get_elem_t get_elem;\n\txcap_nodeSel_init_t int_node_sel;\n\txcap_nodeSel_add_step_t add_step;\n\txcap_nodeSel_add_terminal_t add_terminal;\n\txcap_nodeSel_free_t free_node_sel;\n\txcapGetNewDoc_t getNewDoc; /* an initial request for the module \n\tfo fetch this document that does not exist in xcap db table\n\tand handle its update*/\n\n\t/* function to register a callback to document changes*/\n\tregister_xcapcb_t register_xcb;\n}xcap_client_api_t;",
+          "description": "xcap_client_api structure"
+        }
+      ]
+    },
+    {
+      "name": "get_elem",
+      "signature": "char* get_elem(char* xcap_root, xcap_doc_sel_t* doc_sel, xcap_node_sel_t* node_sel)",
+      "parameters": [
+        {
+          "name": "xcap_root",
+          "type": "char*",
+          "required": true,
+          "description": "the XCAP server address"
+        },
+        {
+          "name": "doc_sel",
+          "type": "xcap_doc_sel_t*",
+          "required": true,
+          "description": "structure with document selection info"
+        },
+        {
+          "name": "node_sel",
+          "type": "xcap_node_sel_t*",
+          "required": true,
+          "description": "structure with node selection info"
+        }
+      ],
+      "return_type": "char*",
+      "description": "This function sends a HTTP request and gets the specified information from the xcap server.",
+      "usage_context": [
+        "C_API"
+      ],
+      "examples": []
+    },
+    {
+      "name": "register_xcb",
+      "signature": "int register_xcb(int types, xcap_cb f)",
+      "parameters": [
+        {
+          "name": "types",
+          "type": "int",
+          "required": true,
+          "description": "can have a combined value of PRES_RULES, RESOURCE_LISTS, RLS_SERVICES, OMA_PRES_RULES and PIDF_MANIPULATION.",
+          "valid_values": [
+            "PRES_RULES",
+            "RESOURCE_LISTS",
+            "RLS_SERVICES",
+            "OMA_PRES_RULES",
+            "PIDF_MANIPULATION"
+          ]
+        },
+        {
+          "name": "f",
+          "type": "xcap_cb",
+          "required": true,
+          "description": "the callback function"
+        }
+      ],
+      "return_type": "int",
+      "description": "Registers a callback to be called when a MI command refreshXcapDoc is received and the document in question is retrieved.",
+      "usage_context": [
+        "C_API"
+      ],
+      "examples": []
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "refreshXcapDoc",
+      "parameters": [
+        {
+          "name": "doc_uri",
+          "type": "string",
+          "required": true,
+          "description": "the uri of the document"
+        },
+        {
+          "name": "port",
+          "type": "integer",
+          "required": true,
+          "description": "the port of the xcap server"
+        }
+      ],
+      "description": "MI command that should be sent by an xcap server when a stored document changes.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi refreshXcapDoc /xcap-root/resource-lists/users/eyebeam/buddies-resource-list.xml 8000",
+          "description": "Refreshes an XCAP document using the MI interface"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `periodical_query` parameter",
+      "description": "To disable it set this parameter to 0.",
+      "code": "...\nmodparam(\"xcap\\_client\", \"periodical\\_query\", 0)\n..."
+    },
+    {
+      "title": "Set `query_period` parameter",
+      "description": "Represents the time interval the xcap servers should be queried for an update",
+      "code": "...\nmodparam(\"xcap\\_client\", \"query\\_period\", 50)\n..."
+    }
+  ]
+}

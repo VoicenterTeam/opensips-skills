@@ -1,0 +1,150 @@
+{
+  "id": "module-presence_xml-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "presence_xml Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/presence_xml.html",
+  "content_markdown": "The module does specific handling for notify-subscribe events using xml bodies. It is used with the general event handling module, presence. It constructs and adds 3 events to it: presence, presence.winfo, dialog;sla.\n\nThis module takes the xcap permission rule documents from xcap_table. The presence permission rules are interpreted according to the specifications in RFC 4745 and RFC 5025.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T11:07:44.878Z",
+  "module_name": "presence_xml",
+  "overview": "The module does specific handling for notify-subscribe events using xml bodies. It is used with the general event handling module, presence. It constructs and adds 3 events to it: presence, presence.winfo, dialog;sla.\n\nThis module takes the xcap permission rule documents from xcap_table. The presence permission rules are interpreted according to the specifications in RFC 4745 and RFC 5025.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "presence",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "signaling",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "xcap",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "xcap_client",
+      "type": "module",
+      "reason": "Only compulsory if not using an integrated xcap server (if 'integrated_xcap_server' parameter is not set).",
+      "optional": true
+    },
+    {
+      "name": "libxml-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "force_active",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This parameter is used for permissions when handling Subscribe messages. If set to 1, subscription state is considered active and the presentity is not queried for permissions(should be set to 1 if not using an xcap server). Otherwise,the xcap server is queried and the subscription states is according to user defined permission rules. If no rules are defined for a certain watcher, the subscriptions remains in pending state and the Notify sent will have no body.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"presence\\_xml\", \"force\\_active\", 1)",
+      "notes": "Note: When switching from one value to another, the watchers table must be emptied."
+    },
+    {
+      "name": "pidf_manipulation",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter to 1 enables the features described in RFC 4827. It gives the possibility to have a permanent state notified to the users even in the case in which the phone is not online. The presence document is taken from the xcap server and aggregated together with the other presence information, if any exist, for each Notify that is sent to the watchers. It is also possible to have information notified even if not issuing any Publish (useful for services such as email, SMS, MMS).",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"presence\\_xml\", \"pidf\\_manipulation\", 1)"
+    },
+    {
+      "name": "xcap_server",
+      "type": "string",
+      "description": "The address of the xcap servers used for storage. This parameter is compulsory if the integrated\\_xcap\\_server parameter is not set. It can be set more that once, to construct an address list of trusted XCAP servers.",
+      "scope": "global",
+      "example_value": "xcap\\_server.example.org",
+      "example_code": "modparam(\"presence\\_xml\", \"xcap\\_server\", \"xcap\\_server.example.org\")\nmodparam(\"presence\\_xml\", \"xcap\\_server\", \"xcap\\_server.ag.org\")"
+    },
+    {
+      "name": "pres_rules_auid",
+      "type": "string",
+      "default_value": "pres-rules",
+      "description": "This parameter should be configured if you are using the non integrated xcap mode and you need to use another pres-rules auid than the default 'pres-rules'.",
+      "scope": "global",
+      "example_value": "org.openmobilealliance.pres-rules",
+      "example_code": "modparam(\"presence\\_xml\", \"pres\\_rules\\_auid\", \"org.openmobilealliance.pres-rules\")"
+    },
+    {
+      "name": "pres_rules_filename",
+      "type": "string",
+      "default_value": "index",
+      "description": "This parameter should be configured if you are using the non integrated xcap mode and you need to configure another filename than the default 'index'.",
+      "scope": "global",
+      "example_value": "pres-rules",
+      "example_code": "modparam(\"presence\\_xml\", \"pres\\_rules\\_filename\", \"pres-rules\")"
+    },
+    {
+      "name": "generate_offline_body",
+      "type": "string",
+      "description": "This parameter should be set to 0 if you want to prevent OpenSIPS from automatically generating a PIDF body when a publication expires or is explicitly terminated (a PUBLISH request is received with Expires: 0).",
+      "possible_values": [
+        "0"
+      ],
+      "scope": "global",
+      "example_value": "0",
+      "example_code": "modparam(\"presence\\_xml\", \"generate\\_offline\\_body\", 0)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `force_active` parameter",
+      "description": "This parameter is used for permissions when handling Subscribe messages. If set to 1, subscription state is considered active and the presentity is not queried for permissions(should be set to 1 if not using an xcap server). Otherwise,the xcap server is queried and the subscription states is according to user defined permission rules. If no rules are defined for a certain watcher, the subscriptions remains in pending state and the Notify sent will have no body.\n\nNote: When switching from one value to another, the watchers table must be emptied.\n\nDefault value is “0”.",
+      "code": "...\nmodparam(\"presence_xml\", \"force_active\", 1)\n..."
+    },
+    {
+      "title": "Set `pidf_manipulation` parameter",
+      "description": "Setting this parameter to 1 enables the features described in RFC 4827. It gives the possibility to have a permanent state notified to the users even in the case in which the phone is not online. The presence document is taken from the xcap server and aggregated together with the other presence information, if any exist, for each Notify that is sent to the watchers. It is also possible to have information notified even if not issuing any Publish (useful for services such as email, SMS, MMS).\n\nDefault value is “0”.",
+      "code": "...\nmodparam(\"presence_xml\", \"pidf_manipulation\", 1)\n..."
+    },
+    {
+      "title": "Set `xcap_server` parameter",
+      "description": "The address of the xcap servers used for storage. This parameter is compulsory if the integrated_xcap_server parameter is not set. It can be set more that once, to construct an address list of trusted XCAP servers.",
+      "code": "...\nmodparam(\"presence_xml\", \"xcap_server\", \"xcap_server.example.org\")\nmodparam(\"presence_xml\", \"xcap_server\", \"xcap_server.ag.org\")\n..."
+    },
+    {
+      "title": "Set `pres_rules_auid` parameter",
+      "description": "This parameter should be configured if you are using the non integrated xcap mode and you need to use another pres-rules auid than the default 'pres-rules'.",
+      "code": "...\nmodparam(\"presence_xml\", \"pres_rules_auid\", \"org.openmobilealliance.pres-rules\")\n..."
+    },
+    {
+      "title": "Set `pres_rules_filename` parameter",
+      "description": "This parameter should be configured if you are using the non integrated xcap mode and you need to configure another filename than the default 'index'.",
+      "code": "...\nmodparam(\"presence_xml\", \"pres_rules_filename\", \"pres-rules\")\n..."
+    },
+    {
+      "title": "Set `generate_offline_body` parameter",
+      "description": "This parameter should be set to 0 if you want to prevent OpenSIPS from automatically generating a PIDF body when a publication expires or is explicitly terminated (a PUBLISH request is received with Expires: 0).",
+      "code": "...\nmodparam(\"presence_xml\", \"generate_offline_body\", 0)\n..."
+    }
+  ]
+}

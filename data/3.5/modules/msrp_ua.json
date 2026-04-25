@@ -1,0 +1,339 @@
+{
+  "id": "module-msrp_ua-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "msrp_ua Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/msrp_ua.html",
+  "content_markdown": "This module implements an User Agent capable of establishing messaging sessions using the MSRP(RFC 4976) protocol.\n\nThrough an internal API and exported script and MI functions, the module allows OpenSIPS to set up MSRP sessions via SIP and exchange messages as an MSRP endpoint.\n\nThe module makes use of the _proto\\_msrp_ module for the MSRP protocol stack and the _b2b\\_entities_ module for the SIP UAC/UAS functionalities.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:28:05.711Z",
+  "module_name": "msrp_ua",
+  "overview": "This module implements an User Agent capable of establishing messaging sessions using the MSRP(RFC 4976) protocol.\n\nThrough an internal API and exported script and MI functions, the module allows OpenSIPS to set up MSRP sessions via SIP and exchange messages as an MSRP endpoint.\n\nThe module makes use of the _proto\\_msrp_ module for the MSRP protocol stack and the _b2b\\_entities_ module for the SIP UAC/UAS functionalities.",
+  "how_it_works": "In order to start a SIP call carying MSRP from OpenSIPS you can use the [msrp\\_ua\\_start\\_session](#mi_msrp_ua_start_session \"1.6.2.� msrp_ua_start_session\") MI function. Alternatively, to answer a SIP session with MSRP you can use the [msrp\\_ua\\_answer()](#func_msrp_ua_answer \"1.5.1.� msrp_ua_answer(content_types)\") script function.\n\nWhen a UAC or UAS session is successfully established(ACK sent/received) the [E\\_MSRP\\_SESSION\\_NEW](#event_E_MSRP_SESSION_NEW \"1.7.1.� E_MSRP_SESSION_NEW\") event is triggered. After this point, you may receive MSRP messages or Reports, signaled by the [E\\_MSRP\\_MSG\\_RECEIVED](#event_E_MSRP_MSG_RECEIVED \"1.7.3.� E_MSRP_MSG_RECEIVED\") and [E\\_MSRP\\_REPORT\\_RECEIVED](#event_E_MSRP_REPORT_RECEIVED \"1.7.4.� E_MSRP_REPORT_RECEIVED\") events.\n\nNote that the _E\\_MSRP\\_REPORT\\_RECEIVED_ event covers both actual MSRP REPORT requests as well as negative MSRP transaction responses and local send timeouts(which should be treated the same as a received timeout transaction response).\n\nYou can send MSRP messages to the peer with the [msrp\\_ua\\_send\\_message](#mi_msrp_ua_send_message \"1.6.1.� msrp_ua_send_message\") MI function.",
+  "dependencies_required": [
+    {
+      "name": "proto_msrp",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "b2b_entities",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "hash_size",
+      "type": "int",
+      "default_value": "10",
+      "description": "The size of the hash table that stores the MSRP session information. It is the 2 logarithmic value of the real size.",
+      "example_code": "modparam(\"msrp\\_ua\", \"hash\\_size\", 16)"
+    },
+    {
+      "name": "cleanup_interval",
+      "type": "int",
+      "default_value": "60",
+      "description": "The interval between full iterations of the sessions table in order to clean up expired MSRP sessions.",
+      "example_code": "modparam(\"msrp\\_ua\", \"cleanup\\_interval\", 30)"
+    },
+    {
+      "name": "max_duration",
+      "type": "integer",
+      "default_value": "12 * 3600 seconds (12 hours)",
+      "description": "The maximum duration of a call. If set to 0, there will be no limitation.",
+      "example_code": "modparam(\"msrp\\_ua\", \"max\\_duration\", 7200)"
+    },
+    {
+      "name": "my_uri",
+      "type": "string",
+      "description": "The MSRP URI of the OpenSIPS endpoint. This URI will be advertised in the SDP offer provided to peers when setting up a session and should match one of the MSRP listeners defined in the script. The _session-id_ part of the URI should be ommited. If the port is not set explicitly, the default value of 2855 wil be assumed",
+      "example_code": "modparam(\"msrp\\_ua\", \"my\\_uri\", \"msrp://opensips.org:2855;tcp\")"
+    },
+    {
+      "name": "advertised_contact",
+      "type": "string",
+      "description": "Contact to be used in the generated SIP requests. For sessions answered by OpenSIPS, if it is not set, it is constructed dynamically from the socket where the initiating request was received. This parameter is mandatory when using the [msrp\\_ua\\_start\\_session](#mi_msrp_ua_start_session \"1.6.2.� msrp_ua_start_session\") MI function.",
+      "example_code": "modparam(\"msrp\\_ua\", \"advertised\\_contact\", \"sip:oss@opensips.org\")"
+    },
+    {
+      "name": "relay_uri",
+      "type": "string",
+      "description": "URI of an MSRP relay to use for both accepted and initiated sessions. Credentials for the MSRP client are provided via the _uac\\_auth_ module by setting the _credential_ module parameter. If not set, no relay will be used.",
+      "example_code": "modparam(\"msrp\\_ua\", \"relay\\_uri\", \"msrp://opensips.org:2856;tcp\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "msrp_ua_answer",
+      "signature": "msrp_ua_answer(content_types)",
+      "parameters": [
+        {
+          "name": "content_types",
+          "type": "string",
+          "required": true,
+          "description": "content types adevertised in the _accept-types_ SDP attribute. At least one of the content types in this list must match the types offered by the peer in its SDP offer."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This functions answers an initial INVITE offering a new MSRP messaging session. After this function is used to initialize the session, the call will be completely handled by the B2B engine.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!has_totag() && is_method(\"INVITE\")) {\n\tmsrp_ua_answer(\"text/plain\");\n\texit;\n}\n...",
+          "description": "`msrp_ua_answer()` usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "msrp_ua_send_message",
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "required": true,
+          "description": "the MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        },
+        {
+          "name": "mime",
+          "type": "string",
+          "required": false,
+          "description": "MIME content type of this message. If missing, an empty message will be sent."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "actual message body. If missing, an empty message will be sent."
+        },
+        {
+          "name": "success_report",
+          "type": "string",
+          "required": false,
+          "description": "string indicating whether to request an MSRP Success Report. Possible values are yes or no. If the parameter is missing or is set to \"no\" the SEND request will not include a Success-Report header."
+        },
+        {
+          "name": "failure_report",
+          "type": "string",
+          "required": false,
+          "description": "string indicating whether to request an MSRP Failure Report. Possible values are yes, no or partial, as specified in MSRP. If the parameter is missing or is set to \"yes\" the SEND request will not include a Failure-Report header. Note that if the header field is not present, the receving MSRP endpoint must treat it the same as a Failure-Report header with a value of \"yes\"."
+        }
+      ],
+      "description": "Sends a new MSRP message to the peer.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi msrp_ua_send_message \\\n\tsession_id=5addd9e7b74fa44fbace68a4fc562293 \\\n\tmime=text/plain body=Hello success_report=yes",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "msrp_ua_start_session",
+      "parameters": [
+        {
+          "name": "content_types",
+          "type": "string",
+          "required": true,
+          "description": "content types adevertised in the accept-types SDP attribute."
+        },
+        {
+          "name": "from_uri",
+          "type": "string",
+          "required": true,
+          "description": "From URI to be used in the INVITE."
+        },
+        {
+          "name": "to_uri",
+          "type": "string",
+          "required": true,
+          "description": "To URI to be used in the INVITE."
+        },
+        {
+          "name": "ruri",
+          "type": "string",
+          "required": true,
+          "description": "Request URI and destination of the INVITE."
+        }
+      ],
+      "description": "Starts a MSRP session.\n\nThe advertised_contact is mandatory if this function is used.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi msrp_ua_start_session \\\n\ttext/plain sip:oss@opensips.org \\\n\tsip:alice@opensips.org sip:alice@opensips.org",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "msrp_ua_list_sessions",
+      "parameters": [],
+      "description": "Lists information about ongoing MSRP sessions.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi msrp_ua_list_sessions",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "msrp_ua_end_session",
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "required": true,
+          "description": "the MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        }
+      ],
+      "description": "Terminate an ongoing MSRP session.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi msrp_ua_end_session \\\n\t5addd9e7b74fa44fbace68a4fc562293",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_MSRP_SESSION_NEW",
+      "description": "This event is triggered when a new MSRP session is successfully established(ACK sent/received).",
+      "parameters": [
+        {
+          "name": "from_uri",
+          "type": "string",
+          "description": "The URI in the SIP From header of the answered INVITE."
+        },
+        {
+          "name": "to_uri",
+          "type": "string",
+          "description": "The URI in the SIP To header of the answered INVITE."
+        },
+        {
+          "name": "ruri",
+          "type": "string",
+          "description": "The SIP Request URI of the answered INVITE."
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "The MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        },
+        {
+          "name": "content_types",
+          "type": "string",
+          "description": "The content types offered by the peer in the _accept-types_ SDP attribute."
+        }
+      ]
+    },
+    {
+      "name": "E_MSRP_SESSION_END",
+      "description": "This event is triggered when an ongoing MSRP session is terminted (session expires or BYE is received; terminating a session via the _msrp_ua_end_session_ MI function is not included).",
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "The MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        }
+      ]
+    },
+    {
+      "name": "E_MSRP_MSG_RECEIVED",
+      "description": "This event is triggered when receiving a new, non-empty MSRP SEND request from the peer.",
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "The MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "description": "The content type of this message."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "The actual message body."
+        }
+      ]
+    },
+    {
+      "name": "E_MSRP_REPORT_RECEIVED",
+      "description": "This event is triggered when:\n\n* a MSRP REPORT request is received\n\n* a failure transaction response is received\n\n* a local timeout for a SEND request occured.",
+      "parameters": [
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "The MSRP session identifier (\"session-id\" part of the MSRP URI)."
+        },
+        {
+          "name": "message_id",
+          "type": "string",
+          "description": "The value of the Message-ID header field."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "The value of the Status header field."
+        },
+        {
+          "name": "byte_range",
+          "type": "string",
+          "description": "The value of the Byte-Range header field."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "Set `hash_size` parameter",
+      "code": "...\nmodparam(\"msrp_ua\", \"hash_size\", 16)\n..."
+    },
+    {
+      "title": "Set `cleanup_interval` parameter",
+      "description": "Set `cleanup_interval` parameter",
+      "code": "...\nmodparam(\"msrp_ua\", \"cleanup_interval\", 30)\n..."
+    },
+    {
+      "title": "max_duration parameter example",
+      "description": "max_duration parameter example",
+      "code": "...\nmodparam(\"msrp_ua\", \"max_duration\", 7200)\n..."
+    },
+    {
+      "title": "`my_uri` parameter usage",
+      "description": "`my_uri` parameter usage",
+      "code": "...\nmodparam(\"msrp_ua\", \"my_uri\", \"msrp://opensips.org:2855;tcp\")\n..."
+    },
+    {
+      "title": "`advertised_contact` parameter usage",
+      "description": "`advertised_contact` parameter usage",
+      "code": "...\nmodparam(\"msrp_ua\", \"advertised_contact\", \"sip:oss@opensips.org\")\n..."
+    },
+    {
+      "title": "`relay_uri` parameter usage",
+      "description": "`relay_uri` parameter usage",
+      "code": "...\nmodparam(\"msrp_ua\", \"relay_uri\", \"msrp://opensips.org:2856;tcp\")\n..."
+    },
+    {
+      "title": "`msrp_ua_answer()` usage",
+      "description": "`msrp_ua_answer()` usage",
+      "code": "...\nif (!has_totag() && is_method(\"INVITE\")) {\n\tmsrp_ua_answer(\"text/plain\");\n\texit;\n}\n..."
+    }
+  ]
+}

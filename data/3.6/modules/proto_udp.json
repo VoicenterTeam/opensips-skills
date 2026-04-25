@@ -1,0 +1,37 @@
+{
+  "id": "module-proto_udp-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "proto_udp Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/proto_udp.html",
+  "content_markdown": "The **proto\\_udp** module is a built-in transport module which exports the required logic in order to handle UDP-based communication. (socket initialization and send/recv primitives to be used by higher-level network layers)\n\nOnce loaded, you will be able to define _\"udp:\"_ listeners in your script.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T13:31:39.375Z",
+  "module_name": "proto_udp",
+  "overview": "The **proto\\_udp** module is a built-in transport module which exports the required logic in order to handle UDP-based communication. (socket initialization and send/recv primitives to be used by higher-level network layers)\n\nOnce loaded, you will be able to define _\"udp:\"_ listeners in your script.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "udp_port",
+      "type": "integer",
+      "default_value": "5060",
+      "description": "The default port to be used for all UDP related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the UDP listeners) and the SIP sending part (if the destination URI has no explicit port).\n\nIf you want to change only the listening port for UDP, use the port option in the SIP listener defintion.",
+      "example_value": "5070",
+      "example_code": "modparam(\"proto\\_udp\", \"udp\\_port\", 5070)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `udp_port` parameter",
+      "description": "Set `udp_port` parameter",
+      "code": "...\nmodparam(\"proto\\_udp\", \"udp\\_port\", 5070)\n..."
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "id": "module-status_report-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "status_report Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/status_report.html",
+  "content_markdown": "The Status/Report module is a wrapper over the internal status/report framework, allowing the script writer to dynamically define and use of SR groups.\n\nBy bringing the Status/Report support into the script, it opens the possibility to create custom reports from script, depending on the logic you have there.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:03:40.624Z",
+  "module_name": "status_report",
+  "overview": "The Status/Report module is a wrapper over the internal status/report framework, allowing the script writer to dynamically define and use of SR groups.\n\nBy bringing the Status/Report support into the script, it opens the possibility to create custom reports from script, depending on the logic you have there.",
+  "how_it_works": null,
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "script_sr_group",
+      "type": "string",
+      "description": "Name of a new Status/Report group to be created and later used from script level.\n\nThis parameter may be defined multiple times, in order to define multiple groups.",
+      "example_value": "security",
+      "example_code": "modparam(\"status\\_report\", \"script\\_sr\\_group\", \"security\")\nmodparam(\"status\\_report\", \"script\\_sr\\_group\", \"alarms\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sr_set_status",
+      "signature": "sr_set_status( group, status, [details])",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": "the name of the SR group; you can change the status only for the groups defined via this module (as parameter)."
+        },
+        {
+          "name": "status",
+          "type": "int",
+          "required": true,
+          "description": "the new status value ( strict positive meaning OK, strict negative meaning NOT OK, 0 is not accepts, it is converted to 1 automatically)."
+        },
+        {
+          "name": "details",
+          "type": "string",
+          "required": false,
+          "description": "a descripting text to detail the status value"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Sets a new status (and details) for a Status/Report group.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sr_set_status( \"script_caching\", 1, \"completed\");",
+          "description": "`sr_set_status` usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "sr_add_report",
+      "signature": "sr_add_report( group, report)",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": "the name of the SR group; you can change the status only for the groups defined via this module (as parameter)."
+        },
+        {
+          "name": "report",
+          "type": "string",
+          "required": true,
+          "description": "the log to be added."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Adds a new report/log to a Status/Report group.This must have been defined via this module too.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sr_add_report(\"security\",\"IP $si detected as attacker\");",
+          "description": "`sr_add_report` usage",
+          "context": ""
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "script_sr_group example",
+      "description": "Demonstrates how to define multiple Status/Report groups ('security' and 'alarms') using the script_sr_group parameter.",
+      "code": "modparam(\"status\\_report\", \"script\\_sr\\_group\", \"security\")\nmodparam(\"status\\_report\", \"script\\_sr\\_group\", \"alarms\")"
+    },
+    {
+      "title": "sr_set_status usage",
+      "description": "Demonstrates setting a new status and details for the 'script_caching' Status/Report group.",
+      "code": "...\nsr\\_set\\_status( \"script\\_caching\", 1, \"completed\");\n..."
+    },
+    {
+      "title": "sr_add_report usage",
+      "description": "Demonstrates adding a new report/log to the 'security' Status/Report group.",
+      "code": "...\nsr\\_add\\_report(\"security\",\"IP $si detected as attacker\");\n..."
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "id": "module-cachedb_mongodb-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "cachedb_mongodb Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/cachedb_mongodb.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with MongoDB servers. It implements the Key-Value interface exposed by the OpenSIPS core.\n\nThe underlying client library is compatible with any of the following MongoDB server versions: 2.4, 2.6, 3.0, 3.2 and 3.4, as stated in [the MongoDB documentation](https://docs.mongodb.com/ecosystem/drivers/driver-compatibility-reference/).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:47:07.208Z",
+  "module_name": "cachedb_mongodb",
+  "overview": "This module is an implementation of a cache system designed to work with MongoDB servers. It implements the Key-Value interface exposed by the OpenSIPS core.\n\nThe underlying client library is compatible with any of the following MongoDB server versions: 2.4, 2.6, 3.0, 3.2 and 3.4, as stated in [the MongoDB documentation](https://docs.mongodb.com/ecosystem/drivers/driver-compatibility-reference/).",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libjson-c",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "mongo-c-driver",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libbson",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The URLs of the server groups that OpenSIPS will connect to in order to allow the cache_store(), cache_fetch(), etc. functions to be used from the OpenSIPS script. It can be set more than one time. The prefix part of the URL will be the identifier that will be used from the script.\n\nThe URL syntax is identical to the one used by MongoDB, including connect string options. For more info, please refer to [the official MongoDB connect string documentation](https://docs.mongodb.com/manual/reference/connection-string/).",
+      "example_value": "mongodb://localhost:27017/opensipsDB.dialog",
+      "example_code": "# Connect to a single _mongod_ instance\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost:27017/opensipsDB.dialog\")\n\n# Connect to a _mongod_ replica set\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://10.0.0.10,10.0.0.11:27017/opensipsDB.dialog?replicaSet=my-set\")\n\n# Connect to a _mongos_ instance (routes to a sharded cluster)\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost/opensipsDB.dialog\")\n\n# Example of multiple connections:\n#   \\* to a main _mongos_, with failover to a backup _mongos_\n#   \\* to a single _mongod_\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb:cluster://localhost,10.0.0.10:27017/opensipsDB.dialog\")\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost:27017/opensipsDB.userlocation\")"
+    },
+    {
+      "name": "exec_threshold",
+      "type": "integer",
+      "default_value": "0 ( unlimited - no warnings )",
+      "description": "The maximum number of microseconds that a mongodb query can last. Anything above the threshold will trigger a warning message to the log",
+      "example_value": "100000",
+      "example_code": "modparam(\"cachedb\\_mongodb\", \"exec\\_threshold\", 100000)"
+    },
+    {
+      "name": "compat_mode_2.4",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Switch the module into compatibility mode for MongoDB 2.4 servers. Specifically, this allows \"insert/update/delete\" raw queries to not fail, since they were introduced in MongoDB 2.6. The module will interpret the raw query JSON, convert it to its corresponding command and run it.\n\nCaveat: only the minimally required raw query options are supported in this mode.",
+      "example_value": "1",
+      "example_code": "modparam(\"cachedb\\_mongodb\", \"compat\\_mode\\_2.4\", 1)"
+    },
+    {
+      "name": "compat_mode_3.0",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Switch the module into compatibility mode for MongoDB 2.6/3.0 servers. Specifically, this allows \"find\" raw queries to not fail, since they were introduced in MongoDB 3.2. The module will interpret the \"find\" raw query JSON, convert it to its corresponding command and run it.\n\nCaveat: only the minimally required options for \"find\" raw queries are supported in this mode.",
+      "example_value": "1",
+      "example_code": "modparam(\"cachedb\\_mongodb\", \"compat\\_mode\\_3.0\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Demonstrates setting the `cachedb_url` parameter with various MongoDB connection strings.",
+      "code": "...\n# Connect to a single _mongod_ instance\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost:27017/opensipsDB.dialog\")\n\n# Connect to a _mongod_ replica set\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://10.0.0.10,10.0.0.11:27017/opensipsDB.dialog?replicaSet=my-set\")\n\n# Connect to a _mongos_ instance (routes to a sharded cluster)\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost/opensipsDB.dialog\")\n\n# Example of multiple connections:\n#   \\* to a main _mongos_, with failover to a backup _mongos_\n#   \\* to a single _mongod_\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb:cluster://localhost,10.0.0.10:27017/opensipsDB.dialog\")\nmodparam(\"cachedb\\_mongodb\", \"cachedb\\_url\",\n         \"mongodb://localhost:27017/opensipsDB.userlocation\")\n..."
+    },
+    {
+      "title": "Reference MongoDB connections",
+      "description": "Demonstrates referencing MongoDB connections in script functions.",
+      "code": "...\ncache\\_store(\"mongodb\", \"key\", \"$ru value\");\ncache\\_remove(\"mongodb:cluster\", \"key\");\ncache\\_fetch(\"mongodb:instance1\", \"key\", $avp(10));\n..."
+    },
+    {
+      "title": "Set `exec_threshold` parameter",
+      "description": "Demonstrates setting the `exec_threshold` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_mongodb\", \"exec\\_threshold\", 100000)\n..."
+    },
+    {
+      "title": "Setting the `compat_mode_2.4` parameter",
+      "description": "Demonstrates setting the `compat_mode_2.4` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_mongodb\", \"compat\\_mode\\_2.4\", 1)\n..."
+    },
+    {
+      "title": "Setting the `compat_mode_3.0` parameter",
+      "description": "Demonstrates setting the `compat_mode_3.0` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_mongodb\", \"compat\\_mode\\_3.0\", 1)\n..."
+    },
+    {
+      "title": "MongoDB Raw Insert",
+      "description": "Demonstrates a MongoDB raw insert query.",
+      "code": "...\ncache\\_raw\\_query(\"mongodb:cluster\", \"{ \\\\\n    \\\"insert\\\": \\\"ip\\_blacklist\\\", \\\\\n    \\\"documents\\\": \\[{ \\\\\n        \\\"username\\\": \\\"$fU\\\", \\\\\n        \\\"ip\\\": \\\"$si\\\", \\\\\n        \\\"attempts\\\": 1 \\\\\n     }\\]}\",\n \"$avp(out)\");\nxlog(\"INSERT RAW QUERY returned $rc, output: '$avp(out)'\\n\");\n..."
+    },
+    {
+      "title": "MongoDB Raw Update",
+      "description": "Demonstrates a MongoDB raw update query.",
+      "code": "...\ncache\\_raw\\_query(\"mongodb:cluster\", \"{ \\\\\n    \\\"update\\\": \\\"ip\\_blacklist\\\", \\\\\n    \\\"updates\\\": \\[{ \\\\\n        \\\"q\\\": { \\\\\n            \\\"username\\\": \\\"$fU\\\", \\\\\n            \\\"ip\\\": \\\"$si\\\" \\\\\n         }, \\\\\n        \\\"u\\\": { \\\\\n            \\\"$$inc\\\": {\\\"attempts\\\": 1} \\\\\n         } \\\\\n      }\\]}\",\n \"$avp(out)\");\nxlog(\"UPDATE RAW QUERY returned $rc, output: '$avp(out)'\\n\");\n..."
+    }
+  ]
+}

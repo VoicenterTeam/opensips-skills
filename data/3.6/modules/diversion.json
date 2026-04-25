@@ -1,0 +1,83 @@
+{
+  "id": "module-diversion-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "diversion Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/diversion.html",
+  "content_markdown": "The module implements the Diversion extensions as per draft-levy-sip-diversion-08. The diversion extensions are useful in various scenarios involving call forwarding. Typically one needs to communicate the original recipient of the call to the PSTN gateway and this is what the diversion extensions can be used for.\n\n### Warning\n\nThe draft-levy-sip-diversion-08 is expired!! See [IETF I-D tracker](https://datatracker.ietf.org/public/idindex.cgi?command=id_detail%E2%88%A7id=6002).",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:40:27.235Z",
+  "module_name": "diversion",
+  "overview": "The module implements the Diversion extensions as per draft-levy-sip-diversion-08. The diversion extensions are useful in various scenarios involving call forwarding. Typically one needs to communicate the original recipient of the call to the PSTN gateway and this is what the diversion extensions can be used for.\n\n### Warning\n\nThe draft-levy-sip-diversion-08 is expired!! See [IETF I-D tracker](https://datatracker.ietf.org/public/idindex.cgi?command=id_detail%E2%88%A7id=6002).",
+  "how_it_works": "According to the specification new Diversion header field should be inserted as the topmost Diversion header field in the message, that means before any other existing Diversion header field in the message. In addition to that, `add_diversion` function can be called several times and each time it should insert the new Diversion header field as the topmost one.\n\nIn order to implement this, add_diversion function creates the anchor in data_lump lists as a static variable to ensure that the next call of the function will use the same anchor and would insert new Diversion headers before the one created in the previous execution. To my knowledge this is the only way of inserting the diversion header field before any other created in previous runs of the function.\n\nThe anchor kept this way is only valid for a single message and we have to invalidate it when another message is being processed. For this reason, the function also stores the id of the message in another static variable and compares the value of that variable with the id of the SIP message being processed. If they differ then the anchor will be invalidated and the function creates a new one.\n\nThe following code snippet shows the code that invalidates the anchor, new anchor will be created when the `anchor` variable is set to 0.\n\nstatic inline int add_diversion_helper(struct sip_msg* msg, str* s)\n{\n    static struct lump* anchor = 0;\n    static int msg_id = 0;\n\n    if (msg_id != msg->id) {\n        msg_id = msg->id;\n        anchor = 0;\n    }\n...\n}",
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "suffix",
+      "type": "string",
+      "default_value": "",
+      "description": "The suffix to be appended to the end of the header field. You can use the parameter to specify additional parameters to be added to the header field, see the example.",
+      "example_value": ";privacy=full",
+      "example_code": "modparam(\"diversion\", \"suffix\", \";privacy=full\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "add_diversion",
+      "signature": "add_diversion(reason, [uri], [counter])",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "The reason string to be added as the reason parameter"
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": false,
+          "description": "The URI to be added in the header. If missing the unchanged RURI from the original message will be used."
+        },
+        {
+          "name": "counter",
+          "type": "int",
+          "required": false,
+          "description": "Diversion counter to be added to the header, as defined by the standard."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "The function adds a new diversion header field before any other existing Diversion header field in the message (the newly added Diversion header field will become the topmost Diversion header field). The inbound (without any modifications done by the proxy server) Request-URI will be used as the Diversion URI.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nadd\\_diversion(\"user-busy\");\n...",
+          "description": "add_diversion usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`suffix` usage",
+      "description": "The suffix to be appended to the end of the header field. You can use the parameter to specify additional parameters to be added to the header field.",
+      "code": "modparam(\"diversion\", \"suffix\", \";privacy=full\")"
+    },
+    {
+      "title": "`add_diversion` usage",
+      "description": "The function adds a new diversion header field before any other existing Diversion header field in the message (the newly added Diversion header field will become the topmost Diversion header field). The inbound (without any modifications done by the proxy server) Request-URI will be used as the Diversion URI.",
+      "code": "...\nadd_diversion(\"user-busy\");\n..."
+    }
+  ]
+}

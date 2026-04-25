@@ -1,0 +1,1852 @@
+{
+  "id": "core_variable-Script-CoreVar-3-6",
+  "document_type": "core_variable",
+  "version": "3.6",
+  "title": "Core Variables v3.6",
+  "url": "https://www.opensips.org/Documentation/Script-CoreVar-3-6",
+  "content_markdown": "[](https://www.opensips.org)\n\n*   [About](/About/About \"About\")\n*   [Downloads](/Downloads/Downloads \"Download\")\n*   [Documentation](/Documentation/Manuals \"Documentation\")\n*   [Community](/Community/OpenSIPS-CE \"Community\")\n*   [Development](/Development/Development \"Development\")\n*   [Training](/Training/Trainings \"Training\")\n\nDocumentation\n\n*   [Manuals](https://www.opensips.org/Documentation/Manuals \"Manuals\")\n*   [Advanced Tutorials](https://www.opensips.org/Documentation/Tutorials \"Tutorials\")\n*   [Tips & FAQ](https://www.opensips.org/Documentation/TipsFAQ \"TipsFAQ\")\n*   [Version Migration](https://www.opensips.org/Documentation/Migration \"Migration\")\n*   [OpenSIPS Webinars](https://www.opensips.org/Documentation/Webinars \"Webinars\")\n*   [Troubleshooting](https://www.opensips.org/Documentation/Troubleshooting \"Troubleshooting\")\n*   [OpenSIPS Tools](https://www.opensips.org/Documentation/Tools \"Tools\")\n*   [Devel Tutorial](https://www.opensips.org/Documentation/Development-Tutorials \"Development-Tutorials\")\n\n\n---\n\nPages for other versions: [devel](https://www.opensips.org/Documentation/Script-CoreVar-4-0 \"Core Variables - 4.0\") 3.6 [3.5](https://www.opensips.org/Documentation/Script-CoreVar-3-5 \"Core Variables - 3.5\") [3.4](https://www.opensips.org/Documentation/Script-CoreVar-3-4 \"Core Variables - 3.4\") Older versions: [3.3](https://www.opensips.org/Documentation/Script-CoreVar-3-3 \"Core Variables - 3.3\") [3.2](https://www.opensips.org/Documentation/Script-CoreVar-3-2 \"Core Variables - 3.2\") [3.1](https://www.opensips.org/Documentation/Script-CoreVar-3-1 \"Core Variables - 3.1\") [3.0](https://www.opensips.org/Documentation/Script-CoreVar-3-0 \"Core Variables - 3.0\") [2.4](https://www.opensips.org/Documentation/Script-CoreVar-2-4 \"Core Variables - 2.4\") [2.3](https://www.opensips.org/Documentation/Script-CoreVar-2-3 \"Core Variables - 2.3\") [2.2](https://www.opensips.org/Documentation/Script-CoreVar-2-2 \"Core Variables - 2.2\") [2.1](https://www.opensips.org/Documentation/Script-CoreVar-2-1 \"Core Variables - 2.1\") [1.11](https://www.opensips.org/Documentation/Script-CoreVar-1-11 \"Core Variables - 1.11\") [1.10](https://www.opensips.org/Documentation/Script-CoreVar-1-10 \"Core Variables - ver 1.10\") [1.9](https://www.opensips.org/Documentation/Script-CoreVar-1-9 \"Core Variables - ver 1.9\") [1.8](https://www.opensips.org/Documentation/Script-CoreVar-1-8 \"Core Variables - ver 1.8\") [1.7](https://www.opensips.org/Documentation/Script-CoreVar-1-7 \"Core Variables - ver 1.7\") [1.6](https://www.opensips.org/Documentation/Script-CoreVar-1-6 \"Core Variables - ver 1.6\") [1.5](https://www.opensips.org/Documentation/Script-CoreVar-1-5 \"Core Variables - ver 1.5\") [1.4](https://www.opensips.org/Documentation/Script-CoreVar-1-4 \"Core Variables - ver 1.4\")\n  \n\n**Core Variables v3.6**\n\n[Prev](https://www.opensips.org/Documentation/Script-CoreFunctions-3-6 \"Core Functions - 3.6\")\n\n[Next](https://www.opensips.org/Documentation/Script-Flags-3-6 \"Script Flags - 3.6\")\n\n---\n\n**Table of Contents** ([hide](javascript:toggle('tocid');))\n\n**OpenSIPS** provides multiple type of variables to be used in the routing script. The difference between the types of variables comes from (1) the visibility of the variable (when it is visible), (2) what the variable is attached to (where the variable resides), (3) read-write status of the variable (some types of the variables are read-only and (4) how multiple values (for the same variable are handled).\n\nThe **OpenSIPS** variables can be easily identified in the script as all their names (or notations) start with the **$** sign.\n\nSyntax:  \nThe complete syntax for a pseudo variable is:\n\n$(_<context>_**name**_(subname)\\[index\\]{transformation}_)\n\nThe fields written in green are optional. The fields meaning is:\n\n*   **name**(compulsory) - the pseudo-variable name(type).  \n    Ex: pvar, avp, ru, DLG_status, etc.\n*   **subname** - the identifier of a certain pv from the given type.  \n    Ex: hdr(From), avp(name).\n*   **index** - a pv can store more than one value - it can refer to a list of values. You can access a certain value from the list if you specify its index. You can also specify indexes with negative values, -1 means the last inserted, -2 the value before the previous inserted one.\n*   **transformation** - a series of processing actions can be applied on pseudo-variable. You can find the whole list of possible transformations [here](https://www.opensips.org/Documentation/Script-Tran \"Script-Tran\"). The transformations can be cascaded, using the output of one transformation as the input of another.\n*   **context** - the context in which the pseudo0variable will be evaluated. Now there are 2 pv contexts: reply and request. The reply context can be used in the failure route to request for the pseudo-variable to be evaluated in the context of the reply message. The request context can be used if in a reply route is desired for the pv to be evaluated in the context of the corresponding request.\n\nUsage examples:\n\n*   Only **name**: $ru\n*   **Name** and _'subname_: $hdr(Contact)\n*   **Name** and **index**: $(ct\\[0\\])\n*   **Name**, **subname** and **index**: $(avp(i:10)\\[2\\])\n*   **Context**\n    *   $(<request>ru) from a reply route will get the Request-URI from the request\n    *   $(<reply>hdr(Contact)) context can be used from failure route to access information from the reply\n\nTypes of variables:\n\n*   [**script variables**](#varscript) - as the name says, these variables are strictly bound to the script routes. The variables are visible only in the routing blocks - they are not message or transaction related, but they are process related (script variables will be inherited by script routes executed by the same **OpenSIPS** process).  \n    Script variables are read write and they can have integer or string values. A script variable can only hold a single value. A new assignment (or write operation) will overwrite the existing value.\n    \n*   [**AVP - Attribute Value Pair**](#varavps) - the AVPs are dynamic variables (as name) that can be created - the AVPS are linked to a singular message or transaction (if stateful processing is used). A message or a transaction will initially (when received or created) have an empty list of AVPS attached to it. During the routing script, the script directly or functions called from script may create new AVPS that will automatically attached to the message/transaction. The AVPS will be visible in all routes where any message (reply or request) of the transaction will be processed - branch_route , failure_route, onreply_route (for this last route you need to enable the TM parameter _onreply_avp_mode_).  \n    AVPs are read write and an existing AVP can be even deleted (removed). An AVP may contain multiple values - a new assignment (or write operation) will add a new value to the AVP; the values are kept in \"last added first to be used\" order (stack).  \n    A special index **append** is defined to allow you to add a new value at the end of the list (at the bottom of the stack) - $(avp(name)\\[append\\]) = \"last value\";\n    \n*   [**pseudo variables**](#varpv) - pseudo-variables (or PV) provide access to information from the processed SIP message (headers, RURI, transport level info, a.s.o) or from **OpenSIPS** inners (time values, process PID, return code of a function). Depending of what info they provide, the PVs are either bound to the message, either to nothing (global). Most of the PVs are read-only and only several allow write operations. A PV may return several values or only one, depending of the referred info (if can have multiple values or not).  \n    Standard PV is read-only and returns a single value (if not otherwise documented).\n    \n*   [**escape sequences**](#varesc) - escape sequences used to format the strings; they are actually not variables, but rather formatters.\n\n### 1. Script variables [🔗](#varscript)\n\n**Naming**: \\*\\*\\*$var(name)$\\*\\*\\*\n\n**Hints**:\n\n1.  if you want to start using a script variable in a route, better initialize it with same value (or reset it), otherwise you may inherit a value from a previous route that was executed by the same process.\n2.  script variables are faster than AVPs, as they directly reference a memory location.\n3.  the value of script variables persists over a **OpenSIPS** process.\n4.  a script variable can only hold one value.\n\nExample of usage:\n\n$var(a) = 2;  # sets the value of variable 'a' to integer '2'\n$var(a) = \"2\";  # sets the value of variable 'a' to string '2'\n$var(a) = 3 + (7&(~2)); # arithmetic and bitwise operation\n$var(a) = \"sip:\" + $au + \"@\" + $fd; # compose a value from authentication username and From URI domain\n\n# using a script variable for tests\nif( [ $var(a) & 4 ] ) {\n  xlog(\"var a has third bit set\\n\");\n}\n\nSetting a variable to NULL is actually initializing the value to integer '0'. Script variables don't have NULL value.\n\n### 2. AVP variables [🔗](#varavps)\n\n**Naming**: \\*\\*\\*$avp(name)$\\*\\*\\* or \\*\\*\\*$(avp(name)\\[N\\])$\\*\\*\\*\n\nWhen using the index \"N\" you can force the AVP to return a certain value (the N-th value). If no index is given, the first value will be returned.\n\n**Hints**:\n\n1.  to enable AVPs in onreply_route, use \"modparam(\"tm\", \"onreply_avp_mode\", 1)\"\n2.  if multiple values are used for a single AVP, the values are index in revert order than added\n3.  AVPs are part of the transaction context, so they will be visible everywhere where the transaction is present.\n4.  the value of an AVP can be deleted\n\nExample of usage:\n\n1.  Transaction persistence example\n\n# enable avps in onreply route\nmodparam(\"tm\", \"onreply_avp_mode\", 1)\n...\nroute{\n...\n$avp(tmp) = $Ts ; # store the current time (at request processing)\n...\nt_onreply(\"1\");\nt_relay();\n...\n}\n\nonreply_route[1] {\n\tif (t_check_status(\"200\")) {\n\t\t# calculate the setup time\n\t\t$var(setup_time) = $Ts - $avp(tmp);\n\t}\n}\n\n1.  Multiple values example\n\n$avp(my_arr) = \"one\";\n# we have a single value\n\n$avp(my_arr) = \"two\";\n# we have two values (\"two\",\"one\")\n\n$avp(my_arr) = \"three\";\n# we have three values (\"three\",\"two\",\"one\")\n\nxlog(\"accessing values with no index: $avp(my_arr)\\n\");\n# this will print the first value, which is the last added value -> \"three\"\n\nxlog(\"accessing values with no index: $(avp(my_arr)\\[2\\])\\n\");\n# this will print the index 2 value (third one), -> \"one\"\n\n# remove the first value of the avp (lastly added one); if there is only one value, the AVP itself will be destroyed\n$avp(my_arr) = NULL;\n\n# delete all values and destroy the AVP\n$avp(my_arr) := NULL;\n\n# delete the value located at a certain index \n$(avp(my_arr)\\[1\\]) = NULL;\n\n# overwrite the value at a certain index\n$(avp(my_arr)\\[0\\]) = \"zero\";\n\nThe **AVPOPS** module provides a lot of useful functions to operate AVPs (like checking values, pushing values into different other locations, deleting AVPs, etc).\n\n### 3. Scripting Variables [🔗](#varpv)\n\n**Naming**: $name\n\n**Hints**:\n\n1.  the PV tokens can be given as parameters to different script functions and they will be replaced with a value before the execution of the function.\n2.  most of PVs are made available by **OpenSIPS** core, but there are also module exporting PV (to make available info specific to that module) - check the modules documentation.\n\nPredefined (provided by core) PVs are listed in alphabetical order.\n\n#### 3.1  URI in SIP Request's P-Asserted-Identity header - $ai [🔗](#ai)\n\n**$ai** - reference to URI in request's P-Asserted-Identity header (see RFC 3325)\n\n#### 3.2  Authentication Digest URI - $adu [🔗](#adu)\n\n**$adu** - URI from Authorization or Proxy-Authorization header. This URI is used when calculating the HTTP Digest Response.\n\n#### 3.3  Authentication realm - $ar [🔗](#ar)\n\n**$ar** - realm from Authorization or Proxy-Authorization header\n\n#### 3.4  Auth username user - $au [🔗](#au)\n\n**$au** - user part of username from Authorization or Proxy-Authorization header\n\n#### 3.5  Auth username domain - $ad [🔗](#ad)\n\n**$ad** - domain part of username from Authorization or Proxy-Authorization header\n\n#### 3.6  Auth nonce - $an [🔗](#an)\n\n**$an** - the nonce from Authorization or Proxy-Authorization header\n\n#### 3.7  Auth response - $auth.resp [🔗](#auth.resp)\n\n**$auth.resp** - the authentication response from Authorization or Proxy-Authorization header\n\n#### 3.8  Auth nonce - $auth.nonce [🔗](#auth.nonce)\n\n**$auth.nonce** - the nonce string from Authorization or Proxy-Authorization header\n\n#### 3.9  Auth opaque - $auth.opaque [🔗](#auth.opaque)\n\n**$auth.opaque** - the opaque string from Authorization or Proxy-Authorization header\n\n#### 3.10  Auth algorithm - $auth.alg [🔗](#auth.alg)\n\n**$auth.alg** - the algorithm string from Authorization or Proxy-Authorization header\n\n#### 3.11  Auth QOP - $auth.qop [🔗](#auth.qop)\n\n**$auth.qop** - the value of qop parameter from Authorization or Proxy-Authorization header\n\n#### 3.12  Auth nonce count (nc) - $auth.nc [🔗](#auth.nc)\n\n**$auth.nc** - the value of nonce count parameter from Authorization or Proxy-Authorization header\n\n#### 3.13  Auth whole username - $aU [🔗](#aU)\n\n**$aU** - whole username from Authorization or Proxy-Authorization header\n\n#### 3.14  Acc username - $Au [🔗](#Au)\n\n**$Au** - username for accounting purposes. It's a selective pseudo variable (inherited from acc module). It returns $au if exits or From username otherwise.\n\n#### 3.15  Argument options - $argv [🔗](#argv)\n\n**$argv** - provides access to command line arguments specified with '-o' option. Examples:\n\n   # for option '-o foo=0'\n   xlog(\"foo is $argv(foo) \\n\");\n\n#### 3.16  Branch flags list - $bf [🔗](#bf)\n\n**$bf** - displays a list with the branch flags set for the current SIP request  \nTO BECOME OBSOLETE, replaced by [$msg.branch.flags](#msg.branch.flags)\n\n#### 3.17  Branch - $branch [🔗](#branch)\n\n**$branch** - this variable is used for creating new branches by writing into it the value of a SIP URI.  \nTO BECOME OBSOLETE, replaced by [$msg.branch](#msg.branch) Examples:\n\n   # creates a new branch\n   $branch = \"sip:new@doamin.org\";\n   # print its URI\n   xlog(\"last added branch has URI $(branch(uri)\\[-1\\]) \\n\");\n\n#### 3.18  Branch fields - $branch.fields [🔗](#branch.fields)\n\n**$branch()** - this variable provides read/write access to all fields/attributes of an already existing branch (prior created with append_branch() ). The fields of the branch are:\n\n*   uri - the RURI of the branch (string value)\n*   duri - destination URI of the branch (outbound proxy of the branch) (string value)\n*   q - q value of the branch (int value)\n*   path - the PATH string for this branch (string value)\n*   flags - the branch flags of this branch (int value)\n*   socket - the local socket to be used for relaying this branch (string value)\n\nThe variable accepts also index **$(branch(uri)\\[1\\])** for accessing a specific branch (multiple branches can be defined at a moment). The index starts from 0 (first branch). If the index is negative, it is considered the n-th branch from the end ( index -1 means the last branch).  \nTo get all branches, use the \\* index - $(branch(uri)\\[\\*\\]).  \nTO BECOME OBSOLETE, replaced by [$msg.branch.uri](#msg.branch.uri)  \nExamples:\n\n   # creates the first branch\n   append_branch();\n   # creates the second branch\n   force_send_socket(udp:193.668.1.12:5060);\n   $du = \"sip:193.668.3.60\";\n   append_branch(\"sip:foo@bar.com\",\"0.5\");\n\n   # display branches\n   xlog(\"----- branch 0: $(branch(uri)\\[0\\]) , $(branch(q)\\[0\\]), $(branch(duri)\\[0\\]), $(branch(path)\\[0\\]), $(branch(flags)\\[0\\]), $(branch(socket)\\[0\\]) \\n\");\n   xlog(\"----- branch 1: $(branch(uri)\\[1\\]) , $(branch(q)\\[1\\]), $(branch(duri)\\[1\\]), $(branch(path)\\[1\\]), $(branch(flags)\\[1\\]), $(branch(socket)\\[1\\]) \\n\");\n\n   # do some changes over the branches\n   $branch(uri) = \"sip:user@domain.ro\";   # set URI for the first branch\n   $(branch(q)\\[0\\]) = 1000;  # set to 1.00 for the first branch\n   $(branch(socket)\\[1\\]) = NULL;  # reset the socket of the second branch\n   $branch(duri) = NULL;  # reset the destination URI or the first branch\n\nIt is R/W variable (you can assign values to it from routing logic)\n\n#### 3.19  Branch flag - $branch.flag [🔗](#branch.flag)\n\n**$branch.flag(flag_name)\\[\\]** - this variable provides read/write access to the value of a single certain branch flag (identified by name). The values accepted for writing are 1 (set) and 0 (unset). The returned values are 1/\"true\" (set) and 0/\"false\" (unset). An index is accepted, in order to access the flag for a certain branch. By default the 0 (or current) branch accessed (for more on index, see the the [branch.fields](#branch.fields) variable) - note that \"\\*\" is not accepted.  \nTO BECOME OBSOLETE, replaced by [$msg.branch.flag](#msg.branch.flag)\n\n  setbflag(\"X\");\n  xlog(\"---- flag value is $branch.flag(X) \\n\");\n  $branch.flag(X) = off;\n  xlog(\"---- flag value is $branch.flag(X) \\n\");\n\n#### 3.20  Authorize Challenge Algorithm - $challenge.algorithm [🔗](#challenge.algorithm)\n\n**$challenge.algorithm** - the algorithm value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.21  Authorize Challenge Realm - $challenge.realm [🔗](#challenge.realm)\n\n**$challenge.realm** - the realm value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.22  Authorize Challenge Nonce - $challenge.nonce [🔗](#challenge.nonce)\n\n**$challenge.nonce** - the nonce value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.23  Authorize Challenge Opaque - $challenge.opaque [🔗](#challenge.opaque)\n\n**$challenge.opaque** - the opaque value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.24  Authorize Challenge QOP - $challenge.qop [🔗](#challenge.qop)\n\n**$challenge.qop** - the qop value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.25  Authorize Challenge IK - $challenge.ik [🔗](#challenge.ik)\n\n**$challenge.ik** - the ik value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.26  Authorize Challenge CK - $challenge.ck [🔗](#challenge.ck)\n\n**$challenge.ck** - the ck value taken from the WWW-Authorize or Proxy-Authorize header.\n\n#### 3.27  Call-Id - $ci [🔗](#ci)\n\n**$ci** - reference to body of call-id header\n\n#### 3.28  Content-Length - $cl [🔗](#cl)\n\n**$cl** - reference to body of content-length header\n\n#### 3.29  CSeq number - $cs [🔗](#cs)\n\n**$cs** - reference to cseq number from cseq header\n\n#### 3.30  Contact instance - $ct [🔗](#ct)\n\n**$ct** - reference to contact instance/body from the contact header. A contact instance is display_name + URI + contact_params. As a Contact header may contain multiple Contact instances and a message may contain multiple Contact headers, an index was added to the $ct variable:\n\n*   $ct -first contact instance from message\n*   $(ct\\[n\\]) - the n-th contact instance form the beginning of message, starting with index 0\n*   $(ct\\[-n\\]) - the n-th contact instance form the end of the message, starting with index -1 (the last contact instance)\n\n#### 3.31  Fields of a contact instance - $ct.fields [🔗](#ct.fields)\n\n**$ct.fields()** - reference to the fields of a contact instance/body (see above). Supported fields are:\n\n*   name - display name\n*   uri - contact uri\n*   q - q param (value only)\n*   expires - expires param (value only)\n*   methods - methods param (value only)\n*   received - received param (value only)\n*   params - all params (including names)\n\nExamples:\n\n*   $ct.fields(uri) - the URI of the first contact instance\n*   $(ct.fields(name)\\[1\\]) - the display name of the second contact instance\n\n#### 3.32  Content-Type - $cT [🔗](#cT)\n\n**$cT** - reference to body of Content-Type header and also the content-type headers inside a multi-part body\n\n*   $cT - the main Content-Type of the message; the one inside the headers\n*   $(cT\\[n\\]) - the **n**\\-th Content-Type inside a multi-part body from the beginning of message, starting with index 0\n*   $(cT\\[-n\\]) - the **n**\\-th Content-Type inside a multi-part body from the end of the message, starting with index -1 (the last contact instance)\n*   $(cT\\[\\*\\]) - all the Content-Type headers including the main one and the ones from the multi-part body\n\n#### 3.33  Domain of destination URI - $dd [🔗](#dd)\n\n**$dd** - reference to domain of destination uri\n\nIt is R/W variable (you can assign values to it from routing logic)\n\n#### 3.34  Diversion header URI - $di [🔗](#di)\n\n**$di** - reference to Diversion header URI\n\n#### 3.35  Diversion \"privacy\" parameter - $dip [🔗](#dip)\n\n**$dip** - reference to Diversion header \"privacy\" parameter value\n\n#### 3.36  Diversion \"reason\" parameter - $dir [🔗](#dir)\n\n**$dir** - reference to Diversion header \"reason\" parameter value\n\n#### 3.37  Port of destination URI - $dp [🔗](#dp)\n\n**$dp** - reference to port of destination uri\n\nIt is R/W variable (you can assign values to it from routing logic)\n\n#### 3.38  Transport protocol of destination URI - $dP [🔗](#dP)\n\n**$dP** - reference to transport protocol of destination uri\n\n#### 3.39  Destination set - $ds [🔗](#ds)\n\n**$ds** - reference to destination set\n\n#### 3.40  Destination URI - $du [🔗](#du)\n\n**$du** - reference to destination uri (outbound proxy to be used for sending the request) If loose_route() returns TRUE a destination uri is set according to the first Route header.\n\nIt is R/W variable (you can assign values to it from routing logic)\n\n#### 3.41  Error class - $err.class [🔗](#err.class)\n\n**$err.class** - the class of error (now is '1' for parsing errors)\n\n#### 3.42  Error level - $err.level [🔗](#err.level)\n\n**$err.level** - severity level for the error\n\n#### 3.43  Error info - $err.info [🔗](#err.info)\n\n**$err.info** - text describing the error\n\n#### 3.44  Error reply code - $err.rcode [🔗](#err.rcode)\n\n**$err.rcode** - recommended reply code\n\n#### 3.45  Error reply reason - $err.rreason [🔗](#err.rreason)\n\n**$err.rreason** - recommended reply reason phrase\n\n#### 3.46  From URI domain - $fd [🔗](#fd)\n\n**$fd** - reference to domain in URI of 'From' header\n\n#### 3.47  From display name - $fn [🔗](#fn)\n\n**$fn** - reference to display name of 'From' header\n\n#### 3.48  From tag - $ft [🔗](#ft)\n\n**$ft** - reference to tag parameter of 'From' header\n\n#### 3.49  From URI - $fu [🔗](#fu)\n\n**$fu** - reference to URI of 'From' header\n\n#### 3.50  From URI username - $fU [🔗](#fU)\n\n**$fU** - reference to username in URI of 'From' header\n\n#### 3.51  OpenSIPS Log level - $log_level [🔗](#log_level)\n\n**$log_level** - changes the log level for the current process ; the log level can be set to a new value (see [possible values](https://www.opensips.org/Documentation/Script-CoreParameters-3-6#log_level \"Core Parameters - 3.6\") or it can be reset back to the global log level. This function is very helpful if you are tracing and debugging only a specific piece of code.\n\nExample of usage:\n\n    log_level= -1 # errors only\n    .....\n    {\n      ......\n      $log_level = 4; # set the debug level of the current process to DBG\n      uac_replace_from(....);\n      $log_level = NULL; # reset the log level of the current process to its default level\n      .......\n    }\n\n#### 3.52 SIP message buffer\n\n**$mb** - reference to SIP message buffer\n\n#### 3.53  Message Flags - $mf [🔗](#mf)\n\n**$mf** - displays a list with the message/transaction flags set for the current SIP request\n\n#### 3.54  SIP message ID - $mi [🔗](#mi)\n\n**$mi** - reference to SIP message id\n\n#### 3.55  SIP message length - $ml [🔗](#ml)\n\n**$ml** - reference to SIP message length\n\n#### 3.56  Message branch - $msg.branch [🔗](#msg.branch)\n\n**$msg.branch** - similar to [$branch](#branch), this variable is used for creating new message branches by writing into it the value of a SIP URI. By reading this variable, you get the SIP URI of the current/last added branch (or of the RURI branch if no additional branch was added so far).\n\n   # creates a new branch\n   $msg.branch = \"sip:new@domain.org\";\n   # print its URI\n   xlog(\"last added branch has URI $msg.branch \\n\");\n\n#### 3.57  SIP URI of a message branch - $msg.branch.uri [🔗](#msg.branch.uri)\n\n**$msg.branch.uri** - gives read / write access over the SIP URI (as string) of an existing message branch. The message branches are created via [append_msg_branch()](https://www.opensips.org/Documentation/Script-CoreFunctions-3-6#append_branch \"Core Functions - 3.6\") core function or by various modules (like \"registrar\" module). The message branches are consumed by the TM \"t_relay()\" function (they are converted to TM branches).  \nThe variable supports indexing - it starts from 0, meaning the RURI (or message) branch. The newly added branches will start from 1. So the branch 0 exists all the time, there is no need to creat it. If no index is specified, the current/last added branch (or of the RURI branch if no additional branch was added so far) will be considered. Negative values are also accepted, meaning indexing from the last branch ( -1 is the latest/higher branch) to the RURI branch. An **\\*** / ALL index will return the comma separated list with the values from all branches.  \nThe variable can be used in REQUEST and FAILURE routes.\n\n   # creates a new branch\n   $msg.branch = \"sip:new@domain.org\";\n   # change its URI\n   $msg.branch.uri = \"sip:new_new@domain.org\"\n   # change its URI of RURI branch\n   $(msg.branch.uri\\[0\\]) = \"sip:new_RURI@domain.org\"\n\n#### 3.58  Destiation URI of a message branch - $msg.branch.duri [🔗](#msg.branch.duri)\n\n**$msg.branch.duri** - 100% similar to [$msg.branch.uri](#msg.branch.uri), but operating with the Detination-URI value of the message branch.\n\n#### 3.59  PATH of a message branch - $msg.branch.path [🔗](#msg.branch.path)\n\n**$msg.branch.path** - 100% similar to [$msg.branch.uri](#msg.branch.uri), but operating with the PATH value of the message branch.\n\n#### 3.60  Q of a message branch - $msg.branch.q [🔗](#msg.branch.q)\n\n**$msg.branch.q** - 100% similar to [$msg.branch.uri](#msg.branch.uri), but operating with the Q value of the message branch.\n\n#### 3.61  Flags of a message branch - $msg.branch.flags [🔗](#msg.branch.flags)\n\n**$msg.branch.flags** - 100% similar to [$msg.branch.uri](#msg.branch.uri), but operating with list (comma separated) of per-branch flags (which are set for the branch).\n\n#### 3.62  SIP socket of a message branch - $msg.branch.socket [🔗](#msg.branch.socket)\n\n**$msg.branch.socket** - 100% similar to [$msg.branch.uri](#msg.branch.uri), but operating with the (forced) socket value of the message branch.\n\n#### 3.63  A flag of a message branch - $msg.branch.flag() [🔗](#msg.branch.flag)\n\n**$msg.branch.flag()** - similar to [$msg.branch.uri](#msg.branch.uri), but operating over a single branch flag (for the current branch).  \nThe accepted values are 0 for FALSE, pozitive non-zero for TRUE. The returned values are 0 for FALSE and 1 for TRUE.  \nNOTE: the **\\***/ALL index cannot be used here.\n\n   # creates a new branch\n   $msg.branch = \"sip:new@domain.org\";\n   # set the \"pstn\" named flag for this branch\n   $msg.branch.flag(pstn) = 1;\n   $msg.branch.flag(foo) = 1;\n   # print all the set flags\n   xlog(\"Flags are <$msg.branch.flags>\\n\");\n\n#### 3.64  An attribute of a message branch - $msg.branch.attr() [🔗](#msg.branch.attr)\n\n**$msg.branch.attr()** - similar to [$msg.branch.uri](#msg.branch.uri), but operating over a single branch attribute (attached to the current branch).  \nAn attribute can have whatever name (no need to be pre-defined) and it can have a single value (at a time), string or integer.  \nNOTE: the **\\***/ALL index cannot be used here.\n\n   # creates a new branch\n   $msg.branch = \"sip:new@domain.org\";\n   # set the \"pstn\" named flag for this branch\n   $msg.branch.attr(name) = \"one\";\n   $msg.branch.attr(num) = 5;\n\n#### 3.65  Index of the last message branch - $msg.branch.last_idx [🔗](#msg.branch.last_idx)\n\n**$msg.branch.last_idx()** - returns the index of the last message branch. IF no additional branche were added, it will return 0, the index of the RURI branch. Then the returned value will get incremented with each append_msg_branch().  \n\n#### 3.66  Message flag - $msg.flag [🔗](#msg.flag)\n\n**$msg.flag(flag_name)** - this variable provides read/write access to the value of a single certain message flag (identified by name). The values accepted for writing are 1 (set) and 0 (unset). The returned values are 1/\"true\" (set) and 0/\"false\" (unset).\n\n  setflag(\"X\");\n  xlog(\"---- flag value is $msg.flag(X) \\n\");\n  $msg.flag(X) = off;\n  xlog(\"---- flag value is $msg.flag(X) \\n\");\n\n#### 3.67  Message is request - $msg.is_request [🔗](#msg.is_request)\n\n**$msg.is_request** - this variable tells if the current SIP message is a request or not. The returned values are 1/\"true\" (request) and 0/\"false\" (reply).\n\n  xlog(\"---- this message is a request:  $msg.is_request \\n\");\n  if ( $msg.is_request )\n    xlog(\"---- yes, it is a request\\n\");\n\n#### 3.68  Message type - $msg.type [🔗](#msg.type)\n\n**$msg.type** - this variable returns the type of the current message. The returned values are \"request\" (request) or \"reply\" (reply).\n\n  xlog(\"---- this message is a SIP $msg.type \\n\");\n\n#### 3.69  Domain in SIP Request's original URI - $od [🔗](#od)\n\n**$od** - reference to domain in request's original R-URI\n\n#### 3.70  Port of SIP request's original URI - $op [🔗](#op)\n\n**$op** - reference to port of original R-URI\n\n#### 3.71  Transport protocol of SIP request original URI - $oP [🔗](#oP)\n\n**$oP** - reference to transport protocol of original R-URI\n\n#### 3.72  SIP Request's original URI - $ou [🔗](#ou)\n\n**$ou** - reference to request's original URI\n\n#### 3.73  Username in SIP Request's original URI - $oU [🔗](#oU)\n\n**$oU** - reference to username in request's original URI\n\n#### 3.74  Route parameter - $param [🔗](#param)\n\n**$param(idx)** - retrieves the parameters of the route. The index can be an integer, or a pseudo-variable (index starts at 1).  \nExample:\n\n   route {\n      ...\n      $var(debug) = \"DBUG:\"\n      route(PRINT_VAR, $var(debug), \"param value\");\n      ...\n   }\n\n   route[PRINT_VAR] {\n      $var(index) = 2;\n      xlog(\"$param(1): The parameter value is <$param($var(index))>\\n\");\n   }\n\n#### 3.75  Domain in SIP Request's P-Preferred-Identity header URI - $pd [🔗](#pd)\n\n**$pd** - reference to domain in request's P-Preferred-Identity header URI (see RFC 3325)\n\n#### 3.76  Display Name in SIP Request's P-Preferred-Identity header - $pn [🔗](#pn)\n\n**$pn** - reference to Display Name in request's P-Preferred-Identity header (see RFC 3325)\n\n#### 3.77  Process id - $pp [🔗](#pp)\n\n**$pp** - reference to process id (pid)\n\n#### 3.78  User in SIP Request's P-Preferred-Identity header URI - $pU [🔗](#pU)\n\n**$pU** - reference to user in request's P-Preferred-Identity header URI (see RFC 3325)\n\n#### 3.79  URI in SIP Request's P-Preferred-Identity header - $pu [🔗](#pu)\n\n**$pu** - reference to URI in request's P-Preferred-Identity header (see RFC 3325)\n\n#### 3.80  Domain in SIP Request's URI - $rd [🔗](#rd)\n\n**$rd** - reference to domain in request's URI\n\nIt is R/W variable (you can assign values to it routing script)\n\n#### 3.81  Body of request/reply - $rb [🔗](#rb)\n\n**$rb** - reference to the body or a body part of the SIP message\n\n*   $rb - the whole body of the message (with all the parts)\n*   $(rb\\[\\*\\]) - same as $rb\n*   $(rb\\[n\\]) - the n-th body belonging to a multi-part body from the beginning of message, starting with index 0\n*   $(rb\\[-n\\]) - the n-th body belonging to a multi-part body from the end of the message, starting with index -1 (the last contact instance)\n*   $rb(application/sdp) - get the first SDP body part\n*   $(rb(application/isup)\\[-1\\]) - get the last ISUP body part\n\n#### 3.82  Returned code - $rc [🔗](#rc)\n\n**$rc** - reference to returned code by last invoked function\n\n**$retcode** - same as \\*\\*\\*$rc$\\*\\*\\*\n\n#### 3.83  Remote-Party-ID header URI - $re [🔗](#re)\n\n**$re** - reference to Remote-Party-ID header URI\n\n#### 3.84  Return value - $return [🔗](#return)\n\n**$return** - Returns the value of the previously executed route.\n\nThe variable receives an index, starting with 0, indicating the return value that needs to be read.\n\n#### 3.85  SIP request's method - $rm [🔗](#rm)\n\n**$rm** - reference to request's method\n\n#### 3.86  SIP request's port - $rp [🔗](#rp)\n\n**$rp** - reference to port of R-URI\n\nIt is R/W variable (you can assign values to it routing script)\n\n#### 3.87  Transport protocol of SIP request URI - $rP [🔗](#rP)\n\n**$rP** - reference to transport protocol of R-URI\n\n#### 3.88  SIP reply's reason - $rr [🔗](#rr)\n\n**$rr** - reference to reply's reason\n\n#### 3.89  SIP reply's status - $rs [🔗](#rs)\n\n**$rs** - reference to reply's status\n\n#### 3.90  Refer-to URI - $rt [🔗](#rt)\n\n**$rt** - reference to URI of refer-to header\n\n#### 3.91  SIP Request's URI - $ru [🔗](#ru)\n\n**$ru** - reference to request's URI\n\nIt is R/W variable (you can assign values to it routing script)\n\n#### 3.92  Username in SIP Request's URI - $rU [🔗](#rU)\n\n**$rU** - reference to username in request's URI\n\nIt is R/W variable (you can assign values to it routing script)\n\n#### 3.93  Q value of the SIP Request's URI - $ru_q [🔗](#ru_q)\n\n**$ru_q** - reference to q value of the R-URI\n\nIt is R/W variable (you can assign values to it routing script)\n\n#### 3.94  SDP body - $sdp [🔗](#sdp)\n\n**$sdp** - Read/Write reference to the SDP body of the current SIP message\n\n# READ operation on the SIP msg SDP\n$sdp\n\n# WRITE operation (assign a new SDP)\n$sdp = $var(rtpengine_sdp);\n\n# READ operation on the SIP reply SDP\n$(<reply>sdp)\n\n# WRITE operation (assign a new SDP to SIP reply)\n$(<reply>sdp) = $var(rtpengine_sdp);\n\n#### 3.95  SDP body line - $sdp.line [🔗](#sdp.line)\n\n**$sdp.line** - Read/Write reference to SDP body lines, with filtering support\n\n# Fetch the 1st, 2nd, 3rd, etc. attribute line (starting with \"a=\")\n$sdp.line(a=)         # fetch first \"a=\" lin\n$sdp.line(a=\\[0\\])      # equivalent, \"a=\" line at index 0\n$sdp.line(a=ptime\\[1\\]) # \"a=ptime\" line at index 1\n$sdp.line(a=\\[100\\])    # will likely yield NULL\n\n# Token-based filtering, inside a line\n$sdp.line(m=audio\\[1\\])         # m=audio 27292 RTP/AVP 9 8 0 2 102 100 99 101\n$sdp.line(m=audio\\[1\\]/\\[0\\])     # audio\n$sdp.line(m=audio\\[1\\]/\\[1\\])     # 27292\n$sdp.line(m=audio\\[1\\]/\\[2\\])     # RTP/AVP\n$sdp.line(m=audio\\[1\\]/\\[10\\])    # 101\n$sdp.line(m=audio\\[1\\]/\\[11\\])    # NULL\n$sdp.line(m=audio\\[1\\]/RTP)         # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP)    # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP\\[0\\]) # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP\\[1\\]) # NULL\n$sdp.line(m=audio\\[1\\]/RTQ)         # NULL\n\n#### 3.96  SDP body line - $sdp.stream [🔗](#sdp.stream)\n\n**$sdp.stream** - Read/Write reference to SDP body streams, with filtering support\n\n# Within a desired stream, you can first filter by line...\n$sdp.stream(/a=ptime);         # first �a=ptime� line from Stream #0 (\"m=\", matching any stream type)\n$sdp.stream(\\[1\\]/a=ptime);      # first �a=ptime� line from Stream #1 (\"m=\", matching any stream type))\n$sdp.stream(audio\\[1\\]/a=ptime); # first �a=ptime� line from Audio Stream #1 (\"m=audio...\")\n$sdp.stream(a\\[1\\]/a=ptime);     # first �a=ptime� line from Audio Stream #1 (\"m=a...\")\n$sdp.stream(video\\[1\\]/a=nortpproxy) = NULL;  # delete entire line starting with \"a=nortpproxy\" from Video Stream #1\n$sdp.stream(v\\[1\\]/a=nortpproxy:/\\[0\\]) = �yes�;   # set first \"a=nortpproxy\" line \"yes\" value, in Video Stream #1\n\n# ... and, additionally, by token\n$sdp.stream(video\\[1\\]/a=fmtp:115/bitrate=) = 48000; # set \"bitrate=\" to 48000, under \"a=fmtp:115\" line #0, as part of Video Stream #1\n$sdp.stream(video\\[1\\]/a=fmtp:115\\[3\\]) = NULL; # delete the 4th occurrence (if any) of \"a=fmtp:115\" line, but only within Video Stream #1\n$sdp.stream(video\\[1\\]/a=fmtp:115/bitrate=) = 48000; # set \"bitrate=\" to 48000, under \"a=fmtp:115\" line #0, as part of Video Stream #1\n\n#### 3.97  SDP body session - $sdp.session [🔗](#sdp.session)\n\n**$sdp.session** - Read/Write reference to the SDP body session, with filtering support\n\n# Within the SDP session (i.e. until the 1st \"m=\" line), you can first filter by line...\n$sdp.session(a=ptime);            # 1st �a=ptime� line at Session level\n$sdp.session(a=ptime\\[0\\]);         # same as above\n$sdp.session(a=ptime\\[1\\]);         # 2nd �a=ptime� line at Session level\n$sdp.session(a=ptime\\[0\\]) = NULL;  # delete 1st �a=ptime� line at Session level\n\n# ... but also filter and edit by token:\n$sdp.session(a=rtpmap/telephone-event\\/) = \"8000\";  # Match 1st \"a=rtpmap\" line which describes telephone-event at Session level, and force bitrate to 8000\n\n#### 3.98  SDP stream index - $sdp.stream.idx [🔗](#sdp.stream.idx)\n\n**$sdp.stream.idx** - Read-Only reference to the index of the matched SDP stream. Yields NULL on no-match.\n\nThis variable is especially useful in order to match a line having one specific attribute (e.g. \"the rtpmap= line for PCMU codec\"), then changing a different attribute within the same stream. Example:\n\n$var(line_idx) = $sdp.stream.idx(video/a=fmtp/packetization-mode=); # locate index of first \"a=fmtp\" line, containing a packetization-mode= attribute\n$var(data) = $sdp.line(\\[$var(line_idx)\\]); # grab the full line data\n... perform processing on that line ...\n$sdp.line(\\[$var(line_idx)\\]) = $var(data); # re-write the line\n\n#### 3.99  IP source address - $si [🔗](#si)\n\n**$si** - reference to IP source address of the message\n\n#### 3.100  Socket inbound - $socket_in [🔗](#socket_in)\n\n**$socket_in** - read-only variable to get the description (proto:ip:port format) of the inbound socket (used for receiving the message).  \nThe variable also offers detailed read-only access to various attributes/sub-fields of the socket, as **$socket_in()**. The sub-fields of the socket are:\n\n*   ip - the IP part of the socket\n*   port - the port part of the socket\n*   proto - the name of the protocol of the socket (as \"UDP\", \"TPC\", etc)\n*   advertised_ip - the advertised IP part of the socket (it may be NULL if no advertising is done on this particlar socket)\n*   advertised_port - the advertised part part of the socket (it may be NULL if no advertising is done on this particlar socket)\n*   tag - the socket internal tag/alias\n*   anycast - if the socket uses an anycast IP or not (returns 0 if not, 1 if yes)\n*   af - the address family of the socket's IP. It's value is \"INET\" if IPv4 or \"INET6\" if IPv6.\n\nFor more details on the meaning of these sub-fields, please also read about the [socket definition](https://www.opensips.org/Documentation/Script-CoreParameters-3-6#toc66 \"Core Parameters - 3.6\").\n\n#### 3.101  Socket outbound - $socket_out [🔗](#socket_out)\n\n**$socket_out** - read-write variable for reading or changing the outbound socket of the message. Originally (before being written/changed) it will return the same socket description as [$socket_in](#socket_in) (the inbound socket will be used as outbound socket also). In addition, it also supports the `forced` sub-field, which returns a socket description only if a socket had been explicitly forced; thus, as opposed to the regular [$socket_out](#socket_ou), if no socket had explicitly been forced, the variable returns NULL.\n\n  \nThe variable also offers detailed read-only access to various attributes/sub-fields of the socket, as $socket_out()'''. It provides the same sub-fields as the [$socket_in](#socket_in) variable.\n\n   $socket_out = \"udp:11.11.11.11:5060\";\n   xlog(\"The outbound port is $socket_out(port)\\n\");\n\n#### 3.102  Source port - $sp [🔗](#sp)\n\n**$sp** - reference to the source port of the message\n\n#### 3.103  To URI Domain - $td [🔗](#td)\n\n**$td** - reference to domain in URI of 'To' header\n\n#### 3.104  To display name - $tn [🔗](#tn)\n\n**$tn** - reference to display name of 'To' header\n\n#### 3.105  To tag - $tt [🔗](#tt)\n\n**$tt** - reference to tag parameter of 'To' header\n\n#### 3.106  To URI - $tu [🔗](#tu)\n\n**$tu** - reference to URI of 'To' header\n\n#### 3.107  To URI Username - $tU [🔗](#tU)\n\n**$tU** - reference to username in URI of 'To' header\n\n#### 3.108  Formatted date and time - $time [🔗](#time)\n\n**$time(format)** - returns the string formatted time according to UNIX date (see: **man date**).\n\n#### 3.109  Branch index - $T_branch_idx [🔗](#T_branch_idx)\n\n**$T_branch_idx** - the index (starting with 1 for the first branch) of the branch for which is executed the branch_route[]. If used outside of branch_route[] block, the value is '0'. This is exported by TM module.\n\n#### 3.110  String formatted time - $Tf [🔗](#Tf)\n\n**$Tf** - reference string formatted time\n\n#### 3.111  Current unix time stamp in seconds - $Ts [🔗](#Ts)\n\n**$Ts** - reference to current unix time stamp in seconds\n\n#### 3.112  Current microseconds of the current second - $Tsm [🔗](#Tsm)\n\n**$Tsm** - reference to current microseconds of the current second\n\n#### 3.113  Startup unix time stamp - $TS [🔗](#TS)\n\n**$TS** - reference to startup unix time stamp\n\n#### 3.114  User agent header - $ua [🔗](#ua)\n\n**$ua** - reference to user agent header field\n\n#### 3.115  SIP Headers - $hdr [🔗](#hdr)\n\n**$(hdr(name)\\[N\\])** - represents the body of the N-th header identified by 'name'. If \\[N\\] is omitted then the body of the first header is printed. The first header is got when N=0, for the second N=1, a.s.o. To print the last header of that type, use -1, no other negative values are supported now. No white spaces are allowed inside the specifier (before }, before or after {, \\[, \\] symbols). When N='*', all headers of that type are printed.\n\nThe module should identify most of compact header names (the ones recognized by **OpenSIPS** which should be all at this moment), if not, the compact form has to be specified explicitly. It is recommended to use dedicated specifiers for headers (e.g., %ua for user agent header), if they are available -- they are faster.\n\n**$(hdr_name\\[N\\])** - returns the name of the N-th header. The first header name is obtained for N=0, the second for N=1, a.s.o. To print the last header name use -1, the second last -2 a.s.o. No white spaces are allowed inside the specifier (before }, before or after {, \\[, \\] symbols). When N='*', all header names are printed.\n\n**$(hdrcnt(name))** -- returns number of headers of type given by 'name'. Uses same rules for specifying header names as **$hdr(name)** above. Many headers (e.g., Via, Path, Record-Route) may appear more than once in the message. This variable returns the number of headers of a given type.\n\nNote that some headers (e.g., Path) may be joined together with commas and appear as a single header line. This variable counts the number of header lines, not header values.\n\nFor message fragment below, **$hdrcnt(Path)** will have value 2 and **$(hdr(Path)\\[0\\])** will have value **<a.com>**:\n\n    Path: <a.com>\n    Path: <b.com>\n\nFor message fragment below, **$hdrcnt(Path)** will have value 1 and **$(hdr(Path)\\[0\\])** will have value **<a.com>,<b.com>**:\n\n    Path: <a.com>,<b.com>\n\nNote that both examples above are semantically equivalent but the variables take on different values.\n\n#### 3.116  Route Name (Full) - $route [🔗](#route)\n\n**$route** - Access route names of the current route call stack. Usage examples (assuming a route call stack of \"route > route[A] > route[B]\"):\n\n*   **$route** and **$(route\\[0\\])** both return **\"route[B]\"** (current route)\n*   **$(route\\[1\\])** returns **\"route[A]\"** (parent route)\n*   **$(route\\[2\\])** returns **\"route\"** (previous-parent route)\n*   **$(route\\[-1\\])** returns **\"route\"** (topmost route)\n*   **$(route\\[-2\\])** returns **\"route[A]\"** (next-topmost route)\n*   **$(route\\[-3\\])** returns **\"route[B]\"** (next-next-topmost route)\n*   **$(route\\[3\\])** and **$(route\\[-4\\])** both return **NULL** (index out of bounds)\n*   **$(route\\[\\*\\])** returns **\"route > route[A] > route[B]\"** (entire call stack)\n\n#### 3.117  Route Type - $route.type [🔗](#route.type)\n\n**$route.type** - Access the type of the current route. May be indexed, using positive or negative indexes.\n\n*   **$route.type** and **$(route.type\\[0\\])** both return current route type\n*   **$(route.type\\[1\\])** returns parent route type\n*   **$(route.type\\[-1\\])** returns topmost route type\n*   **$(route.type\\[-2\\])** returns next-topmost route type\n\n#### 3.118  Route Name - $route.name [🔗](#route.name)\n\n**$route.name** - Access the name of the current route. May be indexed, using positive or negative indexes.\n\n*   **$route.name** and **$(route.name\\[0\\])** both return current route name\n*   **$(route.name\\[1\\])** returns parent route name\n*   **$(route.name\\[-1\\])** returns topmost route name\n*   **$(route.name\\[-2\\])** returns next-topmost route name\n\n#### 3.119  Current script line and file - $cfg_line [🔗](#cfg_line)\n\n**$cfg_line** - Holds the current line from the script of the action being executed, useful for logging purposes  \n**$cfg_file** - Holds the current name of the cfg file being executed, useful when using multiple scripts via the include statement\n\n#### 3.120  Log level for xlog() - $xlog_level [🔗](#xlog_level)\n\n**$xlog_level** - allows to set /reset the xlog() logging level on per-process bases. Shortly said, you can read the verbosity level for the xlog() calls or you can temporary change the level per process bases.\n\nExample:\n\nxlog(\"current verbosity is $xlog_level \\n\");\n$xlog_level = L_DBG; # force local xlogging limit to DBG\n...\n(set of xlogs)\n...\n$xlog_level = NULL;  # reset to initial value\n\n### 4. Escape Sequences\n\nThese sequences are exported, and mainly used, by xlog module to print messages in many colors (foreground and background) using escape sequences.\n\n#### 4.1 Foreground and background colors\n\n$C(xy) - reference to an escape sequence. �x� represents the foreground color and �y� represents the background color.\n\nColors could be:\n\n*   x : default color of the terminal\n*   s : Black\n*   r : Red\n*   g : Green\n*   y : Yellow\n*   b : Blue\n*   p : Purple\n*   c : Cyan\n*   w : White\n\n#### 4.2 Examples\n\nA few examples of usage.\n\n...\nroute {\n...\n    $avp(uuid)=\"caller_id\";\n    $avp(tmp)= $avp(uuid) + \": \" + $fu;\n    xlog(\"$C(bg)$avp(tmp)$C(xx) [$avp(tmp)] $C(br)$cs$C(xx)=[$hdr(cseq)]\\n\");\n...\n}\n...",
+  "content_html": "",
+  "category": "Core",
+  "section": "Scripting Variables",
+  "synopsis": "Documentation for OpenSIPS 3.6 core variables, including script variables ($var), AVPs ($avp), and pseudo-variables ($name) used for accessing SIP message data, system information, and controlling script flow.",
+  "keywords": [
+    "variables",
+    "pseudo-variables",
+    "script variables",
+    "AVP",
+    "core",
+    "3.6"
+  ],
+  "related_documents": [],
+  "last_updated": "2020-01-01T00:00:00.000Z",
+  "extracted_at": "2024-05-23T12:00:00.000Z",
+  "variables": [
+    {
+      "name": "$var(name)",
+      "description": "Script variables are strictly bound to the script routes. They are process related and visible only in routing blocks executed by the same OpenSIPS process. They can hold integer or string values.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "script",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(a) = 2;  # sets the value of variable 'a' to integer '2'\n$var(a) = \"2\";  # sets the value of variable 'a' to string '2'\n$var(a) = 3 + (7&(~2)); # arithmetic and bitwise operation\n$var(a) = \"sip:\" + $au + \"@\" + $fd; # compose a value from authentication username and From URI domain\n\n# using a script variable for tests\nif( [ $var(a) & 4 ] ) {\n  xlog(\"var a has third bit set\\n\");\n}",
+          "description": "Usage examples for script variables including assignment and bitwise operations."
+        }
+      ],
+      "notes": "Setting a variable to NULL is actually initializing the value to integer '0'. Script variables don't have NULL value.",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$avp(name)",
+      "description": "Attribute Value Pairs are dynamic variables linked to a singular message or transaction. They can hold multiple values in a stack order.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "transaction",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$avp(tmp) = $Ts ; # store the current time (at request processing)",
+          "description": "Storing timestamp in AVP."
+        },
+        {
+          "language": "opensips",
+          "code": "$avp(my_arr) = \"one\";\n$avp(my_arr) = \"two\";\n$avp(my_arr) = \"three\";\n\nxlog(\"accessing values with no index: $avp(my_arr)\\n\");\nxlog(\"accessing values with no index: $(avp(my_arr)\\[2\\])\\n\");\n\n$avp(my_arr) = NULL;\n$avp(my_arr) := NULL;\n$(avp(my_arr)\\[1\\]) = NULL;\n$(avp(my_arr)\\[0\\]) = \"zero\";",
+          "description": "Multiple values example showing stack behavior and deletion."
+        }
+      ],
+      "notes": "To enable AVPs in onreply_route, use modparam(\"tm\", \"onreply_avp_mode\", 1).",
+      "indexed": true,
+      "multi_value": true
+    },
+    {
+      "name": "$ai",
+      "description": "Reference to URI in request's P-Asserted-Identity header (see RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$adu",
+      "description": "URI from Authorization or Proxy-Authorization header. This URI is used when calculating the HTTP Digest Response.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ar",
+      "description": "Realm from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$au",
+      "description": "User part of username from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ad",
+      "description": "Domain part of username from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$an",
+      "description": "The nonce from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.resp",
+      "description": "The authentication response from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.nonce",
+      "description": "The nonce string from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.opaque",
+      "description": "The opaque string from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.alg",
+      "description": "The algorithm string from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.qop",
+      "description": "The value of qop parameter from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$auth.nc",
+      "description": "The value of nonce count parameter from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$aU",
+      "description": "Whole username from Authorization or Proxy-Authorization header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$Au",
+      "description": "Username for accounting purposes. It's a selective pseudo variable (inherited from acc module). It returns $au if exits or From username otherwise.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$argv",
+      "description": "Provides access to command line arguments specified with '-o' option.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# for option '-o foo=0'\nxlog(\"foo is $argv(foo) \\n\");",
+          "description": "Accessing command line argument 'foo'."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$bf",
+      "description": "Displays a list with the branch flags set for the current SIP request.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "notes": "TO BECOME OBSOLETE, replaced by $msg.branch.flags",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$branch",
+      "description": "This variable is used for creating new branches by writing into it the value of a SIP URI.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates a new branch\n$branch = \"sip:new@doamin.org\";\n# print its URI\nxlog(\"last added branch has URI $(branch(uri)\\[-1\\]) \\n\");",
+          "description": "Creating a new branch and accessing its URI."
+        }
+      ],
+      "notes": "TO BECOME OBSOLETE, replaced by $msg.branch",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$branch.fields",
+      "description": "Provides read/write access to all fields/attributes of an already existing branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates the first branch\nappend_branch();\n# creates the second branch\nforce_send_socket(udp:193.668.1.12:5060);\n$du = \"sip:193.668.3.60\";\nappend_branch(\"sip:foo@bar.com\",\"0.5\");\n\n# display branches\nxlog(\"----- branch 0: $(branch(uri)\\[0\\]) , $(branch(q)\\[0\\]), $(branch(duri)\\[0\\]), $(branch(path)\\[0\\]), $(branch(flags)\\[0\\]), $(branch(socket)\\[0\\]) \\n\");\nxlog(\"----- branch 1: $(branch(uri)\\[1\\]) , $(branch(q)\\[1\\]), $(branch(duri)\\[1\\]), $(branch(path)\\[1\\]), $(branch(flags)\\[1\\]), $(branch(socket)\\[1\\]) \\n\");\n\n# do some changes over the branches\n$branch(uri) = \"sip:user@domain.ro\";   # set URI for the first branch\n$(branch(q)\\[0\\]) = 1000;  # set to 1.00 for the first branch\n$(branch(socket)\\[1\\]) = NULL;  # reset the socket of the second branch\n$branch(duri) = NULL;  # reset the destination URI or the first branch",
+          "description": "Creating, displaying, and modifying branch fields."
+        }
+      ],
+      "notes": "TO BECOME OBSOLETE, replaced by $msg.branch.uri",
+      "subfields": [
+        {
+          "name": "uri",
+          "access_syntax": "$branch(uri)",
+          "description": "The RURI of the branch (string value).",
+          "type": "string"
+        },
+        {
+          "name": "duri",
+          "access_syntax": "$branch(duri)",
+          "description": "Destination URI of the branch (outbound proxy of the branch) (string value).",
+          "type": "string"
+        },
+        {
+          "name": "q",
+          "access_syntax": "$branch(q)",
+          "description": "Q value of the branch (int value).",
+          "type": "integer"
+        },
+        {
+          "name": "path",
+          "access_syntax": "$branch(path)",
+          "description": "The PATH string for this branch (string value).",
+          "type": "string"
+        },
+        {
+          "name": "flags",
+          "access_syntax": "$branch(flags)",
+          "description": "The branch flags of this branch (int value).",
+          "type": "integer"
+        },
+        {
+          "name": "socket",
+          "access_syntax": "$branch(socket)",
+          "description": "The local socket to be used for relaying this branch (string value).",
+          "type": "string"
+        }
+      ],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$branch.flag",
+      "description": "Provides read/write access to the value of a single certain branch flag (identified by name).",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "setbflag(\"X\");\nxlog(\"---- flag value is $branch.flag(X) \\n\");\n$branch.flag(X) = off;\nxlog(\"---- flag value is $branch.flag(X) \\n\");",
+          "description": "Checking and setting a branch flag."
+        }
+      ],
+      "notes": "TO BECOME OBSOLETE, replaced by $msg.branch.flag",
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.algorithm",
+      "description": "The algorithm value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.realm",
+      "description": "The realm value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.nonce",
+      "description": "The nonce value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.opaque",
+      "description": "The opaque value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.qop",
+      "description": "The qop value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.ik",
+      "description": "The ik value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$challenge.ck",
+      "description": "The ck value taken from the WWW-Authorize or Proxy-Authorize header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ci",
+      "description": "Reference to body of call-id header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$cl",
+      "description": "Reference to body of content-length header.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$cs",
+      "description": "Reference to cseq number from cseq header.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ct",
+      "description": "Reference to contact instance/body from the contact header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$ct.fields",
+      "description": "Reference to the fields of a contact instance/body.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ct.fields(uri) - the URI of the first contact instance\n$(ct.fields(name)\\[1\\]) - the display name of the second contact instance",
+          "description": "Accessing contact fields."
+        }
+      ],
+      "subfields": [
+        {
+          "name": "name",
+          "access_syntax": "$ct.fields(name)",
+          "description": "Display name.",
+          "type": "string"
+        },
+        {
+          "name": "uri",
+          "access_syntax": "$ct.fields(uri)",
+          "description": "Contact uri.",
+          "type": "string"
+        },
+        {
+          "name": "q",
+          "access_syntax": "$ct.fields(q)",
+          "description": "Q param (value only).",
+          "type": "string"
+        },
+        {
+          "name": "expires",
+          "access_syntax": "$ct.fields(expires)",
+          "description": "Expires param (value only).",
+          "type": "string"
+        },
+        {
+          "name": "methods",
+          "access_syntax": "$ct.fields(methods)",
+          "description": "Methods param (value only).",
+          "type": "string"
+        },
+        {
+          "name": "received",
+          "access_syntax": "$ct.fields(received)",
+          "description": "Received param (value only).",
+          "type": "string"
+        },
+        {
+          "name": "params",
+          "access_syntax": "$ct.fields(params)",
+          "description": "All params (including names).",
+          "type": "string"
+        }
+      ],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$cT",
+      "description": "Reference to body of Content-Type header and also the content-type headers inside a multi-part body.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$dd",
+      "description": "Reference to domain of destination uri.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$di",
+      "description": "Reference to Diversion header URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$dip",
+      "description": "Reference to Diversion header 'privacy' parameter value.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$dir",
+      "description": "Reference to Diversion header 'reason' parameter value.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$dp",
+      "description": "Reference to port of destination uri.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$dP",
+      "description": "Reference to transport protocol of destination uri.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ds",
+      "description": "Reference to destination set.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$du",
+      "description": "Reference to destination uri (outbound proxy to be used for sending the request). If loose_route() returns TRUE a destination uri is set according to the first Route header.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$err.class",
+      "description": "The class of error (now is '1' for parsing errors).",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$err.level",
+      "description": "Severity level for the error.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$err.info",
+      "description": "Text describing the error.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$err.rcode",
+      "description": "Recommended reply code.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$err.rreason",
+      "description": "Recommended reply reason phrase.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$fd",
+      "description": "Reference to domain in URI of 'From' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$fn",
+      "description": "Reference to display name of 'From' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ft",
+      "description": "Reference to tag parameter of 'From' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$fu",
+      "description": "Reference to URI of 'From' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$fU",
+      "description": "Reference to username in URI of 'From' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$log_level",
+      "description": "Changes the log level for the current process; the log level can be set to a new value or it can be reset back to the global log level.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "process",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "log_level= -1 # errors only\n.....\n{\n  ......\n  $log_level = 4; # set the debug level of the current process to DBG\n  uac_replace_from(....);\n  $log_level = NULL; # reset the log level of the current process to its default level\n  .......\n}",
+          "description": "Temporarily changing log level for a block of code."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$mb",
+      "description": "Reference to SIP message buffer.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$mf",
+      "description": "Displays a list with the message/transaction flags set for the current SIP request.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$mi",
+      "description": "Reference to SIP message id.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ml",
+      "description": "Reference to SIP message length.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch",
+      "description": "Used for creating new message branches by writing into it the value of a SIP URI. By reading this variable, you get the SIP URI of the current/last added branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates a new branch\n$msg.branch = \"sip:new@domain.org\";\n# print its URI\nxlog(\"last added branch has URI $msg.branch \\n\");",
+          "description": "Creating a new message branch."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.uri",
+      "description": "Gives read / write access over the SIP URI (as string) of an existing message branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates a new branch\n$msg.branch = \"sip:new@domain.org\";\n# change its URI\n$msg.branch.uri = \"sip:new_new@domain.org\"\n# change its URI of RURI branch\n$(msg.branch.uri\\[0\\]) = \"sip:new_RURI@domain.org\"",
+          "description": "Modifying branch URIs."
+        }
+      ],
+      "notes": "The variable can be used in REQUEST and FAILURE routes.",
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.duri",
+      "description": "100% similar to $msg.branch.uri, but operating with the Detination-URI value of the message branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.path",
+      "description": "100% similar to $msg.branch.uri, but operating with the PATH value of the message branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.q",
+      "description": "100% similar to $msg.branch.uri, but operating with the Q value of the message branch.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.flags",
+      "description": "100% similar to $msg.branch.uri, but operating with list (comma separated) of per-branch flags (which are set for the branch).",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.socket",
+      "description": "100% similar to $msg.branch.uri, but operating with the (forced) socket value of the message branch.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.flag",
+      "description": "Similar to $msg.branch.uri, but operating over a single branch flag (for the current branch).",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates a new branch\n$msg.branch = \"sip:new@domain.org\";\n# set the \"pstn\" named flag for this branch\n$msg.branch.flag(pstn) = 1;\n$msg.branch.flag(foo) = 1;\n# print all the set flags\nxlog(\"Flags are <$msg.branch.flags>\\n\");",
+          "description": "Setting and checking branch flags."
+        }
+      ],
+      "notes": "The */ALL index cannot be used here.",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.attr",
+      "description": "Similar to $msg.branch.uri, but operating over a single branch attribute (attached to the current branch).",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# creates a new branch\n$msg.branch = \"sip:new@domain.org\";\n# set the \"pstn\" named flag for this branch\n$msg.branch.attr(name) = \"one\";\n$msg.branch.attr(num) = 5;",
+          "description": "Setting branch attributes."
+        }
+      ],
+      "notes": "The */ALL index cannot be used here.",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.branch.last_idx",
+      "description": "Returns the index of the last message branch. IF no additional branche were added, it will return 0, the index of the RURI branch.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.flag",
+      "description": "Provides read/write access to the value of a single certain message flag (identified by name).",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "setflag(\"X\");\nxlog(\"---- flag value is $msg.flag(X) \\n\");\n$msg.flag(X) = off;\nxlog(\"---- flag value is $msg.flag(X) \\n\");",
+          "description": "Checking and setting message flags."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.is_request",
+      "description": "Tells if the current SIP message is a request or not.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"---- this message is a request:  $msg.is_request \\n\");\nif ( $msg.is_request )\n  xlog(\"---- yes, it is a request\\n\");",
+          "description": "Checking if message is a request."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$msg.type",
+      "description": "Returns the type of the current message.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"---- this message is a SIP $msg.type \\n\");",
+          "description": "Logging message type."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$od",
+      "description": "Reference to domain in request's original R-URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$op",
+      "description": "Reference to port of original R-URI.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$oP",
+      "description": "Reference to transport protocol of original R-URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ou",
+      "description": "Reference to request's original URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$oU",
+      "description": "Reference to username in request's original URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$param",
+      "description": "Retrieves the parameters of the route.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "route",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n   ...\n   $var(debug) = \"DBUG:\"\n   route(PRINT_VAR, $var(debug), \"param value\");\n   ...\n}\n\nroute[PRINT_VAR] {\n   $var(index) = 2;\n   xlog(\"$param(1): The parameter value is <$param($var(index))>\\n\");\n}",
+          "description": "Accessing route parameters."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$pd",
+      "description": "Reference to domain in request's P-Preferred-Identity header URI (see RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$pn",
+      "description": "Reference to Display Name in request's P-Preferred-Identity header (see RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$pp",
+      "description": "Reference to process id (pid).",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "process",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$pU",
+      "description": "Reference to user in request's P-Preferred-Identity header URI (see RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$pu",
+      "description": "Reference to URI in request's P-Preferred-Identity header (see RFC 3325).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rd",
+      "description": "Reference to domain in request's URI.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rb",
+      "description": "Reference to the body or a body part of the SIP message.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$rc",
+      "alternate_names": [
+        "$retcode"
+      ],
+      "description": "Reference to returned code by last invoked function.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "script",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$re",
+      "description": "Reference to Remote-Party-ID header URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$return",
+      "description": "Returns the value of the previously executed route.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "route",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$rm",
+      "description": "Reference to request's method.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rp",
+      "description": "Reference to port of R-URI.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rP",
+      "description": "Reference to transport protocol of R-URI.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rr",
+      "description": "Reference to reply's reason.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "reply",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rs",
+      "description": "Reference to reply's status.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "reply",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rt",
+      "description": "Reference to URI of refer-to header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ru",
+      "description": "Reference to request's URI.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$rU",
+      "description": "Reference to username in request's URI.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ru_q",
+      "description": "Reference to q value of the R-URI.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sdp",
+      "description": "Read/Write reference to the SDP body of the current SIP message.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# READ operation on the SIP msg SDP\n$sdp\n\n# WRITE operation (assign a new SDP)\n$sdp = $var(rtpengine_sdp);\n\n# READ operation on the SIP reply SDP\n$(<reply>sdp)\n\n# WRITE operation (assign a new SDP to SIP reply)\n$(<reply>sdp) = $var(rtpengine_sdp);",
+          "description": "Reading and writing SDP body."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sdp.line",
+      "description": "Read/Write reference to SDP body lines, with filtering support.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# Fetch the 1st, 2nd, 3rd, etc. attribute line (starting with \"a=\")\n$sdp.line(a=)         # fetch first \"a=\" lin\n$sdp.line(a=\\[0\\])      # equivalent, \"a=\" line at index 0\n$sdp.line(a=ptime\\[1\\]) # \"a=ptime\" line at index 1\n$sdp.line(a=\\[100\\])    # will likely yield NULL\n\n# Token-based filtering, inside a line\n$sdp.line(m=audio\\[1\\])         # m=audio 27292 RTP/AVP 9 8 0 2 102 100 99 101\n$sdp.line(m=audio\\[1\\]/\\[0\\])     # audio\n$sdp.line(m=audio\\[1\\]/\\[1\\])     # 27292\n$sdp.line(m=audio\\[1\\]/\\[2\\])     # RTP/AVP\n$sdp.line(m=audio\\[1\\]/\\[10\\])    # 101\n$sdp.line(m=audio\\[1\\]/\\[11\\])    # NULL\n$sdp.line(m=audio\\[1\\]/RTP)         # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP)    # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP\\[0\\]) # RTP/AVP\n$sdp.line(m=audio\\[1\\]/RTP\\/AVP\\[1\\]) # NULL\n$sdp.line(m=audio\\[1\\]/RTQ)         # NULL",
+          "description": "Filtering SDP lines."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sdp.stream",
+      "description": "Read/Write reference to SDP body streams, with filtering support.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# Within a desired stream, you can first filter by line...\n$sdp.stream(/a=ptime);         # first a=ptime line from Stream #0 (\"m=\", matching any stream type)\n$sdp.stream(\\[1\\]/a=ptime);      # first a=ptime line from Stream #1 (\"m=\", matching any stream type))\n$sdp.stream(audio\\[1\\]/a=ptime); # first a=ptime line from Audio Stream #1 (\"m=audio...\")\n$sdp.stream(a\\[1\\]/a=ptime);     # first a=ptime line from Audio Stream #1 (\"m=a...\")\n$sdp.stream(video\\[1\\]/a=nortpproxy) = NULL;  # delete entire line starting with \"a=nortpproxy\" from Video Stream #1\n$sdp.stream(v\\[1\\]/a=nortpproxy:/\\[0\\]) = yes;   # set first \"a=nortpproxy\" line \"yes\" value, in Video Stream #1\n\n# ... and, additionally, by token\n$sdp.stream(video\\[1\\]/a=fmtp:115/bitrate=) = 48000; # set \"bitrate=\" to 48000, under \"a=fmtp:115\" line #0, as part of Video Stream #1\n$sdp.stream(video\\[1\\]/a=fmtp:115\\[3\\]) = NULL; # delete the 4th occurrence (if any) of \"a=fmtp:115\" line, but only within Video Stream #1\n$sdp.stream(video\\[1\\]/a=fmtp:115/bitrate=) = 48000; # set \"bitrate=\" to 48000, under \"a=fmtp:115\" line #0, as part of Video Stream #1",
+          "description": "Filtering and modifying SDP streams."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sdp.session",
+      "description": "Read/Write reference to the SDP body session, with filtering support.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# Within the SDP session (i.e. until the 1st \"m=\" line), you can first filter by line...\n$sdp.session(a=ptime);            # 1st a=ptime line at Session level\n$sdp.session(a=ptime\\[0\\]);         # same as above\n$sdp.session(a=ptime\\[1\\]);         # 2nd a=ptime line at Session level\n$sdp.session(a=ptime\\[0\\]) = NULL;  # delete 1st a=ptime line at Session level\n\n# ... but also filter and edit by token:\n$sdp.session(a=rtpmap/telephone-event\\/) = \"8000\";  # Match 1st \"a=rtpmap\" line which describes telephone-event at Session level, and force bitrate to 8000",
+          "description": "Filtering SDP session level lines."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sdp.stream.idx",
+      "description": "Read-Only reference to the index of the matched SDP stream. Yields NULL on no-match.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(line_idx) = $sdp.stream.idx(video/a=fmtp/packetization-mode=); # locate index of first \"a=fmtp\" line, containing a packetization-mode= attribute\n$var(data) = $sdp.line(\\[$var(line_idx)\\]); # grab the full line data\n... perform processing on that line ...\n$sdp.line(\\[$var(line_idx)\\]) = $var(data); # re-write the line",
+          "description": "Finding stream index based on attribute match."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$si",
+      "description": "Reference to IP source address of the message.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$socket_in",
+      "description": "Read-only variable to get the description (proto:ip:port format) of the inbound socket (used for receiving the message).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "subfields": [
+        {
+          "name": "ip",
+          "access_syntax": "$socket_in(ip)",
+          "description": "The IP part of the socket.",
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "access_syntax": "$socket_in(port)",
+          "description": "The port part of the socket.",
+          "type": "integer"
+        },
+        {
+          "name": "proto",
+          "access_syntax": "$socket_in(proto)",
+          "description": "The name of the protocol of the socket (as \"UDP\", \"TPC\", etc).",
+          "type": "string"
+        },
+        {
+          "name": "advertised_ip",
+          "access_syntax": "$socket_in(advertised_ip)",
+          "description": "The advertised IP part of the socket.",
+          "type": "string"
+        },
+        {
+          "name": "advertised_port",
+          "access_syntax": "$socket_in(advertised_port)",
+          "description": "The advertised part part of the socket.",
+          "type": "integer"
+        },
+        {
+          "name": "tag",
+          "access_syntax": "$socket_in(tag)",
+          "description": "The socket internal tag/alias.",
+          "type": "string"
+        },
+        {
+          "name": "anycast",
+          "access_syntax": "$socket_in(anycast)",
+          "description": "If the socket uses an anycast IP or not (returns 0 if not, 1 if yes).",
+          "type": "integer"
+        },
+        {
+          "name": "af",
+          "access_syntax": "$socket_in(af)",
+          "description": "The address family of the socket's IP. It's value is \"INET\" if IPv4 or \"INET6\" if IPv6.",
+          "type": "string"
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$socket_out",
+      "description": "Read-write variable for reading or changing the outbound socket of the message.",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$socket_out = \"udp:11.11.11.11:5060\";\nxlog(\"The outbound port is $socket_out(port)\\n\");",
+          "description": "Setting outbound socket and accessing its port."
+        }
+      ],
+      "subfields": [
+        {
+          "name": "ip",
+          "access_syntax": "$socket_out(ip)",
+          "description": "The IP part of the socket.",
+          "type": "string"
+        },
+        {
+          "name": "port",
+          "access_syntax": "$socket_out(port)",
+          "description": "The port part of the socket.",
+          "type": "integer"
+        },
+        {
+          "name": "proto",
+          "access_syntax": "$socket_out(proto)",
+          "description": "The name of the protocol of the socket.",
+          "type": "string"
+        },
+        {
+          "name": "advertised_ip",
+          "access_syntax": "$socket_out(advertised_ip)",
+          "description": "The advertised IP part of the socket.",
+          "type": "string"
+        },
+        {
+          "name": "advertised_port",
+          "access_syntax": "$socket_out(advertised_port)",
+          "description": "The advertised part part of the socket.",
+          "type": "integer"
+        },
+        {
+          "name": "tag",
+          "access_syntax": "$socket_out(tag)",
+          "description": "The socket internal tag/alias.",
+          "type": "string"
+        },
+        {
+          "name": "anycast",
+          "access_syntax": "$socket_out(anycast)",
+          "description": "If the socket uses an anycast IP or not.",
+          "type": "integer"
+        },
+        {
+          "name": "af",
+          "access_syntax": "$socket_out(af)",
+          "description": "The address family of the socket's IP.",
+          "type": "string"
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$sp",
+      "description": "Reference to the source port of the message.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$td",
+      "description": "Reference to domain in URI of 'To' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$tn",
+      "description": "Reference to display name of 'To' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$tt",
+      "description": "Reference to tag parameter of 'To' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$tu",
+      "description": "Reference to URI of 'To' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$tU",
+      "description": "Reference to username in URI of 'To' header.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "request",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$time",
+      "description": "Returns the string formatted time according to UNIX date (see: man date).",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$T_branch_idx",
+      "description": "The index (starting with 1 for the first branch) of the branch for which is executed the branch_route[]. If used outside of branch_route[] block, the value is '0'.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "transaction",
+      "context": "request",
+      "examples": [],
+      "notes": "Exported by TM module.",
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$Tf",
+      "description": "Reference string formatted time.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$Ts",
+      "description": "Reference to current unix time stamp in seconds.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$Tsm",
+      "description": "Reference to current microseconds of the current second.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$TS",
+      "description": "Reference to startup unix time stamp.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "global",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$ua",
+      "description": "Reference to user agent header field.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$hdr",
+      "description": "Represents the body of the N-th header identified by 'name'.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": true
+    },
+    {
+      "name": "$hdrcnt",
+      "description": "Returns number of headers of type given by 'name'.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "message",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$route",
+      "description": "Access route names of the current route call stack.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "route",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$route.type",
+      "description": "Access the type of the current route.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "route",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$route.name",
+      "description": "Access the name of the current route.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "route",
+      "context": "both",
+      "examples": [],
+      "indexed": true,
+      "multi_value": false
+    },
+    {
+      "name": "$cfg_line",
+      "description": "Holds the current line from the script of the action being executed, useful for logging purposes.",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "script",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$cfg_file",
+      "description": "Holds the current name of the cfg file being executed, useful when using multiple scripts via the include statement.",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "script",
+      "context": "both",
+      "examples": [],
+      "indexed": false,
+      "multi_value": false
+    },
+    {
+      "name": "$xlog_level",
+      "description": "Allows to set /reset the xlog() logging level on per-process bases.",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "process",
+      "context": "both",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "xlog(\"current verbosity is $xlog_level \\n\");\n$xlog_level = L_DBG; # force local xlogging limit to DBG\n...\n(set of xlogs)\n...\n$xlog_level = NULL;  # reset to initial value",
+          "description": "Modifying xlog level."
+        }
+      ],
+      "indexed": false,
+      "multi_value": false
+    }
+  ],
+  "syntax_notes": "The complete syntax for a pseudo variable is: $(_<context>_**name**_(subname)\\[index\\]{transformation}_). Contexts: reply, request. Indexes can be positive (N-th value), negative (from end), or * (all)."
+}

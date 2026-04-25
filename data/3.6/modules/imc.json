@@ -1,0 +1,177 @@
+{
+  "id": "module-imc-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "imc Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/imc.html",
+  "content_markdown": "This module offers support for instant message conference. It follows the architecture of IRC channels, you can send commands embedded in MESSAGE body, because there are no SIP UA clients which have GUI for IM conferencing.\n\nYou have to define an URI corresponding to im conferencing manager, where user can send commands to create a new conference room. Once the conference room is created, users can send commands directly to conferece's URI.\n\nTo ease the integration in the configuration file, the interpreter of the IMC commands are embeded in the module, from configuration poin of view, there is only one function which has to be executed for both messages and commands.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T10:29:51.403Z",
+  "module_name": "imc",
+  "overview": "This module offers support for instant message conference. It follows the architecture of IRC channels, you can send commands embedded in MESSAGE body, because there are no SIP UA clients which have GUI for IM conferencing.\n\nYou have to define an URI corresponding to im conferencing manager, where user can send commands to create a new conference room. Once the conference room is created, users can send commands directly to conferece's URI.\n\nTo ease the integration in the configuration file, the interpreter of the IMC commands are embeded in the module, from configuration poin of view, there is only one function which has to be executed for both messages and commands.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "mysql",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "The database url.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"imc\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "rooms_table",
+      "type": "string",
+      "default_value": "imc\\_rooms",
+      "description": "The name of the table storing IMC rooms.",
+      "example_value": "rooms",
+      "example_code": "modparam(\"imc\", \"rooms\\_table\", \"rooms\")"
+    },
+    {
+      "name": "members_table",
+      "type": "string",
+      "default_value": "imc\\_members",
+      "description": "The name of the table storing IMC members.",
+      "example_value": "members",
+      "example_code": "modparam(\"imc\", \"rooms\\_table\", \"members\")"
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "4 (resultimg in hash size 16).",
+      "description": "The power of 2 to get the size of the hash table used for storing members and rooms.",
+      "example_value": "8",
+      "example_code": "modparam(\"imc\", \"hash\\_size\", 8)"
+    },
+    {
+      "name": "imc_cmd_start_char",
+      "type": "string",
+      "default_value": "#",
+      "description": "The character which indicates that the body of the message is a command.",
+      "example_value": "#",
+      "example_code": "modparam(\"imc\", \"imc\\_cmd\\_start\\_char\", \"#\")"
+    },
+    {
+      "name": "outbound_proxy",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The SIP address used as next hop when sending the message. Very useful when using OpenSIPS with a domain name not in DNS, or when using a separate OpenSIPS instance for imc processing. If not set, the message will be sent to the address in destination URI.",
+      "example_value": "sip:opensips.org;transport=tcp",
+      "example_code": "modparam(\"imc\", \"outbound\\_proxy\", \"sip:opensips.org;transport=tcp\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "imc_manager",
+      "signature": "imc_manager()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "Handles Message method.It detects if the body of the message is a conference command.If so it executes it, otherwise it sends the message to all the members in the room.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# the rooms will be named chat-xyz to avoid overlapping\n# with usernames\nif(is\\_method(\"MESSAGE)\n        && ($ru=~ \"sip:chat-\\[0-9\\]+@\" || ($ru=~ \"sip:chat-manager@\")\n    imc\\_manager();\n...",
+          "description": "Example�1.7.�Usage of `imc_manager()` function"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "imc_list_rooms",
+      "parameters": [],
+      "description": "Lists of the IM Conferencing rooms.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "\t\t\topensips-cli -x mi imc\\_list\\_rooms",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "imc_list_members",
+      "parameters": [
+        {
+          "name": "room",
+          "type": "string",
+          "required": true,
+          "description": "the room for which you want to list the members"
+        }
+      ],
+      "description": "Listing of the members in IM Conferencing rooms.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "\t\t\topensips-cli -x mi imc\\_list\\_members sip:chat-000@opensips.org",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [
+    {
+      "name": "active_rooms",
+      "type": "gauge",
+      "description": "Number of active IM Conferencing rooms."
+    }
+  ],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "The database url.",
+      "code": "...\nmodparam(\"imc\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `rooms_table` parameter",
+      "description": "The name of the table storing IMC rooms.",
+      "code": "...\nmodparam(\"imc\", \"rooms\\_table\", \"rooms\")\n..."
+    },
+    {
+      "title": "Set `members_table` parameter",
+      "description": "The name of the table storing IMC members.",
+      "code": "...\nmodparam(\"imc\", \"rooms\\_table\", \"members\")\n..."
+    },
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "The power of 2 to get the size of the hash table used for storing members and rooms.",
+      "code": "...\nmodparam(\"imc\", \"hash\\_size\", 8)\n..."
+    },
+    {
+      "title": "Set `imc_cmd_start_char` parameter",
+      "description": "The character which indicates that the body of the message is a command.",
+      "code": "...\nmodparam(\"imc\", \"imc\\_cmd\\_start\\_char\", \"#\")\n..."
+    },
+    {
+      "title": "Set `outbound_proxy` parameter",
+      "description": "The SIP address used as next hop when sending the message. Very useful when using OpenSIPS with a domain name not in DNS, or when using a separate OpenSIPS instance for imc processing. If not set, the message will be sent to the address in destination URI.",
+      "code": "...\nmodparam(\"imc\", \"outbound\\_proxy\", \"sip:opensips.org;transport=tcp\")\n..."
+    },
+    {
+      "title": "Usage of `imc_manager()` function",
+      "description": "Handles Message method.It detects if the body of the message is a conference command.If so it executes it, otherwise it sends the message to all the members in the room.",
+      "code": "...\n# the rooms will be named chat-xyz to avoid overlapping\n# with usernames\nif(is\\_method(\"MESSAGE)\n        && ($ru=~ \"sip:chat-\\[0-9\\]+@\" || ($ru=~ \"sip:chat-manager@\")\n    imc\\_manager();\n..."
+    }
+  ]
+}

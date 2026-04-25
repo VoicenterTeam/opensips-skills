@@ -1,0 +1,161 @@
+{
+  "id": "module-rabbitmq-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "rabbitmq Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/rabbitmq.html",
+  "content_markdown": "_RabbitMQ_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open source messaging server. It's purpose is to manage received messages in queues, taking advantage of the flexible AMQP protocol.\n\nUsing this module you can send AMQP messages to a RabbitMQ server. Messages can be easily customized according to the AMQP specifications, as well the RabbitMQ extensions.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:41:28.604Z",
+  "module_name": "rabbitmq",
+  "overview": "_RabbitMQ_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open source messaging server. It's purpose is to manage received messages in queues, taking advantage of the flexible AMQP protocol.\n\nUsing this module you can send AMQP messages to a RabbitMQ server. Messages can be easily customized according to the AMQP specifications, as well the RabbitMQ extensions.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "if use_tls is enabled",
+      "optional": true
+    },
+    {
+      "name": "librabbitmq-dev",
+      "type": "library",
+      "reason": "must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "server_id",
+      "type": "string",
+      "description": "Specify configuration for a RabbitMQ server. It contains a set of parameters used to customize the connection to the server, as well as to the messages sent. The format of the parameter is _[id_name] param1=value1; param2=value2;_. The _uri_ parameter is mandatory.\n\nThis parameter can be set multiple times, for each RabbitMQ server.\n\nThe following parameters can be used:\n\n*   _uri_ - Mandatory parameter - a full _amqp_ URI as described [here](https://www.rabbitmq.com/uri-spec.html). Missing fields in the URI will receive default values, such as: _user: guest_, _password: guest_, _host: localhost_, _vhost: /_, _port: 5672_. TLS connections are specified using an _amqps_ URI.\n    \n*   _frames_ - the maximum size of an AMQP frame. Optional parameter, default size is 131072.\n    \n*   _retries_ - the number of retries in case a connection is down. Optional parameter, default is disabled (do not retry).\n    \n*   _exchange_ - exchange used to send AMQP messages to. Optional parameter, default is _\"\"_.\n    \n*   _heartbeat_ - interval in seconds used to send heartbeat messages. Optional parameter, default is disabled.\n    \n*   _immediate_ - indicate to the broker that the message MUST be delivered to a consumer immediately. Optional parameter, default is not immediate.\n    \n*   _mandatory_ - indicate to the broker that the message MUST be routed to a queue. Optional parameter, default is not mandatory.\n    \n*   _non-persistent_ - indicates that the message should not be persistent in case the RabbitMQ server restarts. Optional parameter, default is persistent.\n    \n*   _tls_domain_ - indicates which TLS domain (as defined using the _tls_mgm_ module) to use for this connection. This must be an _amqps_ URI and the [use_tls](#param_use_tls \"1.3.2.�use_tls (integer)\") module parameter must be enabled.",
+      "example_value": "[ID1] uri = amqp://127.0.0.1",
+      "example_code": "# connection to a RabbitMQ server on localhost, default port\nmodparam(\"rabbitmq\", \"server_id\",\"[ID1] uri = amqp://127.0.0.1\")\n...\n# connection with a 5 seconds interval for heartbeat messages\nmodparam(\"rabbitmq\", \"server_id\",\"[ID2] uri = amqp://127.0.0.1; heartbeat = 5\")\n...\n# TLS connection\nmodparam(\"rabbitmq\", \"server_id\",\"[ID3] uri = amqps://127.0.0.1; tls_domain=rmq\")",
+      "notes": "This parameter can be set multiple times, for each RabbitMQ server."
+    },
+    {
+      "name": "use_tls",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the \"tls_domain=_dom_name_\" parameter in the configuration specified through the [server_id](#param_server_id \"1.3.1.�server_id (string)\") module parameter.\n\nWhen using this parameter, you must also ensure that _tls_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.",
+      "example_value": "1",
+      "example_code": "modparam(\"tls_mgm\", \"client_domain\", \"rmq\")\nmodparam(\"tls_mgm\", \"certificate\", \"[rmq]/etc/pki/tls/certs/rmq.pem\")\nmodparam(\"tls_mgm\", \"private_key\", \"[rmq]/etc/pki/tls/private/rmq.key\")\nmodparam(\"tls_mgm\", \"ca_list\",     \"[rmq]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"rabbitmq\", \"use_tls\", 1)"
+    },
+    {
+      "name": "connect_timeout",
+      "type": "integer",
+      "default_value": "500",
+      "description": "The maximally allowed duration (in milliseconds) for the establishment of a TCP connection with a RabbitMQ server.",
+      "example_value": "1000",
+      "example_code": "aram(\"rabbitmq\", \"connect_timeout\", 1000)"
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Indicates the timeout (in milliseconds) of any command (i.e. publish) sent to the RabbitMQ server.\n\n_NOTE_ that this parameter is available only starting with RabbitMQ library version _0.9.0_; setting it when using an earlier version will have no effect, and the publish command will run in blocking mode.",
+      "example_value": "1000",
+      "example_code": "modparam(\"rabbitmq\", \"timeout\", 1000) # timeout after 1s",
+      "notes": "Available only starting with RabbitMQ library version 0.9.0"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "rabbitmq_publish",
+      "signature": "rabbitmq_publish(server_id, routing_key, message [, [content_type [, headers, headers_vals]]])",
+      "parameters": [
+        {
+          "name": "server_id",
+          "type": "string",
+          "required": true,
+          "description": "the id of the RabbitMQ server. Must be one of the parameters defined in the server_id modparam."
+        },
+        {
+          "name": "routing_key",
+          "type": "string",
+          "required": true,
+          "description": "routing key used to deliver the AMQP message."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "the body of the message."
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "required": false,
+          "default": "none",
+          "description": "content type of the message sent. By default it is none."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "an AVP containing the names of the headers within the AMQP message. If set, headers_vals parameter must also be specified."
+        },
+        {
+          "name": "headers_vals",
+          "type": "string",
+          "required": false,
+          "description": "an AVP containing the corresponding values of the AMQP headers. If set, headers parameter must also be specified."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Sends a publish message to a RabbitMQ server.\n\nThis function also allows you to attach AMQP headers and values in the AMQP message. This is done by specifying a set of headers names (in the headers parameter) and the corresponding values (in the headers_vals parameter). The number of AVP values in the headers must be the same as the one in the headers_vals.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\trabbitmq\\_publish(\"ID1\", \"call\", \"$fU called $rU\");\n\t...\n\trabbitmq\\_publish(\"ID1\", \"call\", \"{ \\'caller\\': \\'$fU\\',\n\t\t\t\t\\'callee\\; \\'$rU\\'\", \"application/json\");\n\t...\n\t$avp(hdr\\_name) = \"caller\";\n\t$avp(hdr\\_value) = $fU;\n\t$avp(hdr\\_name) = \"callee\";\n\t$avp(hdr\\_value) = $rU;\n\trabbitmq\\_publish(\"ID2\", \"call\", $rb, , $avp(hdr\\_name), $avp(hdr\\_value));\n\t...",
+          "description": "rabbitmq_publish() function usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `server_id` parameter",
+      "description": "Set `server_id` parameter",
+      "code": "...\n# connection to a RabbitMQ server on localhost, default port\nmodparam(\"rabbitmq\", \"server_id\",\"[ID1] uri = amqp://127.0.0.1\")\n...\n# connection with a 5 seconds interval for heartbeat messages\nmodparam(\"rabbitmq\", \"server_id\",\"[ID2] uri = amqp://127.0.0.1;\nheartbeat = 5\")\n...\n# TLS connection\nmodparam(\"rabbitmq\", \"server_id\",\"[ID3] uri = amqps://127.0.0.1; tls_domain=rmq\")\n..."
+    },
+    {
+      "title": "Set the `use_tls` parameter",
+      "description": "Set the `use_tls` parameter",
+      "code": "...\nmodparam(\"tls_mgm\", \"client_domain\", \"rmq\")\nmodparam(\"tls_mgm\", \"certificate\", \"[rmq]/etc/pki/tls/certs/rmq.pem\")\nmodparam(\"tls_mgm\", \"private_key\", \"[rmq]/etc/pki/tls/private/rmq.key\")\nmodparam(\"tls_mgm\", \"ca_list\",     \"[rmq]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"rabbitmq\", \"use_tls\", 1)\n..."
+    },
+    {
+      "title": "Setting the `connect_timeout` parameter",
+      "description": "Setting the `connect_timeout` parameter",
+      "code": "aram(\"rabbitmq\", \"connect_timeout\", 1000)"
+    },
+    {
+      "title": "Set the `timeout` parameter",
+      "description": "Set the `timeout` parameter",
+      "code": "...\nmodparam(\"rabbitmq\", \"timeout\", 1000) # timeout after 1s\n..."
+    },
+    {
+      "title": "`rabbitmq_publish()` function usage",
+      "description": "`rabbitmq_publish()` function usage",
+      "code": "\t...\n\trabbitmq_publish(\"ID1\", \"call\", \"$fU called $rU\");\n\t...\n\trabbitmq_publish(\"ID1\", \"call\", \"{ \\'caller\\': \\'$fU\\',\n\t\t\t\t\t\\'callee\\; \\'$rU\\'\", \"application/json\");\n\t...\n\t$avp(hdr_name) = \"caller\";\n\t$avp(hdr_value) = $fU;\n\t$avp(hdr_name) = \"callee\";\n\t$avp(hdr_value) = $rU;\n\trabbitmq_publish(\"ID2\", \"call\", $rb, , $avp(hdr_name), $avp(hdr_value));\n\t..."
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "id": "module-peering-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "peering Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/peering.html",
+  "content_markdown": "Peering module allows SIP providers (operators or organizations) to verify from a broker if source or destination of a SIP request is a trusted peer.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:24:52.093Z",
+  "module_name": "peering",
+  "overview": "Peering module allows SIP providers (operators or organizations) to verify from a broker if source or destination of a SIP request is a trusted peer.",
+  "how_it_works": "In order to participate in the trust community provided by a broker, each SIP provider registers with the broker the domains (host parts of SIP URIs) that they serve. When a SIP proxy of a provider needs to send a SIP request to a non-local domain, it can find out from the broker using verify_destination() function if the non-local domain is served by a trusted peer. If so, the provider receives from the broker a hash of the SIP request and a timestamp that it includes in the request to the non-local domain. When a SIP proxy of the non-local domain receives the SIP request, it, in turn, can verify from the broker using verify_source() function if the request came from a trusted peer. Verification functions communicate with the broker using an AAA protocol.",
+  "dependencies_required": [
+    {
+      "name": "an AAA implementing module",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "aaa_url",
+      "type": "string",
+      "default_value": "“NULL”",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol.\n\nIf the parameter is set to empty string, the AAA accounting support will be disabled (even if compiled).",
+      "example_value": "radius:/etc/radiusclient-ng/radiusclient.conf",
+      "example_code": "...\nmodparam(\"peering\", \"aaa\\_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")\n..."
+    },
+    {
+      "name": "verify_destination_service_type",
+      "type": "integer",
+      "default_value": "dictionary value of “Sip-Verify-Destination” Service-Type.",
+      "description": "This is the value of the Service-Type AAA attribute to be used, when sender of SIP Request verifies request's destination using verify\\_destination() function.",
+      "example_value": "21",
+      "example_code": "...\nmodparam(\"peering\", \"verify\\_destination\\_service\\_type\", 21)\n..."
+    },
+    {
+      "name": "verify_source_service_type",
+      "type": "integer",
+      "default_value": "dictionary value of “Sip-Verify-Source” Service-Type.",
+      "description": "This is the value of the Service-Type AAA attribute to be used, when receiver of SIP Request verifies request's source using verify\\_source() function.",
+      "example_value": "22",
+      "example_code": "...\nmodparam(\"peering\", \"verify\\_source\\_service\\_type\", 22)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "verify_destination",
+      "signature": "verify_destination()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if domain of Request URI is served by a trusted peer"
+        },
+        {
+          "value": "-1",
+          "condition": "otherwise"
+        }
+      ],
+      "description": "Function verify_destination() queries from broker's AAA server if domain (host part) of Request URI is served by a trusted peer. AAA request contains the following attributes/values: User-Name - Request-URI host, SIP-URI-User - Request-URI user, SIP-From-Tag - From tag, SIP-Call-Id - Call id, Service-Type - verify_destination_service_type. Function returns value 1 if domain of Request URI is served by a trusted peer and -1 otherwise. In case of positive result, AAA server returns a set of SIP-AVP reply attributes. Value of each SIP-AVP is of form: [#]name(:|#)value. Value of each SIP-AVP reply attribute is mapped to an OpenSIPS AVP. Prefix # in front of name or value indicates a string name or string value, respectively. One of the SIP-AVP reply attributes contains a string that the source peer must include \"as is\" in a P-Request-Hash header when it sends the SIP request to the destination peer. The string value may, for example, be of form hash@timestamp, where hash contains a hash calculated by the broker based on the attributes of the query and some local information and timestamp is the time when the calculation was done. AVP names used in reply attributes are assigned by the broker.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (verify\\_destination()) {\n   append\\_hf(\"P-Request-Hash: $avp(prh)\\\\r\\\\n\");\n}\n...",
+          "description": "verify_destination() usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "verify_source",
+      "signature": "verify_source()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if SIP request was received from a trusted peer"
+        },
+        {
+          "value": "-1",
+          "condition": "otherwise"
+        }
+      ],
+      "description": "Function verify_source() queries from broker's AAA server if SIP request was received from a trusted peer. AAA request contains the following attributes/values: User-Name - Request-URI host, SIP-URI-User - Request-URI user, SIP-From-Tag - From tag, SIP-Call-Id - Call id, SIP-Request-Hash - body of P-Request-Hash header, Service-Type - verify_source_service_type. Function returns value 1 if SIP request was received from a trusted peer and -1 otherwise. In case of positive result, AAA server may return a set of SIP-AVP reply attributes. Value of each SIP-AVP is of form: [#]name(:|#)value. Value of each SIP-AVP reply attribute is mapped to an OpenSIPS AVP. Prefix # in front of name or value indicates a string name or string value, respectively. AVP names used in reply attributes are assigned by the broker.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is\\_present\\_hf(\"P-Request-Hash\")) {\n   if (verify\\_source()) {\n      xlog(\"L\\_INFO\", \"Request came from trusted peer\\\\n\")\n   }\n}\n...",
+          "description": "verify_source() usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `aaa_url` parameter",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol.",
+      "code": "...\nmodparam(\"peering\", \"aaa\\_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")\n..."
+    },
+    {
+      "title": "`verify_destination_service_type` parameter usage",
+      "description": "This is the value of the Service-Type AAA attribute to be used, when sender of SIP Request verifies request's destination using verify_destination() function.",
+      "code": "...\nmodparam(\"peering\", \"verify\\_destination\\_service\\_type\", 21)\n..."
+    },
+    {
+      "title": "`verify_source_service_type` parameter usage",
+      "description": "This is the value of the Service-Type AAA attribute to be used, when receiver of SIP Request verifies request's source using verify_source() function.",
+      "code": "...\nmodparam(\"peering\", \"verify\\_source\\_service\\_type\", 22)\n..."
+    },
+    {
+      "title": "`verify_destination()` usage",
+      "description": "Function verify_destination() queries from broker's AAA server if domain (host part) of Request URI is served by a trusted peer.",
+      "code": "...\nif (verify\\_destination()) {\n   append\\_hf(\"P-Request-Hash: $avp(prh)\\\\r\\\\n\");\n}\n..."
+    },
+    {
+      "title": "`verify_source()` usage",
+      "description": "Function verify_source() queries from broker's AAA server if SIP request was received from a trusted peer.",
+      "code": "...\nif (is\\_present\\_hf(\"P-Request-Hash\")) {\n   if (verify\\_source()) {\n      xlog(\"L\\_INFO\", \"Request came from trusted peer\\\\n\")\n   }\n}\n..."
+    }
+  ]
+}

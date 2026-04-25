@@ -1,0 +1,199 @@
+{
+  "id": "module-sql_cacher-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "sql_cacher Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/sql_cacher.html",
+  "content_markdown": "The sql_cacher module introduces the possibility to cache data from a SQL-based database (using different OpenSIPS modules which implement the DB API) into a cache system implemented in OpenSIPS through the CacheDB Interface. This is done by specifying the databases URLs, SQL table to be used, desired columns to be cached and other details in the OpenSIPS configuration script.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:35:37.726Z",
+  "module_name": "sql_cacher",
+  "overview": "The sql_cacher module introduces the possibility to cache data from a SQL-based database (using different OpenSIPS modules which implement the DB API) into a cache system implemented in OpenSIPS through the CacheDB Interface. This is done by specifying the databases URLs, SQL table to be used, desired columns to be cached and other details in the OpenSIPS configuration script.",
+  "how_it_works": "The cached data is available in the script through the read-only pseudovariable “$sql_cached_value” similar to a Key-Value system. A specified column from the SQL table has the role of “key” therefore the value of this column along with the name of a required column are provided as \"parameters\" to the pseudovariable returning the appropriate value of the column.\n\nThere are two types of caching available:\n\n*   _full caching_ - the entire SQL table (all the rows) is loaded into the cache at OpenSIPS startup;\n    \n*   _on demand_ - the rows of the SQL table are loaded at runtime when appropriate keys are requested.\n    \n\nFor on demand caching, the stored values have a configurable expire period after which they are permanently removed unless an MI reload function is called for a specific key. In the case of full caching the data is automatically reloaded at a configurable interval. Consequently if the data in the SQL database changes and a MI reload function is called, the old data remains in cache only until it expires.",
+  "dependencies_required": [
+    {
+      "name": "The OpenSIPS modules that offer actual database back-end connection",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cache_table",
+      "type": "string",
+      "description": "This parameter can be set multiple times in order to cache multiple SQL tables or even the same table but with a different configuration. The module distinguishes those different entries by an “id” string.\n\nThe caching entry is specified via this parameter that has it's own subparameters. Each of those parameters are separated by a delimiter configured by [spec_delimiter](#param_spec_delimiter \"1.3.2.�spec_delimiter (string)\") and have the following format:\n\n_param_name=param_value_\n\nThe parameters are:\n\n*   _id_ : cache entry id\n    \n*   _db_url_ : the URL of the SQL database\n    \n*   _cachedb_url_ : the URL of the CacheDB database\n    \n*   _table_ : SQL database table name\n    \n*   _key_ : SQL database column name of the “key” column\n    \n*   _key_type_ : data type for the SQL \"key\" column:\n    \n    *   string\n        \n    *   int\n        \n    \n    If not present, default value is “string”\n    \n*   _columns_ : names of the columns to be cached from the SQL database, separated by a delimiter configured by [columns_delimiter](#param_columns_delimiter \"1.3.4.�columns_delimiter (string)\").\n    \n    If not present, all the columns from the table will be cached\n    \n*   _on_demand_ : specifies the type of caching:\n    \n    *   0 : full caching\n        \n    *   1 : on demand\n        \n    \n    If not present, default value is “0”\n    \n*   _expire_ : expire period for the values stored in the cache for the on demand caching type in seconds\n    \n    If not present, default value is “1 hour”\n    \n\nThe parameters must be given in the exact order specified above.\n\nOverall, the parameter does not have a default value, it must be set at least once in order to cache any table.",
+      "example_value": "id=caching_name\ndb_url=mysql://root:opensips@localhost/opensips_2_2\ncachedb_url=mongodb:mycluster://127.0.0.1:27017/db.col\ntable=table_name\nkey=column_name_0\ncolumns=column_name_1 column_name_2 column_name_3\non_demand=0",
+      "example_code": "modparam(\"sql_cacher\", \"cache_table\",\n\"id=caching_name\ndb_url=mysql://root:opensips@localhost/opensips_2_2\ncachedb_url=mongodb:mycluster://127.0.0.1:27017/db.col\ntable=table_name\nkey=column_name_0\ncolumns=column_name_1 column_name_2 column_name_3\non_demand=0\")",
+      "notes": "The parameters must be given in the exact order specified above."
+    },
+    {
+      "name": "spec_delimiter",
+      "type": "string",
+      "default_value": "newline",
+      "description": "The delimiter to be used in the caching entry specification provided in the _cache_table_ parameter to separate the subparameters. It must be a single character.",
+      "example_value": "\\n",
+      "example_code": "modparam(\"sql_cacher\", \"spec_delimiter\", \"\\\\n\")"
+    },
+    {
+      "name": "pvar_delimiter",
+      "type": "string",
+      "default_value": ":",
+      "description": "The delimiter to be used in the “$sql_cached_value” pseudovariable to separate the caching id, the desired column name and the value of the key. It must be a single character.",
+      "example_value": " ",
+      "example_code": "modparam(\"sql_cacher\", \"pvar_delimiter\", \" \")"
+    },
+    {
+      "name": "columns_delimiter",
+      "type": "string",
+      "default_value": " ",
+      "description": "The delimiter to be used in the _columns_ subparameter of the caching entry specification provided in the _cache_table_ parameter to separate the desired columns names. It must be a single character.",
+      "example_value": ",",
+      "example_code": "modparam(\"sql_cacher\", \"columns_delimiter\", \",\")"
+    },
+    {
+      "name": "sql_fetch_nr_rows",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The number of rows to be fetched into OpenSIPS private memory in one chunk from the SQL database driver. When querying large tables, adjust this parameter accordingly to avoid the filling of OpenSIPS private memory.",
+      "example_value": "1000",
+      "example_code": "modparam(\"sql_cacher\", \"sql_fetch_nr_rows\", 1000)"
+    },
+    {
+      "name": "full_caching_expire",
+      "type": "integer",
+      "default_value": "24 hours",
+      "description": "Expire period for the values stored in cache for the full caching type in seconds. This is the longest time that deleted or modified data remains in cache.",
+      "example_value": "3600",
+      "example_code": "modparam(\"sql_cacher\", \"full_caching_expire\", 3600)"
+    },
+    {
+      "name": "reload_interval",
+      "type": "integer",
+      "default_value": "60 s",
+      "description": "This parameter represents how many seconds before the data expires (for full caching) the automatic reloading is triggered.",
+      "example_value": "5",
+      "example_code": "modparam(\"sql_cacher\", \"reload_interval\", 5)"
+    },
+    {
+      "name": "bigint_to_str",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Controls bigint conversion. By default bigint values are returned as int. If the value stored in bigint is out of the int range, by enabling bigint to string conversion, the bigint value will be returned as string.",
+      "example_value": "1",
+      "example_code": "modparam(\"sql_cacher\", \"bigint_to_str\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "sql_cacher_reload",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "the caching entry's id"
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "required": false,
+          "description": "the specific key to be reloaded."
+        }
+      ],
+      "description": "Reloads the entire SQL table in cache or the single key (if key provided) in _full caching_ mode.\n\nReloads the given key or invalidates all the keys in cache in _on demand_ mode.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi sql\\_cacher\\_reload subs\\_caching",
+          "description": "sql_cacher_reload usage"
+        },
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi sql\\_cacher\\_reload subs\\_caching alice@domain.com",
+          "description": "sql_cacher_reload usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$sql_cached_value(id{sep}col{sep}key)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The cached data is available through this read-only PV.The format is the following:\n\n*   _sep_ : separator configured by [pvar_delimiter](#param_pvar_delimiter \"1.3.3.�pvar_delimiter (string)\")\n    \n*   _id_ : cache entry id\n    \n*   _col_ : name of the required column\n    \n*   _key_ : value of the “key” column\n    \n**Example�1.10.�`sql_cached_value(id{sep}col{sep}key) pseudo-variable` usage**\n\n...\n$avp(a) = $sql_cached_value(caching_name:column_name_1:key1);\n..."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "`cache_table` parameter usage",
+      "description": "`cache_table` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"cache_table\",\n\"id=caching_name\ndb_url=mysql://root:opensips@localhost/opensips_2_2\ncachedb_url=mongodb:mycluster://127.0.0.1:27017/db.col\ntable=table_name\nkey=column_name_0\ncolumns=column_name_1 column_name_2 column_name_3\non_demand=0\")"
+    },
+    {
+      "title": "`spec_delimiter` parameter usage",
+      "description": "`spec_delimiter` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"spec_delimiter\", \"\\n\")"
+    },
+    {
+      "title": "`pvar_delimiter` parameter usage",
+      "description": "`pvar_delimiter` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"pvar_delimiter\", \" \")"
+    },
+    {
+      "title": "`columns_delimiter` parameter usage",
+      "description": "`columns_delimiter` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"columns_delimiter\", \",\")"
+    },
+    {
+      "title": "`sql_fetch_nr_rows` parameter usage",
+      "description": "`sql_fetch_nr_rows` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"sql_fetch_nr_rows\", 1000)"
+    },
+    {
+      "title": "`full_caching_expire` parameter usage",
+      "description": "`full_caching_expire` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"full_caching_expire\", 3600)"
+    },
+    {
+      "title": "`reload_interval` parameter usage",
+      "description": "`reload_interval` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"reload_interval\", 5)"
+    },
+    {
+      "title": "`bigint_to_str` parameter usage",
+      "description": "`bigint_to_str` parameter usage",
+      "code": "modparam(\"sql_cacher\", \"bigint_to_str\", 1)"
+    },
+    {
+      "title": "`sql_cacher_reload` usage",
+      "description": "`sql_cacher_reload` usage",
+      "code": "...\n$ opensips-cli -x mi sql_cacher_reload subs_caching\n...\n$ opensips-cli -x mi sql_cacher_reload subs_caching alice@domain.com\n..."
+    },
+    {
+      "title": "`$sql_cached_value(id{sep}col{sep}key) pseudo-variable` usage",
+      "description": "`$sql_cached_value(id{sep}col{sep}key) pseudo-variable` usage",
+      "code": "...\n$avp(a) = $sql_cached_value(caching_name:column_name_1:key1);\n..."
+    },
+    {
+      "title": "Example database content - carrierfailureroute table",
+      "description": "Example database content - carrierfailureroute table",
+      "code": "...\n+----+---------+-----------+------------+--------+-----+-------------+\n| id | domain  | host_name | reply_code | flags | mask | next_domain |\n+----+---------+-----------+------------+-------+------+-------------+\n|  1 |      99 |           | 408        |    16 |   16 |             |\n|  2 |      99 | gw1       | 404        |     0 |    0 | 100         |\n|  3 |      99 | gw2       | 50.        |     0 |    0 | 100         |\n|  4 |      99 |           | 404        |  2048 | 2112 | asterisk-1  |\n+----+---------+-----------+------------+-------+------+-------------+\n..."
+    },
+    {
+      "title": "Setting the `cache_table` parameter",
+      "description": "Setting the `cache_table` parameter",
+      "code": "modparam(\"sql_cacher\", \"cache_table\",\n\"id=carrier_fr_caching\ndb_url=mysql://root:opensips@localhost/opensips\ncachedb_url=mongodb:mycluster://127.0.0.1:27017/my_db.col\ntable=carrierfailureroute\nkey=id\ncolumns=host_name reply_code flags next_domain\")"
+    },
+    {
+      "title": "Accessing cached values",
+      "description": "Accessing cached values",
+      "code": "...\n$avp(rc1) = $sql_cached_value(carrier_fr_caching:reply_code:1);\n$avp(rc2) = $sql_cached_value(carrier_fr_caching:reply_code:2);\n...\nvar(some_id)=4;\n$avp(nd) = $sql_cached_value(carrier_fr_caching:next_domain:$var(some_id));\n...\nxlog(\"host name is: $sql_cached_value(carrier_fr_caching:host_name:2)\");\n..."
+    }
+  ]
+}

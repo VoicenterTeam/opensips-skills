@@ -1,0 +1,666 @@
+# compression Module
+
+---
+
+**List of Tables**
+
+1.1. [mc\_compress performance test results](#idp249744)
+
+2.1. [Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)](#idp6093104)
+
+2.2. [Most recently active contributors(1) to this module](#idp6191840)
+
+**List of Examples**
+
+1.1. [Set `mc_level` parameter](#idp172976)
+
+1.2. [`mc_compress` usage](#idp5886960)
+
+1.3. [`mc_compress` usage](#idp5888976)
+
+1.4. [`mc_compress` usage](#idp5911728)
+
+1.5. [`mc_decompress` usage](#idp5917808)
+
+## Chapter�1.�Admin Guide
+
+## 1.1.�Overview
+
+This module implements message compression/decompression and base64 encoding for sip messages using deflate and gzip algorithm/headers. Another feature of this module is reducing headers to compact for as specified in SIP RFC's, sdp body codec unnecessary description removal (for codecs 0-97), whitelist for headers not be removed (excepting necessary headers).
+
+## 1.2.�How it works
+
+The module is using zlib library to implement compression and base64 encoding for converting the message to human readable characters. It also uses callbacks to do the compression/compaction of the message in order for this operations to be done after all the other script functions have been applied to the message.
+
+## 1.3.�Usage cases
+
+As we know, udp fragmentation is a big problem these days, so this module comes to try making the message smaller by any means. The module can be used to compress the body or some headers found in the message or it can decompress compressed messages. There are more possibilities to do this: the body can be compressed along with the specified headers or the headers can be compressed isolated from the body in a specific header.
+
+Also the module does message compaction: reduction of sip header names to short form (for example "Via" becomes 'v' and so on), sdp body codec attributes unnecesary description ("a=rtpmap:0 PCMU/8000" becomes "a=rtpmap:0"), unwanted headers removal by specfing the ones you want to keep in a whitelist.
+
+The module also does message decompresion and base64 decoding. It can detect the algorithm used for compression from the Content-Encoding header. At this moment only gzip and deflate algorithms are supported.
+
+## 1.4.�Dependencies
+
+### 1.4.1.�OpenSIPS Modules
+
+The following modules must be loaded before this module:
+
+*   _None_
+    
+
+## 1.5.�External Libraries or Applications
+
+The following libraries or applications must be installed before running OpenSIPS with this module loaded:
+
+*   _zlib-dev - the development libraries of [zlib](http://www.zlib.net/)_.
+    
+
+## 1.6.�Exported Parameters
+
+### 1.6.1.�`mc_level` (int)
+
+This parameter ranges from 1 to 9 and it specifies the level of compression you want to do. Default is 6. 9 is the best, but the longest time consuming algorithm and 1 is the worst. If, by mistake, you set a lower or a higher level, the default, 6, will be used, but you will receive a warning.
+
+**Example�1.1.� Set `mc_level` parameter**
+
+...
+modparam("mc", "mc\_level", "3")
+...
+		
+
+  
+
+## 1.7.�Exported Functions
+
+### 1.7.1.� `mc_compress([algo], flags, [whitelist])`
+
+This function will compress the current message as specified in the parameters. Keep in mind that the compression is done just before the message is sent, so that all your lumps can be applied.
+
+Meaning of the parameters is as follows:
+
+*   _algo_ (int, optional) - The algorithm used for compression. Currently implemented are deflate ('0') and gzip ('1').
+    
+*   _flags_ (string) - Specifies on what to apply the compression and where to put the result of the compression.
+    
+    The _flags_ parameter can have the following values:
+    
+    *   “b” - specifies that the body of the message shall be compressed. Notice that if the message has no body, the flag will have no effect.
+        
+    *   “h” - specifies that all the headers, except the mandatory ones (which will be specified in "whitelist" parameter section) and the ones in the whitelist shall be compressed.
+        
+    *   “s” - the headers and the body shall be compressed Separately, meaning that a new header named "Comp-Hdrs" will be created, and this header will keep the content of the compressed headers. Also, "Headers-Encoding" header will be created in order to keep the algorithm used to compress the headers. If this flag is not specified, the headers and the body (if 'b' and 'h' flags are specified) will be compressed alltogether in the new body of the message.
+        
+    *   “e” - specify that you want base64 Encoding. If you do not specify this flag, by default the module will send the raw compressed message in deflate/gzip format.
+        
+    
+*   _whitelist_ (string, optional) - header names list, separated by '|' which will specify which headers shall not be compressed, along with the mandatory ones, which can never be compressed. The mandatory headers are the following: VIA, FROM, TO, CSEQ, ROUTE, RECORD\_ROUTE, CALLID. Also, CONTENT\_TYPE is mandatory only if CONTENT-LENGTH > 0. Also, in case you do not want to use body compression, the Content-Length header will become a mandatory header, which can not be compressed. In case you do want body compression, the old Content-Length Header will be compressed, and a new content length will be calculated. When you will want to do decompression, the compressed length will be removed, and the content length header will be the same as the one before the compression.
+    
+
+This function can be used from REQUEST\_ROUTE, LOCAL\_ROUTE, FAILURE\_ROUTE.
+
+**Example�1.2.�`mc_compress` usage**
+
+...
+if (!mc\_compress(0, "bhs", "Max-Forwards|Subject|P-Asserted-Identity"))
+	xlog("compression failed\\n");
+...
+	
+
+  
+
+**Example�1.3.�`mc_compress` usage**
+
+...
+$avp(algo) = 1;
+$var(flags) = "bs";
+$var(list) = "Max-Forwards | Contact";
+mc\_compres($avp(algo), $var(flags), $var(list);
+xlog("compression registered\\n");
+...
+	
+
+  
+
+### 1.7.2.� `mc_compact([whitelist], flags)`
+
+This function will realise four different things: headers which are not mandatory and are not in the whitelist will be removed, headers of same type will be merged together, separated by ',', header names which have a short form will be reduced to that short form (unless the _n_ flag has been set) and SDP rtpmap attribute headers which contain a value lower than 96 will be removed, because they are not mandatory. Lumps are not affected by this function, because it is applied after all messages changes are processed. done. The _mc\_compact_ supported short forms are:
+
+*   “c” - Content-Type (RFC 3261)
+    
+*   “f” - From (RFC 3261)
+    
+*   “i” - Call-ID (RFC 3261)
+    
+*   “k” - Supported (RFC 3261)
+    
+*   “l” - Content-Length (RFC 3261)
+    
+*   “m” - Contact (RFC 3261)
+    
+*   “s” - Subject (RFC 3261)
+    
+*   “t” - To (RFC 3261)
+    
+*   “v” - Via (RFC 3261)
+    
+*   “x” - Session-Expires (RFC 4028)
+    
+
+Meaning of the parameters is as follows:
+
+*   _whitelist_ (string, optional) - Whitelist of headers not to be removed, except from the mandatory ones. The whitelist header names must pe separated by '|'.
+    
+*   _flags_ (string) - Controls the behavior of the function. Possible flags are:
+    
+    *   “n” - Do not use short form of headers.
+        
+    
+
+This function can be used from REQUEST\_ROUTE, LOCAL\_ROUTE, FAILURE\_ROUTE.
+
+**Example�1.4.�`mc_compress` usage**
+
+...
+if (!mc\_compact("Max-Forwards|P-Asserted-Identity"))
+	xlog("compaction failed\\n");
+...
+	
+
+  
+
+### 1.7.3.� `mc_decompress()`
+
+This function does the reverse of mc\_compress, meaning that it does base64 decoding and gzip/deflate decompression. Keep in mind that gzip decompression is a little bit more efficient because it is being known the size of the compressed buffer as against deflate which does not hold the size of the buffer, so the decompression will be made in a static buffer.
+
+This function requests no parameters.
+
+WARNING: This function replaces the original buffer of the message with the decompressed buffer, so any processing you do to the message will not be taken into consideration. Try applying the decompression function, before you do any other processing to the message.
+
+This function can be used from REQUEST\_ROUTE, LOCAL\_ROUTE, FAILURE\_ROUTE.
+
+**Example�1.5.�`mc_decompress` usage**
+
+...
+if (!mc\_decompress())
+	xlog("decompression failed\\n");
+...
+	
+
+  
+
+## 1.8.�Compression performance test for sip messages
+
+The following results have been obtained using the compression function included in the module. Using this results, you can improve the usage of this module, in order to compress only when you think it is favorable enough for you. The algorithm used is deflate for all cases because gzip is always 16 bytes higher than deflate, which represents the uncompressed size modulo 4GB. For the subtests in the same test, the same SIP message have been used.
+
+**Table�1.1.�mc\_compress performance test results**
+
+`Test Number`
+
+`Subtest Number`
+
+`Body Size`
+
+`Headers to Compress Size`
+
+`Compressed Content`
+
+`Compressed Content Size`
+
+`Compression level`
+
+`Compressed size`
+
+`Compression ratio`
+
+`1`
+
+`1`
+
+`179`
+
+`82`
+
+`Body + Headers`
+
+`261`
+
+`1`
+
+`284`
+
+`0.91`
+
+`1`
+
+`2`
+
+`179`
+
+`82`
+
+`Body + Headers`
+
+`261`
+
+`9`
+
+`284`
+
+`0.91`
+
+`1`
+
+`3`
+
+`179`
+
+`82`
+
+`Body`
+
+`179`
+
+`1`
+
+`196`
+
+`0.91`
+
+`1`
+
+`4`
+
+`179`
+
+`82`
+
+`Body`
+
+`179`
+
+`9`
+
+`196`
+
+`0.91`
+
+`2`
+
+`1`
+
+`838`
+
+`392`
+
+`Body + Headers`
+
+`1230`
+
+`1`
+
+`898`
+
+`1.36`
+
+`2`
+
+`2`
+
+`838`
+
+`392`
+
+`Body + Headers`
+
+`1230`
+
+`9`
+
+`872`
+
+`1.41`
+
+`2`
+
+`3`
+
+`838`
+
+`392`
+
+`Body`
+
+`838`
+
+`1`
+
+`568`
+
+`1.47`
+
+`2`
+
+`4`
+
+`838`
+
+`392`
+
+`Body`
+
+`838`
+
+`1`
+
+`540`
+
+`1.55`
+
+`3`
+
+`1`
+
+`1329`
+
+`607`
+
+`Body + Headers`
+
+`1936`
+
+`1`
+
+`1396`
+
+`1.38`
+
+`3`
+
+`2`
+
+`1329`
+
+`607`
+
+`Body + Headers`
+
+`1936`
+
+`9`
+
+`1352`
+
+`1.43`
+
+`3`
+
+`3`
+
+`1329`
+
+`607`
+
+`Body`
+
+`1329`
+
+`1`
+
+`840`
+
+`1.58`
+
+`3`
+
+`4`
+
+`1329`
+
+`607`
+
+`Body + Headers`
+
+`1329`
+
+`9`
+
+`804`
+
+`1.65`
+
+  
+
+## Chapter�2.�Contributors
+
+## 2.1.�By Commit Statistics
+
+**Table�2.1.�Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)**
+
+�
+
+Name
+
+DevScore
+
+Commits
+
+Lines ++
+
+Lines --
+
+1.
+
+Ionut Ionita ([@ionutrazvanionita](https://github.com/ionutrazvanionita))
+
+50
+
+12
+
+3976
+
+192
+
+2.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+32
+
+20
+
+283
+
+518
+
+3.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+9
+
+7
+
+31
+
+46
+
+4.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+6
+
+4
+
+8
+
+11
+
+5.
+
+Aron Podrigal ([@ar45](https://github.com/ar45))
+
+6
+
+3
+
+126
+
+43
+
+6.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+5
+
+3
+
+4
+
+2
+
+7.
+
+Alexandra Titoc
+
+4
+
+2
+
+4
+
+3
+
+8.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+4
+
+2
+
+3
+
+3
+
+9.
+
+Ryan Bullock
+
+3
+
+1
+
+4
+
+4
+
+10.
+
+Juli�n Moreno Pati�o
+
+3
+
+1
+
+2
+
+2
+
+  
+
+**All remaining contributors**: Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Ryan Bullock ([@rrb3942](https://github.com/rrb3942)), Zero King ([@l2dy](https://github.com/l2dy)).
+
+_(1) DevScore = author\_commits + author\_lines\_added / (project\_lines\_added / project\_commits) + author\_lines\_deleted / (project\_lines\_deleted / project\_commits)_
+
+_(2) including any documentation-related commits, excluding merge commits. Regarding imported patches/code, we do our best to count the work on behalf of the proper owner, as per the "fix\_authors" and "mod\_renames" arrays in opensips/doc/build-contrib.sh. If you identify any patches/commits which do not get properly attributed to you, please [_submit a pull request_](https://github.com/OpenSIPS/opensips/pulls)_ which extends "fix\_authors" and/or "mod\_renames".
+
+_(3) ignoring whitespace edits, renamed files and auto-generated files_
+
+## 2.2.�By Commit Activity
+
+**Table�2.2.�Most recently active contributors(1) to this module**
+
+�
+
+Name
+
+Commit Activity
+
+1.
+
+Alexandra Titoc
+
+Sep 2024 - Sep 2024
+
+2.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+Apr 2018 - May 2024
+
+3.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+Feb 2023 - Feb 2023
+
+4.
+
+Ryan Bullock
+
+Jan 2023 - Jan 2023
+
+5.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+Dec 2014 - Apr 2022
+
+6.
+
+Aron Podrigal ([@ar45](https://github.com/ar45))
+
+Nov 2021 - Apr 2022
+
+7.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+Dec 2014 - Jul 2020
+
+8.
+
+Zero King ([@l2dy](https://github.com/l2dy))
+
+Mar 2020 - Mar 2020
+
+9.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+May 2017 - Apr 2019
+
+10.
+
+Ryan Bullock ([@rrb3942](https://github.com/rrb3942))
+
+Mar 2019 - Mar 2019
+
+  
+
+**All remaining contributors**: Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Ionut Ionita ([@ionutrazvanionita](https://github.com/ionutrazvanionita)), Juli�n Moreno Pati�o.
+
+_(1) including any documentation-related commits, excluding merge commits_
+
+## Chapter�3.�Documentation
+
+## 3.1.�Contributors
+
+**Last edited by:** Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu)), Aron Podrigal ([@ar45](https://github.com/ar45)), Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu)), Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu)), Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea)), Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Ionut Ionita ([@ionutrazvanionita](https://github.com/ionutrazvanionita)).
+
+_Documentation Copyrights:_
+
+Copyright � 2014 Voice Sistem SRL

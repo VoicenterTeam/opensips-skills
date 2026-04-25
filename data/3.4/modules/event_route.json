@@ -1,0 +1,37 @@
+{
+  "id": "module-event_route-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "event_route Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/event_route.html",
+  "content_markdown": "This module provides a simple way for capturing and handling directly in the OpenSIPS script of different events triggered through the OpenSIPS Event Interface\n\nIf you want to capture and handle a certian event, you need to define a dedicated route (_event_route_) into the OpenSIPS script, route having as name the name/code of the desired event. The route is triggered (and executed) by the module when the corresponding event is raised by the OpenSIPS\n\nNOTE that the triggered _event_route_ is run asyncronus (and in a different process) in regards to the code or process that generated the actual event.\n\nNOTE that inside the _event_route_ you should NOT rely on anything more than the content provide by the event itself (see below variable). DO NOT assume to have access to any other variable or context, not even to a SIP message.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:56:22.448Z",
+  "module_name": "event_route",
+  "overview": "This module provides a simple way for capturing and handling directly in the OpenSIPS script of different events triggered through the OpenSIPS Event Interface\n\nIf you want to capture and handle a certian event, you need to define a dedicated route (_event_route_) into the OpenSIPS script, route having as name the name/code of the desired event. The route is triggered (and executed) by the module when the corresponding event is raised by the OpenSIPS\n\nNOTE that the triggered _event_route_ is run asyncronus (and in a different process) in regards to the code or process that generated the actual event.\n\nNOTE that inside the _event_route_ you should NOT rely on anything more than the content provide by the event itself (see below variable). DO NOT assume to have access to any other variable or context, not even to a SIP message.",
+  "how_it_works": null,
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$param(name)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "event_route",
+      "description": "In order to retrieve the parameters of an event, the $param(name) variable has to be used. It's name can be the parameter's name, or, if an integer is specified, its index inside the parameter's list.\n\nNOTE: An event may be triggered within a different event, leading to nested processing. This function will retrieve the parameters of the currently processed event."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "EVENT_ROUTE usage",
+      "description": "In order to handle the E_PIKE_BLOCKED event, the following snippet can be used:",
+      "code": "\tevent_route[E_PIKE_BLOCKED] {\n\t\txlog(\"IP $param(ip) has been blocked\\\\n\");\n\t}\n"
+    }
+  ]
+}

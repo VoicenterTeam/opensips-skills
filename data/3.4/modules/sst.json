@@ -1,0 +1,145 @@
+{
+  "id": "module-sst-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "SST Module (SIP Session Timer) Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/sst.html",
+  "content_markdown": "The sst module provides a way to update the dialog expire timer based on the SIP INVITE/200 OK Session-Expires header value. You can use the sst module in an OpenSIPS proxy to allow freeing of local resources of dead (expired) calls.\n\nYou can also use the sst module to validate the MIN\\_SE header value and reply to any request with a \"422 - Session Timer Too Small\" if the value is too small for your OpenSIPS configuration.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T09:44:36.363Z",
+  "module_name": "SST Module (SIP Session Timer)",
+  "overview": "The sst module provides a way to update the dialog expire timer based on the SIP INVITE/200 OK Session-Expires header value. You can use the sst module in an OpenSIPS proxy to allow freeing of local resources of dead (expired) calls.\n\nYou can also use the sst module to validate the MIN\\_SE header value and reply to any request with a \"422 - Session Timer Too Small\" if the value is too small for your OpenSIPS configuration.",
+  "how_it_works": "The sst module uses the dialog module to be notified of any new or updated dialogs. It will then look for and extract the session-expire: header value (if there is one) and override the dialog expire timer value for the current context dialog.\n\nYou flag any call setup INVITE that you want to cause a timed session to be established. This will cause OpenSIPS to request the use of session times if the UAC does not request it.\n\nAll of this happens with a properly configured dialog and sst module and setting the dialog flag and the sst flag at the time any INVITE sip message is seen. There is no opensips.cfg script function call required to set the dialog expire timeout value. See the dialog module users guide for more information.\n\nThe sstCheckMin() script function can be used to varify the Session-expires / MIN-SE header field values are not too small for a proxy. If the SST min\\_se parameter value is smaller then the messages Session-Expires / MIN-SE values, the test will return true. You can also configure the function to send the 422 response for you.\n\nThe following was taken from the RFC as a call flow example:\n\n**Example 1.1. Session timer call flow**\n\n+-------+    +-------+       +-------+\n| UAC-1 |    | PROXY |       | UAC-2 |\n+-------+    +-------+       +-------+\n    |(1) INVITE  |               |\n    |SE: 50      |               |\n    |----------->|               |\n    |            |(2)sstCheckMin |\n    |            |-----+         |\n    |            |     |         |\n    |            |<----+         |\n    |(3) 422     |               |\n    |MSE:1800    |               |\n    |<-----------|               |\n    |            |               |\n    |(4)ACK      |               |\n    |----------->|               |\n    |            |               |\n    |(5) INVITE  |               |\n    |SE: 1800    |               |\n    |MSE: 1800   |               |\n    |----------->|               |\n    |            |(6)sstCheckMin |\n    |            |-----+         |\n    |            |     |         |\n    |            |<----+         |\n    |            |(7)setflag     |\n    |            |create dialog  |\n    |            |Set expire     |\n    |            |-----+         |\n    |            |     |         |\n    |            |<----+         |\n    |            |               |\n    |            |(8)INVITE      |\n    |            |SE: 1800       |\n    |            |MSE: 1800      |\n    |            |-------------->|\n    |            |               |\n ...",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "dialog module and its decencies. (tm)",
+      "optional": false
+    },
+    {
+      "name": "sl",
+      "type": "module",
+      "reason": "stateless module.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [],
+  "exported_parameters": [
+    {
+      "name": "enable_stats",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If the statistics support should be enabled or not. Via statistic variables, the module provide information about the dialog processing. Set it to zero to disable or to non-zero to enable it.",
+      "example_value": "0",
+      "example_code": "modparam(\"sst\", \"enable_stats\", 0)"
+    },
+    {
+      "name": "min_se",
+      "type": "integer",
+      "default_value": "1800",
+      "description": "The value is used to set the proxies MIN-SE value and is used in the 422 reply as the proxies MIN-SE: header value if the sstCheckMin() flag is set to true and the check fails.\n\nIf not set and sstCheckMin() is called with the send-reply flag set to true, the default 1800 seconds will be used as the compare and the MIN-SE: header value if the 422 reply is sent.",
+      "example_value": "2400",
+      "example_code": "modparam(\"sst\", \"min_se\", 2400)"
+    },
+    {
+      "name": "sst_interval",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The sst minimum interval in Session-Expires header if OpenSIPS request the use of session times. The used value will be the maximum value between OpenSIPS minSE, UAS minSE and this value.\n\nPer default the interval used will be the min_se value",
+      "example_value": "2400",
+      "example_code": "modparam(\"sst\", \"sst_interval\", 2400)"
+    },
+    {
+      "name": "reject_to_small",
+      "type": "integer",
+      "default_value": "1",
+      "description": "In the initial INVITE if the UAC has requested a Session-Expire: and it's value is smaller then our local policies Min-SE (see min_se above), then the PROXY has the right to reject the call by replying to the message with a 422 Session Timer Too Small and state our local Min-SE: value. The INVITE is NOT forwarded on through the PROXY.\n\nThis flag if true will tell the SST module to reject the INVITE with a 422 response. If false, the INVITE is forwarded through the PROXY with out any modifications.",
+      "example_value": "0",
+      "example_code": "modparam(\"sst\", \"reject_to_small\", 0)"
+    },
+    {
+      "name": "sst_flag",
+      "type": "string",
+      "default_value": "Not set!",
+      "description": "Keeping with OpenSIPS, the module will not do anything to any message unless instructed to do so via the opensips.cfg script. You must set the sst_flag value in the setflag() call of the INVITE you want the sst module to process. But before you can do that, you need to tell the sst module which flag value you are assigning to sst.\n\nIn most cases when ever you create a new dialog via create_dialog() function,you will want to set the sst flag. If create_dialog() is not called and the sst flag is set, it will not have any effect.\n\nThis parameter must be set of the module will not load.",
+      "example_value": "\"SST_FLAG\"",
+      "example_code": "modparam(\"sst\", \"sst_flag\", \"SST_FLAG\")\n...\nroute {\n  ...\n  if ($rm==\"INVITE\") {\n    setflag(SST_FLAG); # Set the sst flag\n    create_dialog(); # and then create the dialog\n  }\n  ...\n}"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sstCheckMin",
+      "signature": "sstCheckMin(send_reply_flag)",
+      "parameters": [
+        {
+          "name": "send_reply_flag",
+          "type": "int",
+          "required": true,
+          "description": "If the fuction is called with the send_reply_flag set to true (1) and the requested Session-Expires / MIN-SE values are too small, a 422 reply will be sent for you. The 422 will carry a MIN-SE: header with the sst min_se parameter value set."
+        }
+      ],
+      "return_type": "bool",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "If the Session-Expires or MIN-SE header value is less then modules minimum value"
+        }
+      ],
+      "description": "Check the current Session-Expires / MIN-SE values against the sst_min_se parameter value. If the Session-Expires or MIN-SE header value is less then modules minimum value, this function will return true.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmodparam(\"sst\", \"sst\\_flag\", \"SST\\_FLAG\")\nmodparam(\"sst\", \"min\\_se\", 2400) # Must be >= 90\n...\n\nroute {\n  if ($rm==\"INVITE\") {\n\tif (sstCheckMin(1)) {\n\t\txlog(\"L\\_ERR\", \"422 Session Timer Too Small reply sent.\\n\");\n\t\texit;\n\t}\n\t# track the session timers via the dialog module\n\tsetflag(SST\\_FLAG);\n\tcreate\\_dialog();\n  }\n}\n\n...",
+          "description": "sstCheckMin usage",
+          "context": "route"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [
+    {
+      "name": "expired_sst",
+      "type": "counter",
+      "description": "Number of dialogs which got expired session timer."
+    }
+  ],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `enable_stats` parameter",
+      "description": "Demonstrates setting the enable_stats parameter.",
+      "code": "...\nmodparam(\"sst\", \"enable\\_stats\", 0)\n..."
+    },
+    {
+      "title": "Set `min_se` parameter",
+      "description": "Demonstrates setting the min_se parameter.",
+      "code": "...\nmodparam(\"sst\", \"min\\_se\", 2400)\n..."
+    },
+    {
+      "title": "Set `sst_interval` parameter",
+      "description": "Demonstrates setting the sst_interval parameter.",
+      "code": "...\nmodparam(\"sst\", \"sst\\_interval\", 2400)\n..."
+    },
+    {
+      "title": "Set `reject_to_small` parameter",
+      "description": "Demonstrates setting the reject_to_small parameter.",
+      "code": "...\nmodparam(\"sst\", \"reject\\_to_small\", 0)\n..."
+    },
+    {
+      "title": "Set `sst_flag` parameter",
+      "description": "Demonstrates setting the sst_flag parameter and using it in a route block.",
+      "code": "...\nmodparam(\"sst\", \"sst\\_flag\", \"SST\\_FLAG\")\n...\nroute {\n  ...\n  if ($rm==\"INVITE\") {\n    setflag(SST\\_FLAG); # Set the sst flag\n    create\\_dialog(); # and then create the dialog\n  }\n  ...\n}\n..."
+    },
+    {
+      "title": "`sstCheckMin` usage",
+      "description": "Demonstrates the usage of the sstCheckMin function within a route block.",
+      "code": "...\nmodparam(\"sst\", \"sst\\_flag\", \"SST\\_FLAG\")\nmodparam(\"sst\", \"min\\_se\", 2400) # Must be >= 90\n...\n\nroute {\n  if ($rm==\"INVITE\") {\n\tif (sstCheckMin(1)) {\n\t\txlog(\"L\\_ERR\", \"422 Session Timer Too Small reply sent.\\\\n\");\n\t\texit;\n\t}\n\t# track the session timers via the dialog module\n\tsetflag(SST\\_FLAG);\n\tcreate\\_dialog();\n  }\n}\n\n..."
+    }
+  ]
+}

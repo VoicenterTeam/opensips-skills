@@ -1,0 +1,769 @@
+{
+  "id": "module-avpops-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "avpops Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/avpops.html",
+  "content_markdown": "AVPops (AVP-operations) modules implements a set of script functions which allow access and manipulation of user AVPs (preferences) and pseudo-variables. AVPs are a powerful tool for implementing services/preferences per user/domain. Now they are usable directly from configuration script. Functions for interfacing DB resources (loading/storing/removing), functions for swapping information between AVPs and SIP messages, function for testing/checking the value of an AVP.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:01:08.916Z",
+  "module_name": "avpops",
+  "overview": "AVPops (AVP-operations) modules implements a set of script functions which allow access and manipulation of user AVPs (preferences) and pseudo-variables. AVPs are a powerful tool for implementing services/preferences per user/domain. Now they are usable directly from configuration script. Functions for interfacing DB resources (loading/storing/removing), functions for swapping information between AVPs and SIP messages, function for testing/checking the value of an AVP.",
+  "how_it_works": "AVPs are persistent per SIP transaction, being available in \"route\", \"branch_route\" and \"failure_route\". To make them available in \"onreply_route\" armed via TM module, set \"onreply_avp_mode\" parameter of TM module (note that in the default \"onreply_route\", the AVPs of the transaction are not available).",
+  "dependencies_required": [],
+  "dependencies_optional": [
+    "database module"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "DB URL for database connection. As the module allows the usage of multiple DBs (DB URLs), the actual DB URL may be preceded by an reference number. This reference number is to be passed to AVPOPS function that what to explicitly use this DB connection. If no reference number is given, 0 is assumed - this is the default DB URL.",
+      "example_value": "mysql://user:passwd@host/database",
+      "example_code": "# default URL\nmodparam(\"avpops\",\"db\\_url\",\"mysql://user:passwd@host/database\")\n# an additional DB URL\nmodparam(\"avpops\",\"db\\_url\",\"1 postgres://user:passwd@host2/opensips\")",
+      "notes": "This parameter is optional, it's default value being NULL."
+    },
+    {
+      "name": "avp_table",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "DB table to be used.",
+      "example_value": "avptable",
+      "example_code": "modparam(\"avpops\",\"avp\\_table\",\"avptable\")",
+      "notes": "This parameter is optional, it's default value being NULL."
+    },
+    {
+      "name": "use_domain",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If the domain part of the an URI should be used for identifying an AVP in DB operations.",
+      "example_value": "1",
+      "example_code": "modparam(\"avpops\",\"use\\_domain\",1)"
+    },
+    {
+      "name": "uuid_column",
+      "type": "string",
+      "default_value": "uuid",
+      "description": "Name of column containing the uuid (unique user id).",
+      "example_value": "uuid",
+      "example_code": "modparam(\"avpops\",\"uuid\\_column\",\"uuid\")"
+    },
+    {
+      "name": "username_column",
+      "type": "string",
+      "default_value": "username",
+      "description": "Name of column containing the username.",
+      "example_value": "username",
+      "example_code": "modparam(\"avpops\",\"username\\_column\",\"username\")"
+    },
+    {
+      "name": "domain_column",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of column containing the domain name.",
+      "example_code": "modparam(\"avpops\",\"domain\\_column\",\"domain\")"
+    },
+    {
+      "name": "attribute_column",
+      "type": "string",
+      "default_value": "attribute",
+      "description": "Name of column containing the attribute name (AVP name).",
+      "example_code": "modparam(\"avpops\",\"attribute\\_column\",\"attribute\")"
+    },
+    {
+      "name": "value_column",
+      "type": "string",
+      "default_value": "value",
+      "description": "Name of column containing the AVP value.",
+      "example_code": "modparam(\"avpops\",\"value\\_column\",\"value\")"
+    },
+    {
+      "name": "type_column",
+      "type": "string",
+      "default_value": "type",
+      "description": "Name of column containing the AVP type.",
+      "example_code": "modparam(\"avpops\",\"type\\_column\",\"type\")"
+    },
+    {
+      "name": "db_scheme",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Definition of a DB scheme to be used for non-standard access to Database information.\n\nDefinition of a DB scheme. Scheme syntax is:\n\n*   _db\\_scheme = name':'element\\[';'element\\]\\*_\n    \n*   _element_ =\n    \n    *   'uuid\\_col='string\n        \n    *   'username\\_col='string\n        \n    *   'domain\\_col='string\n        \n    *   'value\\_col='string\n        \n    *   'value\\_type='('integer'|'string')\n        \n    *   'table='string",
+      "example_code": "modparam(\"avpops\",\"db\\_scheme\",\n\"scheme1:table=subscriber;uuid\\_col=uuid;value\\_col=first\\_name\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "avp_db_load",
+      "signature": "avp_db_load(source, name, [db_id], [prefix])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "description": "what info is used for identifying the AVPs. Parameter syntax: source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]) pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'.",
+          "valid_values": [
+            "username",
+            "domain",
+            "uri",
+            "uuid"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be loaded from DB into memory. Parameter syntax is: name = avp_spec['/(table_name|'$'db_scheme)] avp_spec = matching_flags|$avp(avp_name)|$avp(avp_alias) matching_flags = 'a' | 'A' | 'i' | 'I' | 's' | 'S' [script_flags] 'a' or 'A' means matching any of AVP name types ('i' and 's'), the rest have the meaning descriped in 'AVP naming format' chapter.",
+          "valid_values": [
+            "a",
+            "A",
+            "i",
+            "I",
+            "s",
+            "S"
+          ]
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter."
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "required": false,
+          "description": "static string which will precede the names of the AVPs populated by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "it loaded some values in AVPs"
+        },
+        {
+          "value": "false",
+          "condition": "db error, no avp loaded ..."
+        }
+      ],
+      "description": "Loads from DB into memory the AVPs corresponding to the given _source_. If given, it sets the script flags for loaded AVPs. It returns true if it loaded some values in AVPs, false otherwise (db error, no avp loaded ...). AVPs may be preceded by an optional _prefix_, in order to avoid some conflicts.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_db_load(\"$fu\", \"$avp(678)\");\navp_db_load(\"$ru/domain\", \"i/domain_preferences\");\navp_db_load(\"$avp(uuid)\", \"$avp(404fwd)/fwd_table\");\navp_db_load(\"$ru\", \"$avp(123)/$some_scheme\");\n\n# use DB URL id 3\navp_db_load(\"$ru\", \"$avp(1)\", 3);\n\n# precede all loaded AVPs by the \"caller_\" prefix\navp_db_load(\"$ru\", \"$avp(100)\", , \"caller_\");\nxlog(\"Loaded: $avp(caller_100)\\n\");",
+          "description": "avp_db_load usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_db_store",
+      "signature": "avp_db_store(source, name, [db_id])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "description": "what info is used for identifying the AVPs. Parameter syntax: source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]) pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'.",
+          "valid_values": [
+            "username",
+            "domain",
+            "uri",
+            "uuid"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be stored to DB. Parameter syntax is: name = avp_spec['/(table_name|'$'db_scheme)] avp_spec = matching_flags|$avp(avp_name)|$avp(avp_alias) matching_flags = 'a' | 'A' | 'i' | 'I' | 's' | 'S' [script_flags] 'a' or 'A' means matching any of AVP name types ('i' and 's'), the rest have the meaning descriped in 'AVP naming format' chapter.",
+          "valid_values": [
+            "a",
+            "A",
+            "i",
+            "I",
+            "s",
+            "S"
+          ]
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter."
+        }
+      ],
+      "return_type": "",
+      "description": "Stores to DB the AVPs corresponding to the given _source_. The meaning and usage of the parameters are identical as for _avp_db_load(source, name)_ function. Please refer to its description.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_db_store(\"$tu\", \"$avp(678)\");\navp_db_store(\"$ru/username\", \"$avp(email)\");\n# use DB URL id 3\navp_db_store(\"$ru\", \"$avp(1)\", 3);",
+          "description": "avp_db_store usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_db_delete",
+      "signature": "avp_db_delete(source, name, [db_id])",
+      "parameters": [
+        {
+          "name": "source",
+          "type": "string",
+          "required": true,
+          "description": "what info is used for identifying the AVPs. Parameter syntax: source = (pvar|str_value) ['/('username'|'domain'|'uri'|'uuid')]) pvar = any pseudo variable defined in OpenSIPS. If the pvar is $ru (request uri), $fu (from uri), $tu (to uri) or $ou (original uri), then the implicit flag is 'uri'. Otherwise, the implicit flag is 'uuid'.",
+          "valid_values": [
+            "username",
+            "domain",
+            "uri",
+            "uuid"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be deleted from DB. Parameter syntax is: name = avp_spec['/(table_name|'$'db_scheme)] avp_spec = matching_flags|$avp(avp_name)|$avp(avp_alias) matching_flags = 'a' | 'A' | 'i' | 'I' | 's' | 'S' [script_flags] 'a' or 'A' means matching any of AVP name types ('i' and 's'), the rest have the meaning descriped in 'AVP naming format' chapter.",
+          "valid_values": [
+            "a",
+            "A",
+            "i",
+            "I",
+            "s",
+            "S"
+          ]
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter."
+        }
+      ],
+      "return_type": "",
+      "description": "Deletes from DB the AVPs corresponding to the given _source_. The meaning and usage of the parameters are identical as for _avp_db_load(source, name)_ function. Please refer to its description.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_db_delete(\"$tu\", \"$avp(678)\");\navp_db_delete(\"$ru/username\", \"$avp(email)\");\navp_db_delete(\"$avp(uuid)\", \"$avp(404fwd)/fwd_table\");\n# use DB URL id 3\navp_db_delete(\"$ru\", \"$avp(1)\", 3);",
+          "description": "avp_db_delete usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_db_query",
+      "signature": "avp_db_query(query, [res_col_avps], [db_id])",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "must be a valid SQL query. The parameter can contain pseudo-variables. You must escape any pseudo-variables manually to prevent SQL injection attacks. You can use the existing transformations _escape.common_ and _unescape.common_ to escape and unescape the content of any pseudo-variable. Failing to escape the variables used in the query makes you vulnerable to SQL injection, e.g. make it possible for an outside attacker to alter your database content."
+        },
+        {
+          "name": "res_col_avps",
+          "type": "string",
+          "required": false,
+          "description": "a list with AVP names where to store the result. The format is “$avp(name1);$avp(name2);...”. If this parameter is omitted, the result is stored in “$avp(1);$avp(2);...”. If the result consists of multiple rows, then multiple AVPs with corresponding names will be added. The value type of the AVP (string or integer) will be derived from the type of the columns. If the value in the database is _NULL_, the returned avp will be a string with the _<null>_ value."
+        },
+        {
+          "name": "db_id",
+          "type": "int",
+          "required": false,
+          "description": "reference to a defined DB URL (a numerical id) - see the “db_url” module parameter. It can be either a constant, or a string/int variable."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "the query was successful"
+        },
+        {
+          "value": "-2",
+          "condition": "the query returned an empty result set"
+        },
+        {
+          "value": "-1",
+          "condition": "all other types of errors"
+        }
+      ],
+      "description": "Make a database query and store the result in AVPs.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_db_query(\"SELECT password, ha1 FROM subscriber WHERE username='$tu'\",\n\t\"$avp(pass);$avp(hash)\");\navp_db_query(\"DELETE FROM subscriber\");\navp_db_query(\"DELETE FROM subscriber\", , 2);\n\n$avp(id) = 2;\navp_db_query(\"DELETE FROM subscriber\", , $avp(id));",
+          "description": "avp_db_query usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_delete",
+      "signature": "avp_delete(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVPs will be deleted from memory. Parameter syntax is: name = (matching_flags|avp_name|avp_alias)['/'flag] matching_flags = please refer to avp_db_load() function flag = 'g'|'G'",
+          "valid_values": [
+            "g",
+            "G"
+          ]
+        }
+      ],
+      "return_type": "",
+      "description": "Deletes from memory the AVPs with _name_ or, if \\*, all AVPs.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_delete(\"$avp(email)\"); # delete topmost (lastly set) value from $avp(email)\navp_delete(\"$avp(678)/g\"); # fully purge $avp(678)\navp_delete(\"i\");\navp_delete(\"a3\");",
+          "description": "avp_delete usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_pushto",
+      "signature": "avp_pushto(destination, name)",
+      "parameters": [
+        {
+          "name": "destination",
+          "type": "string",
+          "required": true,
+          "description": "as what will be the AVP value pushed into SIP message. Parameter syntax: destination = '$ru' ['/'('username'|'domain')] | '$du' | '$br'. $ru ['/'('username'|'domain')] - write the AVP in the request URI or in username/domain part of it. $du - write the AVP in 'dst_uri' field. $br - write the AVP directly as a new branch (does not affect RURI).",
+          "valid_values": [
+            "$ru",
+            "$du",
+            "$br"
+          ]
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVP(s)/pseudo-variable should be pushed into the SIP message. Parameter syntax: name = ( avp_name | avp_alias | pvar_name )['/'flags]. flags = 'g' - effective only with AVPs."
+        }
+      ],
+      "return_type": "",
+      "description": "Pushes the value of AVP(s) into the SIP message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_pushto(\"$ru/domain\", \"$fd\");\navp_pushto(\"$ru\", \"$avp(678)\");\navp_pushto(\"$ru/domain\", \"$avp(backup_domains)/g\");\navp_pushto(\"$du\", \"$avp(679)\");\navp_pushto(\"$br\", \"$avp(680)\");",
+          "description": "avp_pushto usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_check",
+      "signature": "avp_check(name, op_value)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "which AVP(s) should be checked. Parameter syntax: name = ( pseudo-variable )."
+        },
+        {
+          "name": "op_value",
+          "type": "string",
+          "required": true,
+          "description": "define the operator, the value and flags for checking. Parameter syntax: op_value = operator '/' value ['/'flags]. value = pseudo-variable | fix_value. fix_value = 'i:'integer | 's:'string | string. flags = 'g' | 'G' | 'i' | 'I'. Integer values can be given in hexadecimal using notation: 'i:0xhex_number' (e.g.,: 'i:0xabcd').",
+          "valid_values": [
+            "eq",
+            "ne",
+            "lt",
+            "le",
+            "gt",
+            "ge",
+            "re",
+            "fm",
+            "and",
+            "or",
+            "xor"
+          ]
+        }
+      ],
+      "return_type": "",
+      "description": "Checks the value of the AVP(s) against an operator and value.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_check(\"$avp(678)\", \"lt/345/g\");\navp_check(\"$fd\", \"eq/$td/I\");\navp_check(\"$avp(foo)\", \"gt/$avp($bar)/g\");\navp_check(\"$avp(foo)\", \"re/sip:.*@bar.net/g\");\navp_check(\"$avp(foo)\", \"fm/$avp(fm_avp)/g\");",
+          "description": "avp_check usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_copy",
+      "signature": "avp_copy(from_avp, to_avp)",
+      "parameters": [
+        {
+          "name": "from_avp",
+          "type": "string",
+          "required": true,
+          "description": "which AVP(s) should be copied/moved. Parameter syntax: from_avp = ( avp_name | avp_alias )."
+        },
+        {
+          "name": "to_avp",
+          "type": "string",
+          "required": true,
+          "description": "the new name of the copied/moved AVP(s). Parameter syntax: to_avp = ( avp_name | avp_alias )['/'flags]. flags = 'g' | 'G' | 'd' | 'D' | 'n' | 'N' | 's' | 'S'."
+        }
+      ],
+      "return_type": "",
+      "description": "Copy / move an avp under a new name.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_copy(\"$avp(foo)\", \"$avp(bar)/g\");\navp_copy(\"$avp(old)\", \"$avp(new)/gd\"); # also deletes $avp(old)",
+          "description": "avp_copy usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_subst",
+      "signature": "avp_subst(avps, subst)",
+      "parameters": [
+        {
+          "name": "avps",
+          "type": "string",
+          "required": true,
+          "description": "source AVP, destination AVP and flags. Parameter syntax: avps = src_avp [ '/' dst_avp [ '/' flags ] ]. src_avp = ( avp_name | avp_alias ). dst_avp = ( avp_name | avp_alias ) - if dst_avp is missing then the value of src_avp will be replaced. flags = ( d | D | g | G ) -- (d, D - delete source avp; g, G - apply to all avps matching src_avp name)."
+        },
+        {
+          "name": "subst",
+          "type": "string",
+          "required": true,
+          "description": "perl/sed-like reqular expression. Parameter syntax: subst = \"/regexp/replacement/flags\". regexp - regular expression. replacement - replacement string, can include pseudo-variables and \\1, ..., \\9 for matching tokens, \\0 for whole matching text. flags = 'g' | 'G' | 'i' | 'i' (g, G - replace all matching tokens; i, I - match ignore case)."
+        }
+      ],
+      "return_type": "",
+      "description": "Perl/sed-like subst applied to AVPs having string value.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# if avp 678 has a string value in e-mail format, replace the\n# domain part with the value of domain part from R-URI\navp_subst(\"$avp(678)\", \"/(.*)@(.*)/\\\\1@$rd/\");\n\n# if any avp 678 has a string value in e-mail format, replace the\n# domain part with the value of domain part from R-URI\n# and place the result in avp 679\navp_subst(\"$avp(678)/$avp(679)/g\", \"/(.*)@(.*)/\\\\1@$rd/\");",
+          "description": "avp_subst usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_op",
+      "signature": "avp_op(name, op_value)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "'source_avp/destination_avp' - which AVP(s) should be processed and where to store the result. If 'destination_avp' is missing, same name as 'source_avp' is used to store the result. Parameter syntax: name = ( source_avp[/destination_avp] ). source_avp = ( avp_name | avp_alias ). destination_avp = ( avp_name | avp_alias )."
+        },
+        {
+          "name": "op_value",
+          "type": "string",
+          "required": true,
+          "description": "define the operation, the value and flags. Parameter syntax: op_value = operator '/' value ['/'flags]. value = pseudo-variable | fix_value. fix_value = 'i:'integer. flags = 'g' | 'G' | 'd' | 'D'. Integer values can be given in hexadecimal using notation 'i:0xhex_number' (e.g.,: 'i:0xabcd').",
+          "valid_values": [
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "mod",
+            "and",
+            "or",
+            "xor",
+            "not"
+          ]
+        }
+      ],
+      "return_type": "",
+      "description": "Different integer operations with avps.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_op(\"$avp(678)\", \"add/345/g\");\navp_op(\"$avp(number)\", \"sub/$avp(number2)/d\");",
+          "description": "avp_op usage"
+        }
+      ]
+    },
+    {
+      "name": "is_avp_set",
+      "signature": "is_avp_set(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name of AVP to look for. Parameter syntax is: name = avp_name|avp_alias [ '/' flags ]) flags = ('e'|'s'|'n') - e = empty value; s = value string; n = value number (int)"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Check if any AVP with _name_ is set.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(is_avp_set(\"$avp(foo)\"))\n    xlog(\"AVP with name 'foo' is set!\\n\");",
+          "description": "is_avp_set usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_shuffle",
+      "signature": "avp_shuffle(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "name of AVP to shuffle. Parameter syntax is: name = avp_name"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Randomly shuffles AVPs with _name_.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$avp(foo) := \"str1\";\n$avp(foo)  = \"str2\";\n$avp(foo)  = \"str3\";\nxlog(\"Initial AVP list is: $(avp(foo)[*])\\n\");       # str3 str2 str1\nif(avp_shuffle(\"$avp(foo)\"))\n    xlog(\"Shuffled AVP list is: $(avp(foo)[*])\\n\");  # str1, str3, str2 (for example)",
+          "description": "avp_shuffle usage"
+        }
+      ]
+    },
+    {
+      "name": "avp_print",
+      "signature": "avp_print()",
+      "parameters": [],
+      "return_type": "void",
+      "description": "Prints the list with all the AVPs from memory. This is only a helper/debug function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "avp_print();",
+          "description": "avp_print usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "AVP naming examples",
+      "description": "AVP naming examples",
+      "code": "$avp(11) - the AVP identified by name 11\n$avp(foo) - the AVP identified by the string 'foo'"
+    },
+    {
+      "title": "Set `avp_url` parameter",
+      "description": "Set `avp_url` parameter",
+      "code": "# default URL\nmodparam(\"avpops\",\"db\\_url\",\"mysql://user:passwd@host/database\")\n# an additional DB URL\nmodparam(\"avpops\",\"db\\_url\",\"1 postgres://user:passwd@host2/opensips\")"
+    },
+    {
+      "title": "Set `avp_table` parameter",
+      "description": "Set `avp_table` parameter",
+      "code": "modparam(\"avpops\",\"avp\\_table\",\"avptable\")"
+    },
+    {
+      "title": "Set `use_domain` parameter",
+      "description": "Set `use_domain` parameter",
+      "code": "modparam(\"avpops\",\"use\\_domain\",1)"
+    },
+    {
+      "title": "Set `uuid_column` parameter",
+      "description": "Set `uuid_column` parameter",
+      "code": "modparam(\"avpops\",\"uuid\\_column\",\"uuid\")"
+    },
+    {
+      "title": "Set `username_column` parameter",
+      "description": "Set `username_column` parameter",
+      "code": "modparam(\"avpops\",\"username\\_column\",\"username\")"
+    },
+    {
+      "title": "Set `domain_column` parameter",
+      "description": "Set `domain_column` parameter",
+      "code": "modparam(\"avpops\",\"domain\\_column\",\"domain\")"
+    },
+    {
+      "title": "Set `attribute_column` parameter",
+      "description": "Set `attribute_column` parameter",
+      "code": "modparam(\"avpops\",\"attribute\\_column\",\"attribute\")"
+    },
+    {
+      "title": "Set `value_column` parameter",
+      "description": "Set `value_column` parameter",
+      "code": "modparam(\"avpops\",\"value\\_column\",\"value\")"
+    },
+    {
+      "title": "Set `type_column` parameter",
+      "description": "Set `type_column` parameter",
+      "code": "modparam(\"avpops\",\"type\\_column\",\"type\")"
+    },
+    {
+      "title": "Set `db_scheme` parameter",
+      "description": "Set `db_scheme` parameter",
+      "code": "modparam(\"avpops\",\"db\\_scheme\",\n\"scheme1:table=subscriber;uuid\\_col=uuid;value\\_col=first\\_name\")"
+    },
+    {
+      "title": "`avp_db_load` usage",
+      "description": "`avp_db_load` usage",
+      "code": "avp\\_db\\_load(\"$fu\", \"$avp(678)\");\navp\\_db\\_load(\"$ru/domain\", \"i/domain\\_preferences\");\navp\\_db\\_load(\"$avp(uuid)\", \"$avp(404fwd)/fwd\\_table\");\navp\\_db\\_load(\"$ru\", \"$avp(123)/$some\\_scheme\");\n\n# use DB URL id 3\navp\\_db\\_load(\"$ru\", \"$avp(1)\", 3);\n\n# precede all loaded AVPs by the \"caller\\_\" prefix\navp\\_db\\_load(\"$ru\", \"$avp(100)\", , \"caller\\_\");\nxlog(\"Loaded: $avp(caller\\_100)\\\\n\");"
+    },
+    {
+      "title": "`avp_db_store` usage",
+      "description": "`avp_db_store` usage",
+      "code": "avp\\_db\\_store(\"$tu\", \"$avp(678)\");\navp\\_db\\_store(\"$ru/username\", \"$avp(email)\");\n# use DB URL id 3\navp\\_db\\_store(\"$ru\", \"$avp(1)\", 3);"
+    },
+    {
+      "title": "`avp_db_delete` usage",
+      "description": "`avp_db_delete` usage",
+      "code": "avp\\_db\\_delete(\"$tu\", \"$avp(678)\");\navp\\_db\\_delete(\"$ru/username\", \"$avp(email)\");\navp\\_db\\_delete(\"$avp(uuid)\", \"$avp(404fwd)/fwd\\_table\");\n# use DB URL id 3\navp\\_db\\_delete(\"$ru\", \"$avp(1)\", 3);"
+    },
+    {
+      "title": "`avp_db_query` usage",
+      "description": "`avp_db_query` usage",
+      "code": "avp\\_db\\_query(\"SELECT password, ha1 FROM subscriber WHERE username='$tu',\n\t\"$avp(pass);$avp(hash)\");\navp\\_db\\_query(\"DELETE FROM subscriber\");\navp\\_db\\_query(\"DELETE FROM subscriber\", , 2);\n\n$avp(id) = 2;\navp\\_db\\_query(\"DELETE FROM subscriber\", , $avp(id));"
+    },
+    {
+      "title": "`avp_delete` usage",
+      "description": "`avp_delete` usage",
+      "code": "avp\\_delete(\"$avp(email)\"); # delete topmost (lastly set) value from $avp(email)\navp\\_delete(\"$avp(678)/g\"); # fully purge $avp(678)\navp\\_delete(\"i\");\navp\\_delete(\"a3\");"
+    },
+    {
+      "title": "`avp_pushto` usage",
+      "description": "`avp_pushto` usage",
+      "code": "avp\\_pushto(\"$ru/domain\", \"$fd\");\navp\\_pushto(\"$ru\", \"$avp(678)\");\navp\\_pushto(\"$ru/domain\", \"$avp(backup\\_domains)/g\");\navp\\_pushto(\"$du\", \"$avp(679)\");\navp\\_pushto(\"$br\", \"$avp(680)\");"
+    },
+    {
+      "title": "`avp_check` usage",
+      "description": "`avp_check` usage",
+      "code": "avp\\_check(\"$avp(678)\", \"lt/345/g\");\navp\\_check(\"$fd\", \"eq/$td/I\");\navp\\_check(\"$avp(foo)\", \"gt/$avp($bar)/g\");\navp\\_check(\"$avp(foo)\", \"re/sip:.\\*@bar.net/g\");\navp\\_check(\"$avp(foo)\", \"fm/$avp(fm\\_avp)/g\");"
+    },
+    {
+      "title": "`avp_copy` usage",
+      "description": "`avp_copy` usage",
+      "code": "avp\\_copy(\"$avp(foo)\", \"$avp(bar)/g\");\navp\\_copy(\"$avp(old)\", \"$avp(new)/gd\"); # also deletes $avp(old)"
+    },
+    {
+      "title": "`avp_subst` usage",
+      "description": "`avp_subst` usage",
+      "code": "# if avp 678 has a string value in e-mail format, replace the\n# domain part with the value of domain part from R-URI\navp\\_subst(\"$avp(678)\", \"/(.\\*)@(.*\\)/\\\\1@$rd/\");\n\n# if any avp 678 has a string value in e-mail format, replace the\n# domain part with the value of domain part from R-URI\n# and place the result in avp 679\navp\\_subst(\"$avp(678)/$avp(679)/g\", \"/(.\\*)@(.*\\)/\\\\1@$rd/\");"
+    },
+    {
+      "title": "`avp_op` usage",
+      "description": "`avp_op` usage",
+      "code": "avp\\_op(\"$avp(678)\", \"add/345/g\");\navp\\_op(\"$avp(number)\", \"sub/$avp(number2)/d\");"
+    },
+    {
+      "title": "`is_avp_set` usage",
+      "description": "`is_avp_set` usage",
+      "code": "if(is\\_avp\\_set(\"$avp(foo)\"))\n    xlog(\"AVP with name 'foo' is set!\\\\n\");"
+    },
+    {
+      "title": "`avp_shuffle` usage",
+      "description": "`avp_shuffle` usage",
+      "code": "$avp(foo) := \"str1\";\n$avp(foo)  = \"str2\";\n$avp(foo)  = \"str3\";\nxlog(\"Initial AVP list is: $(avp(foo)[\\*])\\\\n\");       # str3 str2 str1\nif(avp\\_shuffle(\"$avp(foo)\"))\n    xlog(\"Shuffled AVP list is: $(avp(foo)[\\*])\\\\n\");  # str1, str3, str2 (for example)"
+    },
+    {
+      "title": "`avp_print` usage",
+      "description": "`avp_print` usage",
+      "code": "avp\\_print();"
+    },
+    {
+      "title": "`async avp_db_query` usage",
+      "description": "`async avp_db_query` usage",
+      "code": "{\n...\n/* Example of a slow MySQL query - it should take around 5 seconds */\nasync(\n\tavp\\_db\\_query(\n\t\t\"SELECT table\\_name, table\\_version, SLEEP(0.1) from version\",\n\t\t\"$avp(tb\\_name); $avp(tb\\_ver); $avp(retcode)\"),\n\tmy\\_resume\\_route);\n/* script execution is halted right after the async() call */\n}\n\n/* We will be called when data is ready - meanwhile, the worker is free */\nroute [my\\_resume\\_route]\n{\n\txlog(\"Results: \\\\n$(avp(tb\\_name)[\\*])\\\\n\n-------------------\\\\n$(avp(tb\\_ver)[\\*])\\\\n\n-------------------\\\\n$(avp(retcode)[\\*])\\\\n\");\n}"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "id": "module-pua_usrloc-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "pua_usrloc Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/pua_usrloc.html",
+  "content_markdown": "The pua_usrloc is the connector between usrloc and pua modules. Using this module, phones which have no support for presence can be seen as online/offline.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:43:28.507Z",
+  "module_name": "pua_usrloc",
+  "overview": "The pua_usrloc is the connector between usrloc and pua modules. Using this module, phones which have no support for presence can be seen as online/offline.",
+  "how_it_works": "It creates the environment to send PUBLISH requests for user location records, on specific events (e.g., when new record is added in usrloc, a PUBLISH with status open (online) is issued; when expires, it sends closed (offline)).",
+  "dependencies_required": [
+    {
+      "name": "usrloc",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "pua",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_domain",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The default domain to use when constructing the presentity uri if it is missing from recorded aor.",
+      "example_value": "opensips.org",
+      "example_code": "...\nmodparam(\"pua\\_usrloc\", \"default\\_domain\", \"opensips.org\")\n..."
+    },
+    {
+      "name": "entity_prefix",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The prefix when construstructing entity attribute to be added to presence node in xml pidf. (ex: pres:user@domain ).",
+      "example_value": "pres",
+      "example_code": "...\nmodparam(\"pua\\_usrloc\", \"entity\\_prefix\", \"pres\")\n..."
+    },
+    {
+      "name": "presence_server",
+      "type": "string",
+      "description": "The the address of the presence server. If set, it will be used as outbound proxy when sending PUBLISH requests.",
+      "example_value": "sip:pa@opensips.org:5075",
+      "example_code": "...\nmodparam(\"pua\\_usrloc\", \"presence\\_server\", \"sip:pa@opensips.org:5075\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "pua_set_publish",
+      "signature": "pua_set_publish()",
+      "parameters": [],
+      "return_type": "",
+      "description": "The function is used to mark REGISTER requests that have to issue a PUBLISH. The PUBLISH is issued when REGISTER is saved in location table.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(is\\_method(\"REGISTER\") && $fu=~\"john@opensips.org\") \n\tpua\\_set\\_publish();",
+          "description": "pua_set_publish usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `default_domain` parameter",
+      "description": "The default domain to use when constructing the presentity uri if it is missing from recorded aor.",
+      "code": "...\nmodparam(\"pua_usrloc\", \"default_domain\", \"opensips.org\")\n..."
+    },
+    {
+      "title": "Set `presentity_prefix` parameter",
+      "description": "The prefix when construstructing entity attribute to be added to presence node in xml pidf. (ex: pres:user@domain ).",
+      "code": "...\nmodparam(\"pua_usrloc\", \"entity_prefix\", \"pres\")\n..."
+    },
+    {
+      "title": "Set `presence_server` parameter",
+      "description": "The the address of the presence server. If set, it will be used as outbound proxy when sending PUBLISH requests.",
+      "code": "...\nmodparam(\"pua_usrloc\", \"presence_server\", \"sip:pa@opensips.org:5075\")\n..."
+    },
+    {
+      "title": "`pua_set_publish` usage",
+      "description": "The function is used to mark REGISTER requests that have to issue a PUBLISH. The PUBLISH is issued when REGISTER is saved in location table.",
+      "code": "...\nif(is_method(\"REGISTER\") && $fu=~\"john@opensips.org\") \n\tpua_set_publish();\n..."
+    }
+  ]
+}

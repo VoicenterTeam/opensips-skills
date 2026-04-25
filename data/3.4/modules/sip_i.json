@@ -1,0 +1,214 @@
+{
+  "id": "module-sip_i-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "sip_i Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/sip_i.html",
+  "content_markdown": "This module offers the possibility of processing ISDN User Part(ISUP) messages encapsulated in SIP. The available operations are: reading and modifying parameters from an ISUP message, removing or adding new optional parameters, adding an ISUP part to a SIP message body. This is done explicitly via script pseudovariables and functions.\n\nThe supported ISUP message types are only the ones that can be included in a SIP message according to the SIP-I(SIP with encapsulated ISUP) protocol defined by ITU-T.\n\nThe format and specification of the ISUP messages and parameters follow the recomandations from ITU-T Rec. Q.763.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:26:44.569Z",
+  "module_name": "sip_i",
+  "overview": "This module offers the possibility of processing ISDN User Part(ISUP) messages encapsulated in SIP. The available operations are: reading and modifying parameters from an ISUP message, removing or adding new optional parameters, adding an ISUP part to a SIP message body. This is done explicitly via script pseudovariables and functions.\n\nThe supported ISUP message types are only the ones that can be included in a SIP message according to the SIP-I(SIP with encapsulated ISUP) protocol defined by ITU-T.\n\nThe format and specification of the ISUP messages and parameters follow the recomandations from ITU-T Rec. Q.763.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "param_subfield_separator",
+      "type": "string",
+      "default_value": "|",
+      "description": "The character to be used as separator in the subname of the _$isup\\_param_ and _$isup\\_param\\_str_ pseudovariables between the ISUP parameter name and subfield name.",
+      "example_value": ":",
+      "example_code": "modparam(\"sip\\_i\", \"param\\_subfield\\_separator\", \":\")"
+    },
+    {
+      "name": "isup_mime_str",
+      "type": "string",
+      "default_value": "application/ISUP;version=itu-t92+",
+      "description": "The string to be used for the Content-Type header field of the ISUP MIME body when creating a new ISUP part.",
+      "example_value": "application/ISUP;base=itu-t92+;version=itu-t",
+      "example_code": "modparam(\"sip\\_i\", \"isup\\_mime\\_str\", \"application/ISUP;base=itu-t92+;version=itu-t\")"
+    },
+    {
+      "name": "default_part_headers",
+      "type": "string",
+      "default_value": "Content-Disposition:signal;handling=optional\\r\\n",
+      "description": "The default set of headers (fully defined, including the header termination) to be pushed into the ISUP part together with the _Content-Type_ header.",
+      "example_value": "Content-Disposition:signal;handling=required\\r\\n",
+      "example_code": "modparam(\"sip\\_i\", \"default\\_part\\_headers\", \"Content-Disposition:signal;handling=required\\r\\n\")"
+    },
+    {
+      "name": "country_code",
+      "type": "string",
+      "default_value": "+1",
+      "description": "Country Code that the first part of the number from P-Asserted-Identity is tested against when trying to map the Calling Party Number ISUP parameter from SIP by default. If there is a match, the value assigned to the Nature of Address Indicator subfield is _3_(national), otherwise it is _4_(international).",
+      "example_value": "+4",
+      "example_code": "modparam(\"sip\\_i\", \"country\\_code\", \"+4\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "add_isup_part",
+      "signature": "add_isup_part([isup_msg_type][,extra_headers])",
+      "parameters": [
+        {
+          "name": "isup_msg_type",
+          "type": "string",
+          "required": false,
+          "description": "name of the ISUP message to be added, exactly as it appears in ITU-T Rec. Q.763 or an abbreviation(eg. _IAM_ for \"Initial address\").",
+          "valid_values": [
+            "IAM",
+            "ACM",
+            "ANM",
+            "CON",
+            "REL",
+            "RLC",
+            "CPG",
+            "FRJ",
+            "FAA",
+            "FAR",
+            "CFN",
+            "SUS",
+            "RES",
+            "SAM",
+            "FOT",
+            "USR",
+            "NRM",
+            "FAC",
+            "IRQ",
+            "IRS",
+            "LPR",
+            "APT",
+            "PRI",
+            "Initial address",
+            "Address complete",
+            "Answer",
+            "Connect",
+            "Release",
+            "Release complete",
+            "Call progress",
+            "Facility reject",
+            "Facility accepted",
+            "Facility request",
+            "Confusion",
+            "Suspend",
+            "Resume",
+            "Subsequent address",
+            "Forward transfer",
+            "User-to-user information",
+            "Network resource management",
+            "Facility",
+            "Identification request",
+            "Identification response",
+            "Loop prevention",
+            "Application transport",
+            "Pre-release information"
+          ]
+        },
+        {
+          "name": "extra_headers",
+          "type": "string",
+          "required": false,
+          "description": "a chunk of fully defined SIP headers (including header terminatior) to be inserted into the ISUP part next to the _Content-Type_ header. It overrides the global module parameter _default_part_headers_. If not specified, the _default_part_headers_ value will be used."
+        }
+      ],
+      "return_type": "int",
+      "description": "Adds a new ISUP part to the SIP message body.\n\nWith the exception of some ISUP message types(IAM, REL, ACM, CPG, ANM, CON), the newly added part contains a blank ISUP message(i.e. all mandatory parameters zeroed and no optional ones) and all the required parameters should be set through $isup_param. For the previously mentioned message types, the mandatory parameters and some optional ones are automaticaly set to default values according to basic SIP-ISUP interworking rules from ITU-T Rec. Q.1912.5. This only provides a general and simplified mapping from SIP headers and message type (request method, reply code etc.) to ISUP parameters and you should not base your SIP-ISUP interworking only on this.\n\nIf _isup_msg_type_ is not explicitly provided, it is automatically deduced from the SIP message as follows:\n\n*   INVITE - IAM\n*   BYE - REL\n*   180, 183 - ACM\n*   4xx, 5xx - REL\n*   200 OK INVITE - ANM\n*   200 OK BYE - RLC\n\nThe abbreviations that can be given as _isup_msg_type_ for each ISUP message type are the following:\n\n*   Initial address - _IAM_\n*   Address complete - _ACM_\n*   Answer - _ANM_\n*   Connect - _CON_\n*   Release - _REL_\n*   Release complete - _RLC_\n*   Call progress - _CPG_\n*   Facility reject - _FRJ_\n*   Facility accepted - _FAA_\n*   Facility request - _FAR_\n*   Confusion - _CFN_\n*   Suspend - _SUS_\n*   Resume - _RES_\n*   Subsequent address - _SAM_\n*   Forward transfer - _FOT_\n*   User-to-user information - _USR_\n*   Network resource management - _NRM_\n*   Facility - _FAC_\n*   Identification request - _IRQ_\n*   Identification response - _IRS_\n*   Loop prevention - _LPR_\n*   Application transport - _APT_\n*   Pre-release information - _PRI_",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif ($rs == \"183\") {\n\t# Encapsulate a CPG\n\tadd\\_isup\\_part(\"Call progress\");\n\t# set desired parameters\n\t...\n}\n...",
+          "description": "Example 1.5. `add_isup_part` usage",
+          "context": ""
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$(isup_param(param_name{sep}subfield_name)[byte_index])",
+      "type": "string, integer",
+      "readable": true,
+      "writable": true,
+      "scope": "",
+      "description": "The ISUP parameter named _param\\_name_ of a received or newly added ISUP message can be accessed through this read-write variable. For optional parameters, writing to a _param\\_name_ that does not exist in this ISUP message will insert it. Assigning null to this variable will remove the optional parameter from the message or zeroize the parameter in case of a mandatory one.\n\nThe format of the subname for `$isup_param` is the following:\n\n*   _param\\_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763\n    \n*   _sep_ - separator, whitespaces allowed before/after\n    \n*   _subfield\\_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763\n    \nThe ISUP parameter can be addressed in different ways:\n\n*   entire parameter - by providing as subname for the varaiable only the ISUP parameter name, allowing access to the contents of the entire parameter as: a hex string(similar to a hex \"dump\") for read/write, a string alias for writing, or an integer value for read/write; when assigning a hex string, the hex value must be preceded by \"0x\"; when reading, if string aliases are supported for this parameter, an associated integer value will be returned, otherwise a hex string is returned\n    \n*   at subfield level - by providing as subname for the varaiable the ISUP parameter name and the subfield name, allowing access to the specific subfield as an integer value or string value(eg. telephone number for parameters such as Called Party Number) for read/write or as a string alias for writing\n    \n*   at byte level - by providing as subname for the variable the ISUP parameter name and an index, allowing access to the byte with the specified index as an integer value\n    \nAddressing at entire parameter level as a hex string and at byte level are supported for all the ISUP parameters defined in the ITU-T Rec. Q.763. Addressing at subfield level is supported only for some ISUP parameters and not all of the subfields of a parameter defined in the ITU Recommandation are supported.\n\nString aliases are not available for all parameters or parameter subfields. Also, not all the possible values of a parameter or parameter subfield have a string alias defined.\n\nFor more information on supported subfields and aliases check [Section 1.7, “ISUP parameter subfields and string aliases”](#subfields_aliases \"1.7.�ISUP parameter subfields and string aliases\").\n\n**Example 1.6. `isup_param` usage**\n\n...\n\t$isup\\_param(Called Party Number | Nature of address indicator) = 3;\n\t...\n\t# use a string alias\n\t$isup\\_param(Called Party Number | Numbering plan indicator) = \"ISDN\";\n\t...\n\t$isup\\_param(Called Party Number | Address signal) = \"99991234\";\n\t$isup\\_param(Nature of connection indicators) = \"0x01\"\n\t$isup\\_param(Calling party's category) = 10;\n\t...\n\t# use a string alias\n\t$isup\\_param(Transmission Medium Requirement) = \"speech\";\n\t...\n\t# access at byte level\n\t$(isup\\_param(Forward Call Indicators)\\[0\\]) = 96;\n\t$(isup\\_param(Forward Call Indicators)\\[1\\]) = 1;\n..."
+    },
+    {
+      "name": "$isup_param_str(param_name{sep}subfield_name)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The ISUP parameter named _param\\_name_ of a received or newly added ISUP message can also be accessed through this read-only variable. This variable is similar in usage with _$isup\\_param_ except it will return the string alias for the value when possible.\n\nThe format of the subname for `$isup_param_str` is the following:\n\n*   _param\\_name_ - name of the ISUP parameter as it appears in ITU-T Rec. Q.763\n    \n*   _sep_ - separator, whitespaces allowed before/after\n    \n*   _subfield\\_name_ - name of the subfield of the ISUP parameter as it appears in ITU-T Rec. Q.763\n    \n**Example 1.7. `isup_param_str` usage**\n\n...\n\t# may print: \"NOA is: national\"  \n\txlog(\"NOA is: $isup\\_param\\_str(Called Party Number|Nature of address indicator)\");\n\t# may print: \"CpN is: 99991234\"\n\txlog(\"CpN is: $isup\\_param\\_str(Called Party Number|Address signal)\");\n\t# may print: \"nature of conn: 0x01\"\n\txlog(\"nature of conn: $isup\\_param\\_str(Nature of connection indicators)\");\n\t# may print: \"Cg cat is: ordinary\"\n\txlog(\"$isup\\_param\\_str(Calling party's category)\");\n..."
+    },
+    {
+      "name": "$isup_msg_type",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Read-only variable, returns the ISUP message type as string.\n\n**Example 1.8. `isup_msg_type` usage**\n\n...\n\t# may print: \"ISUP msg is: IAM\"\n\txlog(\"ISUP msg is: $isup\\_msg\\_type\");\n..."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `param_subfield_separator` parameter",
+      "description": "The character to be used as separator in the subname of the _$isup\\_param_ and _$isup\\_param\\_str_ pseudovariables between the ISUP parameter name and subfield name.",
+      "code": "...\nmodparam(\"sip_i\", \"param_subfield_separator\", \":\")\n..."
+    },
+    {
+      "title": "Set `isup_mime_str` parameter",
+      "description": "The string to be used for the Content-Type header field of the ISUP MIME body when creating a new ISUP part.",
+      "code": "...\nmodparam(\"sip_i\", \"isup_mime_str\", \"application/ISUP;base=itu-t92+;version=itu-t\")\n..."
+    },
+    {
+      "title": "Set `default_part_headers` parameter",
+      "description": "The default set of headers (fully defined, including the header termination) to be pushed into the ISUP part together with the _Content-Type_ header.",
+      "code": "...\nmodparam(\"sip_i\", \"default_part_headers\", \"Content-Disposition:signal;handling=required\\\\r\\\\n\")\n..."
+    },
+    {
+      "title": "Set `country_code` parameter",
+      "description": "Country Code that the first part of the number from P-Asserted-Identity is tested against when trying to map the Calling Party Number ISUP parameter from SIP by default.",
+      "code": "...\nmodparam(\"sip_i\", \"country_code\", \"+4\")\n..."
+    },
+    {
+      "title": "`add_isup_part` usage",
+      "description": "Adds a new ISUP part to the SIP message body.",
+      "code": "...\nif ($rs == \"183\") {\n\t# Encapsulate a CPG\n\tadd_isup_part(\"Call progress\");\n\t# set desired parameters\n\t...\n}\n..."
+    },
+    {
+      "title": "`isup_param` usage",
+      "description": "The ISUP parameter named _param\\_name_ of a received or newly added ISUP message can be accessed through this read-write variable.",
+      "code": "...\n\t$isup_param(Called Party Number | Nature of address indicator) = 3;\n\t...\n\t# use a string alias\n\t$isup_param(Called Party Number | Numbering plan indicator) = \"ISDN\";\n\t...\n\t$isup_param(Called Party Number | Address signal) = \"99991234\";\n\t$isup_param(Nature of connection indicators) = \"0x01\"\n\t$isup_param(Calling party's category) = 10;\n\t...\n\t# use a string alias\n\t$isup_param(Transmission Medium Requirement) = \"speech\";\n\t...\n\t# access at byte level\n\t$(isup_param(Forward Call Indicators)[0]) = 96;\n\t$(isup_param(Forward Call Indicators)[1]) = 1;\n..."
+    },
+    {
+      "title": "`isup_param_str` usage",
+      "description": "The ISUP parameter named _param\\_name_ of a received or newly added ISUP message can also be accessed through this read-only variable.",
+      "code": "...\n\t# may print: \"NOA is: national\"  \n\txlog(\"NOA is: $isup_param_str(Called Party Number|Nature of address indicator)\");\n\t# may print: \"CpN is: 99991234\"\n\txlog(\"CpN is: $isup_param_str(Called Party Number|Address signal)\");\n\t# may print: \"nature of conn: 0x01\"\n\txlog(\"nature of conn: $isup_param_str(Nature of connection indicators)\");\n\t# may print: \"Cg cat is: ordinary\"\n\txlog(\"$isup_param_str(Calling party's category)\");\n..."
+    },
+    {
+      "title": "`isup_msg_type` usage",
+      "description": "Read-only variable, returns the ISUP message type as string.",
+      "code": "...\n\t# may print: \"ISUP msg is: IAM\"\n\txlog(\"ISUP msg is: $isup_msg_type\");\n..."
+    },
+    {
+      "title": "`isup.param` usage",
+      "description": "The result of this transformation is similar to a read access of the `$isup_param` pseudovariable with the exception that byte level access is not provided.",
+      "code": "...\n\t# for this example, we take the ISUP body from the received SIP-I message\n\t$var(isup_body) = $(rb[1]);\n\n\t# may print: \"NOA is: 3\"  \n\txlog(\"NOA is: $(var(isup_body){isup.param, Called Party Number, Nature of address indicator})\\\\n\");\n\n\t# may print: \"CpN is: 99991234\"  \n\txlog(\"CpN is: $(var(isup_body){isup.param, Called Party Number, Address signal})\\\\n\");\n\n\t# may print: \"Cg cat is: 10\"\n\txlog(\"Cg cat is: $(var(isup_body){isup.param, Calling party's category})\\\\n\");\n\n\t# may print: \"nature of conn: 0x01\"\n\txlog(\"nature of conn: $(var(isup_body){isup.param, Nature of connection indicators})\\\\n\");\n..."
+    },
+    {
+      "title": "`isup.param.str` usage",
+      "description": "The result of this transformation is similar to a read access of the `$isup_param_str` pseudovariable with the exception that byte level access is not provided.",
+      "code": "...\n\t# for this example, we take the ISUP body from the received SIP-I message\n\t$var(isup_body) = $(rb[1]);\n\n\t# may print: \"NOA is: national\"  \n\txlog(\"NOA is: $(var(isup_body){isup.param.str, Called Party Number, Nature of address indicator})\\\\n\");\n\n\t# may print: \"CpN is: 99991234\"  \n\txlog(\"CpN is: $(var(isup_body){isup.param.str, Called Party Number, Address signal})\\\\n\");\n\n\t# may print: \"Cg cat is: ordinary\"\n\txlog(\"Cg cat is: $(var(isup_body){isup.param.str, Calling party's category})\\\\n\");\n\n\t# may print: \"nature of conn: 0x01\"\n\txlog(\"nature of conn: $(var(isup_body){isup.param.str, Nature of connection indicators})\\\\n\");\n..."
+    }
+  ]
+}

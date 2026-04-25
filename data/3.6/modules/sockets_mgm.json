@@ -1,0 +1,183 @@
+{
+  "id": "module-sockets_mgm-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "sockets_mgm Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/sockets_mgm.html",
+  "content_markdown": "This module provides the means to provision and manage dynamic sockets for OpenSIPS at runtime. The definition of the sockets is stored in an SQL database and can be dynamically changed at runtime. The module caches the entire table sockets and only adjusts the dynamic socket list after a reload using the sockets_mgm:reload MI command. The sockets_mgm:list MI command. can be used to show all the dynamic sockets OpenSIPS is listening on.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T14:24:14.973Z",
+  "module_name": "sockets_mgm",
+  "overview": "This module provides the means to provision and manage dynamic sockets for OpenSIPS at runtime. The definition of the sockets is stored in an SQL database and can be dynamically changed at runtime. The module caches the entire table sockets and only adjusts the dynamic socket list after a reload using the sockets_mgm:reload MI command. The sockets_mgm:list MI command. can be used to show all the dynamic sockets OpenSIPS is listening on.",
+  "how_it_works": "The module exclusively handles sockets used for SIP traffic (e.g., UDP, TCP, TLS, WSS). It does not support BIN or HEP listeners, as these cannot be dynamically utilized or enforced in the script. The management of dynamic sockets is divided into two behaviors, depending on whether the traffic is UDP-based or TCP-based. Based on the nature of your traffic, ensure that your settings are properly tuned to accommodate any sockets you may provision dynamically. All dynamically added UDP sockets are assigned to a group of dedicated extra processes. The number of these processes can be adjusted using the processes parameter. These processes handle UDP-based socket traffic evenly by balancing requests across the less loaded processes. The difference, however, is that static sockets are bound to designated processes, while dynamic sockets share the pool of extra processes. In contrast to UDP traffic handling, TCP traffic is processed in the same way as all other TCP traffic: requests are dispatched to one of the existing static TCP processes.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "reason": "needed for fetching the sockets",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "The database URL where the sockets are fetched from.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"sockets\\_mgm\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "sockets",
+      "description": "The database table name where the sockets are stored.",
+      "example_value": "sockets_def",
+      "example_code": "modparam(\"sockets\\_mgm\", \"table\\_name\", \"sockets_def\")"
+    },
+    {
+      "name": "socket_column",
+      "type": "string",
+      "default_value": "socket",
+      "description": "The database table column where the socket definition is stored.",
+      "example_value": "sock",
+      "example_code": "modparam(\"sockets\\_mgm\", \"socket\\_column\", \"sock\")"
+    },
+    {
+      "name": "advertised_column",
+      "type": "string",
+      "default_value": "advertised",
+      "description": "The database table column where the advertised definition is stored.",
+      "example_value": "adv",
+      "example_code": "modparam(\"sockets\\_mgm\", \"advertised\\_column\", \"adv\")"
+    },
+    {
+      "name": "tag_column",
+      "type": "string",
+      "default_value": "tag",
+      "description": "The database table column where the tag definition is stored.",
+      "example_value": "sock",
+      "example_code": "modparam(\"sockets\\_mgm\", \"tag\\_column\", \"sock\")"
+    },
+    {
+      "name": "flags_column",
+      "type": "string",
+      "default_value": "flags",
+      "description": "The database table column where the flags definition is stored.",
+      "example_value": "sock",
+      "example_code": "modparam(\"sockets\\_mgm\", \"flags\\_column\", \"sock\")"
+    },
+    {
+      "name": "tos_column",
+      "type": "string",
+      "default_value": "tos",
+      "description": "The database table column where the tos definition is stored.",
+      "example_value": "sock",
+      "example_code": "modparam(\"sockets\\_mgm\", \"tos\\_column\", \"sock\")"
+    },
+    {
+      "name": "processes",
+      "type": "integer",
+      "default_value": "8",
+      "description": "The number of processes designated to handle UDP sockets.",
+      "example_value": "32",
+      "example_code": "modparam(\"sockets\\_mgm\", \"processes\", 32)"
+    },
+    {
+      "name": "max_sockets",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The maximum number of sockets that can be defined dynamically. See the Limitations section for more information.",
+      "example_value": "2000",
+      "example_code": "modparam(\"sockets\\_mgm\", \"max\\_sockets\", 2000)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "sockets_mgm:reload",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _sockets\\_reload_.\n\nMI command used to reload the sockets from the database.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi sockets\\_mgm:reload",
+          "description": "reload sockets from the database"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi sockets\\_mgm:reload",
+          "description": "reload sockets from the database"
+        }
+      ]
+    },
+    {
+      "name": "sockets_mgm:list",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _sockets\\_list_.\n\nMI command to list all the currently used dynamic sockets.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi sockets\\_mgm:list",
+          "description": "reload sockets from the database"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi sockets\\_mgm:list",
+          "description": "reload sockets from the database"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set “db\\_url” parameter",
+      "description": "Set “db\\_url” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"db_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set “table\\_name” parameter",
+      "description": "Set “table\\_name” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"table_name\", \"sockets_def\")\n..."
+    },
+    {
+      "title": "Set “socket\\_column” parameter",
+      "description": "Set “socket\\_column” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"socket_column\", \"sock\")\n..."
+    },
+    {
+      "title": "Set “advertised\\_column” parameter",
+      "description": "Set “advertised\\_column” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"advertised_column\", \"adv\")\n..."
+    },
+    {
+      "title": "Set “tag\\_column” parameter",
+      "description": "Set “tag\\_column” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"tag_column\", \"sock\")\n..."
+    },
+    {
+      "title": "Set “flags\\_column” parameter",
+      "description": "Set “flags\\_column” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"flags_column\", \"sock\")\n..."
+    },
+    {
+      "title": "Set “tos\\_column” parameter",
+      "description": "Set “tos\\_column” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"tos_column\", \"sock\")\n..."
+    },
+    {
+      "title": "Set “processes” parameter",
+      "description": "Set “processes” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"processes\", 32)\n..."
+    },
+    {
+      "title": "Set “max\\_sockets” parameter",
+      "description": "Set “max\\_sockets” parameter",
+      "code": "...\nmodparam(\"sockets\\_mgm\", \"max_sockets\", 2000)\n..."
+    }
+  ]
+}

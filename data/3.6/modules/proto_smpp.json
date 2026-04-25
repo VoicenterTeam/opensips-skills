@@ -1,0 +1,344 @@
+{
+  "id": "module-proto_smpp-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "proto_smpp Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/proto_smpp.html",
+  "content_markdown": "This module offers interoperability between SIP and SMPP (Short Message Peer-to-Peer) protocols. It provides the means to build a messaging gateway/bridge between the two protocols, being able to convert messages from both directions.\n\n*   SIP to SMPP - messages coming from SIP can be converted to a SMPP PDU (Protocol Data Unit) message and sent further to a SMSC (Short Message Service Center).\n    \n*   SMPP to SIP - the module can act as an ESME (External Short Messaging Entity), receiving messages from a SMSC and converting them to a SIP Message that is sent further to a SIP proxy.\n    \nThe module is compatible with the [SMPP v3.4](http://opensmpp.org/specs/SMPP_v3_4_Issue1_2.pdf) specifications.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T14:23:51.630Z",
+  "module_name": "proto_smpp",
+  "overview": "This module offers interoperability between SIP and SMPP (Short Message Peer-to-Peer) protocols. It provides the means to build a messaging gateway/bridge between the two protocols, being able to convert messages from both directions.\n\n*   SIP to SMPP - messages coming from SIP can be converted to a SMPP PDU (Protocol Data Unit) message and sent further to a SMSC (Short Message Service Center).\n    \n*   SMPP to SIP - the module can act as an ESME (External Short Messaging Entity), receiving messages from a SMSC and converting them to a SIP Message that is sent further to a SIP proxy.\n    \nThe module is compatible with the [SMPP v3.4](http://opensmpp.org/specs/SMPP_v3_4_Issue1_2.pdf) specifications.",
+  "how_it_works": "In order to convert a SIP message to a SMPP all you need to do is to call the [send_smpp_message()](#func_send_smpp_message \"1.7.1.� send_smpp_message(smsc_name, [from],[to],[body],[utf-16],[delivery_receipt])\") function, indicating the SMSc you want to send the message to. The module will build the PDU according to the parameters provisioned in the database.\n\nWhen bridging a message received over the SMPP interface, OpenSIPS builds a SIP Message and sends it to the outbound proxy identified by the [outbound_uri](#param_smpp_outbound_uri \"1.6.5.�outbound_uri (string)\") module's parameter.\n\nIn order to be able to deliver messages to SMSc, an ESME needs to first bind to the SMSc. This is done at OpenSIPS startup by sending a SMPP _bind_transciever_ command to connect to the SMSc, or an _outbind_ command to inform an SMSc it can now bind to our gateway.\n\nThe description of all SMSc servers is provisioned in the database. For each server, one can cofigure the following information:\n\n*   _Name_ - an unique name given to the SMSc that is used to reference this SMSc in the OpenSIPS script.\n    \n*   _IP_ - The IP the SMSc is listening on for new bindings/connections.\n    \n*   _Port_ - The TCP port that the SMSc is listening on for new bindings/connections.\n    \n*   _System ID_ - Also known as the User name that is used to authenticate to the SMSc.\n    \n*   _Password_ - A password used to authenticate to the SMSc.\n    \n*   _System Type_ - Usually “SMPP”, this field is required by some SMPP providers.\n    \n*   _Source Type of Number (TON)_ - Specifies the format of the number used to send messages from. Some comon values are:\n    \n    *   _0_ - Unknown\n        \n    *   _1_ - International\n        \n    *   _2_ - National\n        \n    *   _3_ - Network Specific\n        \n    *   _4_ - Subscriber Number\n        \n    *   _5_ - Alphanumeric\n        \n    *   _6_ - Abbreviated\n        \n    \n    Default value is _0 - Unknown_.\n    \n*   _Source Number Plan Indicator (NPI)_ - Specifies the numbering scheme of the number used to send messages from. Some comon values are:\n    \n    *   _0_ - Unknown\n        \n    *   _1_ - ISDN/telephone numbering plan (E163/E164)\n        \n    *   _3_ - Data numbering plan (X.121)\n        \n    *   _4_ - Telex numbering plan (F.69)\n        \n    *   _6_ - Land Mobile (E.212)\n        \n    *   _8_ - National numbering plan\n        \n    *   _9_ - Private numbering plan\n        \n    *   _10_ - ERMES numbering plan (ETSI DE/PS 3 01-3)\n        \n    *   _13_ - Internet (IP)\n        \n    *   _18_ - WAP Client Id (to be defined by WAP Forum)\n        \n    \n    Default value is _0 - Unknown_.\n    \n*   _Destination Type of Number (TON)_ - Specifies the format of the number used to send messages to. Can have the same values as _Source Type of Number (TON)_ and default value is _0 - Unknown_.\n    \n*   _Destination Number Plan Indicator (NPI)_ - Specifies the numbering scheme of the number used to send messages to. Can have the same values as _Source Number Plan Indicator (NPI)_ and default value is _0 - Unknown_.\n    \n*   _Session Type_ - Specifies what type of session should be used to connecto th the SMSc. Possible values are:\n    \n    *   _1_ - Transciever\n        \n    *   _2_ - Transmitter\n        \n    *   _3_ - Receiver\n        \n    *   _4_ - Outbind\n        \n    \n    Default value is _1 - Transciever_.\n    \nWhen OpenSIPS starts up, it reads all SMSc specifications from the database and triggers a binding with them. _Note:_ reloading the SMSc database is not yet supported, but it is a work in progress.\n\nEach SMPP connection is periodically pinged (currently every 5 seconds) using _enquire_link_ SMPP commands to keep the connection active.",
+  "dependencies_required": [
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "Any database module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "unset",
+      "description": "The database handler where the SMPP connection will be stored. This parameter is mandatory.",
+      "scope": "global",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"proto_smpp\", \"db_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "smpp_port",
+      "type": "integer",
+      "default_value": "2775",
+      "description": "Used to change the default value of the SMPP port used to listen for new connections.",
+      "scope": "global",
+      "example_value": "27775",
+      "example_code": "modparam(\"proto_smpp\", \"smpp_port\", 27775)"
+    },
+    {
+      "name": "smpp_max_msg_chunks",
+      "type": "integer",
+      "default_value": "8",
+      "description": "The maximum number of chunks in which a SMPP message is expected to arrive via TCP. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "scope": "global",
+      "example_value": "32",
+      "example_code": "modparam(\"proto_smpp\", \"smpp_max_msg_chunks\", 32)"
+    },
+    {
+      "name": "smpp_send_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "Time in milliseconds after a TCP connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "scope": "global",
+      "example_value": "200",
+      "example_code": "modparam(\"proto_smpp\", \"smpp_send_timeout\", 200)"
+    },
+    {
+      "name": "outbound_uri",
+      "type": "string",
+      "default_value": "None",
+      "description": "This parameter represents the URI of the outbound proxy used to send a message converted from SMPP to SIP.",
+      "scope": "global",
+      "example_value": "sip:127.0.0.1:5060",
+      "example_code": "modparam(\"proto_smpp\", \"outbound_uri\", \"sip:127.0.0.1:5060\")"
+    },
+    {
+      "name": "smpp_table",
+      "type": "string",
+      "default_value": "“smpp”",
+      "description": "The name of the database table containing definitions of the SMSc servers used to connect to.",
+      "example_value": "smsc",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"smpp_table\", \"smsc\")\n..."
+    },
+    {
+      "name": "name_col",
+      "type": "string",
+      "default_value": "“name”",
+      "description": "The name of the column that holds the SMSc identifier used by the _send_smpp_message()_ function.",
+      "example_value": "smsc_name",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"name_col\", \"smsc_name\")\n..."
+    },
+    {
+      "name": "ip_col",
+      "type": "string",
+      "default_value": "“ip”",
+      "description": "The name of the column that holds the IP of the SMSc.",
+      "example_value": "smsc_ip",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"ip_col\", \"smsc_ip\")\n..."
+    },
+    {
+      "name": "port_col",
+      "type": "string",
+      "default_value": "“port”",
+      "description": "The name of the column that holds the SMSc port.",
+      "example_value": "smsc_port",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"port_col\", \"smsc_port\")\n..."
+    },
+    {
+      "name": "system_id_col",
+      "type": "string",
+      "default_value": "“system_id”",
+      "description": "The name of the column that holds the SMSc System ID.",
+      "example_value": "smsc_system_id",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"system_id_col\", \"smsc_system_id\")\n..."
+    },
+    {
+      "name": "password_col",
+      "type": "string",
+      "default_value": "password",
+      "description": "The name of the password column used to authenticate the SMSc.",
+      "scope": "global",
+      "example_code": "...\nmodparam(\"proto\\_smpp\", \"password\\_col\", \"smsc\\_password\")\n..."
+    },
+    {
+      "name": "system_type_col",
+      "type": "string",
+      "default_value": "system_type",
+      "description": "The name of the System Type column used to bind the SMSc.",
+      "scope": "global",
+      "example_code": "...\nmodparam(\"proto\\_smpp\", \"system\\_type\\_col\", \"smsc\\_system\\_type\")\n..."
+    },
+    {
+      "name": "src_ton_col",
+      "type": "string",
+      "default_value": "src_ton",
+      "description": "The name of the column that holds the Source TON values.",
+      "scope": "global",
+      "example_code": "...\nmodparam(\"proto\\_smpp\", \"src\\_ton\\_col\", \"smsc\\_src\\_ton\")\n..."
+    },
+    {
+      "name": "src_npi_col",
+      "type": "string",
+      "default_value": "src_npi",
+      "description": "The name of the column that holds the Source NPI values.",
+      "scope": "global",
+      "example_code": "...\nmodparam(\"proto\\_smpp\", \"src\\_npi\\_col\", \"smsc\\_src\\_npi\")\n..."
+    },
+    {
+      "name": "dst_ton_col",
+      "type": "string",
+      "default_value": "dst_ton",
+      "description": "The name of the column that holds the Destination TON values.",
+      "scope": "global",
+      "example_code": "...\nmodparam(\"proto\\_smpp\", \"dst\\_ton\\_col\", \"smsc\\_dst\\_ton\")\n..."
+    },
+    {
+      "name": "dst_npi_col",
+      "type": "string",
+      "default_value": "dst_npi",
+      "description": "The name of the column that holds the Destination NPI values.",
+      "scope": "global",
+      "example_value": "smsc_dst_npi",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"dst_npi_col\", \"smsc_dst_npi\")\n..."
+    },
+    {
+      "name": "session_type_col",
+      "type": "string",
+      "default_value": "session_type",
+      "description": "The name of the column that holds the Session Type of the SMSc.",
+      "scope": "global",
+      "example_value": "smsc_session_type",
+      "example_code": "...\nmodparam(\"proto_smpp\", \"session_type_col\", \"smsc_session_type\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "send_smpp_message",
+      "signature": "send_smpp_message(smsc_name, [from],[to],[body],[utf-16],[delivery_receipt])",
+      "parameters": [
+        {
+          "name": "smsc_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the SMS to be used for sending the SMPP traffic."
+        },
+        {
+          "name": "from",
+          "type": "string",
+          "required": false,
+          "default": "SIP message from username",
+          "description": "the source number."
+        },
+        {
+          "name": "to",
+          "type": "string",
+          "required": false,
+          "default": "SIP request URI username",
+          "description": "the destination number."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "default": "SIP message body",
+          "description": "the body of the SMS."
+        },
+        {
+          "name": "utf-16",
+          "type": "int",
+          "required": false,
+          "default": "0",
+          "description": "set to 1 if the body of the message is in UTF-16. format.",
+          "valid_values": [
+            "0",
+            "1"
+          ]
+        },
+        {
+          "name": "delivery_receipt",
+          "type": "int",
+          "required": false,
+          "description": "Whether the SMSC should confirm delivery for this SMS or not"
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-2",
+          "condition": "the SMSc the message should be sent does not exist in the database"
+        },
+        {
+          "value": "-1",
+          "condition": "there was an internal error"
+        },
+        {
+          "value": "positive value",
+          "condition": "success"
+        }
+      ],
+      "description": "This function is used to convert a SIP message received in the OpenSIPS script to a SMPP PDU and send it to the _smsc\\_name (string)_ received as parameter. The SMPP parameters used to construct the PDU are provisione in the database, and the command sent is either _submit\\_sm_ or _deliver\\_sm_, depending on the type of the SMSc.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (is\\_method(\"MESSAGE\"))\n\t\tsend\\_smpp\\_message(\"MY\\_SMSC\");",
+          "description": "send_smpp_message() usage"
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `smpp_port` variable",
+      "description": "Set `smpp_port` variable",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"smpp\\_port\", 27775)\n..."
+    },
+    {
+      "title": "Set `smpp_max_msg_chunks` parameter",
+      "description": "Set `smpp_max_msg_chunks` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"smpp\\_max\\_msg\\_chunks\", 32)\n..."
+    },
+    {
+      "title": "Set `smpp_send_timeout` parameter",
+      "description": "Set `smpp_send_timeout` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"smpp\\_send\\_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `outbound_uri` parameter",
+      "description": "Set `outbound_uri` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"outbound\\_uri\", \"sip:127.0.0.1:5060\")\n..."
+    },
+    {
+      "title": "Set `smpp_table` parameter",
+      "description": "Set `smpp_table` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"smpp\\_table\", \"smsc\")\n..."
+    },
+    {
+      "title": "Set `name_col` parameter",
+      "description": "Set `name_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"name\\_col\", \"smsc\\_name\")\n..."
+    },
+    {
+      "title": "Set `ip_col` parameter",
+      "description": "Set `ip_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"ip\\_col\", \"smsc\\_ip\")\n..."
+    },
+    {
+      "title": "Set `port_col` parameter",
+      "description": "Set `port_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"port\\_col\", \"smsc\\_port\")\n..."
+    },
+    {
+      "title": "Set `system_id_col` parameter",
+      "description": "Set `system_id_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"system\\_id\\_col\", \"smsc\\_system\\_id\")\n..."
+    },
+    {
+      "title": "Set `password_col` parameter",
+      "description": "Set `password_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"password\\_col\", \"smsc\\_password\")\n..."
+    },
+    {
+      "title": "Set `system_type_col` parameter",
+      "description": "Set `system_type_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"system\\_type\\_col\", \"smsc\\_system\\_type\")\n..."
+    },
+    {
+      "title": "Set `src_ton_col` parameter",
+      "description": "Set `src_ton_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"src\\_ton\\_col\", \"smsc\\_src\\_ton\")\n..."
+    },
+    {
+      "title": "Set `src_npi_col` parameter",
+      "description": "Set `src_npi_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"src\\_npi\\_col\", \"smsc\\_src\\_npi\")\n..."
+    },
+    {
+      "title": "Set `dst_ton_col` parameter",
+      "description": "Set `dst_ton_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"dst\\_ton\\_col\", \"smsc\\_dst\\_ton\")\n..."
+    },
+    {
+      "title": "Set `dst_npi_col` parameter",
+      "description": "Set `dst_npi_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"dst\\_npi\\_col\", \"smsc\\_dst\\_npi\")\n..."
+    },
+    {
+      "title": "Set `session_type_col` parameter",
+      "description": "Set `session_type_col` parameter",
+      "code": "...\nmodparam(\"proto\\_smpp\", \"session\\_type\\_col\", \"smsc\\_session\\_type\")\n..."
+    },
+    {
+      "title": "`send_smpp_message()` usage",
+      "description": "`send_smpp_message()` usage",
+      "code": "...\n    if (is\\_method(\"MESSAGE\"))\n\t\t\tsend\\_smpp\\_message(\"MY\\_SMSC\");\n..."
+    }
+  ]
+}

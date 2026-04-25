@@ -1,0 +1,455 @@
+{
+  "id": "module-snmpstats-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "snmpstats Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/snmpstats.html",
+  "content_markdown": "The SNMPStats module provides an SNMP management interface to OpenSIPS. Specifically, it provides general SNMP queryable scalar statistics, table representations of more complicated data such as user and contact information, and alarm monitoring capabilities.\n\n### 1.1.1. General Scalar Statistics\n\nThe SNMPStats module provides a number of general scalar statistics. Details are available in OPENSER-MIB, OPENSER-REG-MIB, OPENSER-SIP-COMMON-MIB, and OPENSER-SIP-SERVER-MIB. But briefly, these scalars are:\n\nopenserSIPProtocolVersion, openserSIPServiceStartTime, openserSIPEntityType, openserSIPSummaryInRequests, openserSIPSummaryOutRequest, openserSIPSummaryInResponses, openserSIPSummaryOutResponses, openserSIPSummaryTotalTransactions, openserSIPCurrentTransactions, openserSIPNumUnsupportedUris, openserSIPNumUnsupportedMethods, openserSIPOtherwiseDiscardedMsgs, openserSIPProxyStatefulness openserSIPProxyRecordRoute, openserSIPProxyAuthMethod, openserSIPNumProxyRequireFailures, openserSIPRegMaxContactExpiryDuration, openserSIPRegMaxUsers, openserSIPRegCurrentUsers, openserSIPRegDfltRegActiveInterval, openserSIPRegAcceptedRegistrations, openserSIPRegRejectedRegistrations, openserMsgQueueDepth. openserCurNumDialogs, openserCurNumDialogsInProgress, openserCurNumDialogsInSetup, openserTotalNumFailedDialogSetups\n\nThere are also scalars associated with alarms. They are as follows:\n\nopenserMsgQueueMinorThreshold, openserMsgQueueMajorThreshold, openserMsgQueueDepthAlarmStatus, openserMsgQueueDepthMinorAlarm, openserMsgQueueDepthMajorAlarm, openserDialogLimitMinorThreshold, openserDialogLimitMajorThreshold, openserDialogUsageState, openserDialogLimitAlarmStatus, openserDialogLimitMinorAlarm, openserDialogLimitMajorAlarm\n\n### 1.1.2. SNMP Tables\n\nThe SNMPStats module provides several tables, containing more complicated data. The current available tables are:\n\nopenserSIPPortTable, openserSIPMethodSupportedTable, openserSIPStatusCodesTable, openserSIPRegUserTable, openserSIPContactTable, openserSIPRegUserLookupTable\n\n### 1.1.3. Alarm Monitoring\n\nIf enabled, the SNMPStats module will monitor for alarm conditions. Currently, there are two alarm types defined.\n\n1. The number of active dialogs has passed a minor or major threshold. The idea is that a network operation centre can be made aware that their SIP servers may be overloaded, without having to explicitly check for this condition.\n\nIf a minor or major condition has occurred, then a openserDialogLimitMinorEvent trap or a openserDialogLimitMajorEvent trap will be generated, respectively. The minor and major thresholds are described in the parameters section below.\n\n2. The number of bytes waiting to be consumed across all of OpenSIPS's listening ports has passed a minor or major threshold. The idea is that a network operation centre can be made aware that a machine hosting a SIP server may be entering a degraded state, and to investigate why this is so.\n\nIf the number of bytes to be consumed passes a minor or major threshold, then a openserMsgQueueDepthMinorEvent or openserMsgQueueDepthMajorEvent trap will be sent out, respectively.\n\nFull details of these traps can be found in the distributions OPENSER-MIB file.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:25:38.480Z",
+  "module_name": "snmpstats",
+  "overview": "The SNMPStats module provides an SNMP management interface to OpenSIPS. Specifically, it provides general SNMP queryable scalar statistics, table representations of more complicated data such as user and contact information, and alarm monitoring capabilities.\n\n### 1.1.1. General Scalar Statistics\n\nThe SNMPStats module provides a number of general scalar statistics. Details are available in OPENSER-MIB, OPENSER-REG-MIB, OPENSER-SIP-COMMON-MIB, and OPENSER-SIP-SERVER-MIB. But briefly, these scalars are:\n\nopenserSIPProtocolVersion, openserSIPServiceStartTime, openserSIPEntityType, openserSIPSummaryInRequests, openserSIPSummaryOutRequest, openserSIPSummaryInResponses, openserSIPSummaryOutResponses, openserSIPSummaryTotalTransactions, openserSIPCurrentTransactions, openserSIPNumUnsupportedUris, openserSIPNumUnsupportedMethods, openserSIPOtherwiseDiscardedMsgs, openserSIPProxyStatefulness openserSIPProxyRecordRoute, openserSIPProxyAuthMethod, openserSIPNumProxyRequireFailures, openserSIPRegMaxContactExpiryDuration, openserSIPRegMaxUsers, openserSIPRegCurrentUsers, openserSIPRegDfltRegActiveInterval, openserSIPRegAcceptedRegistrations, openserSIPRegRejectedRegistrations, openserMsgQueueDepth. openserCurNumDialogs, openserCurNumDialogsInProgress, openserCurNumDialogsInSetup, openserTotalNumFailedDialogSetups\n\nThere are also scalars associated with alarms. They are as follows:\n\nopenserMsgQueueMinorThreshold, openserMsgQueueMajorThreshold, openserMsgQueueDepthAlarmStatus, openserMsgQueueDepthMinorAlarm, openserMsgQueueDepthMajorAlarm, openserDialogLimitMinorThreshold, openserDialogLimitMajorThreshold, openserDialogUsageState, openserDialogLimitAlarmStatus, openserDialogLimitMinorAlarm, openserDialogLimitMajorAlarm\n\n### 1.1.2. SNMP Tables\n\nThe SNMPStats module provides several tables, containing more complicated data. The current available tables are:\n\nopenserSIPPortTable, openserSIPMethodSupportedTable, openserSIPStatusCodesTable, openserSIPRegUserTable, openserSIPContactTable, openserSIPRegUserLookupTable\n\n### 1.1.3. Alarm Monitoring\n\nIf enabled, the SNMPStats module will monitor for alarm conditions. Currently, there are two alarm types defined.\n\n1. The number of active dialogs has passed a minor or major threshold. The idea is that a network operation centre can be made aware that their SIP servers may be overloaded, without having to explicitly check for this condition.\n\nIf a minor or major condition has occurred, then a openserDialogLimitMinorEvent trap or a openserDialogLimitMajorEvent trap will be generated, respectively. The minor and major thresholds are described in the parameters section below.\n\n2. The number of bytes waiting to be consumed across all of OpenSIPS's listening ports has passed a minor or major threshold. The idea is that a network operation centre can be made aware that a machine hosting a SIP server may be entering a degraded state, and to investigate why this is so.\n\nIf the number of bytes to be consumed passes a minor or major threshold, then a openserMsgQueueDepthMinorEvent or openserMsgQueueDepthMajorEvent trap will be sent out, respectively.\n\nFull details of these traps can be found in the distributions OPENSER-MIB file.",
+  "how_it_works": "### 1.2.1. How the SNMPStats module gets its data\n\nThe SNMPStats module uses OpenSIPSs internal statistic framework to collect most of its data. However, there are two exceptions.\n\n1. The openserSIPRegUserTable and openserSIPContactTable rely on the usrloc modules callback system. Specifically, the SNMPStats module will receive callbacks whenever a user/contact is added to the system.\n\n2. The SNMPStats modules openserSIPMsgQueueDepthMinorEvent and openserSIPMsgQueueDepthMajorEvent alarms rely on the OpenSIPS core to find out what interfaces, ports, and transports OpenSIPS is listening on. However,the module will actually query the proc file system to find out the number of bytes waiting to be consumed. (Currently, this will only work on systems providing the proc file system).\n\n### 1.2.2. How data is moved from the SNMPStats module to a NOC\n\nWe have now explained how the SNMPStats module gathers its data. We still have not explained how it exports this data to a NOC (Network Operations Centre) or administrator.\n\nThe SNMPStats module expects to connect to a _Master Agent_. This would be a SNMP daemon running either on the same system as the OpenSIPS instance, or on another system. (Communication can take place over TCP, so there is no restriction that this daemon need be on the same system as OpenSIPS).\n\nIf the master agent is unavailable when OpenSIPS first starts up, the SNMPStats module will continue to run. However, you will not be able to query it. Thankfully, the SNMPStats module continually looks for its master agent. So even if the master agent is started late, or if the link to the SNMPStats module is severed due to a temporary hardware failure or crashed and restarted master agent, the link will eventually be re-established. No data should be lost, and querying can begin again.\n\nTo request for this data, you will need to query the master agent. The master agent will then redirect the request to the SNMPStats module, which will respond to the master agent, which will in turn respond to your request.",
+  "dependencies_required": [
+    {
+      "name": "Net SNMP DEV (libsnmp-dev on debian)",
+      "type": "library",
+      "reason": "SNMP library (development files) must be installed at the time of compilation. Furthermore, there are several shared objects that must be loadable at the time SNMPStats is loaded.",
+      "optional": false
+    },
+    {
+      "name": "SNMP tools(snmp on debian)",
+      "type": "application",
+      "reason": "SNMP tools package to provide the snmpget command (internally used by the SNMPStats module.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "usrloc",
+    "dialog"
+  ],
+  "exported_parameters": [
+    {
+      "name": "sipEntityType",
+      "type": "string",
+      "description": "This parameter describes the entity type for this OpenSIPS instance, and will be used in determining what is returned for the openserSIPEntityType scalar. Valid parameters are: _registrarServer, redirectServer, proxyServer, userAgent, other_",
+      "possible_values": [
+        "registrarServer",
+        "redirectServer",
+        "proxyServer",
+        "userAgent",
+        "other"
+      ],
+      "scope": "global",
+      "example_value": "registrarServer",
+      "example_code": "...\nmodparam(\"snmpstats\", \"sipEntityType\", \"registrarServer\")\nmodparam(\"snmpstats\", \"sipEntityType\", \"proxyServer\")\n...",
+      "notes": "Note that as the above example shows, you can define this parameter more than once. This is of course because a given OpenSIPS instance can take on more than one role."
+    },
+    {
+      "name": "MsgQueueMinorThreshold",
+      "type": "integer",
+      "description": "The SNMPStats module monitors the number of bytes waiting to be consumed by OpenSIPS. If the number of bytes waiting to be consumed exceeds a minor threshold, the SNMPStats module will send out an openserMsgQueueDepthMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the MsgQueueMinorThreshold parameter.",
+      "scope": "global",
+      "example_value": "2000",
+      "example_code": "...\nmodparam(\"snmpstats\", \"MsgQueueMinorThreshold\", 2000)\n...",
+      "notes": "If this parameter is not set, then there will be no minor alarm monitoring."
+    },
+    {
+      "name": "MsgQueueMajorThreshold",
+      "type": "integer",
+      "description": "The SNMPStats module monitors the number of bytes waiting to be consumed by OpenSIPS. If the number of bytes waiting to be consumed exceeds a major threshold, the SNMPStats module will send out an openserMsgQueueDepthMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the MsgQueueMajorThreshold parameter.",
+      "scope": "global",
+      "example_value": "5000",
+      "example_code": "...\nmodparam(\"snmpstats\", \"MsgQueueMajorThreshold\", 5000)\n...",
+      "notes": "If this parameter is not set, then there will be no major alarm monitoring."
+    },
+    {
+      "name": "dlg_minor_threshold",
+      "type": "integer",
+      "description": "The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a minor threshold, the SNMPStats module will send out an openserDialogLimitMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the dlg\\_minor\\_threshold parameter.",
+      "scope": "global",
+      "example_value": "500",
+      "example_code": "...\n  modparam(\"snmpstats\", \"dlg\\_minor\\_threshold\", 500)\n...",
+      "notes": "If this parameter is not set, then there will be no minor alarm monitoring."
+    },
+    {
+      "name": "dlg_major_threshold",
+      "type": "integer",
+      "description": "The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a major threshold, the SNMPStats module will send out an openserDialogLimitMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the dlg\\_major\\_threshold parameter.",
+      "scope": "global",
+      "example_value": "750",
+      "example_code": "...\n  modparam(\"snmpstats\", \"dlg\\_major\\_threshold\", 750)\n...",
+      "notes": "If this parameter is not set, then there will be no major alarm monitoring."
+    },
+    {
+      "name": "snmpgetPath",
+      "type": "string",
+      "default_value": "/usr/local/bin/",
+      "description": "The SNMPStats module provides the openserSIPServiceStartTime scalar. This scalar requires the SNMPStats module to perform a snmpget query to the master agent. You can use this parameter to set the path to your instance of SNMP's snmpget program.",
+      "scope": "global",
+      "example_value": "/my/custom/path/",
+      "example_code": "...\nmodparam(\"snmpstats\", \"snmpgetPath\",     \"/my/custom/path/\")\n..."
+    },
+    {
+      "name": "snmpCommunity",
+      "type": "string",
+      "default_value": "public",
+      "description": "The SNMPStats module provides the openserSIPServiceStartTime scalar. This scalar requires the SNMPStats module to perform a snmpget query to the master agent. If you have defined a custom community string for the snmp daemon, you need to specify it with this parameter.",
+      "scope": "global",
+      "example_value": "customCommunityString",
+      "example_code": "...\nmodparam(\"snmpstats\", \"snmpCommunity\", \"customCommunityString\")\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [
+    {
+      "name": "openserSIPProtocolVersion",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPServiceStartTime",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPEntityType",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPSummaryInRequests",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPSummaryOutRequest",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPSummaryInResponses",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPSummaryOutResponses",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPSummaryTotalTransactions",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPCurrentTransactions",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPNumUnsupportedUris",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPNumUnsupportedMethods",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPOtherwiseDiscardedMsgs",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPProxyStatefulness",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPProxyRecordRoute",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPProxyAuthMethod",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPNumProxyRequireFailures",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegMaxContactExpiryDuration",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegMaxUsers",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegCurrentUsers",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegDfltRegActiveInterval",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegAcceptedRegistrations",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserSIPRegRejectedRegistrations",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueDepth",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserCurNumDialogs",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserCurNumDialogsInProgress",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserCurNumDialogsInSetup",
+      "type": "gauge",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserTotalNumFailedDialogSetups",
+      "type": "counter",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueMinorThreshold",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueMajorThreshold",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueDepthAlarmStatus",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueDepthMinorAlarm",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserMsgQueueDepthMajorAlarm",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogLimitMinorThreshold",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogLimitMajorThreshold",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogUsageState",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogLimitAlarmStatus",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogLimitMinorAlarm",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    },
+    {
+      "name": "openserDialogLimitMajorAlarm",
+      "type": "other",
+      "description": "",
+      "access_methods": [
+        "SNMP"
+      ]
+    }
+  ],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `sipEntityType` parameter",
+      "description": "This parameter describes the entity type for this OpenSIPS instance, and will be used in determining what is returned for the openserSIPEntityType scalar. Valid parameters are: _registrarServer, redirectServer, proxyServer, userAgent, other_",
+      "code": "...\nmodparam(\"snmpstats\", \"sipEntityType\", \"registrarServer\")\nmodparam(\"snmpstats\", \"sipEntityType\", \"proxyServer\")\n...",
+      "explanation": "Note that as the above example shows, you can define this parameter more than once. This is of course because a given OpenSIPS instance can take on more than one role."
+    },
+    {
+      "title": "Setting the `MsgQueueMinorThreshold` parameter",
+      "description": "The SNMPStats module monitors the number of bytes waiting to be consumed by OpenSIPS. If the number of bytes waiting to be consumed exceeds a minor threshold, the SNMPStats module will send out an openserMsgQueueDepthMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the MsgQueueMinorThreshold parameter.",
+      "code": "...\nmodparam(\"snmpstats\", \"MsgQueueMinorThreshold\", 2000)\n...",
+      "explanation": "If this parameter is not set, then there will be no minor alarm monitoring."
+    },
+    {
+      "title": "Setting the `MsgQueueMajorThreshold` parameter",
+      "description": "The SNMPStats module monitors the number of bytes waiting to be consumed by OpenSIPS. If the number of bytes waiting to be consumed exceeds a major threshold, the SNMPStats module will send out an openserMsgQueueDepthMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the MsgQueueMajorThreshold parameter.",
+      "code": "...\nmodparam(\"snmpstats\", \"MsgQueueMajorThreshold\", 5000)\n...",
+      "explanation": "If this parameter is not set, then there will be no major alarm monitoring."
+    },
+    {
+      "title": "Setting the `dlg_minor_threshold` parameter",
+      "description": "The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a minor threshold, the SNMPStats module will send out an openserDialogLimitMinorEvent trap to signal that an alarm condition has occurred. The minor threshold is set with the dlg\\_minor\\_threshold parameter.",
+      "code": "...\n  modparam(\"snmpstats\", \"dlg\\_minor\\_threshold\", 500)\n...",
+      "explanation": "If this parameter is not set, then there will be no minor alarm monitoring."
+    },
+    {
+      "title": "Setting the `dlg_major_threshold` parameter",
+      "description": "The SNMPStats module monitors the number of active dialogs. If the number of active dialogs exceeds a major threshold, the SNMPStats module will send out an openserDialogLimitMajorEvent trap to signal that an alarm condition has occurred. The major threshold is set with the dlg\\_major\\_threshold parameter.",
+      "code": "...\n  modparam(\"snmpstats\", \"dlg\\_major\\_threshold\", 750)\n...",
+      "explanation": "If this parameter is not set, then there will be no major alarm monitoring."
+    },
+    {
+      "title": "Setting the `snmpgetPath` parameter",
+      "description": "The SNMPStats module provides the openserSIPServiceStartTime scalar. This scalar requires the SNMPStats module to perform a snmpget query to the master agent. You can use this parameter to set the path to your instance of SNMP's snmpget program. _Default value is “/usr/local/bin/”._",
+      "code": "...\nmodparam(\"snmpstats\", \"snmpgetPath\",     \"/my/custom/path/\")\n..."
+    },
+    {
+      "title": "Setting the `snmpCommunity` parameter",
+      "description": "The SNMPStats module provides the openserSIPServiceStartTime scalar. This scalar requires the SNMPStats module to perform a snmpget query to the master agent. If you have defined a custom community string for the snmp daemon, you need to specify it with this parameter. _Default value is “public”._",
+      "code": "...\nmodparam(\"snmpstats\", \"snmpCommunity\", \"customCommunityString\")\n..."
+    }
+  ]
+}

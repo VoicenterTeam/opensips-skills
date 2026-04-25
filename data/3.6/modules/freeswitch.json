@@ -1,0 +1,76 @@
+{
+  "id": "module-freeswitch-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "freeswitch Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/freeswitch.html",
+  "content_markdown": "The _\"freeswitch\"_ module is a C driver for the FreeSWITCH Event Socket Layer interface. It can interact with one or more FreeSWITCH servers either by issuing commands to them, or by receiving events from them.\n\nThis driver can be seen as a centralized FreeSWITCH ESL connection manager. OpenSIPS modules may use its API in order to easily establish, reference and reuse ESL connections.\n\nA FreeSWITCH ESL URL is of the form: **fs://\\[username\\]:password@host\\[:port\\]**. The default ESL port is 8021.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:56:58.877Z",
+  "module_name": "freeswitch",
+  "overview": "The _\"freeswitch\"_ module is a C driver for the FreeSWITCH Event Socket Layer interface. It can interact with one or more FreeSWITCH servers either by issuing commands to them, or by receiving events from them.\n\nThis driver can be seen as a centralized FreeSWITCH ESL connection manager. OpenSIPS modules may use its API in order to easily establish, reference and reuse ESL connections.\n\nA FreeSWITCH ESL URL is of the form: **fs://\\[username\\]:password@host\\[:port\\]**. The default ESL port is 8021.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "event_heartbeat_interval",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The expected interval between FreeSWITCH HEARTBEAT event arrivals.",
+      "example_value": "20",
+      "example_code": "...\nmodparam(\"freeswitch\", \"event\\_heartbeat\\_interval\", 20)\n..."
+    },
+    {
+      "name": "esl_connect_timeout",
+      "type": "integer",
+      "default_value": "5000",
+      "description": "The maximally allowed duration for the establishment of an ESL connection.",
+      "example_value": "3000",
+      "example_code": "...\nmodparam(\"freeswitch\", \"esl\\_connect\\_timeout\", 3000)\n..."
+    },
+    {
+      "name": "esl_cmd_timeout",
+      "type": "integer",
+      "default_value": "5000",
+      "description": "The maximally allowed duration for the execution of an ESL command. This interval does not include the connect duration.",
+      "example_value": "3000",
+      "example_code": "...\nmodparam(\"freeswitch\", \"esl\\_cmd\\_timeout\", 3000)\n..."
+    },
+    {
+      "name": "esl_cmd_polling_itv",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "The sleep interval used when polling for an ESL command response. Since the value of this parameter imposes a minimal duration for any ESL command, you should run OpenSIPS in debug mode in order to first determine an expected response time for an arbitrary ESL command, then tune this parameter accordingly.",
+      "example_value": "3000",
+      "example_code": "...\nmodparam(\"freeswitch\", \"esl\\_cmd\\_polling\\_itv\", 3000)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `event_heartbeat_interval` parameter",
+      "description": "Sets the expected interval between FreeSWITCH HEARTBEAT event arrivals.",
+      "code": "...\nmodparam(\"freeswitch\", \"event_heartbeat_interval\", 20)\n..."
+    },
+    {
+      "title": "Setting the `esl_connect_timeout` parameter",
+      "description": "Sets the maximally allowed duration for the establishment of an ESL connection.",
+      "code": "...\nmodparam(\"freeswitch\", \"esl_connect_timeout\", 3000)\n..."
+    },
+    {
+      "title": "Setting the `esl_cmd_timeout` parameter",
+      "description": "Sets the maximally allowed duration for the execution of an ESL command.",
+      "code": "...\nmodparam(\"freeswitch\", \"esl_cmd_timeout\", 3000)\n..."
+    },
+    {
+      "title": "Setting the `esl_cmd_polling_itv` parameter",
+      "description": "Sets the sleep interval used when polling for an ESL command response.",
+      "code": "...\nmodparam(\"freeswitch\", \"esl_cmd_polling_itv\", 3000)\n..."
+    }
+  ]
+}

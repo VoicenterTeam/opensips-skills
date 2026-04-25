@@ -1,0 +1,120 @@
+{
+  "id": "statement-script-statements-3.5",
+  "document_type": "statement",
+  "version": "3.5",
+  "title": "Script Statements v3.5",
+  "url": "https://www.opensips.org/Documentation/Script-Statements-3-5",
+  "content_markdown": "[](https://www.opensips.org)\n\n\n*   [About](/About/About \"About\")\n*   [Downloads](/Downloads/Downloads \"Download\")\n*   [Documentation](/Documentation/Manuals \"Documentation\")\n*   [Community](/Community/OpenSIPS-CE \"Community\")\n*   [Development](/Development/Development \"Development\")\n*   [Training](/Training/Trainings \"Training\")\n\nDocumentation\n\n*   [Manuals](https://www.opensips.org/Documentation/Manuals \"Manuals\")\n*   [Advanced Tutorials](https://www.opensips.org/Documentation/Tutorials \"Tutorials\")\n*   [Tips & FAQ](https://www.opensips.org/Documentation/TipsFAQ \"TipsFAQ\")\n*   [Version Migration](https://www.opensips.org/Documentation/Migration \"Migration\")\n*   [OpenSIPS Webinars](https://www.opensips.org/Documentation/Webinars \"Webinars\")\n*   [Troubleshooting](https://www.opensips.org/Documentation/Troubleshooting \"Troubleshooting\")\n*   [OpenSIPS Tools](https://www.opensips.org/Documentation/Tools \"Tools\")\n*   [Devel Tutorial](https://www.opensips.org/Documentation/Development-Tutorials \"Development-Tutorials\")\n\n\n---\n\nPages for other versions: [devel](https://www.opensips.org/Documentation/Script-Statements-4-0 \"Script Statements - 4.0\") [3.6](https://www.opensips.org/Documentation/Script-Statements-3-6 \"Script Statements - 3.6\") 3.5 [3.4](https://www.opensips.org/Documentation/Script-Statements-3-4 \"Script Statements - 3.4\") Older versions: [3.3](https://www.opensips.org/Documentation/Script-Statements-3-3 \"Script Statements - 3.3\") [3.2](https://www.opensips.org/Documentation/Script-Statements-3-2 \"Script Statements - 3.2\") [3.1](https://www.opensips.org/Documentation/Script-Statements-3-1 \"Script Statements - 3.1\") [3.0](https://www.opensips.org/Documentation/Script-Statements-3-0 \"Script Statements - 3.0\") [2.4](https://www.opensips.org/Documentation/Script-Statements-2-4 \"Script Statements - 2.4\") [2.3](https://www.opensips.org/Documentation/Script-Statements-2-3 \"Script Statements - 2.3\") [2.2](https://www.opensips.org/Documentation/Script-Statements-2-2 \"Script Statements - 2.2\") [2.1](https://www.opensips.org/Documentation/Script-Statements-2-1 \"Script Statements - devel\") [1.11](https://www.opensips.org/Documentation/Script-Statements-1-11 \"Script Statements - 1.11\") [1.10](https://www.opensips.org/Documentation/Script-Statements-1-10 \"Script Statements - ver 1.10\") [1.9](https://www.opensips.org/Documentation/Script-Statements-1-9 \"Script Statements - ver 1.9\") [1.8](https://www.opensips.org/Documentation/Script-Statements-1-8 \"Script Statements - ver 1.8\") [1.7](https://www.opensips.org/Documentation/Script-Statements-1-7 \"Script Statements - ver 1.7\") [1.6](https://www.opensips.org/Documentation/Script-Statements-1-6 \"Script Statements - ver 1.6\") [1.5](https://www.opensips.org/Documentation/Script-Statements-1-5 \"Script Statements - ver 1.5\") [1.4](https://www.opensips.org/Documentation/Script-Statements-1-4 \"Script Statements - ver 1.4\")\n\n  \n\n**Script Statements v3.5**\n\n[Prev](https://www.opensips.org/Documentation/Script-Operators-3-5 \"Script Operators - devel\")\n\n[Next](https://www.opensips.org/Documentation/Script-CoreFunctions-3-5 \"Core Functions - 3.5\")\n\n---\n\n**Table of Content** ([hide](javascript:toggle\\('tocid'\\);))\n\nStatements you can use in the **OpenSIPS** config file while building the routing logic.\n\n#### 1. if [🔗](#if)\n\nIF-ELSE statement\n\nPrototype:\n\n    if (expr) {\n       actions;\n    } else {\n       actions;\n    }\n\nThe 'expr' should be a valid logical expression.\n\nThe logical operators that can be used in the logical expressions:\n\n*   \\== - equal\n*   != - not equal\n*   \\=~ - regular expression matching (e.g. $rU =~ '^1800\\*' is \"$rU begins with 1800\" )\n*   !~ - regular expression not-matching\n*   \\> - greater\n*   \\>= - greater or equal\n*   < - less\n*   <= - less or equal\n*   && - logical AND\n*   || - logical OR\n*   ! - logical NOT\n*   \\[ ... \\] - test operator - inside can be any arithmetic expression\n\nExample of usage:\n\n    if ( is_method(\"INVITE\") && $rp==5060 )\n    {\n        log(\"this sip message is an invite\\\\n\");\n    } else {\n        log(\"this sip message is not an invite\\\\n\");\n    }\n\n#### 2. switch [🔗](#switch)\n\nSWITCH statement - it can be used to test the value of a pseudo-variable.\n\nIMPORTANT NOTE: 'break' can be used only to mark the end of a 'case' branch (as it is in shell scripts). If you are trying to use 'break' outside a 'case' block the script will return error -- you must use 'return' there.\n\nExample of usage:\n\n    route {\n        route(my_logic);\n        switch ($retcode) {\n        case -1:\n            log(\"process INVITE requests here\\\\n\");\n            break;\n        case 1:\n            log(\"process REGISTER requests here\\\\n\");\n            break;\n        case 2:\n        case 3:\n            log(\"process SUBSCRIBE and NOTIFY requests here\\\\n\");\n            break;\n        default:\n            log(\"process other requests here\\\\n\");\n       }\n\n        # switch of R-URI username\n        switch ($rU) {\n        case \"101\":\n            log(\"destination number is 101\\\\n\");\n            break;\n        case \"102\":\n            log(\"destination number is 102\\\\n\"); # continue with 103 and 104\n        case \"103\":\n        case \"104\":\n            log(\"destination number is 103 or 104\\\\n\");\n            break;\n        default:\n            log(\"unknown destination number\\\\n\");\n       }\n    }\n\n    route [my_logic] {\n        if (is_method(\"INVITE\"))\n            return(-1);\n\n        if (is_method(\"REGISTER\"))\n            return(1);\n\n        if (is_method(\"SUBSCRIBE\"))\n            return(2);\n\n        if (is_method(\"NOTIFY\"))\n            return(3);\n\n        return(-2);\n    }\n\nTake care while using 'return' - 'return(0)' stops the execution of the script.\n\n#### 3. while [🔗](#while)\n\nwhile statement\n\nExample of usage:\n\n    $var(i) = 0;\n    $var(cli) = NULL;\n    while ($var(i) < 10) {\n        if ($(avp(valid_clis[$var(i)]) == $fU) {\n            xlog(\"matched the From user!\\\\n\");\n            $var(cli) = $fU;\n            break;\n        }\n        $var(i) = $var(i) + 1;\n    }\n\n[#for each](#foreach)\n\n#### 4. for each [🔗](#foreach)\n\nfor each statement - easy iteration over indexed variables or pseudo-variables\n\nExample of usage:\n\n    $avp(arr) = 0;\n    $avp(arr) = 1;\n    $avp(arr) = 2;\n    $avp(arr) = 3;\n    $avp(arr) = 4;\n\n    for ($var(it) in $(avp(arr)[*]))\n        xlog(\"array value: $var(it)\\\\n\");\n\n    # iterate through all Contact URIs from each Contact header\n    for ($var(ct) in $(ct[*]))\n        xlog(\"Contact: $var(ct)\\\\n\");\n\n    # iterate through all Via headers of a SIP request\n    for ($var(via) in $(hdr(Via)[*]))\n        xlog(\"Found \\\"Via\\\" header: $var(via)\\\\n\");\n\n    # iterate through all JSON documents returned by a MongoDB query\n    cache_raw_query(\"mongodb:location\", \"{... find ...}\", \"$avp(res)\");\n    for ($json(contact) in $(avp(res)[*])) {\n        xlog(\"Found: $json(contact/phone) $json(contact/email)\\\\n\");\n\n        if ($json(contact/phone) =~ \"^40\") {\n            xlog(\"found a cheap destination to dial\\\\n\");\n            break;\n        }\n    }",
+  "category": "Core",
+  "section": "Scripting",
+  "synopsis": "Statements you can use in the OpenSIPS config file while building the routing logic.",
+  "keywords": [
+    "if",
+    "switch",
+    "while",
+    "for each",
+    "script statements",
+    "routing logic"
+  ],
+  "extracted_at": "2025-02-20T00:00:00Z",
+  "statements": [
+    {
+      "name": "if",
+      "syntax": "if (expr) {\n   actions;\n} else {\n   actions;\n}",
+      "description": "IF-ELSE statement. The 'expr' should be a valid logical expression. The logical operators that can be used in the logical expressions: == - equal, != - not equal, =~ - regular expression matching, !~ - regular expression not-matching, > - greater, >= - greater or equal, < - less, <= - less or equal, && - logical AND, || - logical OR, ! - logical NOT, [ ... ] - test operator - inside can be any arithmetic expression.",
+      "parameters": [
+        {
+          "name": "expr",
+          "type": "logical expression",
+          "required": true,
+          "description": "A valid logical expression to evaluate."
+        }
+      ],
+      "usage_context": [
+        "routing logic"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( is_method(\"INVITE\") && $rp==5060 )\n{\n    log(\"this sip message is an invite\\n\");\n} else {\n    log(\"this sip message is not an invite\\n\");\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "switch",
+      "syntax": "switch ($pseudo_variable) {\ncase value:\n    actions;\n    break;\ndefault:\n    actions;\n}",
+      "description": "SWITCH statement - it can be used to test the value of a pseudo-variable. IMPORTANT NOTE: 'break' can be used only to mark the end of a 'case' branch (as it is in shell scripts). If you are trying to use 'break' outside a 'case' block the script will return error -- you must use 'return' there.",
+      "parameters": [
+        {
+          "name": "pseudo-variable",
+          "type": "pseudo-variable",
+          "required": true,
+          "description": "The pseudo-variable to test the value of."
+        }
+      ],
+      "usage_context": [
+        "routing logic"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n    route(my_logic);\n    switch ($retcode) {\n    case -1:\n        log(\"process INVITE requests here\\n\");\n        break;\n    case 1:\n        log(\"process REGISTER requests here\\n\");\n        break;\n    case 2:\n    case 3:\n        log(\"process SUBSCRIBE and NOTIFY requests here\\n\");\n        break;\n    default:\n        log(\"process other requests here\\n\");\n   }\n\n    # switch of R-URI username\n    switch ($rU) {\n    case \"101\":\n        log(\"destination number is 101\\n\");\n        break;\n    case \"102\":\n        log(\"destination number is 102\\n\"); # continue with 103 and 104\n    case \"103\":\n    case \"104\":\n        log(\"destination number is 103 or 104\\n\");\n        break;\n    default:\n        log(\"unknown destination number\\n\");\n   }\n}\n\nroute [my_logic] {\n    if (is_method(\"INVITE\"))\n        return(-1);\n\n    if (is_method(\"REGISTER\"))\n        return(1);\n\n    if (is_method(\"SUBSCRIBE\"))\n        return(2);\n\n    if (is_method(\"NOTIFY\"))\n        return(3);\n\n    return(-2);\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "while",
+      "syntax": "while (expr) {\n    actions;\n}",
+      "description": "while statement",
+      "parameters": [
+        {
+          "name": "expr",
+          "type": "logical expression",
+          "required": true,
+          "description": "A valid logical expression to evaluate for the loop condition."
+        }
+      ],
+      "usage_context": [
+        "routing logic"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(i) = 0;\n$var(cli) = NULL;\nwhile ($var(i) < 10) {\n    if ($(avp(valid_clis[$var(i)]) == $fU) {\n        xlog(\"matched the From user!\\n\");\n        $var(cli) = $fU;\n        break;\n    }\n    $var(i) = $var(i) + 1;\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "for each",
+      "syntax": "for ($iterator in $(collection[*])) {\n    actions;\n}",
+      "description": "for each statement - easy iteration over indexed variables or pseudo-variables",
+      "parameters": [
+        {
+          "name": "iterator",
+          "type": "pseudo-variable",
+          "required": true,
+          "description": "The variable that holds the current item in the iteration."
+        },
+        {
+          "name": "collection",
+          "type": "indexed pseudo-variable",
+          "required": true,
+          "description": "The indexed variable or pseudo-variable array to iterate over."
+        }
+      ],
+      "usage_context": [
+        "routing logic"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$avp(arr) = 0;\n$avp(arr) = 1;\n$avp(arr) = 2;\n$avp(arr) = 3;\n$avp(arr) = 4;\n\nfor ($var(it) in $(avp(arr)[*]))\n    xlog(\"array value: $var(it)\\n\");\n\n# iterate through all Contact URIs from each Contact header\nfor ($var(ct) in $(ct[*]))\n    xlog(\"Contact: $var(ct)\\n\");\n\n# iterate through all Via headers of a SIP request\nfor ($var(via) in $(hdr(Via)[*]))\n    xlog(\"Found \\\"Via\\\" header: $var(via)\\n\");\n\n# iterate through all JSON documents returned by a MongoDB query\ncache_raw_query(\"mongodb:location\", \"{... find ...}\", \"$avp(res)\");\nfor ($json(contact) in $(avp(res)[*])) {\n    xlog(\"Found: $json(contact/phone) $json(contact/email)\\n\");\n\n    if ($json(contact/phone) =~ \"^40\") {\n        xlog(\"found a cheap destination to dial\\n\");\n        break;\n    }\n}",
+          "description": "Example of usage"
+        }
+      ]
+    }
+  ]
+}

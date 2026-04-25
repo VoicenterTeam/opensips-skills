@@ -1,0 +1,194 @@
+{
+  "id": "module-siprec-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "siprec Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/siprec.html",
+  "content_markdown": "This module provides the means to do calls recording using an external recorder - the entity that records the call is not in the media path between the caller and callee, but it is completely separate, thus it can not affect by any means the quality of the conversation. This is done in a standardized manner, using the [SIPREC Protocol](https://tools.ietf.org/html/rfc7866), thus it can be used by any recorder that implements this protocol.\n\nSince an external server is used to record calls, there are no constraints regarding the location of the recorder, thus it can be placed arbitrary. This offers huge flexibility to your architecture configuration and various means for scaling.\n\nThe work for this module has been sponsored by the [OrecX Company](http://www.orecx.com/). This module is fully integrated with the OrecX Call Recording products.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:24:13.890Z",
+  "module_name": "siprec",
+  "overview": "This module provides the means to do calls recording using an external recorder - the entity that records the call is not in the media path between the caller and callee, but it is completely separate, thus it can not affect by any means the quality of the conversation. This is done in a standardized manner, using the [SIPREC Protocol](https://tools.ietf.org/html/rfc7866), thus it can be used by any recorder that implements this protocol.\n\nSince an external server is used to record calls, there are no constraints regarding the location of the recorder, thus it can be placed arbitrary. This offers huge flexibility to your architecture configuration and various means for scaling.\n\nThe work for this module has been sponsored by the [OrecX Company](http://www.orecx.com/). This module is fully integrated with the OrecX Call Recording products.",
+  "how_it_works": "The full architecture of a SIP Media Recording platform is documented in [RFC 7245](https://tools.ietf.org/html/rfc7245). According to this architecture, this OpenSIPS module implements a SRC (Session Recording Client) that instructs a SRS (Session Recording Server) when new calls are started, the participants of the calls and their profiles. Based on this data, the SRS can decide whether the call should be recorded or not.\n\nFrom SIP signalling perspective, the module does not change the call flow between the caller and callee. The call is established just as any other calls that are not recorded. But for each call that has _SIPREC_ engaged, a completely separate SIP session is started by the SRC (OpenSIPS) towards the SRS, using the [OpenSIPS Back-2-Back module](b2b_entities). The _INVITE_ message sent to the SRS contains a multi-part body consisting of two parts:\n\n* _Recording SDP_ - the SDP of the Media Server that will _fork_ the RTP to the recorder.\n\n* _Participants Metadata_ - an XML-formatted document that contains information about the participants. The structure of the document is detailed in [RFC 7865](https://tools.ietf.org/html/rfc7865).\n\nThe SRS can respond with negative reply, indicating that the session does not need to be recorded, or with a positive reply (200 OK), indicating in the SDP body where the media RTP should be _sent/forked_. When the call ends, the SRC must send a _BYE_ message to the SRS, indicating that the recording should be completed.\n\nFull examples of call flows can be found in [RFC 8068](https://tools.ietf.org/html/rfc8068).",
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction module.",
+      "optional": false
+    },
+    {
+      "name": "Dialog",
+      "type": "module",
+      "reason": "Dialog module for keeping track of the call.",
+      "optional": false
+    },
+    {
+      "name": "RTP_Relay",
+      "type": "module",
+      "reason": "RTP Relay module used for controlling the Media Servers that will fork the media.",
+      "optional": false
+    },
+    {
+      "name": "B2B_ENTITIES",
+      "type": "module",
+      "reason": "Back-2-Back module used for communicating with the SRS.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "skip_failover_codes",
+      "type": "string",
+      "description": "A regular expression used to specify the codes that should prevent the module from failing over to a new SRS server.\n\n_By default any negative reply generates a failover._",
+      "example_value": "408",
+      "example_code": "...\n# do not failover on 408 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408\")\n\n# do not failover on 408 or 487 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408|487\")\n\n# do not failover on any 3xx or 4xx reply code\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"\\[34\\]\\[0-9\\]\\[0-9\\]\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "siprec_start_recording",
+      "signature": "siprec_start_recording(srs)",
+      "parameters": [
+        {
+          "name": "srs",
+          "type": "string",
+          "required": true,
+          "description": "a comma-separated list of SRS URIs. These URIs are used in the order specified. See siprec_srs_failover for more information."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if all the internal mechanisms are activated"
+        },
+        {
+          "value": "false",
+          "condition": "when an internal error is triggered and the call recording setup fails"
+        }
+      ],
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call. Note that it does not necessary mean that the call will be recorded - it just means that OpenSIPS will query instruct the SRS that a new call has started, but the SRS might decide that the recording is disabled for those participants.\n\nNote that the call recording is not started right away, but only when the callee provides an SDP as well (usually in a 200 OK, or possibly a 183 Ringing).\n\nNote if you only want to start recording when the call is established (200 OK is received), then you should call this function in the onreply route processing that 200 OK.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (!has_totag() && is_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1\";\n\t\txlog(\"Engage SIPREC call recording to $var(srs) for $ci\\n\");\n\t\tsiprec_start_recording($var(srs));\n\t}\n\t...",
+          "description": "Use `siprec_start_recording()` function with a single SRS"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (!has_totag() && is_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1, sip:127.0.0.1;transport=TCP\";\n\t\txlog(\"Engage SIPREC call recording to servers $var(srs) for $ci in inbound group\\n\");\n\t\tsiprec_start_recording($var(srs), \"inbound\");\n\t}\n\t...",
+          "description": "Use `siprec_start_recording()` function with multiple SRS servers"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\t$xml(caller_xml) = \"<nameID></nameID>\";\n\t$xml(caller_xml/nameID.attr/aor) = \"sip:6024151234@10.0.0.11:5090\";\n\t$xml(caller_xml/nameID) = \"<name>test</name>\";\n\t$siprec(caller) = $xml(caller_xml/nameID);\n\tsiprec_start_recording($var(srs));\n\t...",
+          "description": "Use `siprec_start_recording()` function with custom XML values for participants"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\t$siprec(headers) = \"X-MY-CUSTOM_HDR: 1\\r\\n\";\n\tsiprec_start_recording($var(srs));\n\t...",
+          "description": "Use `siprec_start_recording()` function with custom headers"
+        }
+      ]
+    },
+    {
+      "name": "siprec_pause_recording",
+      "signature": "siprec_pause_recording()",
+      "parameters": [],
+      "return_type": "void",
+      "return_values": [],
+      "description": "Pauses the recording for the ongoing call. Should be called after the dialog has matched.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INVITE\")) {\n\t\tif (is_audio_on_hold())\n\t\t\tsiprec_pause_recording();\n\t}\n\t...",
+          "description": "Use `siprec_pause_recording()`"
+        }
+      ]
+    },
+    {
+      "name": "siprec_resume_recording",
+      "signature": "siprec_resume_recording()",
+      "parameters": [],
+      "return_type": "void",
+      "return_values": [],
+      "description": "Resumes the recording for the ongoing call. Should be called after the dialog has matched.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INVITE\")) {\n\t\tif (!is_audio_on_hold())\n\t\t\tsiprec_resume_recording();\n\t}\n\t...",
+          "description": "Use `siprec_resume_recording()`"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$siprec",
+      "type": "struct",
+      "readable": true,
+      "writable": true,
+      "scope": "message",
+      "description": "Used to modify/describe different siprec sessions parameters that should be taken into account by the siprec_start_recording() function.\n\nThe context of this variable is only limited to the current message processed - it is not available at the transaction or dialog level.\n\nAny of this setting is optional.\n\nSettings that can be provisioned:\n\n*   _group_ - an apaque value that will be inserted in the SIPREC body and represents the name of the group that can be used to clasify calls in certain profiles. If missing, no group is added.\n    \n*   _caller_ - an XML block containing information about the caller. If absent, the _From_ header is used to build the value.\n    \n*   _callee_ - an XML block containing information about the callee. If absent, the _To_ header is used to build the value.\n    \n*   _media_ - the IP that RTPProxy will be streaming media from. If absent _127.0.0.1_ will be used. _NOTE:_ deprecated _media\\_ip_ is an alias for this param.\n    \n*   _headers_ - extra headers that are to be added in the initial request towards the SRS. _NOTE:_ headers must be separated by _\\\\r\\\\n_ and must end with _\\\\r\\\\n_.\n    \n*   _socket_ - listening socket that the outgoing request towards SRS should be used.",
+      "possible_values": [
+        "group",
+        "caller",
+        "callee",
+        "media",
+        "headers",
+        "socket"
+      ]
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `skip_failover_codes` parameter",
+      "description": "A regular expression used to specify the codes that should prevent the module from failing over to a new SRS server.",
+      "code": "...\n# do not failover on 408 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408\")\n\n# do not failover on 408 or 487 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408|487\")\n\n# do not failover on any 3xx or 4xx reply code\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"\\[34\\]\\[0-9\\]\\[0-9\\]\")\n..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with a single SRS",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\tif (!has\\_totag() && is\\_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1\";\n\t\txlog(\"Engage SIPREC call recording to $var(srs) for $ci\\\\n\");\n\t\tsiprec\\_start\\_recording($var(srs));\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with multiple SRS servers",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\tif (!has\\_totag() && is\\_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1, sip:127.0.0.1;transport=TCP\";\n\t\txlog(\"Engage SIPREC call recording to servers $var(srs) for $ci in inbound group\\\\n\");\n\t\tsiprec\\_start\\_recording($var(srs), \"inbound\");\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with custom XML values for participants",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\t$xml(caller\\_xml) = \"<nameID></nameID>\";\n\t$xml(caller\\_xml/nameID.attr/aor) = \"sip:6024151234@10.0.0.11:5090\";\n\t$xml(caller\\_xml/nameID) = \"<name>test</name>\";\n\t$siprec(caller) = $xml(caller\\_xml/nameID);\n\tsiprec\\_start\\_recording($var(srs));\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with custom headers",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\t$siprec(headers) = \"X-MY-CUSTOM\\_HDR: 1\\\\r\\\\n\";\n\tsiprec\\_start\\_recording($var(srs));\n\t..."
+    },
+    {
+      "title": "Use `siprec_pause_recording()`",
+      "description": "Pauses the recording for the ongoing call. Should be called after the dialog has matched.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INVITE\")) {\n\t\tif (is\\_audio\\_on\\_hold())\n\t\t\tsiprec\\_pause\\_recording();\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_resume_recording()`",
+      "description": "Resumes the recording for the ongoing call. Should be called after the dialog has matched.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INVITE\")) {\n\t\tif (!is\\_audio\\_on\\_hold())\n\t\t\tsiprec\\_resume\\_recording();\n\t}\n\t..."
+    }
+  ]
+}

@@ -1,0 +1,863 @@
+{
+  "id": "module-acc-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "acc Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/acc.html",
+  "content_markdown": "The ACC module is used to account transaction information to different backends such as syslog, SQL, AAA. To account a transaction and to choose which set of backends to be used, the script writer only has to mark the transaction for accounting by using the do_accounting() script function. Note that the function is not actually doing the accounting at that very time, it is just setting a marker - the actual accounting will be done later when the transaction or dialog will be completed. Even so, the module allows the script writer to force accounting on the spot in special cases via some other script functions. The accounting module will log by default a fixed set of attributes for the transaction - if you customize your accounting by adding more information to be logged, please see the next chapter about extra accounting - Section 1.2, “Extra accounting”. The fixed minimal accounting information is: * Request Method name * From header TAG parameter * To header TAG parameter * Call-Id * 3-digit Status code from final reply * Reason phrase from final reply * Timestamp when transaction was completed If a value is not present in the request, the empty string is accounted instead. Note that: * A single INVITE may produce multiple accounting reports -- that's most likely due to the SIP forking feature. * Since version 2.2, all flags used for accounting have been replaced with the do_accounting() function. No need to worry anymore whether you have set the flags or not, or be confused by various flag names, now you only have to call the function and it will do all the work for you. * OpenSIPS now supports session/dialog accounting. It can automatically correlate INVITEs with BYEs for generating proper CDRs, for example for billing purposes. * If a UA fails in the middle of a conversation, a proxy will never find out about it. In general, a better practice is to account from an end-device (such as PSTN gateway), which best knows about call status (including media status and PSTN status in case of the gateway). The SQL, Event Interface and AAA backend support are compiled in the module. A very comprehensive description of how the accounting module works in terms accounting scope, accounting events and accounting backends can be found in this online Advanced Accounting Tutorial.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:12:16.390Z",
+  "module_name": "acc",
+  "overview": "The ACC module is used to account transaction information to different backends such as syslog, SQL, AAA. To account a transaction and to choose which set of backends to be used, the script writer only has to mark the transaction for accounting by using the do_accounting() script function. Note that the function is not actually doing the accounting at that very time, it is just setting a marker - the actual accounting will be done later when the transaction or dialog will be completed. Even so, the module allows the script writer to force accounting on the spot in special cases via some other script functions. The accounting module will log by default a fixed set of attributes for the transaction - if you customize your accounting by adding more information to be logged, please see the next chapter about extra accounting - Section 1.2, “Extra accounting”. The fixed minimal accounting information is: * Request Method name * From header TAG parameter * To header TAG parameter * Call-Id * 3-digit Status code from final reply * Reason phrase from final reply * Timestamp when transaction was completed If a value is not present in the request, the empty string is accounted instead. Note that: * A single INVITE may produce multiple accounting reports -- that's most likely due to the SIP forking feature. * Since version 2.2, all flags used for accounting have been replaced with the do_accounting() function. No need to worry anymore whether you have set the flags or not, or be confused by various flag names, now you only have to call the function and it will do all the work for you. * OpenSIPS now supports session/dialog accounting. It can automatically correlate INVITEs with BYEs for generating proper CDRs, for example for billing purposes. * If a UA fails in the middle of a conversation, a proxy will never find out about it. In general, a better practice is to account from an end-device (such as PSTN gateway), which best knows about call status (including media status and PSTN status in case of the gateway). The SQL, Event Interface and AAA backend support are compiled in the module. A very comprehensive description of how the accounting module works in terms accounting scope, accounting events and accounting backends can be found in this online Advanced Accounting Tutorial.",
+  "how_it_works": "Declaring an extra in the format of modparam(\"acc\", \"extra_fields\", \"log: a -> test_a\") will enable you to set the value for test_a field of the log only by setting $acc_extra(a) variable. Otherwise, the field shall be logged with no value(null).\n\nFirst how it works: The idea is to have a variable to store a set of values for each leg. The meaning of the variable content is strictly decided by the script writer - it can be the origin and source of the leg, its status or any other related information. By default there is defined only one leg. Script writer has to decide when is the time to create a new leg, by using acc_new_leg() script function. When creating a new leg, all the values for that leg will be set to NULL by default. When the accounting information for the call will be written/sent, all the call-leg pairs will be added. By default, the multiple call-leg support is disabled - it can be enabled just by setting acc_leg variable leg_fields module parameter. Note that the last one only makes sense only for CDRs that are generated automatically by OpenSIPS.\n\nThis type of accounting is based on the dialog module. When an initial INVITE is received, if the cdr flag is set, then the dialog creation time is saved. Once the call is answered and the ACK is received, other information like extra values or leg values are saved. When the corresponding BYE is received, the call duration is computed and all information is stored to the desired backend.",
+  "dependencies_required": [
+    {
+      "name": "tm",
+      "type": "module",
+      "reason": "Transaction Manager",
+      "optional": false
+    },
+    {
+      "name": "a database module",
+      "type": "module",
+      "reason": "If SQL support is used",
+      "optional": true
+    },
+    {
+      "name": "rr",
+      "type": "module",
+      "reason": "Record Route, if “detect_direction” module parameter is enabled",
+      "optional": true
+    },
+    {
+      "name": "an aaa module",
+      "type": "module",
+      "reason": "",
+      "optional": true
+    },
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "Dialog, if “cdr” option is used",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": [
+    "radius client library (If radius accounting is used)",
+    "dictionary.rfc2866 (If radius accounting is used)"
+  ],
+  "exported_parameters": [
+    {
+      "name": "early_media",
+      "type": "integer",
+      "default_value": "0 (no)",
+      "description": "Should be early media (any provisional reply with body) accounted too ?",
+      "example_value": "1",
+      "example_code": "modparam(\"acc\", \"early_media\", 1)"
+    },
+    {
+      "name": "report_cancels",
+      "type": "integer",
+      "default_value": "0 (no)",
+      "description": "By default, CANCEL reporting is disabled -- most accounting applications wants to see INVITE's cancellation status. Turn on if you explicitly want to account CANCEL transactions.",
+      "example_value": "1",
+      "example_code": "modparam(\"acc\", \"report_cancels\", 1)"
+    },
+    {
+      "name": "detect_direction",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Controls the direction detection for sequential requests. If enabled (non zero value), for sequential requests with upstream direction (from callee to caller), the FROM and TO will be swapped (the direction will be preserved as in the original request). It affects all values related to TO and FROM headers (body, URI, username, domain, TAG).",
+      "example_value": "1",
+      "example_code": "modparam(\"acc\", \"detect_direction\", 1)"
+    },
+    {
+      "name": "extra_fields",
+      "type": "string",
+      "default_value": "0 (disabled)",
+      "description": "Defines the tag-log_value set to be used in extra fields accounting. See Section 1.2, “Extra accounting” for a detailed description of the Extra accounting. If empty, extra accounting support will be disabled.",
+      "example_value": "log: a->My_a_Field; b",
+      "example_code": "# for syslog-based accounting, use any text you want to be printed\n# if setting $acc_extra(a) you will see \"My_a_Field=<value> in logs\n# if setting $acc_extra(b) you will see \"b=<value> in logs\nmodparam(\"acc\", \"extra_fields\", \"log: a->My_a_Field; b\")\n# for mysql-based accounting, use the names of the columns\n# $acc_extra(a) = <value>  results in setting col_a with <value> in db\nmodparam(\"acc\", \"extra_fields\", \"db: a->col_a; col_b\")\n# for AAA-based accounting, use the names of the AAA AVPs\nmodparam(\"acc\", \"extra_fields\",\"aaa:a->AAA_SRC;b->AAA_DST\")\n# evi definition example\nmodparam(\"acc\", \"extra_fields\",\"a->2345;b->2346\")"
+    },
+    {
+      "name": "leg_fields",
+      "type": "string",
+      "default_value": "0 (disabled)",
+      "description": "Defines the tag-log_value set to be used in multi-leg accounting. See Section 1.3, “Multi Call-Legs accounting” for a detailed description of the Multi Call-Legs accounting. If empty, multi-leg accounting support will be disabled.",
+      "example_value": "log: a->My_a_Field; b",
+      "example_code": "# for syslog-based accounting, use any text you want to be printed\n# if setting $(acc_leg(a)[0]) you will see \"My_a_Field=<value> in logs\n# if setting $(acc_leg(b)[0]) you will see \"b=<value> in logs\nmodparam(\"acc\", \"leg_fields\", \"log: a->My_a_Field; b\")\n# for mysql-based accounting, use the names of the columns\n# $acc_leg(a) = <value>  results in setting col_a with <value> in db\nmodparam(\"acc\", \"leg_fields\", \"db: a->col_a; col_b\")\n# for AAA-based accounting, use the names of the AAA AVPs\nmodparam(\"acc\", \"leg_fields\",\"aaa:a->AAA_LEG_SRC;b->AAA_LEG_DST\")\n# evi definition example\nmodparam(\"acc\", \"leg_fields\",\"a->2345;b->2346\")"
+    },
+    {
+      "name": "log_level",
+      "type": "integer",
+      "default_value": "L_NOTICE",
+      "description": "Log level at which accounting messages are issued to syslog.",
+      "example_value": "2",
+      "example_code": "modparam(\"acc\", \"log_level\", 2)   # Set log_level to 2"
+    },
+    {
+      "name": "log_facility",
+      "type": "string",
+      "default_value": "LOG_DAEMON",
+      "description": "Log facility to which accounting messages are issued to syslog. This allows to easily seperate the accounting specific logging from the other log messages.",
+      "example_value": "LOG_DAEMON",
+      "example_code": "modparam(\"acc\", \"log_facility\", \"LOG_DAEMON\")"
+    },
+    {
+      "name": "aaa_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "This is the url representing the AAA protocol used and the location of the configuration file of this protocol. If the parameter is set to empty string, the AAA accounting support will be disabled.",
+      "example_value": "radius:/etc/radiusclient-ng/radiusclient.conf",
+      "example_code": "modparam(\"acc\", \"aaa_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")"
+    },
+    {
+      "name": "service_type",
+      "type": "integer",
+      "default_value": "not-set",
+      "description": "AAA service type used for accounting.",
+      "example_value": "15",
+      "example_code": "modparam(\"acc\", \"service_type\", 15)",
+      "notes": "Default value of service type for SIP is 15"
+    },
+    {
+      "name": "db_table_acc",
+      "type": "string",
+      "default_value": "acc",
+      "description": "Table name of accounting successful calls -- database specific.",
+      "example_value": "myacc_table",
+      "example_code": "modparam(\"acc\", \"db_table_acc\", \"myacc_table\")"
+    },
+    {
+      "name": "db_table_missed_calls",
+      "type": "string",
+      "default_value": "missed_calls",
+      "description": "Table name for accounting missed calls -- database specific.",
+      "example_value": "myMC_table",
+      "example_code": "modparam(\"acc\", \"db_table_missed_calls\", \"myMC_table\")"
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "SQL address -- database specific. If is set to NULL or empty string, the SQL support is disabled.",
+      "example_value": "mysql://user:password@localhost/opensips",
+      "example_code": "modparam(\"acc\", \"db_url\", \"mysql://user:password@localhost/opensips\")"
+    },
+    {
+      "name": "acc_method_column",
+      "type": "string",
+      "default_value": "method",
+      "description": "Column name in accounting table to store the request's method name as string.",
+      "example_value": "method",
+      "example_code": "modparam(\"acc\", \"acc_method_column\", \"method\")"
+    },
+    {
+      "name": "acc_from_tag_column",
+      "type": "string",
+      "default_value": "from_tag",
+      "description": "Column name in accounting table to store the From header TAG parameter.",
+      "example_value": "from_tag",
+      "example_code": "modparam(\"acc\", \"acc_from_tag_column\", \"from_tag\")"
+    },
+    {
+      "name": "acc_to_tag_column",
+      "type": "string",
+      "default_value": "to_tag",
+      "description": "Column name in accounting table to store the To header TAG parameter.",
+      "example_value": "to_tag",
+      "example_code": "modparam(\"acc\", \"acc_to_tag_column\", \"to_tag\")"
+    },
+    {
+      "name": "acc_callid_column",
+      "type": "string",
+      "default_value": "callid",
+      "description": "Column name in accounting table to store the request's Callid value.",
+      "example_code": "modparam(\"acc\", \"acc_callid_column\", \"callid\")"
+    },
+    {
+      "name": "acc_sip_code_column",
+      "type": "string",
+      "default_value": "sip_code",
+      "description": "Column name in accounting table to store the final reply's numeric code value in string format.",
+      "example_code": "modparam(\"acc\", \"acc_sip_code_column\", \"sip_code\")"
+    },
+    {
+      "name": "acc_sip_reason_column",
+      "type": "string",
+      "default_value": "sip_reason",
+      "description": "Column name in accounting table to store the final reply's reason phrase value.",
+      "example_code": "modparam(\"acc\", \"acc_sip_reason_column\", \"sip_reason\")"
+    },
+    {
+      "name": "acc_time_column",
+      "type": "string",
+      "default_value": "time",
+      "description": "Column name in accounting table to store the time stamp of the transaction completion in date-time format.",
+      "example_code": "modparam(\"acc\", \"acc_time_column\", \"time\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "do_accounting",
+      "signature": "do_accounting(type, [flags], [table])",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "the type of accounting you want to do. All types have to be separated by '|'.",
+          "valid_values": [
+            "log",
+            "db",
+            "aaa",
+            "evi"
+          ]
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags for the accounting type you have selected. All the types have to be separated by '|'.",
+          "valid_values": [
+            "cdr",
+            "missed",
+            "failed"
+          ]
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": false,
+          "description": "table where to do the accounting; it replaces old table_avp parameter"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "do_accounting() replaces all the *_flag and, *_missed_flag, cdr_flag, failed transaction_flag and the db_table_avp modparams. Just call do_accounting(), select where and how you want the accounting to take place, and the function will do all the work for you. When called multiple times, the function behaves _additively_.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\tif (!has_totag()) {\n\t\t\tif (is_method(\"INVITE\")) {\n\t\t\t/* enable cdr and missed calls accounting in the database\n\t\t\t * and to syslog; db accounting shall be done in \"my_acc\" table */\n\t\t\tdo_accounting(\"db|log\", \"cdr|missed\", \"my_acc\");\n\t\t\t}\n\t\t}\n\t\t...\n\t\tif (is_method(\"BYE\")) {\n\t\t\t/* do normal accounting via aaa */\n\t\t\tdo_accounting(\"aaa\");\n\t\t}\n\t\t...\n\t\t",
+          "description": "do_accounting usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "drop_accounting",
+      "signature": "drop_accounting([type], [flags])",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "the type of accounting you want to stop. All the types have to be separated by '|'.",
+          "valid_values": [
+            "log",
+            "db",
+            "aaa",
+            "evi"
+          ]
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "flags to be reset for the accouting type you have selected. All the types have to be separated by '|'.",
+          "valid_values": [
+            "cdr",
+            "missed",
+            "failed"
+          ]
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "drop_accounting() resets flags and types of accounting set with do_accounting(). If called with no arguments all accounting will be stopped. If called with only one argument all accounting for that type will be stopped. If called with two arguments normal accounting will still be enabled. When called multiple times, the function behaves _additively_.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\tacc_log_request(\"403 Destination not allowed\");\n\t\tif (!has_totag()) {\n\t\t\tif (is_method(\"INVITE\")) {\n\t\t\t/* enable cdr and missed calls accounting in the database\n\t\t\t * and to syslog; db accounting shall be done in \"my_acc\" table */\n\t\t\tdo_accounting(\"db|log\", \"cdr|missed\", \"my_acc\");\n\t\t\t}\n\t\t}\n\t\t...\n\t\t/* later in your script */\n\t\tif (...) { /* you don't want accounting anymore */\n\t\t\t/* stop all syslog accounting */\n\t\t\tdrop_accounting(\"log\");\n\t\t\t/* or stop missed calls and cdr accounting for syslog;\n\t\t\t * normal accounting will still be enabled */\n\t\t\tdrop_accounting(\"log\", \"missed|cdr\");\n\t\t\t/* or stop all types of accounting  */\n\t\t\tdrop_accounting();\n\t\t}\n\t\t...\n\t\t",
+          "description": "drop_accounting usage"
+        }
+      ],
+      "related_functions": [
+        "do_accounting"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "acc_log_request",
+      "signature": "acc_log_request(comment)",
+      "parameters": [
+        {
+          "name": "comment",
+          "type": "string",
+          "required": true,
+          "description": "Comment describing how the request completed - this string has to contain a reply code followed by a reply reason phrase (ex: \"480 Nobody Home\"). Variables are accepted in this string."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "acc_request reports on a request, for example, it can be used to report on missed calls to off-line users who are replied 404 - Not Found. To avoid multiple reports on UDP request retransmission, you would need to embed the action in stateful processing.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nacc_log_request(\"403 Destination not allowed\");\n...\n",
+          "description": "acc_log_request usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "acc_db_request",
+      "signature": "acc_db_request(comment, table)",
+      "parameters": [
+        {
+          "name": "comment",
+          "type": "string",
+          "required": true,
+          "description": "Comment describing how the request completed - this string has to contain a reply code followed by a reply reason phrase (ex: \"480 Nobody Home\"). Variables are accepted in this string."
+        },
+        {
+          "name": "table",
+          "type": "string",
+          "required": true,
+          "description": "Database table to be used."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Like acc_log_request, acc_db_request reports on a request. The report is sent to database at “db_url”, in the table referred to in the second action parameter.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nacc_db_request(\"Some comment\", \"Some table\");\nacc_db_request(\"$T_reply_code $(<reply>rr)\", \"acc\");\n...\n",
+          "description": "acc_db_request usage"
+        }
+      ],
+      "related_functions": [
+        "acc_log_request"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "acc_aaa_request",
+      "signature": "acc_aaa_request(comment)",
+      "parameters": [
+        {
+          "name": "comment",
+          "type": "string",
+          "required": true,
+          "description": "Comment describing how the request completed - this string has to contain a reply code followed by a reply reason phrase (ex: \"404 Nobody home\"). Variables are accepted in this string."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Like acc_log_request, acc_aaa_request reports on a request. It reports to aaa server as configured in “aaa_url”.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nacc_aaa_request(\"403 Destination not allowed\");\n...\n",
+          "description": "acc_aaa_request usage"
+        }
+      ],
+      "related_functions": [
+        "acc_log_request"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "acc_evi_request",
+      "signature": "acc_evi_request(comment)",
+      "parameters": [
+        {
+          "name": "comment",
+          "type": "string",
+          "required": true,
+          "description": "Comment describing how the request completed - this string has to contain a reply code followed by a reply reason phrase (ex: \"404 Nobody home\")"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Like acc_log_request, acc_evi_request reports on a request. The report is packed as an event sent through the OpenSIPS Event Interface as _E_ACC_EVENT_ if the reply code is a positive one (lower than 300), or _E_ACC_MISSED_EVENT_ for negative or no codes. More information on this in [Exported Events](#exported_events \"1.9.�Exported Events\").",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nacc_evi_request(\"403 Destination not allowed\");\n...\n",
+          "description": "acc_evi_request usage"
+        }
+      ],
+      "related_functions": [
+        "acc_log_request"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "acc_new_leg",
+      "signature": "acc_new_leg()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "Creates a new leg and increments [$acc_current_leg](#pv_acc_current_leg \"1.7.3.�$acc_current_leg (read-only)\") only if multi-leg accounting is used. All values of the new leg will be initialized to null.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tacc_new_leg();\n...\n",
+          "description": "acc_new_leg usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "acc_load_ctx_from_dlg",
+      "signature": "acc_load_ctx_from_dlg()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "The function loads and exposes the accounting context of the currently in-use dialog. By dialog context, it means, from script level, you will read/write the accounting variables from the other dialog. The current accounting context is stashed until an unload operation is done. Note that this functions makes sense only when used together with the _load_dialog_ctx()_ function from the dialog module. After loading the context of another dialog, by using the _acc_load_ctx_from_dlg()_ function, you can also access the accounting context of the loaded dialog. NOTE: you cannot perform a new load until doing an unload - no nested loadings are allowed.",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif ( load_dialog_ctx(\"$var(callid)\") ) {\n\t# we now have the dialog context of the new dialog\n\tacc_load_ctx_from_dlg();\n\t# we have now also the accouting context of that dialog\n\txlog(\"The accounting caller of call '$var(callid)' \"\n\t\t\"is '$acc_extra(caller)'\\n\");\n\tacc_unload_ctx_from_dlg();\n\tunload_dialog_ctx();\n}\n\n...\n",
+          "description": "acc_load_ctx_from_dlg usage"
+        }
+      ],
+      "related_functions": [
+        "load_dialog_ctx",
+        "acc_unload_ctx_from_dlg"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "acc_unload_ctx_from_dlg",
+      "signature": "acc_unload_ctx_from_dlg()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "The function off-loads a previosuly loaded accounting context, exposing whatever accounting context was present before doing the load. NOTE: you MUST perform from script an explicit unload for each load you did!",
+      "usage_context": [
+        "any type of route"
+      ],
+      "examples": [],
+      "related_functions": [
+        "acc_load_ctx_from_dlg"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_ACC_CDR",
+      "description": "The event raised when a CDR is generated. Note that this event will only be triggered if the auto CDR accounting is used.",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "description": "Request method name"
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "description": "From header tag parameter"
+        },
+        {
+          "name": "to_tag",
+          "type": "string",
+          "description": "To header tag parameter"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "Message Call-id"
+        },
+        {
+          "name": "sip_code",
+          "type": "integer",
+          "description": "The status code from the final reply"
+        },
+        {
+          "name": "sip_reason",
+          "type": "string",
+          "description": "The status reason from the final reply"
+        },
+        {
+          "name": "time",
+          "type": "integer",
+          "description": "The timestamp when the call was established"
+        },
+        {
+          "name": "evi_extra*",
+          "type": "string",
+          "description": "Extra parameters added by the evi_extra parameter"
+        },
+        {
+          "name": "evi_extra_bye*",
+          "type": "string",
+          "description": "Extra parameters added by the evi_extra_bye parameter"
+        },
+        {
+          "name": "multi_leg_info*",
+          "type": "string",
+          "description": "Extra parameters added by the multi_leg_info parameter"
+        },
+        {
+          "name": "multi_leg_bye_info*",
+          "type": "string",
+          "description": "Extra parameters added by the multi_leg_bye_info parameter"
+        },
+        {
+          "name": "duration",
+          "type": "integer",
+          "description": "The call duration in seconds"
+        },
+        {
+          "name": "ms_duration",
+          "type": "integer",
+          "description": "The call duration in milliseconds"
+        },
+        {
+          "name": "setuptime",
+          "type": "integer",
+          "description": "The call setup time in seconds"
+        },
+        {
+          "name": "created",
+          "type": "integer",
+          "description": "The timestamp when the call was created (the initial Invite was received)"
+        }
+      ]
+    },
+    {
+      "name": "E_ACC_EVENT",
+      "description": "This event is triggered when old-style accounting is used. It is generated when the requests (INVITE and BYE) transaction have positive final replies, or by the `acc_evi_request()` function that has a positive reply code in comment.",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "description": "Request method name"
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "description": "From header tag parameter"
+        },
+        {
+          "name": "to_tag",
+          "type": "string",
+          "description": "To header tag parameter"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "Message Call-id"
+        },
+        {
+          "name": "sip_code",
+          "type": "integer",
+          "description": "The status code from the final reply"
+        },
+        {
+          "name": "sip_reason",
+          "type": "string",
+          "description": "The status reason from the final reply"
+        },
+        {
+          "name": "time",
+          "type": "integer",
+          "description": "The timestamp when the transaction was created"
+        },
+        {
+          "name": "evi_extra*",
+          "type": "string",
+          "description": "Extra parameters added by the evi_extra parameter"
+        },
+        {
+          "name": "multi_leg_info*",
+          "type": "string",
+          "description": "Extra parameters added by the multi_leg_info parameter"
+        }
+      ]
+    },
+    {
+      "name": "E_ACC_MISSED_EVENT",
+      "description": "This event is triggered when old-style accounting is used. It is generated when the requests (INVITE and BYE) transaction have negative final replies, or by the `acc_evi_request()` function that has a negative reply code in comment.",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "description": "Request method name"
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "description": "From header tag parameter"
+        },
+        {
+          "name": "to_tag",
+          "type": "string",
+          "description": "To header tag parameter"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "Message Call-id"
+        },
+        {
+          "name": "sip_code",
+          "type": "integer",
+          "description": "The status code from the final reply"
+        },
+        {
+          "name": "sip_reason",
+          "type": "string",
+          "description": "The status reason from the final reply"
+        },
+        {
+          "name": "time",
+          "type": "integer",
+          "description": "The timestamp when the transaction was created"
+        },
+        {
+          "name": "evi_extra*",
+          "type": "string",
+          "description": "Extra parameters added by the evi_extra parameter"
+        },
+        {
+          "name": "multi_leg_info*",
+          "type": "string",
+          "description": "Extra parameters added by the multi_leg_info parameter"
+        },
+        {
+          "name": "created",
+          "type": "integer",
+          "description": "Timestamp when the call was created"
+        },
+        {
+          "name": "setuptime",
+          "type": "integer",
+          "description": "The call setup time in seconds"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [
+    {
+      "name": "$acc_extra(tag_name)",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "request",
+      "description": "This variable can addresed with the tag names defined using extra_fields. If do_accounting() isn't called, this variable is visible during the whole processing of one message, enabling calling acc_XXX_request(). If do_accounting() is called, the variable will be visible from the first call of this function until the actual accounting is being made."
+    },
+    {
+      "name": "$(acc_leg(tag_name)[leg_index])",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "This variable can be addressed with the tag names defined using leg_fields and a valid leg index (<= $acc_current_leg). This variable cannot be used unless do_accounting() is used. The variable also accepts negative indexes, which start from -1 (the lastly added leg).\n\n# the \"caller\" value of the current leg\n$acc_leg(caller)\n\n# the \"caller\" value of the lastly added leg\n$(acc_leg(caller)[-1]) # equivalent to $acc_leg(caller)\n                       # equivalent to $(acc_leg(caller)[$acc_current_leg])\n\n# the \"caller\" value of the next-to-last leg\n$(acc_leg(caller)[-2])"
+    },
+    {
+      "name": "$acc_current_leg",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "Holds the index of the current leg, starting from 0. Calling acc_new_leg() will increment this index."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "General Example",
+      "description": "",
+      "code": "loadmodule \"modules/acc/acc.so\"\n\nif ($ru=~\"sip:+40\") /* calls to Romania */ {\n    if (!proxy_authorize(\"sip_domain.net\" /* realm */,\n    \"subscriber\" /* table name */))  {\n        proxy_challenge(\"sip_domain.net\" /* realm */, \"0\" /* no qop */ );\n        exit;\n    }\n\n    if (is_method(\"INVITE\") && $au!=$fU) {\n        xlog(\"FROM URI != digest username\\n\");\n        sl_send_reply(403,\"Forbidden\");\n    }\n\n    do_accounting(\"log\"); /* set for accounting via syslog */\n    t_relay(); /* enter stateful mode now */\n};"
+    },
+    {
+      "title": "early_media example",
+      "description": "",
+      "code": "modparam(\"acc\", \"early_media\", 1)"
+    },
+    {
+      "title": "report_cancels example",
+      "description": "",
+      "code": "modparam(\"acc\", \"report_cancels\", 1)"
+    },
+    {
+      "title": "detect_direction example",
+      "description": "",
+      "code": "modparam(\"acc\", \"detect_direction\", 1)"
+    },
+    {
+      "title": "Setting _extra_fields_ example:",
+      "description": "",
+      "code": "# for syslog-based accounting, use any text you want to be printed\n# if setting $acc_extra(a) you will see \"My_a_Field=<value> in logs\n# if setting $acc_extra(b) you will see \"b=<value> in logs\nmodparam(\"acc\", \"extra_fields\", \"log: a->My_a_Field; b\")\n# for mysql-based accounting, use the names of the columns\n# $acc_extra(a) = <value>  results in setting col_a with <value> in db\nmodparam(\"acc\", \"extra_fields\", \"db: a->col_a; col_b\")\n# for AAA-based accounting, use the names of the AAA AVPs\nmodparam(\"acc\", \"extra_fields\",\"aaa:a->AAA_SRC;b->AAA_DST\")\n# evi definition example\nmodparam(\"acc\", \"extra_fields\",\"a->2345;b->2346\")"
+    },
+    {
+      "title": "Setting _leg_fields_ example:",
+      "description": "",
+      "code": "# for syslog-based accounting, use any text you want to be printed\n# if setting $(acc_leg(a)[0]) you will see \"My_a_Field=<value> in logs\n# if setting $(acc_leg(b)[0]) you will see \"b=<value> in logs\nmodparam(\"acc\", \"leg_fields\", \"log: a->My_a_Field; b\")\n# for mysql-based accounting, use the names of the columns\n# $acc_leg(a) = <value>  results in setting col_a with <value> in db\nmodparam(\"acc\", \"leg_fields\", \"db: a->col_a; col_b\")\n# for AAA-based accounting, use the names of the AAA AVPs\nmodparam(\"acc\", \"leg_fields\",\"aaa:a->AAA_LEG_SRC;b->AAA_LEG_DST\")\n# evi definition example\nmodparam(\"acc\", \"leg_fields\",\"a->2345;b->2346\")"
+    },
+    {
+      "title": "log_level example",
+      "description": "",
+      "code": "modparam(\"acc\", \"log_level\", 2)   # Set log_level to 2"
+    },
+    {
+      "title": "log_facility example",
+      "description": "",
+      "code": "modparam(\"acc\", \"log_facility\", \"LOG_DAEMON\")"
+    },
+    {
+      "title": "Set `aaa_url` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"acc\", \"aaa_url\", \"radius:/etc/radiusclient-ng/radiusclient.conf\")\n..."
+    },
+    {
+      "title": "service_type example",
+      "description": "",
+      "code": "# Default value of service type for SIP is 15\nmodparam(\"acc\", \"service_type\", 15)"
+    },
+    {
+      "title": "db_table_acc example",
+      "description": "",
+      "code": "modparam(\"acc\", \"db_table_acc\", \"myacc_table\")"
+    },
+    {
+      "title": "db_table_missed_calls example",
+      "description": "",
+      "code": "modparam(\"acc\", \"db_table_missed_calls\", \"myMC_table\")"
+    },
+    {
+      "title": "db_url example",
+      "description": "",
+      "code": "modparam(\"acc\", \"db_url\", \"mysql://user:password@localhost/opensips\")"
+    },
+    {
+      "title": "acc_method_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_method_column\", \"method\")"
+    },
+    {
+      "title": "acc_from_tag_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_from_tag_column\", \"from_tag\")"
+    },
+    {
+      "title": "acc_to_tag_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_to_tag_column\", \"to_tag\")"
+    },
+    {
+      "title": "acc_callid_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_callid_column\", \"callid\")"
+    },
+    {
+      "title": "acc_sip_code_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_sip_code_column\", \"sip_code\")"
+    },
+    {
+      "title": "acc_sip_reason_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_sip_reason_column\", \"sip_reason\")"
+    },
+    {
+      "title": "acc_time_column example",
+      "description": "",
+      "code": "modparam(\"acc\", \"acc_time_column\", \"time\")"
+    },
+    {
+      "title": "do_accounting usage",
+      "description": "",
+      "code": "\t\t...\n\t\tif (!has_totag()) {\n\t\t\tif (is_method(\"INVITE\")) {\n\t\t\t/* enable cdr and missed calls accounting in the database\n\t\t\t * and to syslog; db accounting shall be done in \"my_acc\" table */\n\t\t\t\tdo_accounting(\"db|log\", \"cdr|missed\", \"my_acc\");\n\t\t\t}\n\t\t}\n\t\t...\n\t\tif (is_method(\"BYE\")) {\n\t\t\t/* do normal accounting via aaa */\n\t\t\tdo_accounting(\"aaa\");\n\t\t}\n\t\t..."
+    },
+    {
+      "title": "drop_accounting usage",
+      "description": "",
+      "code": "\t\t...\n\t\tacc_log_request(\"403 Destination not allowed\");\n\t\tif (!has_totag()) {\n\t\t\tif (is_method(\"INVITE\")) {\n\t\t\t/* enable cdr and missed calls accounting in the database\n\t\t\t * and to syslog; db accounting shall be done in \"my_acc\" table */\n\t\t\t\tdo_accounting(\"db|log\", \"cdr|missed\", \"my_acc\");\n\t\t\t}\n\t\t}\n\t\t...\n\t\t/* later in your script */\n\t\tif (...) { /* you don't want accounting anymore */\n\t\t\t/* stop all syslog accounting */\n\t\t\tdrop_accounting(\"log\");\n\t\t\t/* or stop missed calls and cdr accounting for syslog;\n\t\t\t * normal accounting will still be enabled */\n\t\t\tdrop_accounting(\"log\", \"missed|cdr\");\n\t\t\t/* or stop all types of accounting  */\n\t\t\tdrop_accounting();\n\t\t}\n\t\t..."
+    },
+    {
+      "title": "acc_log_request usage",
+      "description": "",
+      "code": "...\nacc_log_request(\"403 Destination not allowed\");\n..."
+    },
+    {
+      "title": "acc_db_request usage",
+      "description": "",
+      "code": "...\nacc_db_request(\"Some comment\", \"Some table\");\nacc_db_request(\"$T_reply_code $(<reply>rr)\", \"acc\");\n..."
+    },
+    {
+      "title": "acc_aaa_request usage",
+      "description": "",
+      "code": "...\nacc_aaa_request(\"403 Destination not allowed\");\n..."
+    },
+    {
+      "title": "acc_evi_request usage",
+      "description": "",
+      "code": "...\nacc_evi_request(\"403 Destination not allowed\");\n..."
+    },
+    {
+      "title": "acc_new_leg usage",
+      "description": "",
+      "code": "...\n\tacc_new_leg();\n..."
+    },
+    {
+      "title": "acc_load_ctx_from_dlg usage",
+      "description": "",
+      "code": "...\nif ( load_dialog_ctx(\"$var(callid)\") ) {\n\t# we now have the dialog context of the new dialog\n\tacc_load_ctx_from_dlg();\n\t# we have now also the accouting context of that dialog\n\txlog(\"The accounting caller of call '$var(callid)' \"\n\t\t\"is '$acc_extra(caller)'\\n\");\n\tacc_unload_ctx_from_dlg();\n\tunload_dialog_ctx();\n}\n\n..."
+    }
+  ]
+}

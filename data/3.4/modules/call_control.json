@@ -1,0 +1,240 @@
+{
+  "id": "module-call_control-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "call_control Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/call_control.html",
+  "content_markdown": "This module allows one to limit the duration of calls and automatically end them when they exceed the imposed limit. Its main use case is to implement a prepaid system, but it can also be used to impose a global limit on all calls processed by the proxy.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T16:12:56.537Z",
+  "module_name": "call_control",
+  "overview": "This module allows one to limit the duration of calls and automatically end them when they exceed the imposed limit. Its main use case is to implement a prepaid system, but it can also be used to impose a global limit on all calls processed by the proxy.",
+  "how_it_works": "Callcontrol consists of 3 components:\n\n*   The OpenSIPS call_control module\n    \n*   An external application called callcontrol which keeps track of the calls that have a time limit and automatically ends them when they exceed it. This application receives requests from OpenSIPS and makes requests to a rating engine (see below) to find out if a call needs to be limited or not. When a call ends (or is ended) it will also instruct the rating engine to debit the balance for the caller with the consumed amount. The callcontrol application is available from http://callcontrol.ag-projects.com/\n    \n*   A rating engine that is used to calculate the time limit based on the caller's credit and the destination price and to debit the caller's balance after a call ends. This is available as part of CDRTool from http://cdrtool.ag-projects.com/\n    \nThe callcontrol application runs on the same machine as OpenSIPS and they communicate over a filesystem socket, while the rating engine can run on a different host and communicates with the callcontrol application using a TCP connection.\n\nCallcontrol is invoked by calling the call_control() function for the initial INVITE of every call we want to apply a limit to. This will end up as a request to the callcontrol application, which will interrogate the rating engine for a time limit for the given caller and destination. The rating engine will determine if the destination has any associated cost and if the caller has any credit limit and if so will return the amount of time he is allowed to call that destination. Otherwise it will indicate that there is no limit associated with the call. If there is a limit, the callcontrol application will retain the session and attach a timer to it that will expire after the given time causing it to call back to OpenSIPS with a request to end the dialog. If the rating engine returns that there is no limit for the call, the session is discarded by the callcontrol application and it will allow it to go proceed any limit. An appropriate response is returned to the call_control module that is then returned by the call_control() function call and allows the script to make a decision based on the answer.",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "The following modules must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "disable",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Boolean flag that specifies if callcontrol should be disabled. This is useful when you want to use the same OpenSIPS configuration in two different context, one using callcontrol, the other not. In the case callcontrol is disabled, calls to the call_control() function will return a code indicating that there is no limit associated with the call, allowing the use of the same configuration without changes.",
+      "example_value": "1",
+      "example_code": "modparam(\"call_control\", \"disable\", 1)"
+    },
+    {
+      "name": "socket_name",
+      "type": "string",
+      "default_value": "/run/callcontrol/socket",
+      "description": "It is the path to the filesystem socket where the callcontrol application listens for commands from the module.",
+      "example_value": "/run/callcontrol/socket",
+      "example_code": "modparam(\"call_control\", \"socket_name\", \"/run/callcontrol/socket\")"
+    },
+    {
+      "name": "socket_timeout",
+      "type": "integer",
+      "default_value": "500",
+      "description": "How much time (in milliseconds) to wait for an answer from the callcontrol application.",
+      "example_value": "500",
+      "example_code": "modparam(\"call_control\", \"socket_timeout\", 500)"
+    },
+    {
+      "name": "signaling_ip_avp",
+      "type": "string",
+      "default_value": "$avp(cc_signaling_ip)",
+      "description": "Specification of the AVP which holds the IP address from where the SIP signaling originated. If this AVP is set it will be used to get the signaling IP address, else the source IP address from where the SIP message was received will be used. This AVP is meant to be used in cases where there are more than one proxy in the call setup path and the proxy that actually starts callcontrol doesn't receive the SIP messages directly from the UA and it cannot determine the NAT IP address from where the signaling originated. In such a case attaching a SIP header at the first proxy and then copying that header's value into the signaling_ip_avp on the proxy that starts callcontrol will allow it to get the correct NAT IP address from where the SIP signaling originated. This is used by the rating engine which finds the rates to apply to a call based on caller's SIP URI, caller's SIP domain or caller's IP address (whichever yields a rate first, in this order).",
+      "example_value": "$avp(cc_signaling_ip)",
+      "example_code": "modparam(\"call_control\", \"signaling_ip_avp\", \"$avp(cc_signaling_ip)\")"
+    },
+    {
+      "name": "canonical_uri_avp",
+      "type": "string",
+      "default_value": "$avp(cc_can_uri)",
+      "description": "Specification of the AVP which holds an optional application defined canonical request URI. When this is set, it will be used as the destination when computing the call price, otherwise the request URI will be used. This is useful when the username of the ruri needs to have a different, canonical form in the rating engine computation than it has in the ruri.",
+      "example_value": "$avp(cc_can_uri)",
+      "example_code": "modparam(\"call_control\", \"canonical_uri_avp\", \"$avp(cc_can_uri)\")"
+    },
+    {
+      "name": "diverter_avp",
+      "type": "string",
+      "default_value": "$avp(diverter)",
+      "description": "Specification of the AVP which holds an optional application defined diverter SIP URI. When this is set, it will be used by the rating engine as the billing party when finding the rates to apply to a given call, otherwise, the caller's URI taken from the From field will be used. When set, this AVP should contain a value in the form “user@domain” (no sip: prefix should be used). This is useful when a destination diverts a call, thus becoming the new caller. In this case the billing party is the diverter and this AVP should be set to it, to allow the rating engine to pick the right rates for the call. For example, if A calls B and B diverts all its calls unconditionally to C, then the diverter AVP should the set to B's URI, because B is the billing party in the call not A after the call was diverted.",
+      "example_value": "$avp(diverter)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"diverter\\_avp\", \"$avp(diverter)\")\n\nroute {\n  ...\n  # alice@example.com is paying for this call\n  $avp(diverter) = \"alice@example.com\";\n  ...\n}\n..."
+    },
+    {
+      "name": "prepaid_account_flag",
+      "type": "string",
+      "default_value": "NULL (undefined)",
+      "description": "The flag that is used to specify whether the account making the call is prepaid or postpaid. Setting this to a non-null value will determine the module to pass the flag's value to the external application. This will allow the external application to compare OpenSIPS's and the rating engine's views on whether the account calling is prepaid or not and take appropriate action if they conflict. The flag should be set from the OpenSIPS configuration for a prepaid account and reset for a postpaid one.",
+      "example_value": "PP_ACC_FLAG",
+      "example_code": "...\nmodparam(\"call\\_control\", \"prepaid\\_account\\_flag\", \"PP\\_ACC\\_FLAG\")\n..."
+    },
+    {
+      "name": "call_limit_avp",
+      "type": "string",
+      "default_value": "$avp(cc_call_limit)",
+      "description": "Specification of the AVP which holds an optional application defined call limit. When this is set, it will be passed to the CallControl application and if the limit is reached the call_control function will return an error code of -4.",
+      "example_value": "$avp(cc_call_limit)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"call\\_limit\\_avp\", \"$avp(cc_call_limit)\")\n..."
+    },
+    {
+      "name": "call_token_avp",
+      "type": "string",
+      "default_value": "$avp(cc_call_token)",
+      "description": "Specification of the AVP which holds an optional application defined token. This token will be used to check if two calls with the same CallID actually refer to the same call. If call_control() is called multiple times for the same call (thus same CallID) the token needs to be the same or call_control will return -3 error, indicating that the CallID is duplicated.",
+      "example_value": "$avp(cc_call_token)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"call\\_token\\_avp\", \"$avp(cc_call_token)\")\n...\n$avp(cc\\_call\\_token) := $RANDOM;\n..."
+    },
+    {
+      "name": "init",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "This parameter is used to describe custom call control initialize messages. It represents a list of key value pairs and has the following format: \"string1 = var1 [string2 = var2]*\". The left-hand side of the assignment can be any string. The right-hand side of the assignment must be a script pseudo variable or a script AVP. For more information about them see CookBooks - Scripting Variables. If the parameter is not set, the default initialize message is sent.",
+      "example_value": "call-id=$ci to=$tu from=$fu authruri=$du another_field = $avp(10)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"init\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    },
+    {
+      "name": "start",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "This parameter is used to describe custom call control start messages. It represents a list of key value pairs and has the following format:\n\n*   \"string1 = var1 \\[string2 = var2\\]\\*\"\n    \nThe left-hand side of the assignment can be any string.\n\nThe right-hand side of the assignment must be a script pseudo variable or a script AVP. For more information about them see [CookBooks - Scripting Variables](https://opensips.org/Resources/DocsCoreVar15).\n\nIf the parameter is not set, the default start message is sent.",
+      "example_value": "call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another_field = $avp(10)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"start\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    },
+    {
+      "name": "stop",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "This parameter is used to describe custom call control stop messages. It represents a list of key value pairs and has the following format:\n\n*   \"string1 = var1 \\[string2 = var2\\]\\*\"\n    \nThe left-hand side of the assignment can be any string.\n\nThe right-hand side of the assignment must be a script pseudo variable or a script AVP. For more information about them see [CookBooks - Scripting Variables](https://opensips.org/Resources/DocsCoreVar15).\n\nIf the parameter is not set, the default stop message is sent.",
+      "example_value": "call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another_field = $avp(10)",
+      "example_code": "...\nmodparam(\"call\\_control\", \"stop\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "call_control",
+      "signature": "call_control()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "+2",
+          "condition": "call has no limit"
+        },
+        {
+          "value": "+1",
+          "condition": "call has limit and is traced by callcontrol"
+        },
+        {
+          "value": "-1",
+          "condition": "not enough credit to make the call"
+        },
+        {
+          "value": "-2",
+          "condition": "call is locked by another call in progress"
+        },
+        {
+          "value": "-3",
+          "condition": "duplicated callid"
+        },
+        {
+          "value": "-4",
+          "condition": "call limit has been reached"
+        },
+        {
+          "value": "-5",
+          "condition": "internal error (message parsing, communication, ...)"
+        }
+      ],
+      "description": "Trigger the use of callcontrol for the dialog started by the INVITE for which this function is called (the function should only be called for the first INVITE of a call). Further in-dialog requests will be processed automatically using internal bindings into the dialog state machine, allowing callcontrol to update its internal state as the dialog progresses, without any other intervention from the script.\n\nThis function should be called right before the message is sent out using t_relay(), when all the request uri modifications are over and a final destination has been determined.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_avp_set($avp(805))) {\n    # the diverter AVP is set, use it as billing party\n    $avp(billing_party_domain) = $(avp(805){uri.domain});\n} else {\n    $avp(billing_party_domain) = $fd;\n}\n\nif (is_method(\"INVITE\") && !has_totag() &&\n    is_domain_local($avp(billing_party_domain))) {\n    call_control();\n    switch ($retcode) {\n    case 2:\n        # Call with no limit\n    case 1:\n        # Call has limit and is under callcontrol management\n        break;\n    case -1:\n        # Not enough credit (prepaid call)\n        sl_send_reply(402, \"Not enough credit\");\n        exit;\n        break;\n    case -2:\n        # Locked by another call in progress (prepaid call)\n        sl_send_reply(403, \"Call locked by another call in progress\");\n        exit;\n        break;\n    case -3:\n        # Duplicated callid\n        sl_send_reply(400, \"Duplicated callid\");\n        exit;\n        break;\n    case -4:\n        # Call limit reached\n        sl_send_reply(503, \"Too many concurrent calls\");\n        exit;\n        break;\n    default:\n        # Internal error (message parsing, communication, ...)\n        if (PREPAID_ACCOUNT) {\n            xlog(\"Call control: internal server error\\n\");\n            sl_send_reply(500, \"Internal server error\");\n            exit;\n        } else {\n            xlog(\"L_WARN\", \"Cannot set time limit for postpaid call\\n\");\n        }\n    }\n}\nt_relay();\n...",
+          "description": "Using the `call_control` function"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `disable` parameter",
+      "description": "Setting the `disable` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"disable\", 1)\n..."
+    },
+    {
+      "title": "Setting the `socket_name` parameter",
+      "description": "Setting the `socket_name` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"socket\\_name\", \"/run/callcontrol/socket\")\n..."
+    },
+    {
+      "title": "Setting the `socket_timeout` parameter",
+      "description": "Setting the `socket_timeout` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"socket\\_timeout\", 500)\n..."
+    },
+    {
+      "title": "Setting the `signaling_ip_avp` parameter",
+      "description": "Setting the `signaling_ip_avp` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"signaling\\_ip\\_avp\", \"$avp(cc\\_signaling\\_ip)\")\n..."
+    },
+    {
+      "title": "Setting the `canonical_uri_avp` parameter",
+      "description": "Setting the `canonical_uri_avp` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"canonical\\_uri\\_avp\", \"$avp(cc\\_can\\_uri)\")\n..."
+    },
+    {
+      "title": "Setting the `diverter_avp` parameter",
+      "description": "Setting the `diverter_avp` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"diverter\\_avp\", \"$avp(diverter)\")\n\nroute {\n  ...\n  # alice@example.com is paying for this call\n  $avp(diverter) = \"alice@example.com\";\n  ...\n}\n..."
+    },
+    {
+      "title": "Setting the `prepaid_account_flag` parameter",
+      "description": "Setting the `prepaid_account_flag` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"prepaid\\_account\\_flag\", \"PP\\_ACC\\_FLAG\")\n..."
+    },
+    {
+      "title": "Setting the `call_limit_avp` parameter",
+      "description": "Setting the `call_limit_avp` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"call\\_limit\\_avp\", \"$avp(cc\\_call\\_limit)\")\n..."
+    },
+    {
+      "title": "Setting the `call_token_avp` parameter",
+      "description": "Setting the `call_token_avp` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"call\\_token\\_avp\", \"$avp(cc\\_call\\_token)\")\n...\n$avp(cc\\_call\\_token) := $RANDOM;\n..."
+    },
+    {
+      "title": "Setting the `init` parameter",
+      "description": "Setting the `init` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"init\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    },
+    {
+      "title": "Setting the `start` parameter",
+      "description": "Setting the `start` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"start\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    },
+    {
+      "title": "Setting the `stop` parameter",
+      "description": "Setting the `stop` parameter",
+      "code": "...\nmodparam(\"call\\_control\", \"stop\", \"call-id=$ci to=$tu from=$fu \n\t\t\tauthruri=$du another\\_field = $avp(10)\")\n..."
+    },
+    {
+      "title": "Using the `call_control` function",
+      "description": "Using the `call_control` function",
+      "code": "...\nif (is\\_avp\\_set($avp(805))) {\n    # the diverter AVP is set, use it as billing party\n    $avp(billing\\_party\\_domain) = $(avp(805){uri.domain});\n} else {\n    $avp(billing\\_party\\_domain) = $fd;\n}\n\nif (is\\_method(\"INVITE\") && !has\\_totag() &&\n    is\\_domain\\_local($avp(billing\\_party\\_domain))) {\n    call\\_control();\n    switch ($retcode) {\n    case 2:\n        # Call with no limit\n    case 1:\n        # Call has limit and is under callcontrol management\n        break;\n    case -1:\n        # Not enough credit (prepaid call)\n        sl\\_send\\_reply(402, \"Not enough credit\");\n        exit;\n        break;\n    case -2:\n        # Locked by another call in progress (prepaid call)\n        sl\\_send\\_reply(403, \"Call locked by another call in progress\");\n        exit;\n        break;\n    case -3:\n        # Duplicated callid\n        sl\\_send\\_reply(400, \"Duplicated callid\");\n        exit;\n        break;\n    case -4:\n        # Call limit reached\n        sl\\_send\\_reply(503, \"Too many concurrent calls\");\n        exit;\n        break;\n    default:\n        # Internal error (message parsing, communication, ...)\n        if (PREPAID\\_ACCOUNT) {\n            xlog(\"Call control: internal server error\\\\n\");\n            sl\\_send\\_reply(500, \"Internal server error\");\n            exit;\n        } else {\n            xlog(\"L\\_WARN\", \"Cannot set time limit for postpaid call\\\\n\");\n        }\n    }\n}\nt\\_relay();\n..."
+    }
+  ]
+}

@@ -1,0 +1,467 @@
+# ALIAS\_DB Module
+
+---
+
+**List of Tables**
+
+3.1. [Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)](#idp4648688)
+
+3.2. [Most recently active contributors(1) to this module](#idp1875312)
+
+**List of Examples**
+
+1.1. [Set `db_url` parameter](#idp2797632)
+
+1.2. [Set `user_column` parameter](#idp4211696)
+
+1.3. [Set `domain_column` parameter](#idp2967680)
+
+1.4. [Set `alias_user_column` parameter](#idp5056832)
+
+1.5. [Set `alias_domain_column` parameter](#idp3722896)
+
+1.6. [Set `domain_prefix` parameter](#idp3534368)
+
+1.7. [Set `append_branches` parameter](#idp5435344)
+
+1.8. [`alias_db_lookup()` usage](#idp4311264)
+
+1.9. [`alias_db_find()` usage](#idp2850832)
+
+## Chapter�1.�Admin Guide
+
+## 1.1.�Overview
+
+ALIAS\_DB module can be used as an alternative for user aliases via usrloc. The main feature is that it does not store all adjacent data as for user location and always uses database for search (no memory caching).
+
+Having no memory caching, search speed might decrease but provisioning is easier. With very fast databases like MySQL, speed penalty can be lowered. Also, search can be performed on different tables in the same script.
+
+## 1.2.�Dependencies
+
+### 1.2.1.�OpenSIPS Modules
+
+The following modules must be loaded before this module:
+
+*   _database module_ (mysql, dbtext, ...).
+    
+
+### 1.2.2.�External Libraries or Applications
+
+The following libraries or applications must be installed before running OpenSIPS with this module loaded:
+
+*   _None_.
+    
+
+## 1.3.�Exported Parameters
+
+### 1.3.1.�`db_url` (str)
+
+Database URL.
+
+_Default value is “mysql://opensipsro:opensipsro@localhost/opensips”._
+
+**Example�1.1.�Set `db_url` parameter**
+
+...
+modparam("alias\_db", "db\_url", "dbdriver://username:password@dbhost/dbname")
+...
+
+  
+
+### 1.3.2.�`user_column` (str)
+
+Name of the column storing username.
+
+_Default value is “username”._
+
+**Example�1.2.�Set `user_column` parameter**
+
+...
+modparam("alias\_db", "user\_column", "susername")
+...
+
+  
+
+### 1.3.3.�`domain_column` (str)
+
+Name of the column storing user's domain.
+
+_Default value is “domain”._
+
+**Example�1.3.�Set `domain_column` parameter**
+
+...
+modparam("alias\_db", "domain\_column", "sdomain")
+...
+
+  
+
+### 1.3.4.�`alias_user_column` (str)
+
+Name of the column storing alias username.
+
+_Default value is “alias\_username”._
+
+**Example�1.4.�Set `alias_user_column` parameter**
+
+...
+modparam("alias\_db", "alias\_user\_column", "auser")
+...
+
+  
+
+### 1.3.5.�`alias_domain_column` (str)
+
+Name of the column storing alias domain.
+
+_Default value is “alias\_domain”._
+
+**Example�1.5.�Set `alias_domain_column` parameter**
+
+...
+modparam("alias\_db", "alias\_domain\_column", "adomain")
+...
+
+  
+
+### 1.3.6.�`domain_prefix` (str)
+
+Specifies the prefix to be stripped from the domain in R-URI before doing the search.
+
+_Default value is “NULL”._
+
+**Example�1.6.�Set `domain_prefix` parameter**
+
+...
+modparam("alias\_db", "domain\_prefix", "sip.")
+...
+
+  
+
+### 1.3.7.�`append_branches` (int)
+
+If the alias resolves to many SIP IDs, the first is replacing the R-URI, the rest are added as branches.
+
+_Default value is “0” (0 - don't add branches; 1 - add branches)._
+
+**Example�1.7.�Set `append_branches` parameter**
+
+...
+modparam("alias\_db", "append\_branches", 1)
+...
+
+  
+
+## 1.4.�Exported Functions
+
+### 1.4.1.� `alias_db_lookup(table_name, [flags])`
+
+The function takes the R-URI and search to see whether it is an alias or not. If it is an alias for a local user, the R-URI is replaced with user's SIP uri.
+
+The function returns TRUE if R-URI is alias and it was replaced by user's SIP uri.
+
+Meaning of the parameters is as follows:
+
+*   _table\_name (string)_ - the name of the table to search for the alias
+    
+*   _flags (string, optional)_ - set of character flags to control the alias lookup process:
+    
+    *   **d** - do not use domain URI part in the alias lookup query (use only a username-based lookup). By default, both username and domain are used.
+        
+    *   **r** - do reverse alias lookup - lookup for the alias mapped to the current URI (URI 2 alias translation); normally, the function looks up for the URI mapped to the alias (alias 2 URI translation).
+        
+    
+
+This function can be used from REQUEST\_ROUTE, FAILURE\_ROUTE.
+
+**Example�1.8.�`alias_db_lookup()` usage**
+
+...
+alias\_db\_lookup("dbaliases", "rd");
+alias\_db\_lookup("dba\_$(rU{s.substr,0,1})");
+...
+
+  
+
+### 1.4.2.� `alias_db_find(table_name, input_uri, output_var, [flags])`
+
+The function is very similar to `alias_db_lookup()`, but instead of using fixed input (RURI) and output (RURI) is able to get the input SIP URI from a pseudo-variable and place the result back also in a pseudo-variable.
+
+The function is useful as the alias lookup does not affect the request itself (no RURI changes), can be used in a reply context (as it does not work with RURI only) and can be used for others URI than the RURI (To URI, From URI, custom URI).
+
+The function returns TRUE if any alias mapping was found and returned.
+
+Meaning of the parameters is as follows:
+
+*   _table\_name (string)_ - the name of the table to search for the alias
+    
+*   _input\_uri (string)_ - a SIP URI to look up
+    
+*   _output\_var (var)_ - a variable to hold the SIP URI result
+    
+*   _flags (string, optional)_ (optional) - set of flags (char based flags) to control the alias lookup process:
+    
+    *   _d_ - do not use domain URI part in the alias lookup query (use only a username-based lookup). By default, both username and domain are used.
+        
+    *   _r_ - do revers alias lookup - lookup for the alias mapped to the current URI (URI 2 alias translation); normally, the function looks up for the URI mapped to the alias (alias 2 URI translation).
+        
+    
+
+This function can be used from REQUEST\_ROUTE, BRANCH\_ROUTE, LOCAL\_ROUTE, STARTUP\_ROUTE, FAILURE\_ROUTE and ONREPLY\_ROUTE.
+
+**Example�1.9.�`alias_db_find()` usage**
+
+...
+# do revers alias lookup and find the alias for the FROM URI
+alias\_db\_find("dbaliases", $fu, $avp(from\_alias), "r");
+...
+
+  
+
+## Chapter�2.�Frequently Asked Questions
+
+**2.1.**
+
+What happened with old use\_domain parameter
+
+The global parameter (affecting the entire module) was replaced with a per lookup parameter (affecting only current lookup). See the "d" (do not used domain part) flag in the db\_alias\_lookup() and db\_alias\_find() functions.
+
+**2.2.**
+
+How can I report a bug?
+
+Please follow the guidelines provided at: [https://github.com/OpenSIPS/opensips/issues](https://github.com/OpenSIPS/opensips/issues).
+
+## Chapter�3.�Contributors
+
+## 3.1.�By Commit Statistics
+
+**Table�3.1.�Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)**
+
+�
+
+Name
+
+DevScore
+
+Commits
+
+Lines ++
+
+Lines --
+
+1.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+32
+
+27
+
+216
+
+170
+
+2.
+
+Daniel-Constantin Mierla ([@miconda](https://github.com/miconda))
+
+15
+
+12
+
+28
+
+64
+
+3.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+13
+
+10
+
+48
+
+64
+
+4.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+8
+
+6
+
+10
+
+8
+
+5.
+
+Henning Westerholt ([@henningw](https://github.com/henningw))
+
+6
+
+4
+
+48
+
+49
+
+6.
+
+Elena-Ramona Modroiu
+
+5
+
+3
+
+92
+
+39
+
+7.
+
+Walter Doekes ([@wdoekes](https://github.com/wdoekes))
+
+5
+
+3
+
+7
+
+7
+
+8.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+5
+
+2
+
+38
+
+88
+
+9.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+4
+
+2
+
+3
+
+5
+
+10.
+
+Vladimir Romanov
+
+4
+
+1
+
+227
+
+51
+
+  
+
+**All remaining contributors**: Sergey Khripchenko ([@shripchenko](https://github.com/shripchenko)), Sergio Gutierrez, Konstantin Bokarius, Anca Vamanu, Dusan Klinec ([@ph4r05](https://github.com/ph4r05)), Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Edson Gellert Schubert.
+
+_(1) DevScore = author\_commits + author\_lines\_added / (project\_lines\_added / project\_commits) + author\_lines\_deleted / (project\_lines\_deleted / project\_commits)_
+
+_(2) including any documentation-related commits, excluding merge commits. Regarding imported patches/code, we do our best to count the work on behalf of the proper owner, as per the "fix\_authors" and "mod\_renames" arrays in opensips/doc/build-contrib.sh. If you identify any patches/commits which do not get properly attributed to you, please [_submit a pull request_](https://github.com/OpenSIPS/opensips/pulls)_ which extends "fix\_authors" and/or "mod\_renames".
+
+_(3) ignoring whitespace edits, renamed files and auto-generated files_
+
+## 3.2.�By Commit Activity
+
+**Table�3.2.�Most recently active contributors(1) to this module**
+
+�
+
+Name
+
+Commit Activity
+
+1.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+Mar 2014 - May 2024
+
+2.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+Feb 2023 - Feb 2023
+
+3.
+
+Walter Doekes ([@wdoekes](https://github.com/wdoekes))
+
+Apr 2010 - Apr 2021
+
+4.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+Oct 2005 - Mar 2020
+
+5.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+Jun 2011 - Sep 2019
+
+6.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+May 2017 - Apr 2019
+
+7.
+
+Peter Lemenkov ([@lemenkov](https://github.com/lemenkov))
+
+Jun 2018 - Jun 2018
+
+8.
+
+Dusan Klinec ([@ph4r05](https://github.com/ph4r05))
+
+Dec 2015 - Dec 2015
+
+9.
+
+Sergey Khripchenko ([@shripchenko](https://github.com/shripchenko))
+
+Sep 2015 - Sep 2015
+
+10.
+
+Anca Vamanu
+
+Sep 2009 - Sep 2009
+
+  
+
+**All remaining contributors**: Vladimir Romanov, Sergio Gutierrez, Henning Westerholt ([@henningw](https://github.com/henningw)), Elena-Ramona Modroiu, Daniel-Constantin Mierla ([@miconda](https://github.com/miconda)), Konstantin Bokarius, Edson Gellert Schubert.
+
+_(1) including any documentation-related commits, excluding merge commits_
+
+## Chapter�4.�Documentation
+
+## 4.1.�Contributors
+
+**Last edited by:** Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu)), Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Sergey Khripchenko ([@shripchenko](https://github.com/shripchenko)), Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea)), Walter Doekes ([@wdoekes](https://github.com/wdoekes)), Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu)), Sergio Gutierrez, Henning Westerholt ([@henningw](https://github.com/henningw)), Elena-Ramona Modroiu, Daniel-Constantin Mierla ([@miconda](https://github.com/miconda)), Konstantin Bokarius, Edson Gellert Schubert.
+
+_Documentation Copyrights:_
+
+Copyright � 2005-2009 Voice Sistem SRL

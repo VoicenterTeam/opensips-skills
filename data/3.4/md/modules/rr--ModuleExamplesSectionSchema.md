@@ -1,0 +1,23 @@
+## 2.2.�Examples
+
+**Example�2.1.�Loading RR module's API from another module**
+
+...
+#include "../rr/api.h"
+...
+struct rr\_binds my\_rrb;
+...
+...
+/\* load the RR API \*/
+if (load\_rr\_api( &my\_rrb )!=0) {
+    LM\_ERR("can't load RR API\\n");
+    goto error;
+}
+...
+...
+/\* register a RR callback \*/
+if (my\_rrb.register\_rrcb(my\_callback,0,0))!=0) {
+    LM\_ERR("can't register RR callback\\n");
+    goto error;
+}
+...

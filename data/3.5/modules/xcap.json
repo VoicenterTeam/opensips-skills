@@ -1,0 +1,77 @@
+{
+  "id": "module-xcap-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "xcap Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/xcap.html",
+  "content_markdown": "The module contains several parameters and functions common to all modules using XCAP capabilities.\n\nThe module is currently used by the following modules: presence_xml, rls and xcap_client.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:07:50.278Z",
+  "module_name": "xcap",
+  "overview": "The module contains several parameters and functions common to all modules using XCAP capabilities.\n\nThe module is currently used by the following modules: presence_xml, rls and xcap_client.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "a database module",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "The database url.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "...\nmodparam(\"xcap\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "name": "xcap_table",
+      "type": "string",
+      "default_value": "xcap",
+      "description": "The name of the db table where XCAP documents are stored.",
+      "example_value": "xcap",
+      "example_code": "...\nmodparam(\"xcap\", \"xcap\\_table\", \"xcap\")\n..."
+    },
+    {
+      "name": "integrated_xcap_server",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This parameter is a flag for the type of XCAP server or servers used. If integrated ones, like OpenXCAP from AG Projects, with direct access to database table, the parameter should be set to a positive value. Apart from updating in xcap table, the integrated server must send an MI command refershWatchers \\[pres\\_uri\\] \\[event\\] when a user modifies a rules document.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"xcap\", \"integrated\\_xcap\\_server\", 1)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Sets the database url parameter.",
+      "code": "...\nmodparam(\"xcap\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Set `xcap_table` parameter",
+      "description": "Sets the name of the db table where XCAP documents are stored.",
+      "code": "...\nmodparam(\"xcap\", \"xcap\\_table\", \"xcap\")\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Set `integrated_xcap_server` parameter",
+      "description": "Sets the flag for the type of XCAP server or servers used.",
+      "code": "...\nmodparam(\"xcap\", \"integrated\\_xcap\\_server\", 1)\n...",
+      "explanation": ""
+    }
+  ]
+}

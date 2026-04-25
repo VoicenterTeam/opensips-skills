@@ -1,0 +1,38 @@
+{
+  "id": "module-event_datagram-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "event_datagram Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/event_datagram.html",
+  "content_markdown": "This is a module which provides a UNIX/UDP SOCKET transport layer implementation for the Event Interface.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:48:05.612Z",
+  "module_name": "event_datagram",
+  "overview": "This is a module which provides a UNIX/UDP SOCKET transport layer implementation for the Event Interface.",
+  "how_it_works": "The event payload is formated as a JSON-RPC notification, with the event name as the _method_ field and the event parameters as the _params_ field.\n\nThere are two types of sockets used by this module, based on the sockets type. An UNIX socket should follow this syntax:\n_['unix:'] unix_socket_path_\n\nAn UDP socket should follow this syntax:\n_'udp:' address ':' port_",
+  "dependencies_required": [],
+  "dependencies_optional": [],
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.1. E_PIKE_BLOCKED event",
+      "description": "This is an example of an event raised by the pike module when it decides an ip should be blocked:",
+      "code": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"E\\_PIKE\\_BLOCKED\",\n  \"params\": {\n    \"ip\": \"192.168.2.11\"\n  }\n}"
+    },
+    {
+      "title": "Example 1.2. UNIX socket",
+      "description": "",
+      "code": "unix:/tmp/opensips\\_event.sock"
+    },
+    {
+      "title": "Example 1.3. UDP socket",
+      "description": "",
+      "code": "udp:127.0.0.1:8081"
+    }
+  ]
+}

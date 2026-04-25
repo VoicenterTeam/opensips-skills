@@ -1,0 +1,98 @@
+{
+  "id": "module-stun-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "stun Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/stun.html",
+  "content_markdown": "A stun server working with the same port as SIP (5060) in order to gain accurate information. The benefit would be an exact external address in the case of NATs translating differently when given different destination ports. The server may also advertise different network addresses than the ones it is actually listening on.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T17:25:57.189Z",
+  "module_name": "stun",
+  "overview": "A stun server working with the same port as SIP (5060) in order to gain accurate information. The benefit would be an exact external address in the case of NATs translating differently when given different destination ports. The server may also advertise different network addresses than the ones it is actually listening on.",
+  "how_it_works": "The stun server will use 4 sockets:\n\n*   socket1 = ip1 : port1\n*   socket2 = ip1 : port2\n*   socket3 = ip2 : port1\n*   socket4 = ip2 : port2\n\nwhere ip1 / port1 represent an UDP SIP listener and ip2 / port2 are configured via the alternate_ip and alternate_port parameters.\n\nThe sockets come from existing SIP sockets or are created.\n\nSocket1 must allways be a SIP UDP listener from OpenSIPS.\n\nIf use_listeners_as_primary is enabled the STUN server will actually use multiple sets of sockets obtained from the IP/port combinations described above, each set corresponding to a SIP UDP listener from OpenSIPS.\n\nThe server will create a separate process. This process will listen for data on created sockets. The server will register a callback function to SIP. This function is called when a specific (stun)header is found.\n\nThis stun implements RFC3489 (and XOR_MAPPED_ADDRESS from RFC5389)\n\n*   MAPPED_ADDRESS\n*   RESPONSE_ADDRESS\n*   CHANGE_REQUEST\n*   SOURCE_ADDRESS\n*   CHANGED_ADDRESS\n*   ERROR_CODE\n*   UNKNOWN_ATTRIBUTES\n*   REFLECTED_FROM\n*   XOR_MAPPED_ADDRESS\n\nNot supported attributes:\n\n*   USERNAME\n*   PASSWORD\n*   MESSAGE_INTEGRITY\n\nand associated ERROR_CODEs",
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "primary_ip",
+      "type": "string",
+      "description": "The IP of an interface which is configured as an UDP SIP listener in OpenSIPS. This is a mandatory parameter, unless use_listeners_as_primary is enabled. Syntax: \"ip [/ advertised_ip] By default, the primary_ip and the advertised primary_ip will be identical. This may be changed with an optional \"/ xxx.xxx.xxx.xxx\" string.",
+      "scope": "global",
+      "example_value": "192.168.0.100",
+      "example_code": "...\nmodparam(\"stun\", \"primary\\_ip\", \"192.168.0.100\")\n\n# Example of a STUN server within OpenSIPS which is behind NAT\nmodparam(\"stun\", \"primary\\_ip\", \"192.168.0.100 / 64.50.46.78\")\n...",
+      "notes": "Mandatory parameter unless use_listeners_as_primary is enabled."
+    },
+    {
+      "name": "primary_port",
+      "type": "string",
+      "default_value": "5060",
+      "description": "The port configured (together with the primary_ip) as an UDP SIP listener in OpenSIPS. The default value is 5060. Syntax: \"port [/ advertised_port] By default, the primary_port and the advertised primary_port will be identical. This may be changed with an optional \"/ adv_port\" string.",
+      "scope": "global",
+      "example_value": "5060",
+      "example_code": "...\nmodparam(\"stun\", \"primary\\_port\", \"5060\")\n\n# Listening on a primary port, but advertising a different one\nmodparam(\"stun\", \"primary\\_port\", \"5060 / 5062\")\n..."
+    },
+    {
+      "name": "alternate_ip",
+      "type": "string",
+      "description": "Another IP from another interface. This is a mandatory parameter. If use_listeners_as_primary is enabled, the alternate IP must be either: an IP from an existing UDP SIP listener configured in OpenSIPS, but one that is different from all the other UPD listeners; an IP that is different from the UDP SIP listeners configured in OpenSIPS. Syntax: \"ip [/ advertised_ip] By default, the alternate_ip and the advertised alternate_ip will be identical. This may be changed with an optional \"/ xxx.xxx.xxx.xxx\" string.",
+      "scope": "global",
+      "example_value": "11.22.33.44",
+      "example_code": "...\nmodparam(\"stun\",\"alternate\\_ip\",\"11.22.33.44\")\n\n# Example of a STUN server within OpenSIPS which is behind NAT\nmodparam(\"stun\", \"alternate\\_ip\", \"192.168.0.100 / 64.78.46.50\")\n...",
+      "notes": "Mandatory parameter."
+    },
+    {
+      "name": "alternate_port",
+      "type": "string",
+      "default_value": "3478",
+      "description": "The port used by the STUN server for the second interface. The default value is 3478 (default STUN port). If use_listeners_as_primary is enabled, the alternate port must be either: a port from an existing UDP SIP listener configured in OpenSIPS, but one that is different from all the other UPD listeners; a port that is different from the UDP SIP listeners configured in OpenSIPS. Syntax: \"port [/ advertised_port] By default, the alternate_port and the advertised alternate_port will be identical. This may be changed with an optional \"/ adv_port\" string.",
+      "scope": "global",
+      "example_value": "3479",
+      "example_code": "...\nmodparam(\"stun\",\"alternate\\_port\",\"3479\")\n\n# Listening on an alternate port, but advertising a different one\nmodparam(\"stun\", \"alternate\\_port\", \"5060 / 5062\")\n..."
+    },
+    {
+      "name": "use_listeners_as_primary",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter to 1 will allow all configured UDP SIP listeners to be automatically used as \"primary\" STUN sockets. The primary_ip and primary_port parameters will be ignored when this behavior is enabled. The default value is 0 (disabled).",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"stun\",\"use\\_listeners\\_as\\_primary\",1)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `primary_ip` parameter",
+      "description": "Demonstrates setting the `primary_ip` parameter, including the syntax for specifying an advertised IP.",
+      "code": "...\nmodparam(\"stun\", \"primary\\_ip\", \"192.168.0.100\")\n\n# Example of a STUN server within OpenSIPS which is behind NAT\nmodparam(\"stun\", \"primary\\_ip\", \"192.168.0.100 / 64.50.46.78\")\n..."
+    },
+    {
+      "title": "Set `primary_port` parameter",
+      "description": "Demonstrates setting the `primary_port` parameter, including the syntax for specifying an advertised port.",
+      "code": "...\nmodparam(\"stun\", \"primary\\_port\", \"5060\")\n\n# Listening on a primary port, but advertising a different one\nmodparam(\"stun\", \"primary\\_port\", \"5060 / 5062\")\n..."
+    },
+    {
+      "title": "Set `alternate_ip` parameter",
+      "description": "Demonstrates setting the `alternate_ip` parameter, including the syntax for specifying an advertised IP.",
+      "code": "...\nmodparam(\"stun\",\"alternate\\_ip\",\"11.22.33.44\")\n\n# Example of a STUN server within OpenSIPS which is behind NAT\nmodparam(\"stun\", \"alternate\\_ip\", \"192.168.0.100 / 64.78.46.50\")\n..."
+    },
+    {
+      "title": "Set `alternate_port` parameter",
+      "description": "Demonstrates setting the `alternate_port` parameter, including the syntax for specifying an advertised port.",
+      "code": "...\nmodparam(\"stun\",\"alternate\\_port\",\"3479\")\n\n# Listening on an alternate port, but advertising a different one\nmodparam(\"stun\", \"alternate\\_port\", \"5060 / 5062\")\n..."
+    },
+    {
+      "title": "Set `use_listeners_as_primary` parameter",
+      "description": "Demonstrates setting the `use_listeners_as_primary` parameter to 1.",
+      "code": "...\nmodparam(\"stun\",\"use\\_listeners\\_as\\_primary\",1)\n..."
+    }
+  ]
+}

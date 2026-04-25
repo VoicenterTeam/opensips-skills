@@ -1,0 +1,165 @@
+{
+  "id": "module-httpd-3.6",
+  "document_type": "module",
+  "version": "3.6",
+  "title": "httpd Module",
+  "url": "https://opensips.org/html/docs/modules/3.6.x/httpd.html",
+  "content_markdown": "This module provides an HTTP transport layer for OpenSIPS.\n\nImplementation of httpd module's http server is based on libmicrohttpd library.\n\nTLS for the http server is enabled by setting the `tls_cert_file` and `tls_key_file` parameters. If this is enabled, support for plain http is disabled.",
+  "category": "Modules",
+  "extracted_at": "2026-03-06T12:39:38.448Z",
+  "module_name": "httpd",
+  "overview": "This module provides an HTTP transport layer for OpenSIPS.\n\nImplementation of httpd module's http server is based on libmicrohttpd library.\n\nTLS for the http server is enabled by setting the `tls_cert_file` and `tls_key_file` parameters. If this is enabled, support for plain http is disabled.",
+  "how_it_works": "Due to the fact that OpenSIPS is a multiprocess application, the microhttpd library is used in \"external select\" mode. This ensures that the library is not running in multithread mode and the library is entirely controled by OpenSIPS. Due to this particular mode of operations, for now, the entire http response is built in a pre-allocated buffer (see buf_size parameter).",
+  "dependencies_required": [
+    {
+      "name": "libmicrohttpd",
+      "type": "library",
+      "reason": "The following libraries or applications must be installed before running OpenSIPS with this module loaded: libmicrohttpd, with EPOLL support. This typically means a version newer than 0.9.50.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "ip",
+      "type": "string",
+      "default_value": "*",
+      "description": "The IP address used by the HTTP server to listen for incoming requests.",
+      "example_value": "127.0.0.1",
+      "example_code": "...\nmodparam(\"httpd\", \"ip\", \"127.0.0.1\")\n..."
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "default_value": "8888",
+      "description": "The port number used by the HTTP server to listen for incoming requests.",
+      "valid_range_min": 1024,
+      "example_value": "8000",
+      "example_code": "...\nmodparam(\"httpd\", \"port\", 8000)\n..."
+    },
+    {
+      "name": "conn_timeout",
+      "type": "integer",
+      "default_value": "30",
+      "description": "Auto-close TCP connections which are idle for more than the designated timeout, in seconds. Set to zero to never close any connections.",
+      "example_value": "10",
+      "example_code": "...\nmodparam(\"httpd\", \"conn\\_timeout\", 10)\n...",
+      "notes": "the connection auto-close routine only seems to be executed in an \"on-demand\" fashion, during an HTTPD network event (e.g. on a new connection), which although not ideal, it should be good enough in practical terms."
+    },
+    {
+      "name": "buf_size",
+      "type": "integer",
+      "default_value": "0",
+      "description": "It specifies the maximum length (in bytes) of the buffer used to write in the html response. If the size of the buffer is set to zero, it will be automatically set to a quarter of the size of the pkg memory.",
+      "example_value": "524288",
+      "example_code": "...\nmodparam(\"httpd\", \"buf\\_size\", 524288)\n..."
+    },
+    {
+      "name": "post_buf_size",
+      "type": "integer",
+      "default_value": "1024",
+      "description": "It specifies the length (in bytes) of the POST HTTP requests processing buffer. For large POST request, the default value might require to be increased.",
+      "valid_range_min": 256,
+      "example_value": "4096",
+      "example_code": "...\nmodparam(\"httpd\", \"post\\_buf\\_size\", 4096)\n..."
+    },
+    {
+      "name": "receive_buf_size",
+      "type": "integer",
+      "default_value": "1024",
+      "description": "It specifies the maximum length (in bytes) of the received HTTP requests. For receiving large POST request, the default value might require to be increased.",
+      "example_value": "4096",
+      "example_code": "...\nmodparam(\"httpd\", \"receive\\_buf\\_size\", 4096)\n..."
+    },
+    {
+      "name": "tls_cert_file",
+      "type": "string",
+      "default_value": "",
+      "description": "Public certificate file for httpd. It will be used as server-side certificate for incoming TLS connections.",
+      "example_value": "/etc/opensips/tls/server.pem",
+      "example_code": "...\nmodparam(\"httpd\", \"tls\\_cert\\_file\", \"/etc/opensips/tls/server.pem\")\n..."
+    },
+    {
+      "name": "tls_key_file",
+      "type": "string",
+      "default_value": "",
+      "description": "Private key of the above certificate. I must be kept in a safe place with tight permissions!",
+      "example_value": "/etc/opensips/tls/server.key",
+      "example_code": "...\nmodparam(\"httpd\", \"tls\\_key\\_file\", \"/etc/opensips/tls/server.key\")\n..."
+    },
+    {
+      "name": "tls_ciphers",
+      "type": "string",
+      "default_value": "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2",
+      "description": "You can specify the list of algorithms for authentication and encryption that you allow. To obtain a list of ciphers and then choose, use the gnutls-cli application: * gnutls-cli -l",
+      "example_value": "SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2",
+      "example_code": "...\nmodparam(\"httpd\", \"tls\\_ciphers\", \"SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2\")\n...",
+      "notes": "Do not use the NULL algorithms (no encryption) ... never!!!"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "httpd_list_root_path",
+      "parameters": [],
+      "description": "Lists all the registered http root paths into the httpd module. When a request comes in, if the root parth is in the list, the request will be sent to the module that register it.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi httpd\\_list\\_root\\_path",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `ip` parameter",
+      "description": "The IP address used by the HTTP server to listen for incoming requests.",
+      "code": "...\nmodparam(\"httpd\", \"ip\", \"127.0.0.1\")\n..."
+    },
+    {
+      "title": "Set `port` parameter",
+      "description": "The port number used by the HTTP server to listen for incoming requests.",
+      "code": "...\nmodparam(\"httpd\", \"port\", 8000)\n..."
+    },
+    {
+      "title": "Set `conn_timeout` parameter",
+      "description": "Auto-close TCP connections which are idle for more than the designated timeout, in seconds. Set to zero to never close any connections.\n\nNote: the connection auto-close routine only seems to be executed in an \"on-demand\" fashion, during an HTTPD network event (e.g. on a new connection), which although not ideal, it should be good enough in practical terms.",
+      "code": "...\nmodparam(\"httpd\", \"conn\\_timeout\", 10)\n..."
+    },
+    {
+      "title": "Set `buf_size` parameter",
+      "description": "It specifies the maximum length (in bytes) of the buffer used to write in the html response.\n\nIf the size of the buffer is set to zero, it will be automatically set to a quarter of the size of the pkg memory.",
+      "code": "...\nmodparam(\"httpd\", \"buf\\_size\", 524288)\n..."
+    },
+    {
+      "title": "Set `post_buf_size` parameter",
+      "description": "It specifies the length (in bytes) of the POST HTTP requests processing buffer. For large POST request, the default value might require to be increased.",
+      "code": "...\nmodparam(\"httpd\", \"post\\_buf\\_size\", 4096)\n..."
+    },
+    {
+      "title": "Set `receive_buf_size` parameter",
+      "description": "It specifies the maximum length (in bytes) of the received HTTP requests. For receiving large POST request, the default value might require to be increased.",
+      "code": "...\nmodparam(\"httpd\", \"receive\\_buf\\_size\", 4096)\n..."
+    },
+    {
+      "title": "Set `tls_cert_file` parameter",
+      "description": "Public certificate file for httpd. It will be used as server-side certificate for incoming TLS connections.",
+      "code": "...\nmodparam(\"httpd\", \"tls\\_cert\\_file\", \"/etc/opensips/tls/server.pem\")\n..."
+    },
+    {
+      "title": "Set `tls_key_file` parameter",
+      "description": "Private key of the above certificate. I must be kept in a safe place with tight permissions!",
+      "code": "...\nmodparam(\"httpd\", \"tls\\_key\\_file\", \"/etc/opensips/tls/server.key\")\n..."
+    },
+    {
+      "title": "Set `tls_key_file` parameter",
+      "description": "You can specify the list of algorithms for authentication and encryption that you allow. To obtain a list of ciphers and then choose, use the gnutls-cli application:\n\n*   gnutls-cli -l",
+      "code": "...\nmodparam(\"httpd\", \"tls\\_ciphers\", \"SECURE256:+SECURE192:-VERS-ALL:+VERS-TLS1.2\")\n..."
+    }
+  ]
+}

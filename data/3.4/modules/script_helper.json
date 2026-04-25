@@ -1,0 +1,65 @@
+{
+  "id": "module-script_helper-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "script_helper Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/script_helper.html",
+  "content_markdown": "The purpose of the **Script Helper module** is to simplify the scripting process in OpenSIPS when doing basic scenarios. At the same time, it is useful to script writers as it contains basic SIP routing logic, and thus it allows them to focus more on the particular aspects of their OpenSIPS routing code.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T15:21:19.248Z",
+  "module_name": "script_helper",
+  "overview": "The purpose of the **Script Helper module** is to simplify the scripting process in OpenSIPS when doing basic scenarios. At the same time, it is useful to script writers as it contains basic SIP routing logic, and thus it allows them to focus more on the particular aspects of their OpenSIPS routing code.",
+  "how_it_works": "By simply loading the module, the following **default logic** will be embedded:\n\n*   for initial SIP requests, the module will perform _record routing_ before running the main _request_ route\n    \n*   sequential SIP requests will be transparently handled - the module will perform _loose routing_, and the request route will not be run at all\n    \n\nCurrently, the module may be further configured to embed the following **optional logic**:\n\n*   _dialog_ support (dialog module dependency - must be loaded before this module)\n    \n*   an additional route to be run before relaying sequential requests",
+  "dependencies_required": null,
+  "dependencies_optional": [
+    "dialog"
+  ],
+  "exported_parameters": [
+    {
+      "name": "use_dialog",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Enables dialog support. Note that the dialog module must be loaded before this module when setting this parameter.",
+      "example_value": "1",
+      "example_code": "modparam(\"script_helper\", \"use_dialog\", 1)"
+    },
+    {
+      "name": "create_dialog_flags",
+      "type": "string",
+      "default_value": "",
+      "description": "Flags used when creating dialogs. For details on these flags, please refer to the _create_dialog()_ function of the dialog module.",
+      "example_value": "PpB",
+      "example_code": "modparam(\"script_helper\", \"create_dialog_flags\", \"PpB\")"
+    },
+    {
+      "name": "sequential_route",
+      "type": "string",
+      "default_value": "not set",
+      "description": "Optional route to be run just before sequential requests are relayed. If the _exit_ script statement is used inside this route, the module assumes that the relaying logic has been handled.",
+      "example_value": "sequential_handling",
+      "example_code": "modparam(\"script_helper\", \"sequential_route\", \"sequential_handling\")\n...\nroute [sequential_handling]\n{\n...\n}"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting `use_dialog`",
+      "description": "Enables dialog support.",
+      "code": "...\nmodparam(\"script\\_helper\", \"use\\_dialog\", 1)\n..."
+    },
+    {
+      "title": "Setting `create_dialog_flags`",
+      "description": "Flags used when creating dialogs.",
+      "code": "...\nmodparam(\"script\\_helper\", \"create\\_dialog\\_flags\", \"PpB\")\n..."
+    },
+    {
+      "title": "Setting `sequential_route`",
+      "description": "Optional route to be run just before sequential requests are relayed.",
+      "code": "...\nmodparam(\"script\\_helper\", \"sequential\\_route\", \"sequential\\_handling\")\n...\nroute \\[sequential\\_handling\\]\n{\n...\n}\n..."
+    }
+  ]
+}

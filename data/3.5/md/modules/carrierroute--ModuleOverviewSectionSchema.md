@@ -1,0 +1,1425 @@
+# carrierroute
+
+---
+
+**List of Tables**
+
+2.1. [Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)](#idp6496944)
+
+2.2. [Most recently active contributors(1) to this module](#idp6598304)
+
+**List of Examples**
+
+1.1. [Set `db_url` parameter](#idp5872016)
+
+1.2. [Set `db_table` parameter](#idp5877568)
+
+1.3. [Set `id_column` parameter](#idp5882976)
+
+1.4. [Set `carrier_column` parameter](#idp5888064)
+
+1.5. [Set `scan_prefix_column` parameter](#idp5879104)
+
+1.6. [Set `domain_column` parameter](#idp5898608)
+
+1.7. [Set `flags_column` parameter](#idp5903504)
+
+1.8. [Set `mask_column` parameter](#idp5908480)
+
+1.9. [Set `prob_column` parameter](#idp5914528)
+
+1.10. [Set `rewrite_host_column` parameter](#idp5919632)
+
+1.11. [Set `strip_column` parameter](#idp5924704)
+
+1.12. [Set `comment_column` parameter](#idp5929776)
+
+1.13. [Set `carrier_table` parameter](#idp5934816)
+
+1.14. [Set `rewrite_prefix_column` parameter](#idp5939856)
+
+1.15. [Set `rewrite_suffix_column` parameter](#idp5944912)
+
+1.16. [Set `id_col` parameter](#idp5949936)
+
+1.17. [Set `carrier_name_col` parameter](#idp5954928)
+
+1.18. [Set `subscriber_table` parameter](#idp5959904)
+
+1.19. [Set `subscriber_user_col` parameter](#idp5964912)
+
+1.20. [Set `subscriber_domain_col` parameter](#idp5969952)
+
+1.21. [Set `subscriber_carrier_col` parameter](#idp5974992)
+
+1.22. [Set `config_source` parameter](#idp5980064)
+
+1.23. [Set `config_file` parameter](#idp5984960)
+
+1.24. [Set `default_tree` parameter](#idp5990016)
+
+1.25. [Set `use_domain` parameter](#idp5995056)
+
+1.26. [Set `fallback_default` parameter](#idp6000224)
+
+1.27. [Set `db_failure_table` parameter](#idp6005216)
+
+1.28. [Set `failure_id_column` parameter](#idp6010208)
+
+1.29. [Set `failure_carrier_column` parameter](#idp6015184)
+
+1.30. [Set `failure_scan_prefix_column` parameter](#idp6020752)
+
+1.31. [Set `failure_domain_column` parameter](#idp6025904)
+
+1.32. [Set `failure_host_name_column` parameter](#idp6030928)
+
+1.33. [Set `failure_reply_code_column` parameter](#idp6035920)
+
+1.34. [Set `failure_flags_column` parameter](#idp6040832)
+
+1.35. [Set `failure_mask_column` parameter](#idp6045824)
+
+1.36. [Set `failure_next_domain_column` parameter](#idp6050800)
+
+1.37. [Set `failure_comment_column` parameter](#idp6055792)
+
+1.38. [`cr_replace_host` usage](#idp6113280)
+
+1.39. [`cr_deactivate_host` usage](#idp6122928)
+
+1.40. [`cr_activate_host` usage](#idp6130448)
+
+1.41. [`cr_add_host` usage](#idp6143520)
+
+1.42. [`cr_delete_host` usage](#idp6156656)
+
+1.43. [Configuration example - Routing to default tree](#idp6159536)
+
+1.44. [Configuration example - Routing to user tree](#idp6161648)
+
+1.45. [Configuration example - module configuration](#idp6163840)
+
+1.46. [Example database content - carrierroute table](#idp6173424)
+
+1.47. [Example database content - simple carrierfailureroute table](#idp6180672)
+
+1.48. [Example database content - more complex carrierfailureroute table](#idp6185024)
+
+1.49. [Example database content - route\_tree table](#idp6188416)
+
+1.50. [Necessary extensions for the user table](#idp6191392)
+
+## Chapter�1.�Admin Guide
+
+## 1.1.�Overview
+
+A module which provides routing, balancing and blacklisting capabilities.
+
+The module provides routing, balancing and blacklisting capabilities. It reads routing entries from a database source or from a config file at OpenSIPS startup. It can uses one routing tree (for one carrier), or if needed for every user a different routing tree (unique for each carrier) for number prefix based routing. It supports several route tree domains, e.g. for failback routes or different routing rules for VoIP and PSTN targets.
+
+Based on the tree, the module decides which number prefixes are forwarded to which gateway. It can also distribute the traffic by ratio parameters. Furthermore, the requests can be distributed by a hash funcion to predictable destinations. The hash source is configurable, two different hash functions are available.
+
+This modules scales up to more than a few million users, and is able to handle more than several hundred thousand routing table entries. It should be able to handle more, but this is not that much tested at the moment. In load balancing scenarios the usage of the config file mode is recommended, to avoid the additional complexity that the database driven routing creates.
+
+Routing tables can be reloaded and edited (in config file mode) with the MI interface, the config file is updated according the changes. This is not implemented for the db interface, because its easier to do the changes directly on the db. But the reload and dump functions works of course here too.
+
+Some module functionality is not fully available in the config file mode, as it is not possible to specify all information that can be stored in the database tables in the config file. Further information about these limitations is given in later sections. For user based routing or LCR you should use the database mode.
+
+Basically this module could be used as an replacement for the lcr and the dispatcher module, if you have certain performance, flexibility and/or integration requirements that these modules don't handle properly. But for small installations it probably make more sense to use the lcr and dispatcher module.
+
+If you want to use this module in failure routes, then you need to call “append\_branch()” after rewriting the request URI in order to relay the message to the new target. Its also supportes the usage of database derived failure routing descisions with the carrierfailureroute table.
+
+## 1.2.�Dependencies
+
+### 1.2.1.�OpenSIPS Modules
+
+The following module must be loaded before this module:
+
+*   _a database module_, when a database is used as configuration data source. Only SQL based databases are supported, as this module needs the capability to issue raw queries. Its not possible to use the dbtext or db\_berkeley module at the moment.
+    
+*   The _tm module_, when you want to use the $T\_reply\_code pseudo-variable in the “cr\_next\_domain” function.
+    
+
+### 1.2.2.�External Libraries or Applications
+
+The following libraries or applications must be installed before running OpenSIPS with this module loaded:
+
+*   _libconfuse_, a configuration file parser library. ( http://www.nongnu.org/confuse/ )
+    
+
+## 1.3.�Exported Parameters
+
+### 1.3.1.�`db_url` (string)
+
+Url to the database containing the routing data.
+
+_Default value is “mysql://opensipsro:opensipsro@localhost/opensips”._
+
+**Example�1.1.�Set `db_url` parameter**
+
+...
+modparam("carrierroute", "db\_url", "dbdriver://username:password@dbhost/dbname")
+...
+		
+
+  
+
+### 1.3.2.�`db_table` (string)
+
+Name of the table where the routing data is stored.
+
+_Default value is “carrierroute”._
+
+**Example�1.2.�Set `db_table` parameter**
+
+...
+modparam("carrierroute", "db\_table", "carrierroute")
+...
+		    
+
+  
+
+### 1.3.3.�`id_column` (string)
+
+Name of the column containing the id identifier.
+
+_Default value is “id”._
+
+**Example�1.3.�Set `id_column` parameter**
+
+...
+modparam("carrierroute", "id\_column", "id")
+...
+		    
+
+  
+
+### 1.3.4.�`carrier_column` (string)
+
+Name of the column containing the carrier id.
+
+_Default value is “carrier”._
+
+**Example�1.4.�Set `carrier_column` parameter**
+
+...
+modparam("carrierroute", "carrier\_column", "carrier")
+...
+		    
+
+  
+
+### 1.3.5.�`scan_prefix_column` (string)
+
+Name of column containing the scan prefixes. Scan prefixes define the matching portion of a phone number, e.g. when we have the scan prefixes 49721 and 49, the called number is 49721913740, it matches 49721, because the longest match is taken. If no prefix matches, the number is not routed. To prevent this, an empty prefix value of “” could be added.
+
+_Default value is “scan\_prefix”._
+
+**Example�1.5.�Set `scan_prefix_column` parameter**
+
+...
+modparam("carrierroute", "scan\_prefix\_column", "scan\_prefix")
+...
+		    
+
+  
+
+### 1.3.6.�`domain_column` (string)
+
+Name of column containing the rule domain. You can define several routing domains to have different routing rules. Maybe you use domain 0 for normal routing and domain 1 if domain 0 failed.
+
+_Default value is “domain”._
+
+**Example�1.6.�Set `domain_column` parameter**
+
+...
+modparam("carrierroute", "domain\_column", "domain")
+...
+		    
+
+  
+
+### 1.3.7.�`flags_column` (string)
+
+Name of the column containing the flags.
+
+_Default value is “flags”._
+
+**Example�1.7.�Set `flags_column` parameter**
+
+...
+modparam("carrierroute", "flags\_column", "flags")
+...
+		    
+
+  
+
+### 1.3.8.�`mask_column` (string)
+
+Name of the column containing the flags mask.
+
+_Default value is “mask”._
+
+**Example�1.8.�Set `mask_column` parameter**
+
+...
+modparam("carrierroute", "mask\_column", "mask")
+...
+		    
+
+  
+
+### 1.3.9.�`prob_column` (string)
+
+Name of column containing probability. The probability value is used to distribute the traffic between several gateways. Let's say 70 % of the traffic shall be routed to gateway A, the other 30 % shall be routed to gateway B, we define a rule for gateway A with a prob value of 0.7 and a rule for gateway B with a prob value of 0.3.
+
+If all probabilities for a given prefix, tree and domain don't add to 100%, the prefix values will be adjusted according the given prob values. E.g. if three hosts with prob values of 0.5, 0.5 and 0.4 are defined, the resulting probabilities are 35.714, 35.714 and 28.571%. But its better to choose meaningful values in the first place because of clarity.
+
+_Default value is “prob”._
+
+**Example�1.9.�Set `prob_column` parameter**
+
+...
+modparam("carrierroute", "prob\_column", "prob")
+...
+		    
+
+  
+
+### 1.3.10.�`rewrite_host_column` (string)
+
+Name of column containing rewrite host value. An empty field represents a blacklist entry, anything else is put as domain part into the Request URI of the SIP message.
+
+_Default value is “rewrite\_host”._
+
+**Example�1.10.�Set `rewrite_host_column` parameter**
+
+...
+modparam("carrierroute", "rewrite\_host\_column", "rewrite\_host")
+...
+		    
+
+  
+
+### 1.3.11.�`strip_column` (string)
+
+Name of the column containing the number of digits to be stripped of the userpart of an URI before prepending rewrite\_prefix.
+
+_Default value is “strip”._
+
+**Example�1.11.�Set `strip_column` parameter**
+
+...
+modparam("carrierroute", "strip\_column", "strip")
+...
+		    
+
+  
+
+### 1.3.12.�`comment_column` (string)
+
+Name of the column containing an optional comment (useful in large routing tables) The comment is also displayed by the fifo cmd "cr\_dump\_routes".
+
+_Default value is “description”._
+
+**Example�1.12.�Set `comment_column` parameter**
+
+...
+modparam("carrierroute", "comment\_column", "description")
+...
+		    
+
+  
+
+### 1.3.13.�`carrier_table` (string)
+
+The name of the table containing the existing carriers, consisting of the ids and corresponding names.
+
+_Default value is “route\_tree”._
+
+**Example�1.13.�Set `carrier_table` parameter**
+
+...
+modparam("carrierroute", "carrier\_table", "route\_tree")
+...
+		    
+
+  
+
+### 1.3.14.�`rewrite_prefix_column` (string)
+
+Name of column containing rewrite prefixes. Here you can define a rewrite prefix for the localpart of the SIP URI.
+
+_Default value is “rewrite\_prefix”._
+
+**Example�1.14.�Set `rewrite_prefix_column` parameter**
+
+...
+modparam("carrierroute", "rewrite\_prefix\_column", "rewrite\_prefix")
+...
+		    
+
+  
+
+### 1.3.15.�`rewrite_suffix_column` (string)
+
+Name of column containing rewrite suffixes. Here you can define a rewrite suffix for the localpart of the SIP URI.
+
+_Default value is “rewrite\_suffix”._
+
+**Example�1.15.�Set `rewrite_suffix_column` parameter**
+
+			    ...
+modparam("carrierroute", "rewrite\_suffix\_column", "rewrite\_suffix")
+			    ...
+		    
+
+  
+
+### 1.3.16.�`carrier_id_col` (string)
+
+The name of the column in the carrier table containing the carrier id.
+
+_Default value is “id”._
+
+**Example�1.16.�Set `id_col` parameter**
+
+...
+modparam("carrierroute", "carrier\_id\_col", "id")
+...
+		    
+
+  
+
+### 1.3.17.�`carrier_name_col` (string)
+
+The name of the column in the carrier table containing the carrier name.
+
+_Default value is “carrier”._
+
+**Example�1.17.�Set `carrier_name_col` parameter**
+
+...
+modparam("carrierroute", "carrier\_name\_col", "carrier")
+...
+		    
+
+  
+
+### 1.3.18.�`subscriber_table` (string)
+
+The name of the table containing the subscribers
+
+_Default value is “subscriber”._
+
+**Example�1.18.�Set `subscriber_table` parameter**
+
+...
+modparam("carrierroute", "subscriber\_table", "subscriber")
+...
+		    
+
+  
+
+### 1.3.19.�`subscriber_user_col` (string)
+
+The name of the column in the subscriber table containing the usernames.
+
+_Default value is “username”._
+
+**Example�1.19.�Set `subscriber_user_col` parameter**
+
+...
+modparam("carrierroute", "subscriber\_user\_col", "username")
+...
+		    
+
+  
+
+### 1.3.20.�`subscriber_domain_col` (string)
+
+The name of the column in the subscriber table containing the domain of the subscriber.
+
+_Default value is “domain”._
+
+**Example�1.20.�Set `subscriber_domain_col` parameter**
+
+...
+modparam("carrierroute", "subscriber\_domain\_col", "domain")
+...
+		    
+
+  
+
+### 1.3.21.�`subscriber_carrier_col` (string)
+
+The name of the column in the subscriber table containing the carrier id of the subscriber.
+
+_Default value is “cr\_preferred\_carrier”._
+
+**Example�1.21.�Set `subscriber_carrier_col` parameter**
+
+...
+modparam("carrierroute", "subscriber\_carrier\_col", "cr\_preferred\_carrier")
+...
+		    
+
+  
+
+### 1.3.22.�`config_source` (string)
+
+Specifies whether the module loads its config data from a file or from a database. Possible values are file or db.
+
+_Default value is “file”._
+
+**Example�1.22.�Set `config_source` parameter**
+
+...
+modparam("carrierroute", "config\_source", "file")
+...
+		    
+
+  
+
+### 1.3.23.�`config_file` (string)
+
+Specifies the path to the config file.
+
+_Default value is “/etc/opensips/carrierroute.conf”._
+
+**Example�1.23.�Set `config_file` parameter**
+
+...
+modparam("carrierroute", "config\_file", "/etc/opensips/carrierroute.conf")
+...
+		    
+
+  
+
+### 1.3.24.�`default_tree` (string)
+
+The name of the carrier tree used per default (if the current subscriber has no preferred tree)
+
+_Default value is “default”._
+
+**Example�1.24.�Set `default_tree` parameter**
+
+...
+modparam("carrierroute", "default\_tree", "default")
+...
+		    
+
+  
+
+### 1.3.25.�`use_domain` (int)
+
+When using tree lookup per user, this parameter specifies whether to use the domain part for user matching or not.
+
+_Default value is “0”._
+
+**Example�1.25.�Set `use_domain` parameter**
+
+...
+modparam("carrierroute", "use\_domain", 0)
+...
+		    
+
+  
+
+### 1.3.26.�`fallback_default` (int)
+
+This parameter defines the behaviour when using user-based tree lookup. If the user has a non-existing tree set and fallback\_default is set to 1, the default tree is used. Otherwise, cr\_user\_rewrite\_uri returns an error.
+
+_Default value is “1”._
+
+**Example�1.26.�Set `fallback_default` parameter**
+
+...
+modparam("carrierroute", "fallback\_default", 1)
+...
+		    
+
+  
+
+### 1.3.27.�`db_failure_table` (string)
+
+Name of the table where the failure routing data is stored.
+
+_Default value is “carrierfailureroute”._
+
+**Example�1.27.�Set `db_failure_table` parameter**
+
+...
+modparam("carrierroute", "db\_failure\_table", "carrierfailureroute")
+...
+		    
+
+  
+
+### 1.3.28.�`failure_id_column` (string)
+
+Name of the column containing the id identifier.
+
+_Default value is “id”._
+
+**Example�1.28.�Set `failure_id_column` parameter**
+
+...
+modparam("carrierroute", "failure\_id\_column", "id")
+...
+		    
+
+  
+
+### 1.3.29.�`failure_carrier_column` (string)
+
+Name of the column containing the carrier id.
+
+_Default value is “carrier”._
+
+**Example�1.29.�Set `failure_carrier_column` parameter**
+
+...
+modparam("carrierroute", "failure\_carrier\_column", "carrier")
+...
+		    
+
+  
+
+### 1.3.30.�`failure_scan_prefix_column` (string)
+
+Name of column containing the scan prefixes. Scan prexies define the matching portion of a phone number, e.g. we have the scan prefixes 49721 and 49, the called number is 49721913740, it matches 49721, because the longest match is taken. If no prefix matches, the number is not failure routed. To prevent this, an empty prefix value of “” could be added.
+
+_Default value is “scan\_prefix”._
+
+**Example�1.30.�Set `failure_scan_prefix_column` parameter**
+
+...
+modparam("carrierroute", "failure\_scan\_prefix\_column", "scan\_prefix")
+...
+		    
+
+  
+
+### 1.3.31.�`failure_domain_column` (string)
+
+Name of column containing the rule domain. You can define several routing domains to have different routing rules. Maybe you use domain 0 for normal routing and domain 1 if domain 0 failed.
+
+_Default value is “domain”._
+
+**Example�1.31.�Set `failure_domain_column` parameter**
+
+...
+modparam("carrierroute", "failure\_domain\_column", "domain")
+...
+		    
+
+  
+
+### 1.3.32.�`failure_host_name_column` (string)
+
+Name of the column containing the host name of the last routing destination.
+
+_Default value is “host\_name”._
+
+**Example�1.32.�Set `failure_host_name_column` parameter**
+
+...
+modparam("carrierroute", "failure\_host\_name\_column", "host\_name")
+...
+		    
+
+  
+
+### 1.3.33.�`failure_reply_code_column` (string)
+
+Name of the column containing the reply code.
+
+_Default value is “reply\_code”._
+
+**Example�1.33.�Set `failure_reply_code_column` parameter**
+
+...
+modparam("carrierroute", "failure\_reply\_code\_column", "reply\_code")
+...
+		    
+
+  
+
+### 1.3.34.�`failure_flags_column` (string)
+
+Name of the column containing the flags.
+
+_Default value is “flags”._
+
+**Example�1.34.�Set `failure_flags_column` parameter**
+
+...
+modparam("carrierroute", "failure\_flags\_column", "flags")
+...
+		    
+
+  
+
+### 1.3.35.�`failure_mask_column` (string)
+
+Name of the column containing the flags mask.
+
+_Default value is “mask”._
+
+**Example�1.35.�Set `failure_mask_column` parameter**
+
+...
+modparam("carrierroute", "failure\_mask\_column", "mask")
+...
+		    
+
+  
+
+### 1.3.36.�`failure_next_domain_column` (string)
+
+Name of the column containing the next routing domain.
+
+_Default value is “next\_domain”._
+
+**Example�1.36.�Set `failure_next_domain_column` parameter**
+
+...
+modparam("carrierroute", "failure\_next\_domain\_column", "next\_domain")
+...
+		    
+
+  
+
+### 1.3.37.�`failure_comment_column` (string)
+
+Name of the column containing an optional comment.
+
+_Default value is “description”._
+
+**Example�1.37.�Set `failure_comment_column` parameter**
+
+...
+modparam("carrierroute", "failure\_comment\_column", "description")
+...
+		    
+
+  
+
+## 1.4.�Exported Functions
+
+Previous versions of carrierroute had some more function. All the old semantics can be achieved by using the few new functions like this:
+
+cr\_rewrite\_uri(domain, hash\_source)
+-> cr\_route("default", domain, $rU, $rU, hash\_source)
+
+cr\_prime\_balance\_uri(domain, hash\_source)
+-> cr\_prime\_route("default", domain, $rU, $rU, hash\_source)
+
+cr\_rewrite\_by\_to(domain, hash\_source)
+-> cr\_route("default", domain, $tU, $rU, hash\_source)
+
+cr\_prime\_balance\_by\_to(domain, hash\_source)
+-> cr\_prime\_route("default", domain, $tU, $rU, hash\_source)
+
+cr\_rewrite\_by\_from(domain, hash\_source)
+-> cr\_route("default", domain, $fU, $rU, hash\_source)
+
+cr\_prime\_balance\_by\_from(domain, hash\_source)
+-> cr\_prime\_route("default", domain, $fU, $rU, hash\_source)
+
+cr\_user\_rewrite\_uri(uri, domain)
+-> cr\_user\_carrier(user, domain, $avp(tree\_avp))
+-> cr\_route($avp(tree\_avp), domain, $rU, $rU, "call\_id")
+
+cr\_tree\_rewrite\_uri(tree, domain)
+-> cr\_route(tree, domain, $rU, $rU, "call\_id")
+  
+
+### 1.4.1.� `cr_user_carrier(user, domain, dst_avp)`
+
+This function loads the carrier and stores it in an AVP. It cannot be used in the config file mode, as it needs a mapping of the given user to a certain carrier. The is derived from a database entry belonging to the user parameter. This mapping must be available in the table that is specified in the “subscriber\_table” variable. This data is not cached in memory, that means for every execution of this function a database query will be done.
+
+Parameters:
+
+*   _user (string)_ - Name of the user for the carrier tree lookup
+    
+*   _domain (string)_ - Name of the routing domain to be used
+    
+*   _dst\_avp (var)_ - Name of an AVP where to store the carrier id
+    
+
+### 1.4.2.� `cr_route(carrier, domain, prefix_matching, rewrite_user, hash_source, [dst_avp])`
+
+This function searches for the longest match for the user given in prefix\_matching at the given domain in the given carrier tree. The Request URI is rewritten using rewrite\_user and the given hash source and algorithm. Returns -1 if there is no data found or an empty rewrite host on the longest match is found. Otherwise the rewritten host is stored in the given AVP (if obmitted, the host is not stored in an AVP). This function is only usable with rewrite\_user and prefix\_matching containing a valid numerical only string. It uses the standard crc32 algorithm to calculate the hash values.
+
+Parameters:
+
+*   _carrier (string)_ - The routing tree to be used
+    
+*   _domain (string)_ - Name of the routing domain to be used
+    
+*   _prefix\_matching (string)_ - User name to be used for prefix matching in the routing tree
+    
+*   _rewrite\_user (string)_ - The user name to be used for applying the rewriting rule. Usually, this is the user part of the request URI
+    
+*   _hash\_source (string)_ - The hash values of the destination set must be a contiguous range starting at 1, limited by the configuration parameter max\_targets. Possible values for hash\_source are: call\_id, from\_uri, from\_user, to\_uri and to\_user.
+    
+*   _dst\_avp (var, optional)_ - Optional AVP where to store the rewritten host
+    
+
+### 1.4.3.� `cr_prime_route(carrier, domain, prefix_matching, rewrite_user, hash_source, [dst_avp])`
+
+This function searches for the longest match for the user given in prefix\_matching at the given domain in the given carrier tree. The Request URI is rewritten using rewrite\_user and the given hash source and algorithm. Returns -1 if there is no data found or an empty rewrite host on the longest match is found. Otherwise the rewritten host is stored in the given AVP (if obmitted, the host is not stored in an AVP). This function is only usable with rewrite\_user and prefix\_matching containing a valid numerical only string. It uses the prime hash algorithm to calculate the hash values.
+
+Meaning of the parameters is as follows:
+
+*   _carrier (string)_ - The routing tree to be used
+    
+*   _domain (string)_ - Name of the routing domain to be used
+    
+*   _prefix\_matching (string)_ - User name to be used for prefix matching in the routing tree
+    
+*   _rewrite\_user (string)_ - The user name to be used for applying the rewriting rule. Usually, this is the user part of the request URI
+    
+*   _hash\_source (string)_ - The hash values of the destination set must be a contiguous range starting at 1, limited by the configuration parameter max\_targets. Possible values for hash\_source are: call\_id, from\_uri, from\_user, to\_uri and to\_user.
+    
+*   _dst\_avp (var, optional)_ - Optional AVP where to store the rewritten host
+    
+
+### 1.4.4.� `cr_next_domain(carrier, domain, prefix_matching, host, reply_code, dst_avp)`
+
+This function searches for the longest match for the user given in prefix\_matching at the given domain in the given carrier failure tree. It tries to find a next domain matching the given host, reply\_code and the message flags. The matching is done in this order: host, reply\_code and then flags. The more wildcards in reply\_code and the more bits used in flags, the lower the priority. Returns -1 if there is no data found or an empty next\_domain on the longest match is found. Otherwise the next domain is stored in the given AVP. This function is only usable with prefix\_matching containing a valid numerical only string.
+
+Meaning of the parameters is as follows:
+
+*   _carrier (string)_ - The routing tree to be used any pseudo-variable could be used as input.
+    
+*   _domain (string)_ - Name of the routing domain to be used
+    
+*   _prefix\_matching (string)_ - User name to be used for prefix matching in the routing tree
+    
+*   _host (string)_ - The host name to be used for failure route rule matching. Usually, this is the last tried routing destination stored in an avp by cr\_route
+    
+*   _reply\_code (string)_ - The reply code to be used for failure route rule matching
+    
+*   _dst\_avp (var)_ - AVP where to store the next routing domain.
+    
+
+## 1.5.�Exported MI Functions
+
+All commands understand the "-?" parameter to print a short help message. The options have to be quoted as one string to be passed to MI interface. Each option except host and new host can be wildcarded by \* (but only \* and not things like "-d prox\*").
+
+### 1.5.1.�`cr_reload_routes`
+
+This command reloads the routing data from the data source.
+
+Important: When new domains have been added, a restart of the server must be done, because the mapping of the ids used in the config script cannot be updated at runtime at the moment. So a reload could result in a wrong routing behaviour, because the ids used in the script could differ from the one used internally from the server. Modifying of already existing domains is no problem.
+
+### 1.5.2.�`cr_dump_routes`
+
+This command prints the route rules on the command line.
+
+### 1.5.3.�`cr_replace_host`
+
+This command can replace the rewrite\_host of a route rule, it is only usable in file mode. Following options are possible:
+
+*   _\-d_ - the domain containing the host
+    
+*   _\-p_ - the prefix containing the host
+    
+*   _\-h_ - the host to be replaced
+    
+*   _\-t_ - the new host
+    
+
+Use the "null" prefix to specify an empty prefix.
+
+**Example�1.38.�`cr_replace_host` usage**
+
+...
+opensips-cli -x mi cr\_replace\_host "-d proxy -p 49 -h proxy1 -t proxy2"
+...
+		
+
+  
+
+### 1.5.4.�`cr_deactivate_host`
+
+This command deactivates the specified host, i.e. it sets its status to 0. It is only usable in file mode. Following options are possible:
+
+*   _\-d_ - the domain containing the host
+    
+*   _\-p_ - the prefix containing the host
+    
+*   _\-h_ - the host to be deactivated
+    
+*   _\-t_ - the new host used as backup
+    
+
+When -t (new\_host) is specified, the portion of traffic for the deactivated host is routed to the host given by -t. This is indicated in the output of dump\_routes. The backup route is deactivated if the host is activated again.
+
+Use the "null" prefix to specify an empty prefix.
+
+**Example�1.39.�`cr_deactivate_host` usage**
+
+...
+opensips-cli -x mi cr\_deactivate\_host "-d proxy -p 49 -h proxy1"
+...
+		
+
+  
+
+### 1.5.5.�`cr_activate_host`
+
+This command activates the specified host, i.e. it sets its status to 1. It is only usable in file mode. Following options are possible:
+
+*   _\-d_ - the domain containing the host
+    
+*   _\-p_ - the prefix containing the host
+    
+*   _\-h_ - the host to be activated
+    
+
+Use the "null" prefix to specify an empty prefix.
+
+**Example�1.40.�`cr_activate_host` usage**
+
+...
+opensips-cli -x mi cr\_activate\_host "-d proxy -p 49 -h proxy1"
+...
+		
+
+  
+
+### 1.5.6.�`cr_add_host`
+
+This command adds a route rule, it is only usable in file mode. Following options are possible:
+
+*   _\-d_ - the domain containing the host
+    
+*   _\-p_ - the prefix containing the host
+    
+*   _\-h_ - the host to be added
+    
+*   _\-w_ - the weight of the rule
+    
+*   _\-P_ - an optional rewrite prefix
+    
+*   _\-S_ - an optional rewrite suffix
+    
+*   _\-i_ - an optional hash index
+    
+*   _\-s_ - an optional strip value
+    
+
+Use the "null" prefix to specify an empty prefix.
+
+**Example�1.41.�`cr_add_host` usage**
+
+...
+opensips-cli -x mi cr\_add\_host "-d proxy -p 49 -h proxy1 -w 0.25"
+...
+		
+
+  
+
+### 1.5.7.�`cr_delete_host`
+
+This command delete the specified hosts or rules, i.e. remove them from the route tree. It is only usable in file mode. Following options are possible:
+
+*   _\-d_ - the domain containing the host
+    
+*   _\-p_ - the prefix containing the host
+    
+*   _\-h_ - the host to be added
+    
+*   _\-w_ - the weight of the rule
+    
+*   _\-P_ - an optional rewrite prefix
+    
+*   _\-S_ - an optional rewrite suffix
+    
+*   _\-i_ - an optional hash index
+    
+*   _\-s_ - an optional strip value
+    
+
+Use the "null" prefix to specify an empty prefix.
+
+**Example�1.42.�`cr_delete_host` usage**
+
+...
+opensips-cli -x mi cr\_delete\_host "-d proxy -p 49 -h proxy1 -w 0.25"
+...
+		
+
+  
+
+## 1.6.�Examples
+
+**Example�1.43.�Configuration example - Routing to default tree**
+
+...
+route {
+	# route calls based on hash over callid
+	# choose route domain 0 of the default carrier
+	
+	if(!cr\_route("default", "0", "$rU", "$rU", "call\_id", "crc32")){
+		sl\_send\_reply(403, "Not allowed");
+	} else {
+		# In case of failure, re-route the request
+		t\_on\_failure("1");
+		# Relay the request to the gateway
+		t\_relay();
+	}
+}
+
+failure\_route\[1\] {
+	# In case of failure, send it to an alternative route:
+	if (t\_check\_status("408|5\[0-9\]\[0-9\]")) {
+		#choose route domain 1 of the default carrier
+	if(!cr\_route("default", "1", "$rU", "$rU", "call\_id", "crc32")){
+			t\_reply(403, "Not allowed");
+		} else {
+			t\_on\_failure("2");
+			t\_relay();
+		}
+	}
+}
+
+failure\_route\[2\] {
+	# further processing
+}
+
+		
+
+  
+
+**Example�1.44.�Configuration example - Routing to user tree**
+
+...
+route\[1\] {
+	cr\_user\_carrier("$fU", "$fd", "$avp(carrier)");
+
+	# just an example domain
+	$avp(domain)="start";
+	if (!cr\_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
+			"call\_id", "$avp(host)")) {
+		xlog("L\_ERR", "cr\_route failed\\n");
+		exit;
+	}
+	t\_on\_failure("1");
+		if (!t\_relay()) {
+			sl\_reply\_error();
+	};
+}
+
+failure\_route\[1\] {
+	revert\_uri();
+	if (!cr\_next\_domain("$avp(carrier)", "$avp(domain)", "$rU",
+			"$avp(host)", "$T\_reply\_code", "$avp(domain)")) {
+		xlog("L\_ERR", "cr\_next\_domain failed\\n");
+		exit;
+	}
+	if (!cr\_route("$avp(carrier)", "$avp(domain)", "$rU", "$rU",
+			"call\_id", "$avp(host)")) {
+		xlog("L\_ERR", "cr\_route failed\\n");
+		exit;
+	}
+	t\_on\_failure("1");
+	append\_branch();
+	if (!t\_relay()) {
+		xlog("L\_ERR", "t\_relay failed\\n");
+		exit;
+	};
+}
+...
+		
+
+  
+
+**Example�1.45.�Configuration example - module configuration**
+
+The following config file specifies within the default carrier two domains, each with an prefix that contains two hosts. It is not possible to specify another carrier if you use the config file as data source.
+
+All traffic will be equally distributed between the hosts, both are active. The hash algorithm will working over the \[1,2\] set, messages hashed to one will go to the first host, the other to the second one. Don't use a hash index value of zero. If you ommit the hash completly, the module gives them a autogenerated value, starting from one.
+
+Use the “NULL” prefix to specify an empty prefix in the config file. Please note that the prefix is matched against the request URI (or to URI), if they did not contain a valid numerical URI, no match is possible. So for loadbalancing purposes e.g. for your registrars, you should use an empty prefix.
+
+...
+domain proxy {
+   prefix 49 {
+     max\_targets = 2
+      target proxy1.localdomain {
+         prob = 0.500000
+         hash\_index = 1
+         status = 1
+         comment = "test target 1"
+      }
+      target proxy2.localdomain {
+         prob = 0.500000
+         hash\_index = 2
+         status = 1
+         comment = "test target 2"
+      }
+   }
+}
+
+domain register {
+   prefix NULL {
+     max\_targets = 2
+      target register1.localdomain {
+         prob = 0.500000
+         hash\_index = 1
+         status = 1
+         comment = "test target 1"
+      }
+      target register2.localdomain {
+         prob = 0.500000
+         hash\_index = 2
+         status = 1
+         comment = "test target 2"
+      }
+   }
+}
+...
+		
+
+  
+
+## 1.7.�Installation and Running
+
+### 1.7.1.�Database setup
+
+Before running OpenSIPS with carrierroute, you have to setup the database table where the module will store the routing data. For that, if the table was not created by the installation script or you choose to install everything by yourself you can use the carrierroute-create.sql SQL script in the database directories in the opensips/scripts folder as template. Database and table name can be set with module parameters so they can be changed, but the name of the columns must be as they are in the SQL script. You can also find the complete database documentation on the project webpage, https://opensips.org/docs/db/db-schema-devel.html. The flags and mask columns have the same function as in the carrierfailureroute table. A zero value in the flags and mask column means that any message flags will match this rule.
+
+For a minimal configuration either use the config file given above, or insert some data into the tables of the module.
+
+**Example�1.46.�Example database content - carrierroute table**
+
+...
++----+---------+--------+-------------+-------+------+---------------+
+| id | carrier | domain | scan\_prefix | flags | prob | rewrite\_host  |
++----+---------+--------+-------------+-------+------+---------------+
+| 1  |       1 |      0 | 49          |     0 |  0.5 | de-1.carrier1 |
+| 2  |       1 |      0 | 49          |     0 |  0.5 | de-2.carrier1 |
+| 3  |       1 |      0 | 49          |    16 |    1 | de-3.carrier1 |
+| 4  |       1 |      0 |             |     0 |    1 | gw.carrier1-1 |
+| 5  |       1 |      1 | 49          |     0 |    1 | gw.carrier1-1 |
+| 6  |       1 |      2 |             |     0 |    1 | gw.carrier1-2 |
+| 7  |       1 |      3 |             |     0 |    1 | gw.carrier1-3 |
+| 8  |       2 |      0 | 49          |     0 |  0.5 | de-1.carrier2 |
+| 9  |       2 |      0 | 49          |     0 |  0.5 | de-2.carrier2 |
+| 10 |       2 |      0 |             |     0 |    1 | gw.carrier2   |
+| 11 |       2 |      1 | 49          |     0 |    1 | gw.carrier2   |
+| 12 |       3 |  start | 49          |     0 |    1 | de-gw.default |
+| 13 |       3 |  start |             |     0 |    1 | gw.default    |
++----+---------+--------+-------------+-------+------+---------------+
+...
+		
+
+  
+
+This table contains three routes to two gateways for the “49” prefix, and a default route for other prefixes over carrier 2 and carrier 1. The gateways for the default carrier will be used for functions that don't support the user specific carrier lookup. The routing rules for carrier 1 and carrier 2 for the “49” prefix contains a additional rule with the domain 1, that can be used for example as fallback if the gateways in domain 0 are not reachable. Two more fallback rules (domain 2 and 3) for carrier 1 are also supplied to support the functionality of the carrierfailureroute table example that is provided in the next section. The usage of strings for the domains is also possible, for example at carrier 3.
+
+This table provides also a “carrier1” routing rule for the “49” prefix, that is only choosen if some message flags are set. If this flags are not set, the other two rules are used. The “strip”, “mask” and “comment” colums are omitted for brevity.
+
+**Example�1.47.�Example database content - simple carrierfailureroute table**
+
+...
++----+---------+--------+---------------+------------+-------------+
+| id | carrier | domain | host\_name     | reply\_code | next\_domain |
++----+---------+--------+---------------+------------+-------------+
+|  1 |       1 | 0      | gw.carrier1-2 | ...        | 3           |
+|  2 |       1 | 0      | gw.carrier1-3 | ...        | 2           |
++----+---------+--------+---------------+------------+-------------+
+...
+
+  
+
+This table contains two failure routes for the “gw.carrier1-1” and “\-2” gateways. For any (failure) reply code the respective next domain is choosen. After that no more failure routes are available, an error will be returned from the “cr\_next\_domain” function. Not all table colums are show here for brevity.
+
+For each failure route domain and carrier that is added to the carrierfailureroute table there must be at least one corresponding entry in the carrierroute table, otherwise the module will not load the routing data.
+
+**Example�1.48.�Example database content - more complex carrierfailureroute table**
+
+...
++----+---------+-----------+------------+--------+-----+-------------+
+| id | domain  | host\_name | reply\_code | flags | mask | next\_domain |
++----+---------+-----------+------------+-------+------+-------------+
+|  1 |      99 |           | 408        |    16 |   16 |             |
+|  2 |      99 | gw1       | 404        |     0 |    0 | 100         |
+|  3 |      99 | gw2       | 50.        |     0 |    0 | 100         |
+|  4 |      99 |           | 404        |  2048 | 2112 | asterisk-1  |
++----+---------+-----------+------------+-------+------+-------------+
+...
+
+  
+
+This table contains four failure routes that shows the usage of more advanced features. The first route matches to a 408, and to some flag for example that indicates that ringing has happened. If this flag is set, there will be no further forwarding, because next\_domain is empty. In the second and third routes are certain gateway errors matched, if this errors have occurred, then the next domain will be chosen. The last route does forwarding according some flags, e.g. the customer came from a certain carrier, and has call-forwarding deactivated. In order to use the routing that is specified above, a matching carrierroute table must be provided, that holds domain entries for this routing rules. Not all table colums are show here for brevity.
+
+**Example�1.49.�Example database content - route\_tree table**
+
+...
++----+----------+
+| id | carrier  |
++----+----------+
+|  1 | carrier1 |
+|  2 | carrier2 |
+|  3 | default  |
++----+----------+
+...
+		
+
+  
+
+This table contains the mapping of the carrier id to actual names.
+
+For a functional routing the “cr\_preferred\_carrier” column must be added to the subscriber table (or to the table and column that you specified as modul parameter) to choose the actual carrier for the users.
+
+**Example�1.50.�Necessary extensions for the user table**
+
+Suggested changes:
+
+...
+ALTER TABLE subscriber ADD cr\_preferred\_carrier int(10) default NULL; 
+...
+		
+
+  
+
+## Chapter�2.�Contributors
+
+## 2.1.�By Commit Statistics
+
+**Table�2.1.�Top contributors by DevScore(1), authored commits(2) and lines added/removed(3)**
+
+�
+
+Name
+
+DevScore
+
+Commits
+
+Lines ++
+
+Lines --
+
+1.
+
+Henning Westerholt ([@henningw](https://github.com/henningw))
+
+125
+
+80
+
+2085
+
+1607
+
+2.
+
+Jonas Appel
+
+54
+
+1
+
+6240
+
+0
+
+3.
+
+Hardy Kahl
+
+49
+
+3
+
+2713
+
+1360
+
+4.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+29
+
+24
+
+131
+
+154
+
+5.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+23
+
+20
+
+109
+
+108
+
+6.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+22
+
+5
+
+384
+
+764
+
+7.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+19
+
+13
+
+134
+
+210
+
+8.
+
+Daniel-Constantin Mierla ([@miconda](https://github.com/miconda))
+
+9
+
+7
+
+34
+
+30
+
+9.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+4
+
+2
+
+5
+
+5
+
+10.
+
+Carsten Bock
+
+3
+
+1
+
+64
+
+15
+
+  
+
+**All remaining contributors**: Bob Atkins, Juli�n Moreno Pati�o, Ovidiu Sas ([@ovidiusas](https://github.com/ovidiusas)), Sergio Gutierrez, Iouri Kharon, UnixDev, Zero King ([@l2dy](https://github.com/l2dy)), ihsinme, Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Walter Doekes ([@wdoekes](https://github.com/wdoekes)), Edson Gellert Schubert.
+
+_(1) DevScore = author\_commits + author\_lines\_added / (project\_lines\_added / project\_commits) + author\_lines\_deleted / (project\_lines\_deleted / project\_commits)_
+
+_(2) including any documentation-related commits, excluding merge commits. Regarding imported patches/code, we do our best to count the work on behalf of the proper owner, as per the "fix\_authors" and "mod\_renames" arrays in opensips/doc/build-contrib.sh. If you identify any patches/commits which do not get properly attributed to you, please [_submit a pull request_](https://github.com/OpenSIPS/opensips/pulls)_ which extends "fix\_authors" and/or "mod\_renames".
+
+_(3) ignoring whitespace edits, renamed files and auto-generated files_
+
+## 2.2.�By Commit Activity
+
+**Table�2.2.�Most recently active contributors(1) to this module**
+
+�
+
+Name
+
+Commit Activity
+
+1.
+
+Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu))
+
+Mar 2014 - May 2024
+
+2.
+
+Maksym Sobolyev ([@sobomax](https://github.com/sobomax))
+
+Oct 2022 - Feb 2023
+
+3.
+
+ihsinme
+
+Feb 2022 - Feb 2022
+
+4.
+
+Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea))
+
+Jun 2011 - Jan 2021
+
+5.
+
+Zero King ([@l2dy](https://github.com/l2dy))
+
+Mar 2020 - Mar 2020
+
+6.
+
+Vlad Patrascu ([@rvlad-patrascu](https://github.com/rvlad-patrascu))
+
+May 2017 - Jul 2019
+
+7.
+
+Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu))
+
+Dec 2007 - Apr 2019
+
+8.
+
+Peter Lemenkov ([@lemenkov](https://github.com/lemenkov))
+
+Jun 2018 - Jun 2018
+
+9.
+
+Juli�n Moreno Pati�o
+
+Feb 2016 - Feb 2016
+
+10.
+
+Walter Doekes ([@wdoekes](https://github.com/wdoekes))
+
+May 2014 - May 2014
+
+  
+
+**All remaining contributors**: Ovidiu Sas ([@ovidiusas](https://github.com/ovidiusas)), UnixDev, Henning Westerholt ([@henningw](https://github.com/henningw)), Sergio Gutierrez, Iouri Kharon, Hardy Kahl, Daniel-Constantin Mierla ([@miconda](https://github.com/miconda)), Edson Gellert Schubert, Bob Atkins, Carsten Bock, Jonas Appel.
+
+_(1) including any documentation-related commits, excluding merge commits_
+
+## Chapter�3.�Documentation
+
+## 3.1.�Contributors
+
+**Last edited by:** Liviu Chircu ([@liviuchircu](https://github.com/liviuchircu)), Razvan Crainea ([@razvancrainea](https://github.com/razvancrainea)), Peter Lemenkov ([@lemenkov](https://github.com/lemenkov)), Juli�n Moreno Pati�o, Bogdan-Andrei Iancu ([@bogdan-iancu](https://github.com/bogdan-iancu)), Henning Westerholt ([@henningw](https://github.com/henningw)), Iouri Kharon, Hardy Kahl, Daniel-Constantin Mierla ([@miconda](https://github.com/miconda)), Edson Gellert Schubert, Carsten Bock, Jonas Appel.
+
+_Documentation Copyrights:_
+
+Copyright � 2007 1&1 Internet AG

@@ -1,0 +1,149 @@
+{
+  "id": "module-sl-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "sl Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/sl.html",
+  "content_markdown": "The SL module allows OpenSIPS to act as a stateless UA server and generate replies to SIP requests without keeping state. That is beneficial in many scenarios, in which you wish not to burden server's memory and scale well.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T10:26:24.097Z",
+  "module_name": "sl",
+  "overview": "The SL module allows OpenSIPS to act as a stateless UA server and generate replies to SIP requests without keeping state. That is beneficial in many scenarios, in which you wish not to burden server's memory and scale well.",
+  "how_it_works": "The SL module needs to filter ACKs sent after a local stateless reply to an INVITE was generated. To recognize such ACKs, OpenSIPS adds a special \"signature\" in to-tags. This signature is sought for in incoming ACKs, and if included, the ACKs are absorbed. To speed up the filtering process, the module uses a timeout mechanism. When a reply is sent, a timer is set. As time as the timeout didn't hit, the incoming ACK requests will be checked using TO tag value. Once the timer expires, all the ACK are let through - a long time passed till it sent a reply, so it does not expect any ACK that have to be blocked. The ACK filtering may fail in some rare cases. If you think these matter to you, better use stateful processing (tm module) for INVITE processing. Particularly, the problem happens when a UA sends an INVITE which already has a to-tag in it (e.g., a re-INVITE) and OpenSIPS want to reply to it. Than, it will keep the current to-tag, which will be mirrored in ACK. OpenSIPS will not see its signature and forward the ACK downstream. Caused harm is not bad--just a useless ACK is forwarded.",
+  "dependencies_required": [],
+  "dependencies_optional": [],
+  "exported_parameters": [
+    {
+      "name": "enable_stats",
+      "type": "integer",
+      "default_value": "1",
+      "description": "If the module should generate and export statistics to the core manager. A zero value means disabled.\n\nSL module provides statistics about how many replies were sent ( splitted per code classes) and how many local ACKs were filtered out.",
+      "example_value": "0",
+      "example_code": "modparam(\"sl\", \"enable\\_stats\", 0)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sl_send_reply",
+      "signature": "sl_send_reply(code, reason)",
+      "parameters": [
+        {
+          "name": "code",
+          "type": "int",
+          "required": true,
+          "description": "Return code."
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "Reason phrase."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "For the current request, a reply is sent back having the given code and text reason. The reply is sent stateless, totally independent of the Transaction module and with no retransmission for the INVITE's replies. 'code' and 'reason' can contain pseudo-variables that are replaced at runtime.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ERROR_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sl_send_reply(404, \"Not found\");",
+          "description": "sl_send_reply usage"
+        },
+        {
+          "language": "opensips",
+          "code": "sl_send_reply($err.rcode, $err.rreason);",
+          "description": "sl_send_reply usage"
+        }
+      ]
+    },
+    {
+      "name": "sl_reply_error",
+      "signature": "sl_reply_error()",
+      "parameters": [],
+      "return_type": "",
+      "return_values": [],
+      "description": "Sends back an error reply describing the nature of the last internal error. Usually this function should be used after a script function that returned an error code.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sl_reply_error();",
+          "description": "sl_reply_error usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [
+    {
+      "name": "1xx_replies",
+      "type": "counter",
+      "description": "The number of 1xx_replies."
+    },
+    {
+      "name": "2xx_replies",
+      "type": "counter",
+      "description": "The number of 2xx_replies."
+    },
+    {
+      "name": "3xx_replies",
+      "type": "counter",
+      "description": "The number of 3xx_replies."
+    },
+    {
+      "name": "4xx_replies",
+      "type": "counter",
+      "description": "The number of 4xx_replies."
+    },
+    {
+      "name": "5xx_replies",
+      "type": "counter",
+      "description": "The number of 5xx_replies."
+    },
+    {
+      "name": "6xx_replies",
+      "type": "counter",
+      "description": "The number of 6xx_replies."
+    },
+    {
+      "name": "sent_replies",
+      "type": "counter",
+      "description": "The number of sent_replies."
+    },
+    {
+      "name": "sent_err_replies",
+      "type": "counter",
+      "description": "The number of sent_err_replies."
+    },
+    {
+      "name": "received_ACKs",
+      "type": "counter",
+      "description": "The number of received_ACKs."
+    }
+  ],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "enable_stats example",
+      "description": "Sets the enable_stats parameter to 0 (disabled).",
+      "code": "modparam(\"sl\", \"enable\\_stats\", 0)"
+    },
+    {
+      "title": "sl_send_reply usage",
+      "description": "Sends a stateless reply with a given code and reason, using pseudo-variables.",
+      "code": "...\nsl\\_send\\_reply(404, \"Not found\");\n...\nsl\\_send\\_reply($err.rcode, $err.rreason);\n..."
+    },
+    {
+      "title": "sl_reply_error usage",
+      "description": "Sends an error reply describing the nature of the last internal error.",
+      "code": "...\nsl\\_reply\\_error();\n..."
+    }
+  ]
+}

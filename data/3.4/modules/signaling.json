@@ -1,0 +1,93 @@
+{
+  "id": "module-signaling-3.4",
+  "document_type": "module",
+  "version": "3.4",
+  "title": "signaling Module",
+  "url": "https://opensips.org/html/docs/modules/3.4.x/signaling.html",
+  "content_markdown": "The SIGNALING module comes as a wrapper over tm and sl modules and offers one function to be called by the modules that want to send a reply.",
+  "category": "Modules",
+  "extracted_at": "2026-04-24T14:48:34.907Z",
+  "module_name": "signaling",
+  "overview": "The SIGNALING module comes as a wrapper over tm and sl modules and offers one function to be called by the modules that want to send a reply.",
+  "how_it_works": "The logic behind the module is to first search if a transaction is created and if so, send a state full reply, using tm module, otherwise send a stateless reply with the function exported by sl. In this way, the script writer still has the call on how the transaction should be handled, state full or stateless and the reply is send accordingly to his choice.\n\nFor example, if you do a t_newtran() in the script before doing save() (for registration), the function will automatically send the reply in stateful mode as a transaction is available. If no transaction is done, the reply will be sent in stateless way (as now).\n\nBy doing this, we have the possibility to have same module sending either stateful either stateless replies, by just controlling this from the script (if we create or not a transaction). So, the signalling will be more coherent as the replies will be sent according to the transaction presence (or not).\n\nMoreover, this module offers the possibility of loading only one of the module, sl or tm, and send reply using only the module that is loaded. This is useful as not in all cases a user desires to send stateful or stateless replies and he should not be forced to load the module only because the send reply interface requires it.",
+  "dependencies_required": [
+    {
+      "name": "sl",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [
+    {
+      "name": "send_reply",
+      "signature": "send_reply(code, reason)",
+      "parameters": [
+        {
+          "name": "code",
+          "type": "int",
+          "required": true,
+          "description": "Return code."
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true,
+          "description": "Reason phrase."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "For the current request, a reply is sent back having the given code and text reason. The reply is sent stateless or statefull depending on which module is loaded and if a transaction was created, as explained above.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ERROR_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "send_reply(404, \"Not found\");",
+          "description": "Example 1.1. sl_send_reply usage"
+        },
+        {
+          "language": "opensips",
+          "code": "send_reply($err.rcode, $err.rreason);",
+          "description": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$sig_local_totag",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "This variable returns the local To-tag that will be used by OpenSIPS for locally sending replies to the current SIP request. Yes, this variable should be used only in the context of a SIP request and it should be used only in conjunction with the using send_reply(). Whenever you use it, be sure that the function is used in the same stateful / stateless SIP mode as the following replying function. Otherwise you may get different values for the To-tag!! NOTE: the variable returns the To-Tag that will be used by OpenSIPS in the locally generated reply. This may be completly different from the To-tag in the replies received and forwarded by OpenSIPS."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "`sl_send_reply` usage",
+      "description": "Demonstrates sending a reply with a specific code and reason, or using error variables.",
+      "code": "...\nsend_reply(404, \"Not found\");\n...\nsend_reply($err.rcode, $err.rreason);\n..."
+    },
+    {
+      "title": "Usage of `$sig_local_totag` variable",
+      "description": "Demonstrates retrieving the local To-tag in both stateful and stateless handling contexts.",
+      "code": "...\n# stateful handling\nt_newtran();\nxlog(\"the To-tag to be used is $sig_local_totag \\n\");\nsend_reply();  # or t_reply();\n...\n# stateless handling\nxlog(\"the To-tag to be used is $sig_local_totag \\n\");\nsend_reply(); # or sl_send_reply();\n..."
+    }
+  ]
+}

@@ -1,0 +1,373 @@
+{
+  "id": "module-cgrates-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "cgrates Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/cgrates.html",
+  "content_markdown": "CGRateS is an open-source rating engine used for carrier-grade, multi-tenant, real-time billing. It is able to do both postpaid and prepaid rating for multiple concurrent sessions with different balance units (eg: Monetary, SMS, Internet Traffic). CGRateS can also export accurate CDRs in various formats.\n\nThis module can be used to communicate with the CGRateS engine in order to do call authorization and accounting for billing purposes. The OpenSIPS module does not do any billing by itself, but provides an interface to communicate with the CGRateS engine using efficient JSON-RPC APIs in both synchronous and asynchronous ways. For each command the user can provide a set of parameters that will be forwarded to the CGRateS engine, using the $cgr() variable. You can find usage examples in the following sections.\n\nThe module also has support for multiple parallel billing sessions to CGRateS. This can be useful in scenarios that involve complex billing logic, such as double billing (both customer and carrier billing), or multi-leg calls (serial/parallel forking). Each billing session is independent and has a specific tag that can be use throughout the call lifetime.\n\nThe module can be used to implement the following features:",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T11:27:55.790Z",
+  "module_name": "cgrates",
+  "overview": "CGRateS is an open-source rating engine used for carrier-grade, multi-tenant, real-time billing. It is able to do both postpaid and prepaid rating for multiple concurrent sessions with different balance units (eg: Monetary, SMS, Internet Traffic). CGRateS can also export accurate CDRs in various formats.\n\nThis module can be used to communicate with the CGRateS engine in order to do call authorization and accounting for billing purposes. The OpenSIPS module does not do any billing by itself, but provides an interface to communicate with the CGRateS engine using efficient JSON-RPC APIs in both synchronous and asynchronous ways. For each command the user can provide a set of parameters that will be forwarded to the CGRateS engine, using the $cgr() variable. You can find usage examples in the following sections.\n\nThe module also has support for multiple parallel billing sessions to CGRateS. This can be useful in scenarios that involve complex billing logic, such as double billing (both customer and carrier billing), or multi-leg calls (serial/parallel forking). Each billing session is independent and has a specific tag that can be use throughout the call lifetime.\n\nThe module can be used to implement the following features:",
+  "how_it_works": "## 1.2. Authorization\n\nThe authorization is used to check if an account is allowed to start a new call and it has enough credit to call to that destination. This is done using the cgrates_auth() command, which returns the number of seconds a call is allowed to run in the $cgr_ret pseudo-variable.\n\nUsage example:\n\n\t\t...\n\t\tif (cgrates_auth(\"$fU\", \"$rU\"))\n\t\t\txlog(\"Call is allowed to run $cgr_ret seconds\\n\");\n\t\t}\n\t\t...\n\t\t\n\n## 1.3. Accounting\n\nThe accounting mode is used to start and stop a CGRateS session. This can be used for both prepaid and postpaid billing. The cgrates_acc() function starts the CGRateS session when the call is answered (the 200 OK message is received) and ends it when the call is ended (a BYE message is received). This is done automatically using the dialog module.\n\nNote that it is important to first authorize the call (using the cgrates_auth() command) before starting accounting. If you do not do this and the user is not authorized to call, the dialog will be immediately closed, resulting in a 0-duration call. If the call is allowed to go on, the dialog lifetime will be set to the duration indicated by the CGRateS engine. Therefore, the dialog will be automatically ended if the call would have been longer.\n\nAfter the call is ended (by a BYE message), the CGRateS session is also ended. At this point, you can generate a CDR. To do this, you have to set the cdr flag to the cgrates_acc() command. CDRs can also be generated for missed calls by using the missed flag.\n\nUsage example:\n\n\t\t...\n\t\tif (!cgrates_auth(\"$fU\", \"$rU\")) {\n\t\t\tsl_send_reply(403, \"Forbidden\");\n\t\t\texit;\n\t\t}\n\t\txlog(\"Call is allowed to run $cgr_ret seconds\\n\");\n\t\t# do accounting for this call\n\t\tcgrates_acc(\"cdr\", \"$fU\", \"$rU\");\n\t\t...\n\t\t\n\nNote that when using the cdr flag, CDRs are exported by the CGRateS engine in various formats, not by OpenSIPS. Check the CGRateS documentation for more information.\n\n## 1.4. Other Commands\n\nYou can use the cgrates_cmd() to send arbitrary commands to the CGRateS engine, and use the $cgr_ret pseudo-variable to retrieve the response.\n\nThe following example simulates the cgrates_auth() CGRateS call:\n\n\t\t...\n\t\t$cgr_opt(Tenant) = $fd; # or $cgr(Tenant) = $fd; /* in compat mode */\n\t\t$cgr(Account) = $fU;\n\t\t$cgr(OriginID) = $ci;\n\t\t$cgr(SetupTime) = \"\" + $Ts;\n\t\t$cgr(RequestType) = \"*prepaid\";\n\t\t$cgr(Destination) = $rU;\n\t\tcgrates_cmd(\"SessionSv1.AuthorizeEvent\");\n\t\txlog(\"Call is allowed to run $cgr_ret(MaxUsage) seconds\\n\");\n\t\t...\n\t\t\n\n## 1.5. CGRateS Failover\n\nMultiple CGRateS engines can be provisioned to use in a failover manner: in case one engine is down, the next one is used. Currently there is no load balancing logic between the servers, but this is a feature one of the CGRateS component does starting with newer versions.\n\nEach CGRateS engine has assigned up to max_async_connections connections, plus one used for synchronous commands. If a connection fails (due to network issues, or server issues), it is marked as closed and a new one is tried. If all connections to that engine are down, then the entire engine is marked as disabled, and a new engine is queried. After an engine is down for more than retry_timeout seconds, OpenSIPS tries to connect once again to that server. If it succeeds, that server is enabled. Otherwise, the other engines are used, until none is available and the command fails.\n\n## 1.6. CGRateS Compatibility\n\nThe module supports two different versions of CGRateS: the compat_mode one, which works with pre-rc8 releases, and a new one which works with the post-rc8 releases. The difference between the two versions consist in the way the requests and responses to and from CGRateS are built. In the non-compat_mode/new version, a new variable, $cgr_opt(), is available, and can be used to tune the request options. This variable should not be used in compat_mode mode to avoid abiguities, but if it is used, it behaves exactly as $cgr(). By default compat_mode is disabled.",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "in case CGRateS accounting is used",
+      "optional": false
+    },
+    {
+      "name": "libjson",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cgrates_engine",
+      "type": "string",
+      "default_value": "None",
+      "description": "This parameter is used to specify a CGRateS engine connection. The format is IP[:port]. The port is optional, and if missing, 2014 is used. This parameter can have multiple values, for each server used for failover. At least one server should be provisioned.",
+      "example_value": "127.0.0.1",
+      "example_code": "...\nmodparam(\"cgrates\", \"cgrates\\_engine\", \"127.0.0.1\")\nmodparam(\"cgrates\", \"cgrates\\_engine\", \"127.0.0.1:2013\")\n..."
+    },
+    {
+      "name": "bind_ip",
+      "type": "string",
+      "default_value": "not set - any IP is used",
+      "description": "IP used to bind the socket that communicates with the CGRateS engines. This is useful to set when the engine is runing in a local, secure LAN, and you want to use that network to communicate with your servers. The parameter is optional.",
+      "example_value": "10.0.0.100",
+      "example_code": "...\nmodparam(\"cgrates\", \"bind\\_ip\", \"10.0.0.100\")\n..."
+    },
+    {
+      "name": "max_async_connections",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The maximum number of simultaneous asynchronous connections to a CGRateS engine.",
+      "example_value": "20",
+      "example_code": "...\nmodparam(\"cgrates\", \"max\\_async\\_connections\", 20)\n..."
+    },
+    {
+      "name": "retry_timeout",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The number of seconds after which a disabled connection/engine is retried.",
+      "example_value": "120",
+      "example_code": "...\nmodparam(\"cgrates\", \"retry\\_timeout\", 120)\n..."
+    },
+    {
+      "name": "compat_mode",
+      "type": "integer",
+      "default_value": "false (0)",
+      "description": "Indicates whether OpenSIPS should use the old (compat_mode) CGRateS version API (pre-rc8).",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"cgrates\", \"compat\\_mode\", 1)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "cgrates_acc",
+      "signature": "cgrates_acc([flags[, account[, destination[, session]]]])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "indicates whether OpenSIPS should generate a CDR at the end of the call. If the parameter is missing, no CDR is generated - the session is only passed through CGRateS. The following values can be used, separated by '|':",
+          "valid_values": [
+            "cdr",
+            "missed"
+          ]
+        },
+        {
+          "name": "account",
+          "type": "string",
+          "required": false,
+          "description": "the account that will be charged in CGrateS. If not specified, the user in the From header is used."
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "required": false,
+          "description": "the dialled number. If not present the request URI user is used."
+        },
+        {
+          "name": "session",
+          "type": "string",
+          "required": false,
+          "description": "the tag of the session that will be started if the branch/call completes with success. This parameter indicates what set of data from the _$cgr()_ variable should be considered. If missing, the default set is used."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "successful call - the CGRateS accouting was successfully setup for the call."
+        },
+        {
+          "value": "-1",
+          "condition": "OpenSIPS returned an internal error (i.e. the dialog cannot be created, or the server is out of memory)."
+        },
+        {
+          "value": "-2",
+          "condition": "the SIP message is invalid: either it has missing headers, or it is not an initial INVITE."
+        }
+      ],
+      "description": "`cgrates_acc()` starts an accounting session on the CGRateS engine for the current dialog. It also ends the session when the dialog is ended. This function requires a dialog, so in case create\\_dialog() was not previously used, it will internally call that function.\n\nNote that the `cgrates_acc()` function does not send any message to the CGRateS engine when it is called, but only when the call is answered and the CGRateS session should be started (a 200 OK message is received).\n\nWhen called in _REQUEST\\_ROUTE_ or _FAILURE\\_ROUTE_, accounting for this session is done for all the branches created. When called in _BRANCH\\_ROUTE_ or _ONREPLY\\_ROUTE_, acccounting is done only if that branch is successful (terminates with a 2xx reply code).\n\nThe `cgrates_acc()` function should only be called on initial INVITEs. For more infirmation check [Section 1.3, “Accounting”](#accounting \"1.3. Accounting\").",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\tif (cgrates\\_auth($fU, $rU))\n\t\t\t\tcgrates\\_acc(\"cdr|missed\", $fU, $rU);\n\t\t\t...\n\t\t}\n\t\t...\n\t\t",
+          "description": "cgrates_acc() usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "cgrates_auth",
+      "signature": "cgrates_auth([account[, destination[, session]]])",
+      "parameters": [
+        {
+          "name": "account",
+          "type": "string",
+          "required": false,
+          "description": "the account that will be checked in CGrateS. If not specified, the user in the From header is used."
+        },
+        {
+          "name": "destination",
+          "type": "string",
+          "required": false,
+          "description": "the dialled number. If not present the request URI user is used."
+        },
+        {
+          "name": "session",
+          "type": "string",
+          "required": false,
+          "description": "the tag of the session that will be started if the branch/call completes with success. This parameter indicates what set of data from the _$cgr()_ variable should be considered. If missing, the default set is used."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "successful call - the CGRateS account is allowed to make the call."
+        },
+        {
+          "value": "-1",
+          "condition": "OpenSIPS returned an internal error (i.e. server is out of memory)."
+        },
+        {
+          "value": "-2",
+          "condition": "the CGRateS engine returned error."
+        },
+        {
+          "value": "-3",
+          "condition": "No suitable CGRateS server found. message type (not an initial INVITE)."
+        },
+        {
+          "value": "-4",
+          "condition": "the SIP message is invalid: either it has missing headers, or it is not an initial INVITE."
+        },
+        {
+          "value": "-5",
+          "condition": "CGRateS returned an invalid message."
+        }
+      ],
+      "description": "`cgrates_auth()` does call authorization through using the CGRateS engine.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\tif (!cgrates\\_auth($fU, $rU)) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\t\t\t...\n\t\t}\n\t\t...\n\t\t",
+          "description": "cgrates_auth() usage",
+          "context": "REQUEST_ROUTE"
+        },
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\t$cgr\\_opt(GetAttributes) = 1;\n\t\t\tif (!cgrates\\_auth($fU, $rU)) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\t\t\t# move attributes from AttributesDigest variable to plain AVPs\n\t\t\t$var(idx) = 0;\n\t\t\twhile ($(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}) != NULL) {\n\t\t\t\t$avp($(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,0,:}))\n\t\t\t\t\t= $(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,1,:});\n\t\t\t\t$var(idx) = $var(idx) + 1;\n\t\t\t}\n\t\t\t...\n\t\t}\n\t\t...\n\t\t",
+          "description": "cgrates_auth() usage with attributes parsing",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "cgrates_cmd",
+      "signature": "cgrates_cmd(command[, session])",
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "required": true,
+          "description": "the command sent to the CGRateS engine."
+        },
+        {
+          "name": "session",
+          "type": "string",
+          "required": false,
+          "description": "the tag of the session that will be started if the branch/call completes with success. This parameter indicates what set of data from the _$cgr()_ variable should be considered. If missing, the default set is used."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "successful call - the CGRateS account is allowed to make the call."
+        },
+        {
+          "value": "-1",
+          "condition": "OpenSIPS returned an internal error (i.e. server is out of memory)."
+        },
+        {
+          "value": "-2",
+          "condition": "the CGRateS engine returned error."
+        },
+        {
+          "value": "-3",
+          "condition": "No suitable CGRateS server found. message type (not an initial INVITE)."
+        }
+      ],
+      "description": "`cgrates_cmd()` can send arbitrary commands to the CGRateS engine.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t...\n\t\t# cgrates\\_auth($fU, $rU); simulation\n\t\t$cgr\\_opt(Tenant) = $fd;\n\t\t$cgr(Account) = $fU;\n\t\t$cgr(OriginID) = $ci;\n\t\t$cgr(SetupTime) = \"\" + $Ts;\n\t\t$cgr(RequestType) = \"\\*prepaid\";\n\t\t$cgr(Destination) = $rU;\n\t\tcgrates\\_cmd(\"SessionSv1.AuthorizeEvent\");\n\t\txlog(\"Call is allowed to run $cgr\\_ret seconds\\\\n\");\n\t\t...",
+          "description": "cgrates_cmd() usage",
+          "context": "ANY_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$cgr(name) / $(cgr(name)[session])",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "transaction, dialog",
+      "description": "Pseudo-variable used to set different parameters for the CGRateS command. Each name-value pair will be encoded as a _string - value_ attribute in the JSON message sent to CGRateS. The name-values pairs are stored in the transaction (if tm module is loaded). Therefore the values are accessible in the reply. When the _cgrates\\_acc()_ function is called, all the name-value pairs are moved in the dialog. Therefore the values will be accessible along the dialog's lifetime. This variable consists of serveral sets of name-value pairs. Each set corresponds to a session. The variable can be indexed by a _session tag_. The sets are completely indepdendent from one another. if the _session tag_ does not exist, the default (no name) one is used. When assigned with the _:=_ operator, the value is treated as a JSON, rather than a string/integer. However, the evaluation of the JSON is late, therefore when the CGRateS request is built, if the module is unable to parse the JSON, the value is sent as a string."
+    },
+    {
+      "name": "$cgr_opt(name) / $(cgr_opt(name)[session])",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "transaction, dialog",
+      "description": "Used to tune the request parameter of a CGRateS request when used in non-_compat\\_mode_. _Note:_ for all request options integer values act as boolean values: _0_ disables the feature and _1_(or different than 0 value) enables it. String variables are passed just as they are set.",
+      "possible_values": [
+        "Tenant",
+        "GetAttributes",
+        "GetMaxUsage",
+        "GetSuppliers"
+      ]
+    },
+    {
+      "name": "$cgr_ret(name)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "Returns the reply message of a CGRateS command in script, or when used in the non-compat mode, one of the objects within the reply."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `cgrates_engine` parameter",
+      "description": "Set `cgrates_engine` parameter",
+      "code": "...\nmodparam(\"cgrates\", \"cgrates\\_engine\", \"127.0.0.1\")\nmodparam(\"cgrates\", \"cgrates\\_engine\", \"127.0.0.1:2013\")\n..."
+    },
+    {
+      "title": "Set `bind_ip` parameter",
+      "description": "Set `bind_ip` parameter",
+      "code": "...\nmodparam(\"cgrates\", \"bind\\_ip\", \"10.0.0.100\")\n..."
+    },
+    {
+      "title": "Set `max_async_connections` parameter",
+      "description": "Set `max_async_connections` parameter",
+      "code": "...\nmodparam(\"cgrates\", \"max\\_async\\_connections\", 20)\n..."
+    },
+    {
+      "title": "Set `retry_timeout` parameter",
+      "description": "Set `retry_timeout` parameter",
+      "code": "...\nmodparam(\"cgrates\", \"retry\\_timeout\", 120)\n..."
+    },
+    {
+      "title": "Set `compat_mode` parameter",
+      "description": "Set `compat_mode` parameter",
+      "code": "...\nmodparam(\"cgrates\", \"compat\\_mode\", 1)\n..."
+    },
+    {
+      "title": "cgrates_acc() usage",
+      "description": "cgrates_acc() usage",
+      "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\tif (cgrates\\_auth($fU, $rU))\n\t\t\t\tcgrates\\_acc(\"cdr|missed\", $fU, $rU);\n\t\t\t...\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "cgrates_auth() usage",
+      "description": "cgrates_auth() usage",
+      "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\tif (!cgrates\\_auth($fU, $rU)) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\t\t\t...\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "cgrates_auth() usage with attributes parsing",
+      "description": "cgrates_auth() usage with attributes parsing",
+      "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\t$cgr\\_opt(GetAttributes) = 1;\n\t\t\tif (!cgrates\\_auth($fU, $rU)) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\t\t\t# move attributes from AttributesDigest variable to plain AVPs\n\t\t\t$var(idx) = 0;\n\t\t\twhile ($(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}) != NULL) {\n\t\t\t\t$avp($(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,0,:}))\n\t\t\t\t\t= $(cgr\\_ret(AttributesDigest){s.select,$var(idx),,}{s.select,1,:});\n\t\t\t\t$var(idx) = $var(idx) + 1;\n\t\t\t}\n\t\t\t...\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "cgrates_cmd() usage",
+      "description": "cgrates_cmd() usage",
+      "code": "\t\t...\n\t\t# cgrates\\_auth($fU, $rU); simulation\n\t\t$cgr\\_opt(Tenant) = $fd;\n\t\t$cgr(Account) = $fU;\n\t\t$cgr(OriginID) = $ci;\n\t\t$cgr(SetupTime) = \"\" + $Ts;\n\t\t$cgr(RequestType) = \"\\*prepaid\";\n\t\t$cgr(Destination) = $rU;\n\t\tcgrates\\_cmd(\"SessionSv1.AuthorizeEvent\");\n\t\txlog(\"Call is allowed to run $cgr\\_ret seconds\\\\n\");\n\t\t...\n\t\t"
+    },
+    {
+      "title": "$cgr(name) simple usage",
+      "description": "$cgr(name) simple usage",
+      "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\t$cgr\\_opt(Tenant) = $fd; # set the From domain as a tenant\n\t\t\t$cgr(RequestType) = \"\\*prepaid\"; # do prepaid accounting\n\t\t\t$cgr(AttributeIDs) := '[\"+5551234\"]'; # treat as array\n\t\t\tif (!cgrates\\_auth(\"$fU\", \"$rU\")) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "$cgr(name) multiple sessions usage",
+      "description": "$cgr(name) multiple sessions usage",
+      "code": "\t\t...\n\t\tif (!has\\_totag()) {\n\t\t\t...\n\t\t\t# first session - authorize the user\n\t\t\t$cgr\\_opt(Tenant) = $fd; # set the From domain as a tenant\n\t\t\t$cgr(RequestType) = \"\\*prepaid\"; # do prepaid accounting\n\t\t\tif (!cgrates\\_auth(\"$fU\", \"$rU\")) {\n\t\t\t\tsl\\_send\\_reply(403, \"Forbidden\");\n\t\t\t\texit;\n\t\t\t}\n\n\t\t\t# second session - authorize the carrier\n\t\t\t$(cgr\\_opt(Tenant)\\[carrier\\]) = $td;\n\t\t\t$(cgr(RequestType)\\[carrier\\]) = \"\\*postpaid\";\n\t\t\tif (!cgrates\\_auth($tU, $fU, \"carrier\")) {\n\t\t\t\t# use a different carrier\n\t\t\t\treturn;\n\t\t\t}\n\n\t\t\t# if everything is successful start accounting on both\n\t\t\tcgrates\\_acc(\"cdr\", \"$fU\", \"rU\");\n\t\t\tcgrates\\_acc(\"cdr\", \"$tU\", \"$fU\", \"carrier\");\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "$cgr_opt(name) usage",
+      "description": "$cgr_opt(name) usage",
+      "code": "\t\t...\n\t\t$cgr\\_opt(Tenant) = \"cgrates.org\";\n\t\t$cgr\\_opt(GetMaxUsage) = 1; # also retrieve the max usage\n\t\tif (!cgrates\\_auth(\"$fU\", \"$rU\")) {\n\t\t\t# call rejected\n\t\t}\n\t\t...\n\t\t"
+    },
+    {
+      "title": "$cgr_ret(name) usage",
+      "description": "$cgr_ret(name) usage",
+      "code": "\t\t...\n\t\tcgrates\\_auth(\"$fU\", \"$rU\");\n\n\t\t# in compat mode\n\t\txlog(\"Call is allowed to run $cgr\\_ret seconds\\\\n\");\n\n\t\t# in non-compat mode\n\t\txlog(\"Call is allowed to run $cgr\\_ret(MaxUsage) seconds\\\\n\");\n\t\t...\n\t\t"
+    },
+    {
+      "title": "`async cgrates_auth` usage",
+      "description": "`async cgrates_auth` usage",
+      "code": "route {\n\t...\n\tasync(cgrates\\_auth(\"$fU\", \"$rU\"), auth\\_reply);\n}\n\nroute \\[auth\\_reply\\]\n{\n\tif ($rc < 0) {\n\t\txlog(\"Call not authorized: code=$cgr\\_ret!\\\\n\");\n\t\tsend\\_reply(403, \"Forbidden\");\n\t\texit;\n\t}\n\t...\n}"
+    },
+    {
+      "title": "`async cgrates_cmd compat_mode` usage",
+      "description": "`async cgrates_cmd compat_mode` usage",
+      "code": "route {\n\t...\n\t$cgr(Tenant) = $fd;\n\t$cgr(Account) = $fU;\n\t$cgr(OriginID) = $ci;\n\t$cgr(SetupTime) = \"\" + $Ts;\n\t$cgr(RequestType) = \"\\*prepaid\";\n\t$cgr(Destination) = $rU;\n\tasync(cgrates\\_cmd(\"SMGenericV1.GetMaxUsage\"), auth\\_reply);\n}\n\nroute \\[auth\\_reply\\]\n{\n\tif ($rc < 0) {\n\t\txlog(\"Call not authorized: code=$cgr\\_ret!\\\\n\");\n\t\tsend\\_reply(403, \"Forbidden\");\n\t\texit;\n\t}\n\t...\n}"
+    },
+    {
+      "title": "`async cgrates_cmd new` usage",
+      "description": "`async cgrates_cmd new` usage",
+      "code": "route {\n\t...\n\t$cgr\\_opt(Tenant) = $fd;\n\t$cgr(Account) = $fU;\n\t$cgr(OriginID) = $ci;\n\t$cgr(SetupTime) = \"\" + $Ts;\n\t$cgr(RequestType) = \"\\*prepaid\";\n\t$cgr(Destination) = $rU;\n\tasync(cgrates\\_cmd(\"SessionSv1.AuthorizeEventWithDigest\"), auth\\_reply);\n}\n\nroute \\[auth\\_reply\\]\n{\n\tif ($rc < 0) {\n\t\txlog(\"Call not authorized: MaxUsage=$cgr\\_ret(MaxUsage)!\\\\n\");\n\t\tsend\\_reply(403, \"Forbidden\");\n\t\texit;\n\t}\n\t...\n}"
+    }
+  ]
+}

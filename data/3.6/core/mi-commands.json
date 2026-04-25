@@ -1,0 +1,909 @@
+{
+  "id": "mi_command-Interface-CoreMI-3-6",
+  "document_type": "mi_command",
+  "version": "3.6",
+  "title": "Core MI Functions v3.6",
+  "url": "https://www.opensips.org/Documentation/Interface-CoreMI-3-6",
+  "content_markdown": "MI (management interface) functions which are exported by OpenSIPS core.",
+  "category": "Core",
+  "keywords": [
+    "MI",
+    "Management Interface",
+    "Core",
+    "Statistics",
+    "Blacklist",
+    "Logging",
+    "Memory Dump"
+  ],
+  "extracted_at": "2025-02-06T12:00:00Z",
+  "mi_commands": [
+    {
+      "name": "arg",
+      "description": "Returns the full list of arguments used when OpenSIPS was started. As in UNIX, the first argument is the name of executable binary.",
+      "parameters": [],
+      "return_value": {
+        "type": "array",
+        "description": "an array with multiple strings representing the arguments."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi arg\n\\[\n    \"./opensips\",\n    \"-f\",\n    \"/etc/openser/test.cfg\"\n\\]",
+          "description": "Example of usage for arg command"
+        }
+      ]
+    },
+    {
+      "name": "kill",
+      "description": "The command will terminate OpenSIPS (and internal shutdown).",
+      "parameters": [],
+      "return_value": {
+        "type": "null",
+        "description": "none"
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi kill",
+          "description": "Example of usage for kill command"
+        }
+      ]
+    },
+    {
+      "name": "list_blacklists",
+      "description": "The command lists all the defined (static or learned) blacklists from OpenSIPS.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "filter and print only rules in a specific blacklist"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "an array with each object describing the list (name, owner, flags); the \"Rules\" item is an array with each object member describing the rules (blacklists) for each list (IP/mask, protocol, port, matching regexp, flags)."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi list\\_blacklists",
+          "description": "Example of usage for list_blacklists command"
+        }
+      ]
+    },
+    {
+      "name": "check_blacklists",
+      "description": "The command returns all the blacklists that match an proto:IP:port+pattern.",
+      "parameters": [
+        {
+          "name": "proto",
+          "type": "string",
+          "required": false,
+          "description": "protocol of the check rule - if missing, \"any\" protocol is used. Note that an \"any\" protocol check can only match an \"any\" protocol rule."
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "required": true,
+          "description": "the mandatory IP that is used to match the rules"
+        },
+        {
+          "name": "port",
+          "type": "integer",
+          "required": false,
+          "description": "the port of the check rule - if missing, 0/any port is used. Note that a 0 port will only match a 0 port rule."
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "optional pattern to check against the rules"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "an array with the names of each blacklist that matched."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi check\\_blacklists 127.0.0.1\n# opensips-cli -x mi check\\_blacklists udp 127.0.0.1 5060",
+          "description": "Example of usage for check_blacklists command"
+        }
+      ]
+    },
+    {
+      "name": "check_blacklist",
+      "description": "The command check whether a proto:IP:port+pattern matches any rule of a blacklist.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the blacklist to check against"
+        },
+        {
+          "name": "proto",
+          "type": "string",
+          "required": false,
+          "description": "protocol of the check rule - if missing, \"any\" protocol is used."
+        },
+        {
+          "name": "ip",
+          "type": "string",
+          "required": true,
+          "description": "the mandatory IP that is used to match the rules"
+        },
+        {
+          "name": "port",
+          "type": "integer",
+          "required": false,
+          "description": "the port of the check rule - if missing, 0/any port is used."
+        },
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "optional pattern to check against the rules"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "an object containing the first rule that matched, or an error if nothing matched."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi check\\_blacklist net\\_dynamic 127.0.0.1\n# opensips-cli -x mi check\\_blacklists net\\_dynamic udp 127.0.0.1 5060",
+          "description": "Example of usage for check_blacklist command"
+        }
+      ]
+    },
+    {
+      "name": "add_blacklist_rule",
+      "description": "Adds a rule to a non-readonly blacklist.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the blacklist to add to"
+        },
+        {
+          "name": "rule",
+          "type": "string",
+          "required": true,
+          "description": "a string containing a blacklist rule, according to dst_blacklist parameter"
+        },
+        {
+          "name": "expire",
+          "type": "integer",
+          "required": false,
+          "description": "indicates the number of seconds the rule should expire"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "success or failed object."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi add\\_blacklist\\_rule net\\_dynamic '!tcp,127.0.0.1,5060'\n# opensips-cli -x mi add\\_blacklist\\_rule net\\_dynamic '!tcp,127.0.0.1,5060' 3600",
+          "description": "Example of usage for add_blacklist_rule command"
+        }
+      ]
+    },
+    {
+      "name": "del_blacklist_rule",
+      "description": "Removes a rule from a non-readonly blacklist.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the blacklist to remove from"
+        },
+        {
+          "name": "rule",
+          "type": "string",
+          "required": true,
+          "description": "a string containing a blacklist rule, according to dst_blacklist parameter"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "success or failed object."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi del\\_blacklist\\_rule net\\_dynamic '!tcp,127.0.0.1,5060'",
+          "description": "Example of usage for del_blacklist_rule command"
+        }
+      ]
+    },
+    {
+      "name": "list_tcp_conns",
+      "description": "The command lists all ongoing TCP/TLS connection from OpenSIPS.",
+      "parameters": [],
+      "return_value": {
+        "type": "array",
+        "description": "an array with one object per connection with the following attributes : ID, type, state, source, destination, lifetime, alias port."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi list\\_tcp\\_conns",
+          "description": "Example of usage for list_tcp_conns command"
+        }
+      ]
+    },
+    {
+      "name": "log_level",
+      "description": "Get or set the logging level of one or all OpenSIPS processes. If no argument is passed, it prints a table with current levels. If level is given, it sets it for each process. If pid is also given, it changes only for that process.",
+      "parameters": [
+        {
+          "name": "level",
+          "type": "integer",
+          "required": false,
+          "description": "logging level (-3...4)"
+        },
+        {
+          "name": "pid",
+          "type": "integer",
+          "required": false,
+          "description": "Unix pid (validated by OpenSIPS)"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "A table of processes and levels, or the new global log level."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi log\\_level\n# opensipsctl fifo log\\_level 1\n# opensipsctl fifo log\\_level 4 10670",
+          "description": "Examples of usage for log_level command"
+        }
+      ]
+    },
+    {
+      "name": "log_level_filter",
+      "description": "Get or set the level of the extra filtering applied to log messages for a specific logging consumer (stderror, syslog or event).",
+      "parameters": [
+        {
+          "name": "consumer",
+          "type": "string",
+          "required": false,
+          "description": "logging consumer: stderror, syslog or event"
+        },
+        {
+          "name": "log_level_filter",
+          "type": "integer",
+          "required": false,
+          "description": "the log level filter"
+        }
+      ],
+      "return_value": {
+        "type": "mixed",
+        "description": "The current level filter or \"OK\" string."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi log\\_level\\_filter stderror\n# opensips-cli -x mi log\\_level\\_filter stderror 1",
+          "description": "Examples of usage for log_level_filter command"
+        }
+      ]
+    },
+    {
+      "name": "log_mute_state",
+      "description": "Get or set the mute state (printing enabled/disabled) of a specific logging consumer (stderror, syslog or event).",
+      "parameters": [
+        {
+          "name": "consumer",
+          "type": "string",
+          "required": false,
+          "description": "logging consumer: stderror, syslog or event"
+        },
+        {
+          "name": "mute_state",
+          "type": "integer",
+          "required": false,
+          "description": "the new mute state: 1 - muted or 0 - unmuted (enabled)"
+        }
+      ],
+      "return_value": {
+        "type": "mixed",
+        "description": "The current mute state or \"OK\" string."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi log\\_mute\\_state syslog\n# opensips-cli -x mi log\\_mute\\_state syslog 1",
+          "description": "Examples of usage for log_mute_state command"
+        }
+      ]
+    },
+    {
+      "name": "ps",
+      "description": "The command will list all all OpenSIPS processes, along with type and description.",
+      "parameters": [],
+      "return_value": {
+        "type": "array",
+        "description": "multiple objects, each one containing a process ID (internal), PID (OS) and Type."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi ps",
+          "description": "Example of usage for ps command"
+        }
+      ]
+    },
+    {
+      "name": "pwd",
+      "description": "Prints the working directory of OpenSIPS instance.",
+      "parameters": [],
+      "return_value": {
+        "type": "object",
+        "description": "a single item containing the working directory full path."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi pwd",
+          "description": "Example of usage for pwd command"
+        }
+      ]
+    },
+    {
+      "name": "reload_routes",
+      "description": "Triggers the reload of the routing block (the routes) from the script during the runtime.",
+      "parameters": [],
+      "return_value": {
+        "type": "null",
+        "description": "none"
+      },
+      "examples": []
+    },
+    {
+      "name": "sr_get_status",
+      "description": "The MI equivalent of the sr_check_status() script function - to get the status of an 'status/report' identifier/group.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": "mandatory group name"
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "required": false,
+          "description": "optional identifier"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "the readiness, the status and details of the identifier/group"
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi sr\\_get\\_status core\n# opensips-cli -x mi sr\\_get\\_status drouting all",
+          "description": "Examples of usage for sr_get_status command"
+        }
+      ]
+    },
+    {
+      "name": "sr_list_status",
+      "description": "Command to list the status of the identifiers within one or all 'status/report' groups.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "optional 'status/report' group"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "the readiness, the status and details for all the identifiers within the requested group, or within all defined/registered groups."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "#opensips-cli -x mi sr\\_list\\_status",
+          "description": "Example of usage for sr_list_status command"
+        }
+      ]
+    },
+    {
+      "name": "sr_list_reports",
+      "description": "Command to list the full set of reports (logs) collected by 'status/report' identifiers.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "optional 'status/report' group. If missing, all groups listed."
+        },
+        {
+          "name": "identifier",
+          "type": "string",
+          "required": false,
+          "description": "optional identifier. If missing, all identifiers within group listed."
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "the reports/logs for the requested identifiers, or for all identifiers within the groups."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "#bin/opensips-cli -x mi sr\\_list\\_reports",
+          "description": "Example of usage for sr_list_reports command"
+        }
+      ]
+    },
+    {
+      "name": "sr_list_identifiers",
+      "description": "Command to list all the existing identifiers in OpenSIPS or only from a certain group.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "optional 'status/report' group. If missing, identifiers from all groups listed."
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "an array of groups, each group being an array of identifiers."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "#opensips-cli -x mi sr\\_list\\_identifiers\n#opensips-cli -x mi sr\\_list\\_identifiers drouting",
+          "description": "Examples of usage for sr_list_identifiers command"
+        }
+      ]
+    },
+    {
+      "name": "uptime",
+      "description": "Prints various time information about OpenSIPS - when it started to run, for how long it runs.",
+      "parameters": [],
+      "return_value": {
+        "type": "object",
+        "description": "three items: \"Now\" - current time; \"Up since\" - start time ; \"Up time\" - number of seconds since started."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi uptime",
+          "description": "Example of usage for uptime command"
+        }
+      ]
+    },
+    {
+      "name": "version",
+      "description": "Prints the version string of a running OpenSIPS.",
+      "parameters": [],
+      "return_value": {
+        "type": "object",
+        "description": "one item (named \"Server\") containing the version string."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi version",
+          "description": "Example of usage for version command"
+        }
+      ]
+    },
+    {
+      "name": "which",
+      "description": "Prints all available MI commands from the queried OpenSIPS instance.",
+      "parameters": [],
+      "return_value": {
+        "type": "array",
+        "description": "an array of the names of available MI commands."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi which",
+          "description": "Example of usage for which command"
+        }
+      ]
+    },
+    {
+      "name": "get_statistics",
+      "description": "Prints the statistics (all, group or one) realtime values.",
+      "parameters": [
+        {
+          "name": "statistics",
+          "type": "array",
+          "required": true,
+          "description": "an array of values: \"all\", \"group_name:\", or \"name\""
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "an object containing the names and values of statistic variables."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi get\\_statistics rcv\\_requests\n# opensipsc-cli -x mi get\\_statistics shmem:",
+          "description": "Examples of usage for get_statistics command"
+        }
+      ]
+    },
+    {
+      "name": "list_statistics",
+      "description": "Prints a list of available statistics in the current configuration of OpenSIPS.",
+      "parameters": [
+        {
+          "name": "statistics",
+          "type": "array",
+          "required": false,
+          "description": "an array of the same possible values as for get_statistics, excluding \"all\"."
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "A list of available statistics and their types."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi list\\_statistics",
+          "description": "Example of usage for list_statistics command"
+        }
+      ]
+    },
+    {
+      "name": "reset_statistics",
+      "description": "Reset (to zero) the value of a statistic variable. Note that not all variables allow reset.",
+      "parameters": [
+        {
+          "name": "statistics",
+          "type": "array",
+          "required": true,
+          "description": "an array of the names of the variables to be reset."
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "none"
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi reset\\_statistics received\\_replies",
+          "description": "Example of usage for reset_statistics command"
+        }
+      ]
+    },
+    {
+      "name": "reset_all_statistics",
+      "description": "Reset (to zero) the value of all statistic variables that can be reset.",
+      "parameters": [],
+      "return_value": {
+        "type": "null",
+        "description": "none"
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi reset\\_all\\_statistics",
+          "description": "Example of usage for reset_all_statistics command"
+        }
+      ]
+    },
+    {
+      "name": "cache_store",
+      "description": "This command stores in a cache system a string value.",
+      "parameters": [
+        {
+          "name": "system",
+          "type": "string",
+          "required": true,
+          "description": "cache system to use (e.g., 'local')"
+        },
+        {
+          "name": "attr",
+          "type": "string",
+          "required": true,
+          "description": "the label to be associated with this value"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "the string to be stored"
+        },
+        {
+          "name": "expire",
+          "type": "integer",
+          "required": false,
+          "description": "expire time for the stored value"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "none"
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi cache\\_store local password\\_user1 password",
+          "description": "Example of usage for cache_store command"
+        }
+      ]
+    },
+    {
+      "name": "cache_fetch",
+      "description": "This command queries for a stored value.",
+      "parameters": [
+        {
+          "name": "system",
+          "type": "string",
+          "required": true,
+          "description": "cache system to use"
+        },
+        {
+          "name": "attr",
+          "type": "string",
+          "required": true,
+          "description": "the label associated with the value"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "object containing the value if a record is found or 'Value not found' string otherwise."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi cache\\_fetch local password\\_user1",
+          "description": "Example of usage for cache_fetch command"
+        }
+      ]
+    },
+    {
+      "name": "cache_remove",
+      "description": "This command removes a record from the cache system.",
+      "parameters": [
+        {
+          "name": "system",
+          "type": "string",
+          "required": true,
+          "description": "cache system to use"
+        },
+        {
+          "name": "attr",
+          "type": "string",
+          "required": true,
+          "description": "the label associated with the stored value"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi cache\\_remove local password\\_user1",
+          "description": "Example of usage for cache_remove command"
+        }
+      ]
+    },
+    {
+      "name": "event_subscribe",
+      "description": "Subscribes an external application to a certain event.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "event name"
+        },
+        {
+          "name": "socket",
+          "type": "string",
+          "required": true,
+          "description": "external application socket"
+        },
+        {
+          "name": "expire",
+          "type": "integer",
+          "required": false,
+          "description": "expire time, in seconds - if absent, defaults to 3600 s"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi event\\_subscribe E\\_PIKE\\_BLOCKED udp:127.0.0.1:8888 1200",
+          "description": "Example of usage for event_subscribe command"
+        }
+      ]
+    },
+    {
+      "name": "events_list",
+      "description": "Lists all the events published through the Event Interface.",
+      "parameters": [],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi events\\_list",
+          "description": "Example of usage for events_list command"
+        }
+      ]
+    },
+    {
+      "name": "raise_event",
+      "description": "Raises an event through the Event Interface using an MI command.",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "event name"
+        },
+        {
+          "name": "params",
+          "type": "mixed",
+          "required": false,
+          "description": "array of elements, or a string consisting of a JSON object containing key-value pairs"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi raise\\_event E\\_PIKE\\_BLOCKED 127.0.0.1 # array mode\n# opensips-cli -x -- mi -j raise\\_event event=E\\_PIKE\\_BLOCKED params='{\"ip\":\"127.0.0.1\"}' # json mode",
+          "description": "Examples of usage for raise_event command"
+        }
+      ]
+    },
+    {
+      "name": "subscribers_list",
+      "description": "Lists information about the subscribers",
+      "parameters": [
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "event name"
+        },
+        {
+          "name": "socket",
+          "type": "string",
+          "required": false,
+          "description": "external application socket"
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "Information about events and their subscribers based on parameters provided."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi subscribers\\_list\n# opensips-cli -x mi subscribers\\_list E\\_RTPPROXY\\_STATUS\n# opensips-cli -x mi subscribers\\_list E\\_RTPPROXY\\_STATUS unix:/tmp/event.sock",
+          "description": "Examples of usage for subscribers_list command"
+        }
+      ]
+    },
+    {
+      "name": "mem_pkg_dump",
+      "description": "Triggers a pkg memory dump for a given process. The memory dump will written to OpenSIPS's log using the 'memdump' logging level.",
+      "parameters": [
+        {
+          "name": "pid",
+          "type": "integer",
+          "required": true,
+          "description": "the PID of the process to perform the pkg dump"
+        },
+        {
+          "name": "log_level",
+          "type": "integer",
+          "required": false,
+          "description": "a log level to be used for this dump"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi mem\\_pkg\\_dump 11854 -1",
+          "description": "Example of usage for mem_pkg_dump command"
+        }
+      ]
+    },
+    {
+      "name": "mem_shm_dump",
+      "description": "Triggers a shm memory dump. The memory dump will written to OpenSIPS's log using the 'memdump' logging level.",
+      "parameters": [
+        {
+          "name": "log_level",
+          "type": "integer",
+          "required": false,
+          "description": "a log level to be used for this dump"
+        }
+      ],
+      "return_value": {
+        "type": "null",
+        "description": "None."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi mem\\_shm\\_dump -1",
+          "description": "Example of usage for mem_shm_dump command"
+        }
+      ]
+    },
+    {
+      "name": "shm_check",
+      "description": "Only available with QM_MALLOC + DBG_MALLOC. Fully scans the shared memory pool in order to locate any inconsistencies.",
+      "parameters": [],
+      "return_value": {
+        "type": "integer",
+        "description": "current number of fragments."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi shm\\_check",
+          "description": "Example of usage for shm_check command"
+        }
+      ]
+    },
+    {
+      "name": "xlog_level",
+      "description": "Get or set the global xlogging level in OpenSIPS processes.",
+      "parameters": [
+        {
+          "name": "level",
+          "type": "integer",
+          "required": false,
+          "description": "logging level"
+        }
+      ],
+      "return_value": {
+        "type": "integer",
+        "description": "the current xlog_level if no argument is passed."
+      },
+      "examples": [
+        {
+          "language": "bash",
+          "code": "# opensips-cli -x mi xlog\\_level -2",
+          "description": "Example of usage for xlog_level command"
+        }
+      ]
+    }
+  ]
+}
