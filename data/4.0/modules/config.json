@@ -1,0 +1,283 @@
+{
+  "id": "module-config-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "config Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/config.html",
+  "content_markdown": "The _config_ module enables dynamic, runtime configuration of OpenSIPS parameters by loading them from persistent storage at startup and exposing them to the script level via the [$config(...)](#pv_config \"1.4.1.�$config(name)\") pseudo-variable.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:32:43.849Z",
+  "module_name": "config",
+  "overview": "The _config_ module enables dynamic, runtime configuration of OpenSIPS parameters by loading them from persistent storage at startup and exposing them to the script level via the [$config(...)](#pv_config \"1.4.1.�$config(name)\") pseudo-variable.",
+  "how_it_works": "All configuration variables are stored in OpenSIPS' internal cache, allowing fast access during SIP processing to maintain high performance. The cache can be updated in three ways:\n\n* _Script_ – Assigning a value to the [$config(...)](#pv_config \"1.4.1.�$config(name)\") pseudo-variable updates the in-memory cache, but this change is not persisted to the database.\n    \n* _MI Commands_ – Using [config:push](#mi_push \"1.5.3.�config:push\") or [config:push\\_bulk](#mi_push_bulk \"1.5.4.�config:push_bulk\") updates one or more variables in the runtime cache. These updates are also not saved to the database.\n    \n* _Database_ – Manually modifying values in the database, then triggering the [config:reload](#mi_reload \"1.5.1.�config:reload\") command, will refresh the in-memory cache with updated values from the database.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "reason": "to read the initial cache",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "Database URL used to load the initial configuration values, and flush them at runtime using the [config:flush](#mi_flush \"1.5.5.�config:flush\") MI command.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"config\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "config",
+      "description": "Name of the table where configuration entries are stored.",
+      "example_value": "configuration",
+      "example_code": "modparam(\"config\", \"table\\_name\", \"configuration\")"
+    },
+    {
+      "name": "name_column",
+      "type": "string",
+      "default_value": "name",
+      "description": "Name of the column storing configuration variable names.",
+      "example_value": "key",
+      "example_code": "modparam(\"config\", \"name\\_column\", \"key\")"
+    },
+    {
+      "name": "value_column",
+      "type": "string",
+      "default_value": "value",
+      "description": "Name of the column storing configuration variable values.",
+      "example_value": "val",
+      "example_code": "modparam(\"config\", \"value\\_column\", \"val\")"
+    },
+    {
+      "name": "description_column",
+      "type": "string",
+      "default_value": "description",
+      "description": "Name of the column storing variable descriptions.",
+      "example_value": "desc",
+      "example_code": "modparam(\"config\", \"description\\_column\", \"desc\")"
+    },
+    {
+      "name": "enable_restart_persistency",
+      "type": "integer",
+      "default_value": "0 / disabled",
+      "description": "Enables restart persistency. Check the [Restart Persistent Memory](#restart_persistent_memory \"1.1.1.�Restart Persistent Memory\") for more information.",
+      "example_value": "yes",
+      "example_code": "modparam(\"config\", \"restart\\_persistent\\_memory\", yes)",
+      "notes": "The example code provided in the documentation uses the parameter name 'restart_persistent_memory' instead of 'enable_restart_persistency'."
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "16",
+      "description": "Size of the internal hash table used to store config variables. Must be a power of 2 number, otherwise its value will be rounded to the closest value of 2 smaller than the provided value.",
+      "example_value": "32",
+      "example_code": "modparam(\"config\", \"hash\\_size\", 32)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "config:reload",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _config_reload_.\n\nReloads all configuration variables from the database.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi config:reload",
+          "description": "reload configuration cache from the database"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi config:reload",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "config:list",
+      "parameters": [
+        {
+          "name": "description",
+          "type": "integer",
+          "required": false,
+          "description": "If provided and different than 0, it returns an array containing the description of the values as well."
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "Returns an array containing the description of the values if the description parameter is provided."
+      },
+      "description": "Replaces obsolete MI command: _config_list_.\n\nLists all config variables currently loaded in cache, printing temporary values as well. If the optional _description_ parameter is provided and different than _0_, it returns an array containing the description of the values as well.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi config:list",
+          "description": "list all configuration cache"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi config:list 1",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "config:push",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the variable"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "the value of the variable"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "description": "the description of the variable; if missing the description is inheritted, or a null value is used if the variable is new."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _config_push_.\n\nTemporarily pushes a single configuration variable.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi config:push debug_mode 1 \"Enable Debug mode\"",
+          "description": "push temporarily debug_mode configuration value"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi config:list 1",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "config:push_bulk",
+      "parameters": [
+        {
+          "name": "configs",
+          "type": "json",
+          "required": true,
+          "description": "a JSON array containing a set of variables to be pushed. Each variable should be described as a JSON object with the following keys: name (string), value (string or null), description (string, optional)."
+        }
+      ],
+      "return_value": {
+        "type": "integer",
+        "description": "The command returns the number of values successfully pushed."
+      },
+      "description": "Replaces obsolete MI command: _config_push_bulk_.\n\nPushes multiple temporarily configuration variables in memory.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi config:push_bulk -j '\\[\\[{\"name\":\"debug_mode\",\"value\":\"1\"},{\"name\":\"debug_level\",\"value\":\"5\"}\\]\\]'",
+          "description": "push bulk temporarily values to the config cache"
+        }
+      ]
+    },
+    {
+      "name": "config:flush",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "if present, flushes only a specific config variable in database, otherwise the entire cache."
+        }
+      ],
+      "return_value": {
+        "type": "integer",
+        "description": "The command returns the number of values successfully flushed."
+      },
+      "description": "Replaces obsolete MI command: _config_flush_.\n\nFlushes the variables from the memory to the database.",
+      "examples": [
+        {
+          "language": "opensips-mi",
+          "code": "opensips-mi config:flush",
+          "description": "Flush config variables to the database"
+        },
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mi config:flush debug_mode",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$config(name)",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "",
+      "description": "Returns the value of the given config variable by name. Can also be used for temporarily changing the value."
+    },
+    {
+      "name": "$config.description(name)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Returns the description of a config variable if available."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set “db\\_url” parameter",
+      "description": "Database URL used to load the initial configuration values, and flush them at runtime using the config:flush MI command.",
+      "code": "...\nmodparam(\"config\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set “table\\_name” parameter",
+      "description": "Name of the table where configuration entries are stored.",
+      "code": "...\nmodparam(\"config\", \"table_name\", \"configuration\")\n..."
+    },
+    {
+      "title": "Set “name\\_column” parameter",
+      "description": "Name of the column storing configuration variable names.",
+      "code": "...\nmodparam(\"config\", \"name_column\", \"key\")\n..."
+    },
+    {
+      "title": "Set “value\\_column” parameter",
+      "description": "Name of the column storing configuration variable values.",
+      "code": "...\nmodparam(\"config\", \"value_column\", \"val\")\n..."
+    },
+    {
+      "title": "Set “desctiption\\_column” parameter",
+      "description": "Name of the column storing variable descriptions.",
+      "code": "...\nmodparam(\"config\", \"description_column\", \"desc\")\n..."
+    },
+    {
+      "title": "Set “restart\\_persistent\\_memory” parameter",
+      "description": "Enables restart persistency. Check the Restart Persistent Memory for more information.",
+      "code": "...\nmodparam(\"config\", \"restart\\_persistent\\_memory\", yes)\n..."
+    },
+    {
+      "title": "Set “hash\\_size” parameter",
+      "description": "Size of the internal hash table used to store config variables. Must be a power of 2 number, otherwise its value will be rounded to the closest value of 2 smaller than the provided value.",
+      "code": "...\nmodparam(\"config\", \"hash_size\", 32)\n..."
+    },
+    {
+      "title": "Usage of `$config(...)`",
+      "description": "Returns the value of the given config variable by name. Can also be used for temporarily changing the value.",
+      "code": "\t\t\t...\n\t\t\txlog(\"Config value: $config(debug\\_mode)\\\\n\"); # reading the value\n\t\t\t$config(debug\\_mode) = 1; # temporarily changing the value\n\t\t\t...\n\t\t\t"
+    },
+    {
+      "title": "Usage of `$config.description(name)`",
+      "description": "Returns the description of a config variable if available.\n\nThis variable is read-only.",
+      "code": "\t\t\t...\n\t\t\txlog(\"Description: $config.description(debug\\_mode)\\\\n\");\n\t\t\t...\n\t\t\t"
+    }
+  ]
+}

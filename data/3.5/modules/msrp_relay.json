@@ -1,0 +1,237 @@
+{
+  "id": "module-msrp_relay-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "msrp_relay Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/msrp_relay.html",
+  "content_markdown": "This modules implements a Relay for the MSRP protocol, according to the specifications of RFC 4976.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:20:13.591Z",
+  "module_name": "msrp_relay",
+  "overview": "This modules implements a Relay for the MSRP protocol, according to the specifications of RFC 4976.",
+  "how_it_works": "Once loaded, the module will automatically forward messages and manage MSRP sessions for the MSRP listeners defined in the script. For authenticating MSRP clients, a dedicated script route is run in order to check the Digest credentials via pseudo-variables.",
+  "dependencies_required": [
+    {
+      "name": "proto_msrp",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "openssl",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libssl",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "openssl-dev",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libssl-dev",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "hash_size",
+      "type": "int",
+      "default_value": "10",
+      "description": "The size of the hash table that stores the MSRP sessions. It is the 2 logarithmic value of the real size.",
+      "example_code": "...\nmodparam(\"msrp\\_relay\", \"hash\\_size\", 10)\n..."
+    },
+    {
+      "name": "cleanup_interval",
+      "type": "int",
+      "default_value": "60",
+      "description": "The interval between full iterations of the sessions table in order to clean up expired MSRP sessions. Note that a session will be kept in memory as long as the _Expires_ value provided in the 200 OK response to the AUTH request indicates.",
+      "example_code": "...\nmodparam(\"msrp\\_relay\", \"cleanup\\_interval\", 30)\n..."
+    },
+    {
+      "name": "auth_route",
+      "type": "str",
+      "description": "The name of the script route to be called when authorizing MSRP clients (receiving an AUTH request with an Authorization header). Here you should provide the appropriate password (or pre-calculated HA1 string) for the credentials via the [password\\_var](#param_password_var \"1.3.6.�password_var (string)\") pseudo-variable, in order for the relay to check the client response.",
+      "example_code": "...\nmodparam(\"msrp\\_relay\", \"auth\\_route\", \"auth\")\n...",
+      "notes": "No default value; this parameter is mandatory."
+    },
+    {
+      "name": "username_var",
+      "type": "string",
+      "default_value": "$var(username)",
+      "description": "This name of the pseudo-variable that holds the authentication username.",
+      "example_code": "modparam(\"msrp\\_relay\", \"username\\_var\", \"$var(msrp\\_auth\\_user)\")"
+    },
+    {
+      "name": "realm_var",
+      "type": "string",
+      "default_value": "$var(realm)",
+      "description": "This name of the pseudo-variable that hols the authentication Realm.",
+      "example_code": "modparam(\"msrp\\_relay\", \"realm\\_var\", \"$var(msrp\\_auth\\_realm)\")"
+    },
+    {
+      "name": "password_var",
+      "type": "string",
+      "default_value": "$var(password)",
+      "description": "This name of the pseudo-variable that should be set in the auth_route script route in order to check the client response when authenticating. The value to be set can be either the plaintext password or pre-calculated HA1 string, based on the parameter.",
+      "example_value": "$var(msrp_auth_password)",
+      "example_code": "modparam(\"msrp\\_relay\", \"password\\_var\", \"$var(msrp\\_auth\\_password)\")"
+    },
+    {
+      "name": "calculate_ha1",
+      "type": "integer",
+      "default_value": "0",
+      "description": "This parameter configures whether the value of the password_var pseudo-variable should be treated as a plaintext password or a pre-calculated HA1 string.",
+      "example_value": "1",
+      "example_code": "modparam(\"msrp\\_relay\", \"calculate\\_ha1\", 1)"
+    },
+    {
+      "name": "socket_route",
+      "type": "str",
+      "default_value": "NULL",
+      "description": "The optional name of the script route to be called when start relaying a new MSRP session (upon the first SEND). The purpose of this route is to allow you to select the appropriate outbound socket to be be used for sending out the MSRP request. Inside the route, the following information from the received request will be exposed: * source network information via the $si, $sp, $sP and $socket_in variables. * destination URL schema via the dst_schema_var variable * destination URL host via the dst_host_var variable In this route you should optionally set the desired MSRP(S) outbound socket via the $socket_out variable. If none is set, the inbound interface will also be used as outbound if the schema (MSRP versus MSRPS) is the same. If the schema changes, the first socket (matching the out schema) will be used.",
+      "example_value": "msrp_routing",
+      "example_code": "...\nmodparam(\"msrp\\_relay\", \"socket\\_route\", \"msrp\\_routing\")\n\nroute\\[msrp\\_routing\\] {\n\txlog(\"MSRP request comming from $si:$sp on $socket\\_in socket\\\\n\");\n\txlog(\"trying to go to $var(dst\\_schema)://$var(dst\\_host)\\\\n\");\n\n\t$socket\\_out = \"msrp:1.2.3.4:9999\";\n}\n..."
+    },
+    {
+      "name": "dst_schema_var",
+      "type": "string",
+      "default_value": "$var(dst_schema)",
+      "description": "This name of the variable to provide the schema (\"msrp\" or \"msrps\") of the destination URL in the socket route. See more on param_socket_route parameter."
+    },
+    {
+      "name": "dst_host_var",
+      "type": "string",
+      "default_value": "$var(dst_host)",
+      "description": "This name of the variable to provide the host of the destination URL in the socket route. See more on param_socket_route parameter."
+    },
+    {
+      "name": "auth_realm",
+      "type": "string",
+      "description": "The realm to be provided in the WWW-Authenticate header when the relay automatically challanges an MSRP client. If this parameter is not set, the realm chose by the relay is the domain part of the top MSRP URI in the To-Path header of the AUTH request.",
+      "example_value": "opensips.org",
+      "example_code": "modparam(\"msrp\\_relay\", \"auth\\_realm\", \"opensips.org\")"
+    },
+    {
+      "name": "auth_expires",
+      "type": "int",
+      "default_value": "1800",
+      "description": "The _Expires_ header value to be provided in the 200 OK response to an AUTH request, if the client does not explicitly request one. This represents how long the MSRP URI provided by the relay in the Use-Path header is valid.",
+      "example_value": "600",
+      "example_code": "modparam(\"msrp\\_relay\", \"auth\\_expires\", 600)"
+    },
+    {
+      "name": "auth_min_expires",
+      "type": "int",
+      "description": "The minimum value accepted by the relay in the _Expires_ header, if the client provides it in the AUTH request. If the requested value is lower that this parameter, the relay will include a _Min-Expires_ header with the configured value, in the 423 Interval Out-of-Bounds response. If not set, the relay will accept any value.",
+      "example_value": "60",
+      "example_code": "modparam(\"msrp\\_relay\", \"auth\\_min\\_expires\", 60)"
+    },
+    {
+      "name": "auth_max_expires",
+      "type": "int",
+      "description": "The maximum value accepted by the relay in the _Expires_ header, if the client provides it in the AUTH request. If the requested value is higher that this parameter, the relay will include a _Max-Expires_ header with the configured value, in the 423 Interval Out-of-Bounds response. If not set, the relay will accept any value.",
+      "example_value": "60",
+      "example_code": "modparam(\"msrp\\_relay\", \"auth\\_max\\_expires\", 60)"
+    },
+    {
+      "name": "nonce_expire",
+      "type": "integer",
+      "default_value": "30",
+      "description": "Nonces have limited lifetime. After a given period of time nonces will be considered invalid. This is to protect replay attacks. Credentials containing a stale nonce will be not authorized, but the user agent will be challenged again. This time the challenge will contain `stale` parameter which will indicate to the client that it doesn't have to disturb user by asking for username and password, it can recalculate credentials using existing username and password.",
+      "example_value": "15",
+      "example_code": "modparam(\"msrp\\_relay\", \"nonce\\_expire\", 15)   # Set nonce\\_expire to 15s",
+      "notes": "The value is in seconds"
+    },
+    {
+      "name": "my_uri",
+      "type": "string",
+      "description": "MSRP URI of this relay, that will be matched against the first URI in the To-Path header of any request or response received. Messages that are not addressed to this relay will be dropped. The MSRP URI provided by the relay in the Use-Path header, will be chosen based on the URI in the To-Path header of the AUTH request.",
+      "example_value": "msrp://opensips.org:2855;tcp",
+      "example_code": "modparam(\"msrp\\_relay\", \"my\\_uri\", \"msrp://opensips.org:2855;tcp\")",
+      "notes": "This parameter can be set multiple times. If the port is not set explicitly, the default value of 2855 wil be assumed. The session-id part of the URI should not be set."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `server_hsize` parameter",
+      "description": "Set `server_hsize` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"hash_size\", 10)\n..."
+    },
+    {
+      "title": "Set `cleanup_interval` parameter",
+      "description": "Set `cleanup_interval` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"cleanup_interval\", 30)\n..."
+    },
+    {
+      "title": "Set `auth_route` parameter",
+      "description": "Set `auth_route` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"auth_route\", \"auth\")\n..."
+    },
+    {
+      "title": "`username_var` parameter usage",
+      "description": "`username_var` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"username_var\", \"$var(msrp_auth_user)\")"
+    },
+    {
+      "title": "`realm_var` parameter usage",
+      "description": "`realm_var` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"realm_var\", \"$var(msrp_auth_realm)\")"
+    },
+    {
+      "title": "`password_var` parameter usage",
+      "description": "`password_var` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"password_var\", \"$var(msrp_auth_password)\")"
+    },
+    {
+      "title": "`calculate_ha1` parameter usage",
+      "description": "`calculate_ha1` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"calculate_ha1\", 1)"
+    },
+    {
+      "title": "Set `socket_route` parameter",
+      "description": "Set `socket_route` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"socket_route\", \"msrp_routing\")\n\nroute[msrp_routing] {\n\txlog(\"MSRP request comming from $si:$sp on $socket_in socket\\n\");\n\txlog(\"trying to go to $var(dst_schema)://$var(dst_host)\\n\");\n\n\t$socket_out = \"msrp:1.2.3.4:9999\";\n}\n..."
+    },
+    {
+      "title": "`auth_realm` parameter usage",
+      "description": "`auth_realm` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"auth_realm\", \"opensips.org\")"
+    },
+    {
+      "title": "Set `server_hsize` parameter",
+      "description": "Set `server_hsize` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"auth_expires\", 600)\n..."
+    },
+    {
+      "title": "Set `auth_min_expires` parameter",
+      "description": "Set `auth_min_expires` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"auth_min_expires\", 60)\n..."
+    },
+    {
+      "title": "Set `auth_max_expires` parameter",
+      "description": "Set `auth_max_expires` parameter",
+      "code": "...\nmodparam(\"msrp_relay\", \"auth_max_expires\", 60)\n..."
+    },
+    {
+      "title": "nonce_expire parameter example",
+      "description": "nonce_expire parameter example",
+      "code": "modparam(\"msrp_relay\", \"nonce_expire\", 15)   # Set nonce_expire to 15s"
+    },
+    {
+      "title": "`my_uri` parameter usage",
+      "description": "`my_uri` parameter usage",
+      "code": "modparam(\"msrp_relay\", \"my_uri\", \"msrp://opensips.org:2855;tcp\")"
+    }
+  ]
+}

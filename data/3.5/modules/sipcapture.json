@@ -1,0 +1,636 @@
+{
+  "id": "module-sipcapture-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "sipcapture Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/sipcapture.html",
+  "content_markdown": "Offer a possibility to store incoming/outgoing SIP messages in database.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:32:46.176Z",
+  "module_name": "sipcapture",
+  "overview": "Offer a possibility to store incoming/outgoing SIP messages in database.",
+  "how_it_works": "OpenSIPs can capture SIP messages in three mode\n\n*   IPIP encapsulation. (ETHHDR+IPHDR+IPHDR+UDPHDR).\n    \n*   Monitoring/mirroring port.\n    \n*   Homer encapsulation protocl mode (HEP v1/2/3). With version 2.2 comes the new HEPv3 support using the proto \\_hep module. Also header manipulation support for HEPv3 has been added. See [hep\\_set()](#func_hep_set \"1.4.3.� hep_set(chunk_id, chunk_data, [data_type], [vendor_id])\") for more details. If you want more information about hep protocol check this [link](https://github.com/sipcapture/HEP/blob/master/docs/HEP3_rev11.pdf).\n    \n\nThe capturing can be turned on/off using fifo commad.\n\nopensips-cli -x mi sip\\_capture on\n\nopensips-cli -x mi sip\\_capture off",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "reason": "Required for storing SIP messages",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "proto_hep module"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "\"\"",
+      "description": "Database URL.",
+      "example_value": "mysql://user:passwd@host/dbname",
+      "example_code": "...\nmodparam(\"sipcapture\", \"db\\_url\", \"mysql://user:passwd@host/dbname\")\n..."
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "\"sip\\_capture\"",
+      "description": "Name of the table's name where to store the SIP messages. Since version 2.2 it allows strftime-like suffix for having time formatted table names.",
+      "example_value": "homer\\_capture",
+      "example_code": "...\nmodparam(\"sipcapture\", \"table\\_name\", \"homer\\_capture\")\n\n/* change table name every day */\nmodparam(\"sipcapture\", \"table\\_name\", \"homer\\_%m\\_%d\")\n/* if today is 13-04-2014 it will exetend to homer\\_04\\_13 */\n..."
+    },
+    {
+      "name": "rtcp_table_name",
+      "type": "string",
+      "default_value": "\"rtcp\\_capture\"",
+      "description": "Name of the table's name where to store packets captured with report\\_capture function. Since version 2.2 it allows strftime-like suffix for having time formatted table names.",
+      "example_value": "homer\\_capture",
+      "example_code": "...\nmodparam(\"sipcapture\", \"rtcp\\_table\\_name\", \"homer\\_capture\")\n\n/* change table name every hour */\nmodparam(\"sipcapture\", \"rtcp\\_table\\_name\", \"homer\\_%m\\_%d\\_%H\")\n/* if today is 13-04-2014 13:05 pm it will exetend to homer\\_04\\_13\\_13 */\n..."
+    },
+    {
+      "name": "capture_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Parameter to enable/disable capture globaly (on(1)/off(0))",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"sipcapture\", \"capture\\_on\", 1)\n..."
+    },
+    {
+      "name": "hep_capture_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Parameter to enable/disable capture of HEP (on(1)/off(0))",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"sipcapture\", \"hep\\_capture\\_on\", 1)\n..."
+    },
+    {
+      "name": "max_async_queries",
+      "type": "integer",
+      "default_value": "5",
+      "description": "Parameter to set the maximum number of 'INSERT' queries of captured packets to be done in the same time, only if the DB supports async operations. If OpenSIPS is shut down, the remaining queries shall be executed. The query buffer is limited 65535 chars, so probably no more than 30-40 queries can be done in the same time, depending mostly on the size of the inserted sip message, since it's the biggest part of the query.",
+      "example_value": "3",
+      "example_code": "modparam(\"sipcapture\", \"max\\_async\\_queries\", 3)"
+    },
+    {
+      "name": "raw_ipip_capture_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Parameter to enable/disable IPIP capturing (on(1)/off(0))",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"sipcapture\", \"raw\\_ipip\\_capture\\_on\", 1)"
+    },
+    {
+      "name": "raw_moni_capture_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Parameter to enable/disable monitoring/mirroring port capturing (on(1)/off(0)) Only one mode on raw socket can be enabled! Monitoring port capturing currently supported only on Linux.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"sipcapture\", \"raw\\_moni\\_capture\\_on\", 1)",
+      "notes": "Only one mode on raw socket can be enabled! Monitoring port capturing currently supported only on Linux."
+    },
+    {
+      "name": "raw_socket_listen",
+      "type": "string",
+      "default_value": "",
+      "description": "Parameter indicate an listen IP address of RAW socket for IPIP capturing. You can also define a port/portrange for IPIP/Mirroring mode, to capture SIP messages in specific ports: \"10.0.0.1:5060\" - the source/destination port of the SIP message must be equal 5060 \"10.0.0.1:5060-5090\" - the source/destination port of the SIP message must be equal or be between 5060 and 5090. The port/portrange must be defined if you are planning to use mirroring capture! In this case, the part with IP address will be ignored, but to make parser happy, use i.e. 10.0.0.0",
+      "example_value": "10.0.0.1:5060-5090",
+      "example_code": "modparam(\"sipcapture\", \"raw\\_socket\\_listen\", \"10.0.0.1:5060-5090\")",
+      "notes": "The port/portrange must be defined if you are planning to use mirroring capture! In this case, the part with IP address will be ignored, but to make parser happy, use i.e. 10.0.0.0"
+    },
+    {
+      "name": "raw_interface",
+      "type": "string",
+      "default_value": "",
+      "description": "Name of the interface to bind on the raw socket.",
+      "example_value": "eth0",
+      "example_code": "modparam(\"sipcapture\", \"raw\\_interface\", \"eth0\")"
+    },
+    {
+      "name": "raw_sock_children",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Parameter define how much children must be created to listen the raw socket.",
+      "example_value": "6",
+      "example_code": "modparam(\"sipcapture\", \"raw_sock_children\", 6)"
+    },
+    {
+      "name": "promiscuous_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Parameter to enable/disable promiscuous mode on the raw socket. Linux only.",
+      "example_value": "1",
+      "example_code": "modparam(\"sipcapture\", \"promiscuous_on\", 1)"
+    },
+    {
+      "name": "raw_moni_bpf_on",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Activate Linux Socket Filter (LSF based on BPF) on the mirroring interface. The structure is defined in linux/filter.h. The default LSF accept a port/portrange from the raw_socket_listen param. Currently LSF supported only on Linux.",
+      "example_value": "1",
+      "example_code": "modparam(\"sipcapture\", \"raw_moni_bpf_on\", 1)"
+    },
+    {
+      "name": "capture_node",
+      "type": "string",
+      "default_value": "homer01",
+      "description": "Name of the capture node.",
+      "example_value": "homer03",
+      "example_code": "modparam(\"sipcapture\", \"capture_node\", \"homer03\")"
+    },
+    {
+      "name": "hep_route",
+      "type": "string",
+      "default_value": "sip(going thorugh the main request route).",
+      "description": "Specifies what path your hep messages should take. Possible values are the following:\n\n*   _none_ - don't go through the script; do directly sip_capture();\n    \n*   _sip(default)_ - go through the main request route; here the message is parsed and you can do anything you want with it;\n    \n*   _any other string value_ - define a route name through which your hep messages should go; the message is not parsed because of efficiency reasons; from here you can modify the hep chunks(if hep version 3 is used) and relay the hep messages to other hep capture nodes;",
+      "possible_values": [
+        "none",
+        "sip",
+        "any other string value"
+      ],
+      "example_value": "my_hep_route",
+      "example_code": "modparam(\"sipcapture\", \"hep_route\", \"my_hep_route\")\n\nroute[my_hep_route] {\n\t/* do hep stuff in here */\n\t...\n}"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sip_capture",
+      "signature": "sip_capture([table_name], [custom_field1], [custom_field2], [custom_field3])",
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "required": false,
+          "description": "the name of the table to store the packet; it can have a strftime-like formatted suffix in order to change it's name based on time; if not set, modparam defined table will be used"
+        },
+        {
+          "name": "custom_field1",
+          "type": "string",
+          "required": false,
+          "description": "custom data to store inside the \"custom_field1\" column"
+        },
+        {
+          "name": "custom_field2",
+          "type": "string",
+          "required": false,
+          "description": "custom data to store inside the \"custom_field2\" column"
+        },
+        {
+          "name": "custom_field3",
+          "type": "string",
+          "required": false,
+          "description": "custom data to store inside the \"custom_field3\" column"
+        }
+      ],
+      "return_type": "",
+      "description": "Save the message into the database.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_method(\"REGISTER\"))\n\tsip_capture();\n\t...\n\t/* table name will change every day */\n\tsip_capture(\"homer_%m_%d\");\n\tsip_capture(\"homer_%m_%d\", , $hdr(P-Asserted-Identity));\n...\n",
+          "description": "`sip_capture` usage"
+        }
+      ]
+    },
+    {
+      "name": "report_capture",
+      "signature": "report_capture(correlation_id, [table_name], [proto_type])",
+      "parameters": [
+        {
+          "name": "correlation_id",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "table_name",
+          "type": "string",
+          "required": false,
+          "description": "the name of the table to store the packet; it can have a strftime-like formatted suffix in order to change it's name based on time"
+        },
+        {
+          "name": "proto_type",
+          "type": "int",
+          "required": false,
+          "description": "protocol type number as defined in hep protocol specification"
+        }
+      ],
+      "return_type": "",
+      "description": "Save the message into the database. If you want set the protocol type you have to define the table name, even if you pass over it(report_capture($var(cor_id),,$var(proto_type))).\n\n**VERY IMPORTANT:** Since version 2.3 report_capture function behaviour will change depending on [homer5_on](https://opensips.org/docs/modules/2.3.x/proto_hep#idp154080) parameter from [proto_hep](https://opensips.org/docs/modules/2.3.x/proto_hep). Check [sql](https://github.com/OpenSIPS/opensips/tree/master/modules/sipcapture/sql) folder from the module to check the fields of the tables for each version.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\thep_get(\"0x0011\", \"utf8-string\", , $var(correlation_id));\n\tif ($var(correlation_id) == null) {\n\t\txlog(\"NO CORRELATION ID! SET SOMETHING OR DROP\");\n\t\t$var(correlation_id) = \"absdcef\";\n\t}\n\n\t$var(proto_type) = \"3\"; /* 0x03 - SDP protocol */\n\n\treport_capture($var(correlation_id), \"rtcp_log\");\n\t/* setting the 2nd parameter, even if setting it to null, is mandatory in order to be able to set proto type */\n\treport_capture($var(correlation_id), , $var(proto_type));\n\treport_capture($var(correlation_id), \"rtcp_log\", $var(proto_type));\n...\n",
+          "description": "`sip_capture` usage"
+        }
+      ]
+    },
+    {
+      "name": "hep_set",
+      "signature": "hep_set(chunk_id, chunk_data, [data_type], [vendor_id])",
+      "parameters": [
+        {
+          "name": "chunk_id",
+          "type": "string",
+          "required": true,
+          "description": "id of the chunk to be added; most of the generic chunks are in the internal hep structure. For these you can skip the data_type and vendor_id since they are already known. Generic chunks that don't have built in support are the followinig: 0x000d(keep alive timer), 0x000e(authenticate key), 0x0011(internal correltion id), 0x0012(vlan ID). You can set these chunks, but only with vendor id 0x0000, other values shall result in an error. Timestamp(0x0009) and timestamp_us(0x000A) chunks can't be set. For chunks that have built-in support you can also use strings instead of chunk ids as follows:",
+          "valid_values": [
+            "0x0001",
+            "proto_family",
+            "0x0002",
+            "proto_id",
+            "0x0003",
+            "src_ip",
+            "0x0004",
+            "dst_ip",
+            "0x0005",
+            "0x0006",
+            "0x0007",
+            "src_port",
+            "0x0008",
+            "dst_port",
+            "0x0009",
+            "timestamp",
+            "0x000A",
+            "timestamp_us",
+            "0x000B",
+            "proto_type",
+            "0x000C",
+            "captiveagent_id",
+            "0x000f",
+            "payload",
+            "0x0010"
+          ]
+        },
+        {
+          "name": "chunk_data",
+          "type": "string",
+          "required": true,
+          "description": "data that the chunk shall contain; internally it shall be converted to the requested data type"
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "required": false,
+          "default": "utf8-string",
+          "description": "data type of the data in the chunk. It can have the following values:",
+          "valid_values": [
+            "uint8",
+            "uint16",
+            "uint32",
+            "inet4-addr",
+            "inet6-addr",
+            "utf8-string",
+            "octet-string"
+          ]
+        },
+        {
+          "name": "vendor_id",
+          "type": "string",
+          "required": false,
+          "default": "3",
+          "description": "there are some vendor ids already defined; check [hep proto docs](http://hep.sipcapture.org/hepfiles/HEP3_rev11.pdf) for more details."
+        }
+      ],
+      "return_type": "",
+      "description": "Set a hep chunk. If not exists, it shall be added.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n/* modify/add a generic chunk */\nhep_set(\"proto_type\", \"H321\");\n\n/* add a custom chunk - int */\nhep_set(\"31\", \"132\", \"uint32\", \"3\")\n\n/* add a custom chunk - IPv4 address */\nhep_set(\"32\", \"192.168.5.14\", \"inet4-addr\", \"3\")\n...\n",
+          "description": "`hep_set` usage"
+        }
+      ]
+    },
+    {
+      "name": "hep_get",
+      "signature": "hep_get(chunk_id, data_type, [chunk_data_pv], [vendor_id_pv])",
+      "parameters": [
+        {
+          "name": "chunk_id",
+          "type": "string",
+          "required": true,
+          "description": "same meaning as in [hep_set()](#func_hep_set \"1.4.3.� hep_set(chunk_id, chunk_data, [data_type], [vendor_id])\")"
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "required": true,
+          "description": "same meaning as in [hep_set()](#func_hep_set \"1.4.3.� hep_set(chunk_id, chunk_data, [data_type], [vendor_id])\"); can miss if it's a generic chunk"
+        },
+        {
+          "name": "chunk_data_pv",
+          "type": "writable var",
+          "required": false,
+          "description": "will hold the data inside the chunk; some of the generic chunk data come in specific format, as following:"
+        },
+        {
+          "name": "vendor_id_pv",
+          "type": "writable var",
+          "required": false,
+          "description": "will hold the vendor id(int value) of the chunk"
+        }
+      ],
+      "return_type": "",
+      "description": "Set a hep chunk. If not exists, it shall be added.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n/* get a generic chunk */\nhep_get(\"proto_type\", , $var(data), $var(vid));\n\n/* get custom chunk - you must know what kind of data is there */\nhep_set(\"31\", \"uint32\", $var(data), $var(vid))\n...\n",
+          "description": "`hep_set` usage"
+        }
+      ]
+    },
+    {
+      "name": "hep_del",
+      "signature": "hep_del(chunk_id)",
+      "parameters": [
+        {
+          "name": "chunk_id",
+          "type": "string",
+          "required": true,
+          "description": "same meaning as the _chunk_id_ in [hep_set()](#func_hep_set \"1.4.3.� hep_set(chunk_id, chunk_data, [data_type], [vendor_id])\")."
+        }
+      ],
+      "return_type": "",
+      "description": "Removes a hep chunk.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n/* get a generic chunk */\nhep_del(\"25\"); /* removes chunk with chunk id 25 */\n...\n",
+          "description": "`hep_set` usage"
+        }
+      ]
+    },
+    {
+      "name": "hep_relay",
+      "signature": "hep_relay()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Relay a message statefully to destination indicated in current URI. (If the original URI was rewritten by UsrLoc, RR, strip/prefix, etc., the new URI will be taken). The message has to have been a HEP message, version 1, 2 or 3. For version 1 and 2 you can relay only using UDP, for version 3 TCP and UDP can be used.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$du=\"sip:192.168.153.157\";\nif (!hep_relay()) {\n\txlog(\"Hep proxying failed!\\n\");\n\texit;\n}\n\n...\n",
+          "description": "`hep_relay` usage"
+        }
+      ]
+    },
+    {
+      "name": "hep_resume_sip",
+      "signature": "hep_resume_sip()",
+      "parameters": [],
+      "return_type": "",
+      "description": "Break hep route execution and resume into the main request route.\n\nWARNING: USE THIS FUNCTION ONLY FROM A ROUTE DEFINED USING _hep_route_ PARAMETER.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmodparam(\"sipcapture\", \"hep_route\", \"my_hep_route\")\n\nroute[my_hep_route] {\n\t...\n\n\t/* resume execution in the main request route */\n\thep_resume_sip();\n}\n\n\n...\n",
+          "description": "`hep_resume_sip` usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "sip_capture",
+      "parameters": [
+        {
+          "name": "capture_mode",
+          "type": "string",
+          "required": false,
+          "description": "turns on/off SIP message capturing. Possible values are: on, off. if the parameter is missing, the command will return the status of the SIP message capturing (as string “on” or “off” ) without changing anything."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Status of the SIP message capturing (as string “on” or “off” )"
+      },
+      "description": "Turns on/off SIP message capturing.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi sip\\_capture off",
+          "description": "Turns off SIP message capturing."
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$hep_net",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Holds layer 3 and 4 information(IP addresses and ports) about the node from where the hep message was received. The variable is read-only and can be used only if it's referenced by it's name.\n\nPossible values for it's name are the following:\n\n*   _proto\\_family_ - can be AF\\_INET/AF\\_INET6\n    \n*   _proto\\_id_ - it's PROTO\\_HEP since you receive the message as hep.\n    \n*   _src\\_ip_ - IPv4/IPv6 address, depending on the proto\\_family, of the sending node.\n    \n*   _dst\\_ip_ - IPv4/IPv6 address, depending on the proto\\_family, of the receiving node(OpenSIPS hep interface ip on which the message was received).\n    \n*   _src\\_port_ - Sending node port.\n    \n*   _dst\\_port_ - Receiving port(OpenSIPS hep interace port on which the message was received).\n    \n\n**Example 1.24. `hep_net` usage**\n\n...\n\t/* received this hep packet on interface 192.168.2.5*/\n\tif ($hep\\_net(dst\\_ip) == \"192.168.2.5\") {\n\t\t/* received this on 192.168.2.5:6060 interface */\n\t\tif ($hep\\_net(dst\\_port) == 6060) {\n\t\t\t...\n\t\t/* received this on 192.168.2.5:6061 interface */\n\t\t} else if ($hep\\_net(dst\\_port) == 6061) {\n\t\t\t...\n\t\t}\n\t}\n...",
+      "possible_values": [
+        "proto_family",
+        "proto_id",
+        "src_ip",
+        "dst_ip",
+        "src_port",
+        "dst_port"
+      ]
+    },
+    {
+      "name": "$HEPVERSION",
+      "type": "string, int",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Holds the version of the hep packet received on the interface.\n\n**Example 1.25. `HEPVERSION` usage**\n\n...\n\tif ($HEPVERSION == 3) {\n\t\t/* It's a HEPv3 packet*/\n\t\t...\n\t} else if ($HEPVERSION == 2) {\n\t\t/* It's a HEPv2 packet */\n\t\t...\n\t} else if ($HEPVERSION == 1) {\n\t\t/* It's a HEPv1 packet */\n\t\t...\n\t}\n...",
+      "possible_values": [
+        "1",
+        "2",
+        "3"
+      ]
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Sets the database URL for the module.",
+      "code": "...\nmodparam(\"sipcapture\", \"db\\_url\", \"mysql://user:passwd@host/dbname\")\n..."
+    },
+    {
+      "title": "Set `table_name` parameter",
+      "description": "Sets the table name where to store the SIP messages, including strftime-like suffixes.",
+      "code": "...\nmodparam(\"sipcapture\", \"table\\_name\", \"homer\\_capture\")\n\n/* change table name every day */\nmodparam(\"sipcapture\", \"table\\_name\", \"homer\\_%m\\_%d\")\n/* if today is 13-04-2014 it will exetend to homer\\_04\\_13 */\n..."
+    },
+    {
+      "title": "Set `rtcp_capture` parameter",
+      "description": "Sets the table name where to store packets captured with report_capture function.",
+      "code": "...\nmodparam(\"sipcapture\", \"rtcp\\_table\\_name\", \"homer\\_capture\")\n\n/* change table name every hour */\nmodparam(\"sipcapture\", \"rtcp\\_table\\_name\", \"homer\\_%m\\_%d\\_%H\")\n/* if today is 13-04-2014 13:05 pm it will exetend to homer\\_04\\_13\\_13 */\n..."
+    },
+    {
+      "title": "Set `capture_on` parameter",
+      "description": "Enables or disables capture globally.",
+      "code": "...\nmodparam(\"sipcapture\", \"capture\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `hep_capture_on` parameter",
+      "description": "Enables or disables capture of HEP.",
+      "code": "...\nmodparam(\"sipcapture\", \"hep\\_capture\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `max_async_queries` parameter",
+      "description": "Sets the maximum number of 'INSERT' queries of captured packets to be done in the same time.",
+      "code": "...\nmodparam(\"sipcapture\", \"max\\_async\\_queries\", 3)\n..."
+    },
+    {
+      "title": "Set `raw_ipip_capture_on` parameter",
+      "description": "Enables or disables IPIP capturing.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_ipip\\_capture\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `raw_moni_capture_on` parameter",
+      "description": "Enables or disables monitoring/mirroring port capturing.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_moni\\_capture\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `raw_socket_listen` parameter",
+      "description": "Sets the listen IP address of RAW socket for IPIP capturing and defines port/portrange.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_socket\\_listen\", \"10.0.0.1:5060-5090\")\n...\nmodparam(\"sipcapture\", \"raw\\_socket\\_listen\", \"10.0.0.1:5060\")\n..."
+    },
+    {
+      "title": "Set `raw_socket_listen` parameter",
+      "description": "Sets the name of the interface to bind on the raw socket.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_interface\", \"eth0\")\n..."
+    },
+    {
+      "title": "Set `raw_socket_listen` parameter",
+      "description": "Defines how much children must be created to listen the raw socket.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_sock\\_children\", 6)\n..."
+    },
+    {
+      "title": "Set `promiscuous_on` parameter",
+      "description": "Enables or disables promiscuous mode on the raw socket.",
+      "code": "...\nmodparam(\"sipcapture\", \"promiscuous\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `raw_moni_bpf_on` parameter",
+      "description": "Activates Linux Socket Filter (LSF based on BPF) on the mirroring interface.",
+      "code": "...\nmodparam(\"sipcapture\", \"raw\\_moni\\_bpf\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `capture_node` parameter",
+      "description": "Sets the name of the capture node.",
+      "code": "...\nmodparam(\"sipcapture\", \"capture\\_node\", \"homer03\")\n..."
+    },
+    {
+      "title": "Set `hep_route` parameter",
+      "description": "Specifies what path your hep messages should take.",
+      "code": "...\nmodparam(\"sipcapture\", \"hep\\_route\", \"my\\_hep\\_route\")\n...\n\nroute[my\\_hep\\_route] {\n\t/* do hep stuff in here */\n\t...\n}\n..."
+    },
+    {
+      "title": "`sip_capture` usage",
+      "description": "Saves the message into the database.",
+      "code": "...\nif (is\\_method(\"REGISTER\"))\n\tsip\\_capture();\n\t...\n\t/* table name will change every day */\n\tsip\\_capture(\"homer\\_%m\\_%d\");\n\tsip\\_capture(\"homer\\_%m\\_%d\", , $hdr(P-Asserted-Identity));\n..."
+    },
+    {
+      "title": "`sip_capture` usage",
+      "description": "Saves the message into the database using report_capture.",
+      "code": "...\n\thep\\_get(\"0x0011\", \"utf8-string\", , $var(correlation\\_id));\n\tif ($var(correlation\\_id) == null) {\n\t\txlog(\"NO CORRELATION ID! SET SOMETHING OR DROP\");\n\t\t$var(correlation\\_id) = \"absdcef\";\n\t}\n\n\t$var(proto\\_type) = \"3\"; /* 0x03 - SDP protocol */\n\n\treport\\_capture($var(correlation\\_id), \"rtcp\\_log\");\n\t/* setting the 2nd parameter, even if setting it to null, is mandatory in order to be able to set proto type */\n\treport\\_capture($var(correlation\\_id), , $var(proto\\_type));\n\treport\\_capture($var(correlation\\_id), \"rtcp\\_log\", $var(proto\\_type));\n..."
+    },
+    {
+      "title": "`hep_set` usage",
+      "description": "Sets a hep chunk.",
+      "code": "...\n/* modify/add a generic chunk */\nhep\\_set(\"proto\\_type\", \"H321\");\n\n/* add a custom chunk - int */\nhep\\_set(\"31\", \"132\", \"uint32\", \"3\")\n\n/* add a custom chunk - IPv4 address */\nhep\\_set(\"32\", \"192.168.5.14\", \"inet4-addr\", \"3\")\n..."
+    },
+    {
+      "title": "`hep_set` usage",
+      "description": "Gets a hep chunk.",
+      "code": "...\n/* get a generic chunk */\nhep\\_get(\"proto\\_type\", , $var(data), $var(vid));\n\n/* get custom chunk - you must know what kind of data is there */\nhep\\_set(\"31\", \"uint32\", $var(data), $var(vid))\n..."
+    },
+    {
+      "title": "`hep_set` usage",
+      "description": "Removes a hep chunk.",
+      "code": "...\n/* get a generic chunk */\nhep\\_del(\"25\"); /* removes chunk with chunk id 25 */\n..."
+    },
+    {
+      "title": "`hep_relay` usage",
+      "description": "Relays a message statefully to destination indicated in current URI.",
+      "code": "...\n$du=\"sip:192.168.153.157\";\nif (!hep\\_relay()) {\n\txlog(\"Hep proxying failed!\\\\n\");\n\texit;\n}\n\n..."
+    },
+    {
+      "title": "`hep_resume_sip` usage",
+      "description": "Breaks hep route execution and resumes into the main request route.",
+      "code": "...\nmodparam(\"sipcapture\", \"hep\\_route\", \"my\\_hep\\_route\")\n\nroute[my\\_hep\\_route] {\n\t...\n\n\t/* resume execution in the main request route */\n\thep\\_resume\\_sip();\n}\n\n\n..."
+    },
+    {
+      "title": "`sip_capture` usage",
+      "description": "Saves the message inside the database asynchronously.",
+      "code": "...\n{\n\tasync(sip\\_capture(), capture\\_resume);\n}\n\nroute[capture\\_resume] {\n\txlog(\"insert executed\\\\n\");\n\t/*continuing logic here */\n}\n..."
+    },
+    {
+      "title": "`hep_net` usage",
+      "description": "Demonstrates accessing layer 3 and 4 information about the node from where the hep message was received.",
+      "code": "...\n\t/* received this hep packet on interface 192.168.2.5*/\n\tif ($hep\\_net(dst\\_ip) == \"192.168.2.5\") {\n\t\t/* received this on 192.168.2.5:6060 interface */\n\t\tif ($hep\\_net(dst\\_port) == 6060) {\n\t\t\t...\n\t\t/* received this on 192.168.2.5:6061 interface */\n\t\t} else if ($hep\\_net(dst\\_port) == 6061) {\n\t\t\t...\n\t\t}\n\t}\n..."
+    },
+    {
+      "title": "`HEPVERSION` usage",
+      "description": "Demonstrates checking the version of the hep packet received.",
+      "code": "...\n\tif ($HEPVERSION == 3) {\n\t\t/* It's a HEPv3 packet*/\n\t\t...\n\t} else if ($HEPVERSION == 2) {\n\t\t/* It's a HEPv2 packet */\n\t\t...\n\t} else if ($HEPVERSION == 1) {\n\t\t/* It's a HEPv1 packet */\n\t\t...\n\t}\n..."
+    }
+  ]
+}

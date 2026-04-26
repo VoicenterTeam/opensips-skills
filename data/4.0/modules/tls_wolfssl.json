@@ -1,0 +1,57 @@
+{
+  "id": "module-tls_wolfssl-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "tls_wolfssl Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/tls_wolfssl.html",
+  "content_markdown": "This module implements TLS operations using the [_wolfSSL_](https://www.wolfssl.com/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_.\n\nThe _wolfSSL_ library is statically-linked and bundled with this module so no installation or external dependency is required.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:55:20.738Z",
+  "module_name": "tls_wolfssl",
+  "overview": "This module implements TLS operations using the [_wolfSSL_](https://www.wolfssl.com/) libarary. It provides the primitives required by the _tls\\_mgm_ module in order to expose a higher-level API used by TLS-based protocol modules like _proto\\_tls_ or _proto\\_wss_.\n\nThe _wolfSSL_ library is statically-linked and bundled with this module so no installation or external dependency is required.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "autoconf",
+      "type": "application",
+      "reason": "Required for compilation",
+      "optional": false
+    },
+    {
+      "name": "automake",
+      "type": "application",
+      "reason": "Required for compilation",
+      "optional": false
+    },
+    {
+      "name": "libtool",
+      "type": "application",
+      "reason": "Required for compilation",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "try_use_ktls",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Try to use KTLS for RX and TX ( dependent on Kernel support and loaded modules https://docs.kernel.org/networking/tls-offload.htm ) If kernel support is not found, or if the cypher attempted to be used is not supported ( only AES-GCM for now ), then SSL operations will continue to be done in user-space. IF NIC supports SSL offloading, that can also be enabled without any changes needed to the module https://docs.nvidia.com/doca/sdk/ktls-offloads/index.html",
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"tls\\_wolfssl\", \"try\\_use\\_ktls\", 1)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `try_use_ktls` variable",
+      "description": "Demonstrates how to set the `try_use_ktls` parameter.",
+      "code": "...\nmodparam(\"tls\\_wolfssl\", \"try\\_use\\_ktls\", 1)\n..."
+    }
+  ]
+}

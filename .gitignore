@@ -8,6 +8,14 @@ coverage/
 .env
 .env.local
 .env.*.local
+.env.production
+
+# Credentials / private keys (defense-in-depth — none currently exist)
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
 
 # IDE
 .vscode/
@@ -30,10 +38,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Local Claude Code settings (per-user, not project)
-.claude/settings.local.json
+# Local Claude Code settings (per-user harness state, not project)
+.claude/
 
 # IMPORTANT: Do NOT exclude the following — they are committed per project rules:
 #   data/                                 — upstream extraction snapshots (per ADR-009)
 #   plugins/opensips/skills/*/references/ — generated reference content (per ADR-002)
 #   scripts/schemas/.schema-hash          — schema-mirroring contract enforcement (per M1)
+
+data/*/md/

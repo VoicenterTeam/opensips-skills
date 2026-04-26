@@ -1,0 +1,127 @@
+{
+  "id": "module-pua_xmpp-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "pua_xmpp Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/pua_xmpp.html",
+  "content_markdown": "This module is a gateway for presence between SIP and XMPP.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:26:54.750Z",
+  "module_name": "pua_xmpp",
+  "overview": "This module is a gateway for presence between SIP and XMPP.",
+  "how_it_works": "It translates one format into another and uses xmpp, pua and presence modules to manage the transmition of presence state information.",
+  "dependencies_required": [
+    {
+      "name": "presence",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "pua",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "xmpp",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "server_address",
+      "type": "string",
+      "description": "The IP address of the server.",
+      "example_value": "sip:sa@opensips.org:5060",
+      "example_code": "modparam(\"pua\\_xmpp\", \"server\\_address\", \"sip:sa@opensips.org:5060\")"
+    },
+    {
+      "name": "presence_server",
+      "type": "string",
+      "description": "The the address of the presence server. If set, it will be used as outbound proxy when sending PUBLISH requests.",
+      "example_value": "sip:pa@opensips.org:5075",
+      "example_code": "modparam(\"pua\\_xmpp\", \"presence\\_server\", \"sip:pa@opensips.org:5075\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "pua_xmpp_notify",
+      "signature": "pua_xmpp_notify()",
+      "parameters": [],
+      "return_type": "int",
+      "description": "Function that handles Notify messages addressed to a user from an xmpp domain. It requires filtering after method and domain in configuration file. If the function is successful, a 2xx reply must be sent.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif( is\\_method(\"NOTIFY\") && $ru=~\"sip:.+@sip-xmpp.siphub.ro\")\n\t{\n\t\tif(Notify2Xmpp())\n\t\t\tt\\_reply(200, \"OK\");\n\t\texit;\n\t}\n...",
+          "description": "Notify2Xmpp usage"
+        }
+      ]
+    },
+    {
+      "name": "pua_xmpp_req_winfo",
+      "signature": "pua_xmpp_req_winfo(request_uri, expires)",
+      "parameters": [
+        {
+          "name": "request_uri",
+          "type": "string",
+          "required": true,
+          "description": "request_uri (string)"
+        },
+        {
+          "name": "expires",
+          "type": "int",
+          "required": true,
+          "description": "value of Expires header field in received Subscribe."
+        }
+      ],
+      "return_type": "int",
+      "description": "Function called when a Subscribe addressed to a user from a xmpp domain is received. It calls sending a Subscribe for winfo for the user, and the following Notify with dialog-info is translated into a subscription in xmpp. It also requires filtering in configuration file, after method, domain and event(only for presence).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif( is\\_method(\"SUBSCRIBE\"))\n\t{\n\t\thandle\\_subscribe();\n\t\tif($ru=~\"sip:.+@sip-xmpp.siphub.ro\" && $hdr(Event)== \"presence\")\n\t\t{\n\t\t\tpua\\_xmpp\\_req\\_winfo($ruri, $hdr(Expires));\n\t\t}\n\t\tt\\_release();\n\t}\n...",
+          "description": "xmpp_send_winfo usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `server_address` parameter",
+      "description": "The IP address of the server.",
+      "code": "...\nmodparam(\"pua\\_xmpp\", \"server\\_address\", \"sip:sa@opensips.org:5060\")\n..."
+    },
+    {
+      "title": "Set `presence_server` parameter",
+      "description": "The the address of the presence server. If set, it will be used as outbound proxy when sending PUBLISH requests.",
+      "code": "...\nmodparam(\"pua\\_xmpp\", \"presence\\_server\", \"sip:pa@opensips.org:5075\")\n..."
+    },
+    {
+      "title": "`Notify2Xmpp` usage",
+      "description": "Function that handles Notify messages addressed to a user from an xmpp domain. It requires filtering after method and domain in configuration file. If the function is successful, a 2xx reply must be sent. This function can be used from REQUEST\\_ROUTE.",
+      "code": "...\n\tif( is\\_method(\"NOTIFY\") && $ru=~\"sip:.+@sip-xmpp.siphub.ro\")\n\t{\n\t\tif(Notify2Xmpp())\n\t\t\tt\\_reply(200, \"OK\");\n\t\texit;\n\t}\n..."
+    },
+    {
+      "title": "`xmpp_send_winfo` usage",
+      "description": "Function called when a Subscribe addressed to a user from a xmpp domain is received. It calls sending a Subscribe for winfo for the user, and the following Notify with dialog-info is translated into a subscription in xmpp. It also requires filtering in configuration file, after method, domain and event(only for presence).",
+      "code": "...\n\tif( is\\_method(\"SUBSCRIBE\"))\n\t{\n\t\thandle\\_subscribe();\n\t\tif($ru=~\"sip:.+@sip-xmpp.siphub.ro\" && $hdr(Event)== \"presence\")\n\t\t{\n\t\t\tpua\\_xmpp\\_req\\_winfo($ruri, $hdr(Expires));\n\t\t}\n\t\tt\\_release();\n\t}\n\n..."
+    }
+  ]
+}

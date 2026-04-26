@@ -1471,7 +1471,6 @@
       "description": "Holds the current line from the script of the action being executed.",
       "type": "integer",
       "readable": true,
-      .0
       "writable": false,
       "scope": "script",
       "context": "both",

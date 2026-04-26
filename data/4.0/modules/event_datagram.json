@@ -1,0 +1,38 @@
+{
+  "id": "module-event_datagram-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "event_datagram Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/event_datagram.html",
+  "content_markdown": "This is a module which provides a UNIX/UDP SOCKET transport layer implementation for the Event Interface.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:19:27.240Z",
+  "module_name": "event_datagram",
+  "overview": "This is a module which provides a UNIX/UDP SOCKET transport layer implementation for the Event Interface.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "E_PIKE_BLOCKED event",
+      "description": "This is an example of an event raised by the pike module when it decides an ip should be blocked:",
+      "code": "{\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"E\\_PIKE\\_BLOCKED\",\n  \"params\": {\n    \"ip\": \"192.168.2.11\"\n  }\n}"
+    },
+    {
+      "title": "UNIX socket",
+      "description": "",
+      "code": "unix:/tmp/opensips\\_event.sock"
+    },
+    {
+      "title": "UDP socket",
+      "description": "",
+      "code": "udp:127.0.0.1:8081"
+    }
+  ]
+}

@@ -1,0 +1,443 @@
+{
+  "id": "module-fraud_detection-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "fraud_detection Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/fraud_detection.html",
+  "content_markdown": "This module provides a way to prevent some basic fraud attacks. Alerts are provided through return codes and events.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:59:09.626Z",
+  "module_name": "fraud_detection",
+  "overview": "This module provides a way to prevent some basic fraud attacks. Alerts are provided through return codes and events.",
+  "how_it_works": "Basically, this module watches the following parameters:\n\n*   Total calls\n    \n*   Calls per minute\n    \n*   Concurrent calls\n    \n*   Number of sequential calls\n    \n*   Call duration\n    \nEach of the above parameters is monitored for every user and every called prefix separately. The stats are altered whenever the _check_fraud_ function is called. The function assumes a new call is made, and checks the called number against all the rules from the supplied profile. The rule's prefix is considered to be the called prefix which along with the provided user will be used to monitor values for the 5 parameters.\n\nA rule is a set of two thresholds (warning and critical thresholds) for each of the five parameters (as described above) and is only available for a specified prefix. Further more, a rule will only match between the indicated hours in the indicated days of the week (similarly to a dr rule). A fraud profile is simply a group of fraud rules and is used to only to limit the list of rules to match when calling the check_fraud function.",
+  "dependencies_required": [
+    {
+      "name": "drouting",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "dialog",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Database where to load the rules from.",
+      "example_value": "mysql://user:passwb@localhost/database",
+      "example_code": "modparam(\"fraud\\_detection\", \"db\\_url\", \"mysql://user:passwb@localhost/database\")",
+      "notes": "At least one db\\_url should be defined for the fraud\\_detection module to work."
+    },
+    {
+      "name": "use_utc_time",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Set this parameter to non-zero in order to enable UTC-based interval matching and statistics resets, rather than local time-based.",
+      "example_value": "1",
+      "example_code": "modparam(\"fraud\\_detection\", \"use\\_utc\\_time\", 1)",
+      "notes": "The default value is “0” (use local time)."
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "fraud\\_detection",
+      "description": "If you want to load the rules from the database you must set this parameter as the database name.",
+      "example_value": "my\\_fraud",
+      "example_code": "modparam(\"fraud\\_detection\", \"table\\_name\", \"my\\_fraud\")"
+    },
+    {
+      "name": "rid_col",
+      "type": "string",
+      "default_value": "ruleid",
+      "description": "The column's name in the database storing the fraud rule's id.",
+      "example_value": "theruleid",
+      "example_code": "modparam(\"fraud\\_detection\", \"rid\\_col\", \"theruleid\")"
+    },
+    {
+      "name": "pid_col",
+      "type": "string",
+      "default_value": "profileid",
+      "description": "The column's name in the database storing the fraud profile's id.",
+      "example_value": "profile",
+      "example_code": "modparam(\"fraud\\_detection\", \"pid\\_col\", \"profile\")",
+      "notes": "Please keep in mind that a profile is merely a set of rules."
+    },
+    {
+      "name": "prefix_col",
+      "type": "string",
+      "default_value": "prefix",
+      "description": "The column's name in the database storing the prefix for which the fraud rule will match.",
+      "example_value": "myprefix",
+      "example_code": "modparam(\"fraud\\_detection\", \"prefix\\_col\", \"myprefix\")"
+    },
+    {
+      "name": "start_h",
+      "type": "string",
+      "default_value": "start\\_hour",
+      "description": "The column's name in the database storing the the start time of the interval in which the rule will match.\n\nThe time needs to be specified as string using the format: “HH:MM”",
+      "example_value": "the\\_start\\_time",
+      "example_code": "modparam(\"fraud\\_detection\", \"start\\_h\", \"the\\_start\\_time\")"
+    },
+    {
+      "name": "end_h",
+      "type": "string",
+      "default_value": "end\\_hour",
+      "description": "The column's name in the database storing the the end time of the interval in which the rule will match.\n\nThe time needs to be specified as string using the format: “HH:MM”",
+      "example_value": "the\\_end\\_time",
+      "example_code": "modparam(\"fraud\\_detection\", \"end\\_h\", \"the\\_end\\_time\")"
+    },
+    {
+      "name": "days_col",
+      "type": "string",
+      "default_value": "daysoftheweek",
+      "description": "The column's name in the database storing the week days in which the fraud rule's interval is available.\n\nThe daysoftheweek needs to be specified as a string containing a list of days or intervals. Each day must be specified using the first three letters of its name. A valid string would be: \"Fri-Mon, Wed, Thu\"",
+      "example_value": "days",
+      "example_code": "modparam(\"fraud\\_detection\", \"days\\_col\", \"days\")"
+    },
+    {
+      "name": "cpm_thresh_warn_col",
+      "type": "string",
+      "default_value": "cpm\\_warning",
+      "description": "The column's name in the database storing the warning threshold value for calls per minute.",
+      "example_value": "cpm\\_warn\\_thresh",
+      "example_code": "modparam(\"fraud\\_detection\", \"cpm\\_thresh\\_warn\\_col\", \"cpm\\_warn\\_thresh\")"
+    },
+    {
+      "name": "cpm_thresh_crit_col",
+      "type": "string",
+      "default_value": "cpm_critical",
+      "description": "The column's name in the database storing the critical threshold value for calls per minute.",
+      "example_code": "modparam(\"fraud_detection\", \"cpm_thresh_crit_col\", \"cpm_crit_thresh\")"
+    },
+    {
+      "name": "calldur_thresh_warn_col",
+      "type": "string",
+      "default_value": "call_duration_warning",
+      "description": "The column's name in the database storing the warning threshold value for call duration.",
+      "example_code": "modparam(\"fraud_detection\", \"calldur_thresh_warn_col\", \"calldur_warn_thresh\")"
+    },
+    {
+      "name": "calldur_thresh_crit_col",
+      "type": "string",
+      "default_value": "call_duration_critical",
+      "description": "The column's name in the database storing the critical threshold value for call duration.",
+      "example_code": "modparam(\"fraud_detection\", \"calldur_thresh_crit_col\", \"calldur_crit_thresh\")"
+    },
+    {
+      "name": "totalc_thresh_warn_col",
+      "type": "string",
+      "default_value": "total_calls_warning",
+      "description": "The column's name in the database storing the warning threshold value for the number of total calls.",
+      "example_code": "modparam(\"fraud_detection\", \"totalc_thresh_warn_col\", \"totalc_warn_thresh\")"
+    },
+    {
+      "name": "totalc_thresh_crit_col",
+      "type": "string",
+      "default_value": "total_calls_critical",
+      "description": "The column's name in the database storing the critical threshold value for the number of total calls.",
+      "example_code": "modparam(\"fraud_detection\", \"totalc_thresh_crit_col\", \"totalc_crit_thresh\")"
+    },
+    {
+      "name": "concalls_thresh_warn_col",
+      "type": "string",
+      "default_value": "concurrent\\_calls\\_warning",
+      "description": "The column's name in the database storing the warning threshold value for the number of concurrent calls.",
+      "example_value": "concalls\\_warn\\_thresh",
+      "example_code": "modparam(\"fraud\\_detection\", \"concalls\\_thresh\\_warn\\_col\", \"concalls\\_warn\\_thresh\")"
+    },
+    {
+      "name": "concalls_thresh_crit_col",
+      "type": "string",
+      "default_value": "concurrent\\_calls\\_critical",
+      "description": "The column's name in the database storing the critical threshold value for the number of concurrent calls.",
+      "example_value": "concalls\\_crit\\_thresh",
+      "example_code": "modparam(\"fraud\\_detection\", \"concalls\\_thresh\\_crit\\_col\", \"concalls\\_crit\\_thresh\")"
+    },
+    {
+      "name": "seqcalls_thresh_warn_col",
+      "type": "string",
+      "default_value": "sequential\\_calls\\_warning",
+      "description": "The column's name in the database storing the warning threshold value for the number of sequential calls.",
+      "example_value": "seqcalls\\_warn\\_thresh",
+      "example_code": "modparam(\"fraud\\_detection\", \"seqcalls\\_thresh\\_warn\\_col\", \"seqcalls\\_warn\\_thresh\")"
+    },
+    {
+      "name": "seqcalls_thresh_crit_col",
+      "type": "string",
+      "default_value": "sequential\\_calls\\_critical",
+      "description": "The column's name in the database storing the critical threshold value for the number of sequential calls.",
+      "example_value": "seqcalls\\_crit\\_thresh",
+      "example_code": "modparam(\"fraud\\_detection\", \"seqcalls\\_thresh\\_crit\\_col\", \"seqcalls\\_crit\\_thresh\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "check_fraud",
+      "signature": "check_fraud(user, number, profile_id)",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "required": true,
+          "description": "the user who is making the call. Please keep in mind that the user doesn't have to be registered. This string is only used to keep different stats for different registered users."
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "the number the user is calling to."
+        },
+        {
+          "name": "profile_id",
+          "type": "int",
+          "required": true,
+          "description": "the fraud profile id (i.e. the subset of fraud rules) in which to try and find a matching fraud rule."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "2",
+          "condition": "no matching fraud rule was found"
+        },
+        {
+          "value": "1",
+          "condition": "a matching rule was found, but there is no parameter above the rule's threshlod, i.e - everything is ok"
+        },
+        {
+          "value": "-1",
+          "condition": "there is a parameter above the warning threshold value. Check the raised event for more info"
+        },
+        {
+          "value": "-2",
+          "condition": "there is a parameter above the critical threshold value. Check the raised event for more info"
+        },
+        {
+          "value": "-3",
+          "condition": "something went wrong (internal mechanism failed)"
+        }
+      ],
+      "description": "This method should be called each time a given _user_ calls a given _number_. It will try to match a fraud rule within the given fraud profile and update the stats (see above). Furthermore, the stats will be checked against the rule's thresholds. If any of the stats is above its threshold value, the appropriate event will also be raised (see further details below).\n\nDesigned to only work with initial INVITE messages! If a dialog is not already present, one will be created (equivalent of create\\_dialog()).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": []
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "fraud_detection:show_stats",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "prefix",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "description": "Replaces obsolete MI command: _show\\_fraud\\_stats_.\n\nShow the current statistics for all dials of a _user_ to a _prefix_.\n\nNOTE: Since the fraud statistics are refreshed on-the-fly, as check\\_fraud() is called, **this function will return stale data** if check\\_fraud() has not been called at least once for the (user, prefix) pair within a newly matching time interval!",
+      "examples": []
+    },
+    {
+      "name": "fraud_detection:reload",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _fraud\\_reload_.\n\nReload the all the fraud rules.",
+      "examples": []
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_FRD_WARNING",
+      "description": "This event is raised whenever one of the 5 monitored parameters is above the warning threshold value",
+      "parameters": [
+        {
+          "name": "param",
+          "type": "string",
+          "description": "the name of the parameter."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "the current value of the parameter."
+        },
+        {
+          "name": "threshold",
+          "type": "string",
+          "description": "the warning threshold value."
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "the user who initiated the call."
+        },
+        {
+          "name": "called_number",
+          "type": "string",
+          "description": "the number that was called."
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "the id of the fraud rule that matched when the call was initiated"
+        },
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "the profile id used"
+        }
+      ]
+    },
+    {
+      "name": "E_FRD_CRITICAL",
+      "description": "This event is raised whenever one of the 5 monitored parameters is above the warning threshold value",
+      "parameters": [
+        {
+          "name": "param",
+          "type": "string",
+          "description": "the name of the parameter."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "description": "the current value of the parameter."
+        },
+        {
+          "name": "threshold",
+          "type": "string",
+          "description": "the warning threshold value."
+        },
+        {
+          "name": "user",
+          "type": "string",
+          "description": "the user who initiated the call."
+        },
+        {
+          "name": "called_number",
+          "type": "string",
+          "description": "the number that was called."
+        },
+        {
+          "name": "rule_id",
+          "type": "string",
+          "description": "the id of the fraud rule that matched when the call was initiated"
+        },
+        {
+          "name": "profile_id",
+          "type": "string",
+          "description": "the profile id used"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set the “db_url” parameter",
+      "description": "Database where to load the rules from. Default value is “NULL”. At least one db_url should be defined for the fraud_detection module to work.",
+      "code": "...\nmodparam(\"fraud_detection\", \"db_url\", \"mysql://user:passwb@localhost/database\")\n..."
+    },
+    {
+      "title": "Set the “use_utc_time” parameter",
+      "description": "Set this parameter to non-zero in order to enable UTC-based interval matching and statistics resets, rather than local time-based. The default value is “0” (use local time).",
+      "code": "...\nmodparam(\"fraud_detection\", \"use_utc_time\", 1)\n..."
+    },
+    {
+      "title": "Set the “table_name” parameter",
+      "description": "If you want to load the rules from the database you must set this parameter as the database name. The default value is “fraud_detection”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"table_name\", \"my_fraud\")\n..."
+    },
+    {
+      "title": "Set “rid_col” parameter",
+      "description": "The column's name in the database storing the fraud rule's id. Default value is “ruleid”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"rid_col\", \"theruleid\")\n..."
+    },
+    {
+      "title": "Set “pid_col” parameter",
+      "description": "The column's name in the database storing the fraud profile's id. Please keep in mind that a profile is merely a set of rules. Default value is “profileid”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"pid_col\", \"profile\")\n..."
+    },
+    {
+      "title": "Set “prefix_col” parameter",
+      "description": "The column's name in the database storing the prefix for which the fraud rule will match. Default value is “prefix”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"prefix_col\", \"myprefix\")\n..."
+    },
+    {
+      "title": "Set “start_h” parameter",
+      "description": "The column's name in the database storing the the start time of the interval in which the rule will match. The time needs to be specified as string using the format: “HH:MM” Default value is “start_hour”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"start_h\", \"the_start_time\")\n..."
+    },
+    {
+      "title": "Set “end_h” parameter",
+      "description": "The column's name in the database storing the the end time of the interval in which the rule will match. The time needs to be specified as string using the format: “HH:MM” Default value is “end_hour”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"end_h\", \"the_end_time\")\n..."
+    },
+    {
+      "title": "Set “days_col” parameter",
+      "description": "The column's name in the database storing the week days in which the fraud rule's interval is available. The daysoftheweek needs to be specified as a string containing a list of days or intervals. Each day must be specified using the first three letters of its name. A valid string would be: \"Fri-Mon, Wed, Thu\" Default value is “daysoftheweek”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"days_col\", \"days\")\n..."
+    },
+    {
+      "title": "Set “cpm_thresh_warn_col” parameter",
+      "description": "The column's name in the database storing the warning threshold value for calls per minute. Default value is “cpm_warning”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"cpm_thresh_warn_col\", \"cpm_warn_thresh\")\n..."
+    },
+    {
+      "title": "Set “cpm_thresh_crit_col” parameter",
+      "description": "The column's name in the database storing the critical threshold value for calls per minute. Default value is “cpm_critical”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"cpm_thresh_crit_col\", \"cpm_crit_thresh\")\n..."
+    },
+    {
+      "title": "Set “calldur_thresh_warn_col” parameter",
+      "description": "The column's name in the database storing the warning threshold value for call duration. Default value is “call_duration_warning”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"calldur_thresh_warn_col\", \"calldur_warn_thresh\")\n..."
+    },
+    {
+      "title": "Set “calldur_thresh_crit_col” parameter",
+      "description": "The column's name in the database storing the critical threshold value for call duration. Default value is “call_duration_critical”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"calldur_thresh_crit_col\", \"calldur_crit_thresh\")\n..."
+    },
+    {
+      "title": "Set “totalc_thresh_warn_col” parameter",
+      "description": "The column's name in the database storing the warning threshold value for the number of total calls. Default value is “total_calls_warning”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"totalc_thresh_warn_col\", \"totalc_warn_thresh\")\n..."
+    },
+    {
+      "title": "Set “totalc_thresh_crit_col” parameter",
+      "description": "The column's name in the database storing the critical threshold value for the number of total calls. Default value is “total_calls_critical”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"totalc_thresh_crit_col\", \"totalc_crit_thresh\")\n..."
+    },
+    {
+      "title": "Set “concalls_thresh_warn_col” parameter",
+      "description": "The column's name in the database storing the warning threshold value for the number of concurrent calls. Default value is “concurrent_calls_warning”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"concalls_thresh_warn_col\", \"concalls_warn_thresh\")\n..."
+    },
+    {
+      "title": "Set “concalls_thresh_crit_col” parameter",
+      "description": "The column's name in the database storing the critical threshold value for the number of concurrent calls. Default value is “concurrent_calls_critical”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"concalls_thresh_crit_col\", \"concalls_crit_thresh\")\n..."
+    },
+    {
+      "title": "Set “seqcalls_thresh_warn_col” parameter",
+      "description": "The column's name in the database storing the warning threshold value for the number of sequential calls. Default value is “sequential_calls_warning”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"seqcalls_thresh_warn_col\", \"seqcalls_warn_thresh\")\n..."
+    },
+    {
+      "title": "Set “seqcalls_thresh_crit_col” parameter",
+      "description": "The column's name in the database storing the critical threshold value for the number of sequential calls. Default value is “sequential_calls_critical”.",
+      "code": "...\nmodparam(\"fraud_detection\", \"seqcalls_thresh_crit_col\", \"seqcalls_crit_thresh\")\n..."
+    }
+  ]
+}

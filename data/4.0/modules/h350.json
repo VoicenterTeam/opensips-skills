@@ -1,0 +1,300 @@
+{
+  "id": "module-h350-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "h350 Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/h350.html",
+  "content_markdown": "The OpenSIPS H350 module enables an OpenSIPS SIP proxy server to access SIP account data stored in an LDAP [[RFC4510]](#RFC4510 \"Lightweight Directory Access Protocol (LDAP): Technical Specification Road Map\") directory containing H.350 [[H.350]](#H350 \"Directory Services Architecture for Multimedia Conferencing\") _commObjects_. ITU-T Recommendation H.350 standardizes LDAP object classes to store Real-Time Communication (RTC) account data. In particular, _H.350.4_ [[H.350.4]](#H350-4 \"Directory services architecture for SIP\") defines an object class called _sipIdentity_ that includes attribute specifications for SIP account data like SIP URI, SIP digest username/password, or service level. This allows to store SIP account data in a vendor neutral way and lets different entities, like SIP proxies, provisioning, or billing applications, access the data in a standardized format.\n\nThe _ViDe H.350 Cookbook_ [[vide-h.350-cb]](#vide-H350-cookbook \"ViDe H.350 Cookbook\") is a good reference for deploying an H.350 directory. Besides general information on H.350, LDAP, and related standards, this document explains how to set up an H.350/LDAP directory and discusses different deployment scenarios.\n\nThe H350 module uses the OpenSIPS LDAP module to import H.350 attribute values into the OpenSIPS routing script variable space. The module exports functions to parse and store the H.350 attribute values from the OpenSIPS routing script. It allows a script writer to implement H.350 based SIP digest authentication, call forwarding, SIP URI alias to AOR rewriting, and service level parsing.\n\n### 1.1.1.�Example H.350 commObject LDAP Entry\n\nThe following example shows a typical H.350 commObject LDAP entry storing SIP account data.\n\n**Example�1.1.�Example H.350 commObject storing SIP account data**\n\nAttribute Name                Attribute Value(s)\n--------------                -----------------\n\n# LDAP URI identifying the owner of this commObject, typically \n# points to an entry in the enterprise directory\ncommOwner\tldap://dir.example.com/dc=example,dc=com??one?(uid=bob)\t\n\n# Unique identifier for this commObject, used for referencing \n# this object e.g. from the enterprise directory \ncommUniqueId                  298217asdjgj213\t\n\n# Determines if this commObject should be listed on white pages\ncommPrivate                   false\n\n# Valid SIP URIs for this account (can be used to store alias SIP URIs \n# like DIDs as well)\nSIPIdentitySIPURI             sip:bob@example.com                 \n                              sip:bob@alias.example.com\n                              sip:+1919123456@alias.example.com\n# SIP digest username\t\nSIPIdentityUserName           bob\n\n# SIP digest password\nSIPIdentityPassword           pwd\n\n# SIP proxy address\nSIPIdentityProxyAddress       sip.example.com\n\n# SIP registrar address\nSIPIdentityRegistrarAddress   sip.example.com\n\n# Call preferences: Forward to voicemail on no response \n# after 20 seconds and on busy\ncallPreferenceURI             sip:bob@voicemail.example.com n:20000\n                              sip:bob@voicemail.example.com b\n\t\n# Account service level(s)\nSIPIdentityServiceLevel\t      long\\_distance\n                              conferencing\n                              \n# H.350 object classes\nobjectClass                   top\n                              commObject\n                              SIPIdentity\n                              callPreferenceURIObject",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:41:50.141Z",
+  "module_name": "h350",
+  "overview": "The OpenSIPS H350 module enables an OpenSIPS SIP proxy server to access SIP account data stored in an LDAP [[RFC4510]](#RFC4510 \"Lightweight Directory Access Protocol (LDAP): Technical Specification Road Map\") directory containing H.350 [[H.350]](#H350 \"Directory Services Architecture for Multimedia Conferencing\") _commObjects_. ITU-T Recommendation H.350 standardizes LDAP object classes to store Real-Time Communication (RTC) account data. In particular, _H.350.4_ [[H.350.4]](#H350-4 \"Directory services architecture for SIP\") defines an object class called _sipIdentity_ that includes attribute specifications for SIP account data like SIP URI, SIP digest username/password, or service level. This allows to store SIP account data in a vendor neutral way and lets different entities, like SIP proxies, provisioning, or billing applications, access the data in a standardized format.\n\nThe _ViDe H.350 Cookbook_ [[vide-h.350-cb]](#vide-H350-cookbook \"ViDe H.350 Cookbook\") is a good reference for deploying an H.350 directory. Besides general information on H.350, LDAP, and related standards, this document explains how to set up an H.350/LDAP directory and discusses different deployment scenarios.\n\nThe H350 module uses the OpenSIPS LDAP module to import H.350 attribute values into the OpenSIPS routing script variable space. The module exports functions to parse and store the H.350 attribute values from the OpenSIPS routing script. It allows a script writer to implement H.350 based SIP digest authentication, call forwarding, SIP URI alias to AOR rewriting, and service level parsing.\n\n### 1.1.1.�Example H.350 commObject LDAP Entry\n\nThe following example shows a typical H.350 commObject LDAP entry storing SIP account data.\n\n**Example�1.1.�Example H.350 commObject storing SIP account data**\n\nAttribute Name                Attribute Value(s)\n--------------                -----------------\n\n# LDAP URI identifying the owner of this commObject, typically \n# points to an entry in the enterprise directory\ncommOwner\tldap://dir.example.com/dc=example,dc=com??one?(uid=bob)\t\n\n# Unique identifier for this commObject, used for referencing \n# this object e.g. from the enterprise directory \ncommUniqueId                  298217asdjgj213\t\n\n# Determines if this commObject should be listed on white pages\ncommPrivate                   false\n\n# Valid SIP URIs for this account (can be used to store alias SIP URIs \n# like DIDs as well)\nSIPIdentitySIPURI             sip:bob@example.com                 \n                              sip:bob@alias.example.com\n                              sip:+1919123456@alias.example.com\n# SIP digest username\t\nSIPIdentityUserName           bob\n\n# SIP digest password\nSIPIdentityPassword           pwd\n\n# SIP proxy address\nSIPIdentityProxyAddress       sip.example.com\n\n# SIP registrar address\nSIPIdentityRegistrarAddress   sip.example.com\n\n# Call preferences: Forward to voicemail on no response \n# after 20 seconds and on busy\ncallPreferenceURI             sip:bob@voicemail.example.com n:20000\n                              sip:bob@voicemail.example.com b\n\t\n# Account service level(s)\nSIPIdentityServiceLevel\t      long\\_distance\n                              conferencing\n                              \n# H.350 object classes\nobjectClass                   top\n                              commObject\n                              SIPIdentity\n                              callPreferenceURIObject",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "LDAP",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "OpenLDAP library (libldap)",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libldap header files (libldap-dev)",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "ldap_session",
+      "type": "string",
+      "default_value": "",
+      "description": "Name of the LDAP session to be used for H.350 queries, as defined in the LDAP module configuration file.",
+      "example_value": "h350",
+      "example_code": "modparam(\"h350\", \"ldap\\_session\", \"h350\");"
+    },
+    {
+      "name": "base_dn",
+      "type": "string",
+      "default_value": "",
+      "description": "Base LDAP DN to start LDAP search for H.350 entries. For best performance, this should be set to the direct ancestor of the H.350 objects.",
+      "example_value": "ou=h350,dc=example,dc=com",
+      "example_code": "modparam(\"h350\", \"base\\_dn\", \"ou=h350,dc=example,dc=com\");"
+    },
+    {
+      "name": "search_scope",
+      "type": "string",
+      "default_value": "one",
+      "description": "LDAP search scope for H.350 queries, one of \"one\", \"base\", or \"sub\".",
+      "possible_values": [
+        "one",
+        "base",
+        "sub"
+      ],
+      "example_value": "sub",
+      "example_code": "modparam(\"h350\", \"search\\_scope\", \"sub\");"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "h350_sipuri_lookup",
+      "signature": "h350_sipuri_lookup(sip_uri)",
+      "parameters": [
+        {
+          "name": "sip_uri",
+          "type": "string",
+          "required": true,
+          "description": "H.350 SIPIdentitySIPURI to search for in directory."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "n > 0",
+          "condition": "n H.350 commObjects found."
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error occurred."
+        },
+        {
+          "value": "-2",
+          "condition": "No H.350 commObject found."
+        }
+      ],
+      "description": "This function performs an LDAP search query for an H.350 commObject with a SIPIdentitySIPURI of `sip_uri`. The `sip_uri` parameter first gets escaped according the rules for LDAP filter strings. The result of the LDAP search is stored internally and can be accessed either by one of the _h350_result*_ or one of the _ldap_result*_ functions from the OpenSIPS LDAP module.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "#\n# H.350 lookup for callee\n#\n\nif (!h350_sipuri_lookup(\"sip:$rU@$rd\"))\n{\n    switch ($retcode)\n    {\n    case -2:\n        xlog(\"L_INFO\", \n             \"h350 callee lookup: no entry found in H.350 directory\");\n        exit;\n    case -1:\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    }\n}\n\n# now h350_result* or ldap_result* functions can be used",
+          "description": "H.350 lookup for callee",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "h350_result*",
+        "ldap_result*"
+      ]
+    },
+    {
+      "name": "h350_auth_lookup",
+      "signature": "h350_auth_lookup(auth_username, \"username_avp_spec/pwd_avp_spec\")",
+      "parameters": [
+        {
+          "name": "auth_username",
+          "type": "string",
+          "required": true,
+          "description": "H.350 SIPIdentityUserName to search for in directory."
+        },
+        {
+          "name": "username_avp_spec",
+          "type": "var",
+          "required": true,
+          "description": "Specification for authentication username AVP, e.g. `$avp(username)`."
+        },
+        {
+          "name": "pwd_avp_spec",
+          "type": "var",
+          "required": true,
+          "description": "Specification for authentication password AVP, e.g. `$avp(pwd)`."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "H.350 commObject found and SIP digest authentication credentials stored in `username_avp_spec` and `pwd_avp_spec`."
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error occurred."
+        },
+        {
+          "value": "-2",
+          "condition": "No H.350 commObject found."
+        }
+      ],
+      "description": "This function performs an LDAP search query for SIP digest authentication credentials in an H.350 directory. The H.350 directory is searched for a commObject with SIPIdentityUserName of `auth_username`. If such a commObject is found, the SIP digest authentication username and password are stored in AVPs `username_avp_spec` and `pwd_avp_spec`, respectively. _pv_*_authorize_ functions from AUTH module can then be used to perform SIP digest authentication.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# -- auth params --\nmodparam(\"auth\", \"username_spec\", \"$avp(auth_user)\")\nmodparam(\"auth\", \"password_spec\", \"$avp(auth_pwd)\")\nmodparam(\"auth\", \"calculate_ha1\", 1)\n\n# -- h350 params --\nmodparam(\"h350\", \"ldap_session\", \"h350\")\nmodparam(\"h350\", \"base_dn\", \"ou=h350,dc=example,dc=com\")\nmodparam(\"h350\", \"search_scope\", \"one\")\n\n\nroute[1]\n{\n    #\n    # H.350 based SIP digest authentication \n    #\n     \n    # challenge all requests not including an Auth header\n    if (!(is_present_hf(\"Authorization\") || \n          is_present_hf(\"Proxy-Authorization\")))\n    {\n        if (is_method(\"REGISTER\"))\n        {\n            www_challenge(\"example.com\", 0);\n            exit;\n        }\n        proxy_challenge(\"example.com\", 0);\n        exit;\n    }\n\n    # get digest password from H.350 using auth username ($au)\n    if (!h350_auth_lookup($au, \n                          \"$avp(auth_user)/$avp(auth_pwd)\"))\n    {\n        switch ($retcode)\n        {\n        case -2:\n            sl_send_reply(401, \"Unauthorized\");\n            exit;\n        case -1:\n            sl_send_reply(500, \"Internal server error\");\n            exit;\n        }\n    }\n\n    # REGISTER requests\n    if (is_method(\"REGISTER\"))\n    {\n        if (!pv_www_authorize(\"example.com\"))\n        {\n            if ($retcode == -5)\n            {\n                sl_send_reply(500, \"Internal server error\");\n                exit;    \n            }\n            else {\n                www_challenge(\"example.com\", 0);\n                exit;\n            }\n        }\n\n        consume_credentials();\n        xlog(\"L_INFO\", \n             \"REGISTER request successfully authenticated\");\n        return(1);\n    }\n\n    # non-REGISTER requests\n    if (!pv_proxy_authorize(\"example.com\"))\n    {\n        if ($retcode == -5)\n        {\n            sl_send_reply(500, \"Internal server error\");\n            exit;    \n        }\n        else {\n            proxy_challenge(\"example.com\", 0);\n            exit;\n        }\n    }\n\n    consume_credentials();\n    xlog(\"L_INFO\", \"$rm request successfully authenticated\");\n    return(1);\n}",
+          "description": "H.350 based SIP digest authentication",
+          "context": "route[1]"
+        }
+      ],
+      "related_functions": [
+        "pv_*_authorize"
+      ]
+    },
+    {
+      "name": "h350_result_call_preferences",
+      "signature": "h350_result_call_preferences(avp_name_prefix)",
+      "parameters": [
+        {
+          "name": "avp_name_prefix",
+          "type": "string",
+          "required": true,
+          "description": "Name prefix for call forwarding rule AVPs, as described above."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "n > 0",
+          "condition": "n simple call forwarding rules found."
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error occurred."
+        },
+        {
+          "value": "-2",
+          "condition": "No simple call forwarding rule found, or callPreferenceURI not present."
+        }
+      ],
+      "description": "This function parses the callPreferenceURI attribute of an H.350 commObject, which must have been fetched through _h350_*_lookup_ or _ldap_search_. callPreferenceURI is a multi-valued attribute that stores call preference rules like e.g. forward-on-busy or forward-unconditionally. _Directory services architecture for call forwarding and preferences_ [[H.350.6]](#H350-6 \"Directory services architecture for call forwarding and preferences\") defines a format for simple call forwarding rules:\n\n> `target_uri type[:argument]`\n\nIn a SIP environment, `target_uri` is typically the call forwarding rule's target SIP URI, although it could be any type of URI, e.g. an HTTP pointer to a CPL script. Four different values are specified for `type`: `b` for \"forward on busy\", `n` for \"forward on no answer\", `u` for \"forward unconditionally\", and `f` for \"forward on destination not found\". The optional `argument` is a string indicating the time in milliseconds after which the call forwarding should occur.\n\n_h350_result_call_preferences_ stores these call forwarding rules as AVPs according to the following rules:\n\n> #\n> # AVP storing a forwarding rule's target URI\n> #\n>             \n> AVP name  = avp_name_prefix + '_' + type\n> AVP value = target_uri\n> \n> #\n> # AVP storing a forwarding rule's argument\n> #\n> \n> AVP name  = avp_name_prefix + '_' + type + '_t'\n> AVP value = argument / 1000\n\nThese AVPs can then be used to implement the desired behavior in the OpenSIPS routing script.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "#\n# H.350 lookup for callee\n#\n\n... h350_sipuri_lookup(\"sip:$rU@$rd\") ...\n\n#\n# store H.350 call preferences in AVP\n#\n\nif (!h350_result_call_preferences(\"callee_pref_\") && ($retcode == -1))\n{\n    sl_send_reply(500, \"Internal server error\");\n    exit;\n}\n\n# $avp(callee_pref_u)   == CFU URI(s)\n# $avp(callee_pref_n)   == CFNR URI(s)\n# $avp(callee_pref_n_t) == CFNR timeout in seconds\n# $avp(callee_pref_b)   == CFB URI(s)\n# $avp(callee_pref_f)   == CFOFFLINE URI(s)\n\n#\n# Example for forward-unconditionally (CFU)\n#\n\nif ($avp(callee_pref_u) != NULL)\n{\n    # push CFU URI into R-URI and additional branches\n    # --> request can fork\n    $ru = $avp(callee_pref_u);\n    $avp(callee_pref_u) = NULL;\n    while ($avp(callee_pref_u)!=NULL) {\n        $branch = $avp(callee_pref_u);\n        $avp(callee_pref_u) = NULL;\n    }\n    sl_send_reply(181, \"Call is being forwarded\");\n    t_relay();\n    exit;\n}",
+          "description": "Store H.350 call preferences in AVP and handle forward-unconditionally",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "h350_*_lookup",
+        "ldap_search"
+      ]
+    },
+    {
+      "name": "h350_result_service_level",
+      "signature": "h350_result_service_level(avp_name_prefix)",
+      "parameters": [
+        {
+          "name": "avp_name_prefix",
+          "type": "string",
+          "required": true,
+          "description": "Name prefix for service level AVPs, as described above."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "n > 0",
+          "condition": "n AVPs added."
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error occurred."
+        },
+        {
+          "value": "-2",
+          "condition": "No SIPIdentityServiceLevel attribute found."
+        }
+      ],
+      "description": "_Directory services architecture for SIP_ [[H.350.4]](#H350-4 \"Directory services architecture for SIP\") defines a multi-valued LDAP attribute named SIPIdentityServiceLevel, which can be used to store SIP account service level values in an LDAP directory. This function parses the SIPIdentityServiceLevel attribute and stores all service level values as AVPs for later retrieval in the OpenSIPS routing script. The function accesses the H.350 commObject fetched by a call to _h350_*_lookup_ or _ldap_search_.\n\nThe resulting AVPs have a name of the form `avp_name_prefix + SIPIdentityServiceLevel attribute value`, and an integer value of `1`.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "#\n# H.350 SIP digest authentication for caller\n#\n\n... h350_auth_lookup(\"$au\", ...) ...\n\n#\n# store caller's service level as AVP\n#\n\nif (!h350_result_service_level(\"caller_sl_\") && ($retcode == -1))\n{\n    sl_send_reply(500, \"Internal server error\");\n    exit;\n}\n\n#\n# make routing decision based on service level AVPs\n#\n\nif ($avp(caller_sl_international) != NULL)\n{\n    t_relay();\n} \nelse {\n    sl_send_reply(403, \"Forbidden\");    \n}\nexit;",
+          "description": "Store caller's service level as AVP and make routing decision",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "h350_*_lookup",
+        "ldap_search"
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`ldap_session` parameter usage",
+      "description": "`ldap_session` parameter usage",
+      "code": "modparam(\"h350\", \"ldap_session\", \"h350\");"
+    },
+    {
+      "title": "`base_dn` parameter usage",
+      "description": "`base_dn` parameter usage",
+      "code": "modparam(\"h350\", \"base_dn\", \"ou=h350,dc=example,dc=com\");"
+    },
+    {
+      "title": "`search_scope` parameter usage",
+      "description": "`search_scope` parameter usage",
+      "code": "modparam(\"h350\", \"search_scope\", \"sub\");"
+    },
+    {
+      "title": "Example Usage",
+      "description": "h350_sipuri_lookup function usage",
+      "code": "#\n# H.350 lookup for callee\n#\n\nif (!h350_sipuri_lookup(\"sip:$rU@$rd\"))\n{\n    switch ($retcode)\n    {\n    case -2:\n        xlog(\"L_INFO\", \n             \"h350 callee lookup: no entry found in H.350 directory\");\n        exit;\n    case -1:\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    }\n}\n\n# now h350_result* or ldap_result* functions can be used"
+    },
+    {
+      "title": "Example Usage",
+      "description": "h350_auth_lookup function usage",
+      "code": "# -- auth params --\nmodparam(\"auth\", \"username_spec\", \"$avp(auth_user)\")\nmodparam(\"auth\", \"password_spec\", \"$avp(auth_pwd)\")\nmodparam(\"auth\", \"calculate_ha1\", 1)\n\n# -- h350 params --\nmodparam(\"h350\", \"ldap_session\", \"h350\")\nmodparam(\"h350\", \"base_dn\", \"ou=h350,dc=example,dc=com\")\nmodparam(\"h350\", \"search_scope\", \"one\")\n\n\nroute[1]\n{\n    #\n    # H.350 based SIP digest authentication \n    #\n     \n    # challenge all requests not including an Auth header\n    if (!(is_present_hf(\"Authorization\") || \n          is_present_hf(\"Proxy-Authorization\")))\n    {\n        if (is_method(\"REGISTER\"))\n        {\n            www_challenge(\"example.com\", 0);\n            exit;\n        }\n        proxy_challenge(\"example.com\", 0);\n        exit;\n    }\n\n    # get digest password from H.350 using auth username ($au)\n    if (!h350_auth_lookup($au, \n                          \"$avp(auth_user)/$avp(auth_pwd)\"))\n    {\n        switch ($retcode)\n        {\n        case -2:\n            sl_send_reply(401, \"Unauthorized\");\n            exit;\n        case -1:\n            sl_send_reply(500, \"Internal server error\");\n            exit;\n        }\n    }\n\n    # REGISTER requests\n    if (is_method(\"REGISTER\"))\n    {\n        if (!pv_www_authorize(\"example.com\"))\n        {\n            if ($retcode == -5)\n            {\n                sl_send_reply(500, \"Internal server error\");\n                exit;    \n            }\n            else {\n                www_challenge(\"example.com\", 0);\n                exit;\n            }\n        }\n\n        consume_credentials();\n        xlog(\"L_INFO\", \n             \"REGISTER request successfully authenticated\");\n        return(1);\n    }\n\n    # non-REGISTER requests\n    if (!pv_proxy_authorize(\"example.com\"))\n    {\n        if ($retcode == -5)\n        {\n            sl_send_reply(500, \"Internal server error\");\n            exit;    \n        }\n        else {\n            proxy_challenge(\"example.com\", 0);\n            exit;\n        }\n    }\n\n    consume_credentials();\n    xlog(\"L_INFO\", \"$rm request successfully authenticated\");\n    return(1);\n}"
+    },
+    {
+      "title": "Example Usage",
+      "description": "h350_result_call_preferences function usage",
+      "code": "#\n# H.350 lookup for callee\n#\n\n... h350_sipuri_lookup(\"sip:$rU@$rd\") ...\n\n#\n# store H.350 call preferences in AVP\n#\n\nif (!h350_result_call_preferences(\"callee_pref_\") && ($retcode == -1))\n{\n    sl_send_reply(500, \"Internal server error\");\n    exit;\n}\n\n# $avp(callee_pref_u)   == CFU URI(s)\n# $avp(callee_pref_n)   == CFNR URI(s)\n# $avp(callee_pref_n_t) == CFNR timeout in seconds\n# $avp(callee_pref_b)   == CFB URI(s)\n# $avp(callee_pref_f)   == CFOFFLINE URI(s)\n\n#\n# Example for forward-unconditionally (CFU)\n#\n\nif ($avp(callee_pref_u) != NULL)\n{\n    # push CFU URI into R-URI and additional branches\n    # --> request can fork\n    $ru = $avp(callee_pref_u);\n    $avp(callee_pref_u) = NULL;\n    while ($avp(callee_pref_u)!=NULL) {\n        $branch = $avp(callee_pref_u);\n        $avp(callee_pref_u) = NULL;\n    }\n    sl_send_reply(181, \"Call is being forwarded\");\n    t_relay();\n    exit;\n}"
+    },
+    {
+      "title": "Example Usage",
+      "description": "h350_result_service_level function usage",
+      "code": "#\n# H.350 SIP digest authentication for caller\n#\n\n... h350_auth_lookup(\"$au\", ...) ...\n\n#\n# store caller's service level as AVP\n#\n\nif (!h350_result_service_level(\"caller_sl_\") && ($retcode == -1))\n{\n    sl_send_reply(500, \"Internal server error\");\n    exit;\n}\n\n#\n# make routing decision based on service level AVPs\n#\n\nif ($avp(caller_sl_international) != NULL)\n{\n    t_relay();\n} \nelse {\n    sl_send_reply(403, \"Forbidden\");    \n}\nexit;"
+    }
+  ]
+}

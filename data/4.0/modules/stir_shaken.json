@@ -1,0 +1,535 @@
+{
+  "id": "module-stir_shaken-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "stir_shaken Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/stir_shaken.html",
+  "content_markdown": "This module adds support for implementing STIR/SHAKEN (RFC 8224, RFC 8588) Authentication and Verification services in OpenSIPS.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:08:43.204Z",
+  "module_name": "stir_shaken",
+  "overview": "This module adds support for implementing STIR/SHAKEN (RFC 8224, RFC 8588) Authentication and Verification services in OpenSIPS.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "wolfssl (libwolfssl)",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "auth_date_freshness",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The maximum number of seconds that the value in the Date header field can be older than the current time.\n\nThis parameter is only relevant for the stir_shaken_auth() function.",
+      "example_value": "300",
+      "example_code": "modparam(\"stir_shaken\", \"auth_date_freshness\", 300)"
+    },
+    {
+      "name": "verify_date_freshness",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The maximum number of seconds that the value in the Date header field can be older than the current time. Also, if the _iat_ value in the PASSporT is different than the Date value, but remains within the permitted interval, it will be used in the verification process (for the reconstructed PASSporT) instead of the Date value.\n\nIf the require_date_hdr parameter is set to not required and the Date header is missing, the _iat_ value will be used for this check instead.\n\nThis parameter is only relevant for the stir_shaken_verify() function.",
+      "example_value": "300",
+      "example_code": "modparam(\"stir_shaken\", \"verify_date_freshness\", 300)"
+    },
+    {
+      "name": "ca_list",
+      "type": "string",
+      "description": "Path to a file containing trusted CA certificates for the verifier. The certificates must be in PEM format, one after another.",
+      "example_value": "/stir_certs/ca_list.pem",
+      "example_code": "modparam(\"stir_shaken\", \"ca_list\", \"/stir_certs/ca_list.pem\")"
+    },
+    {
+      "name": "ca_dir",
+      "type": "string",
+      "description": "Path to a directory containing trusted CA certificates for the verifier. The certificates in the directory must be in hashed form, as described in the openssl documentation for the Hashed Directory Method.",
+      "example_value": "/stir_certs/cas",
+      "example_code": "modparam(\"stir_shaken\", \"ca_dir\", \"/stir_certs/cas\")"
+    },
+    {
+      "name": "crl_list",
+      "type": "string",
+      "description": "Path to a file containing certificate revocation lists (CRLs) for the verifier.",
+      "example_value": "/stir_certs/crl_list.pem",
+      "example_code": "modparam(\"stir_shaken\", \"crl_list\", \"/stir_certs/crl_list.pem\")"
+    },
+    {
+      "name": "crl_dir",
+      "type": "string",
+      "description": "Path to a directory containing certificate revocation lists (CRLs) for the verifier. The CRLs in the directory must be in hashed form, as described in the openssl documentation for the Hashed Directory Method.",
+      "example_value": "/stir_certs/crls",
+      "example_code": "modparam(\"stir_shaken\", \"crl_dir\", \"/stir_certs/crls\")"
+    },
+    {
+      "name": "e164_strict_mode",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Require a leading \"+\" to be present in the originating/destination SHAKEN identity, on top of mandating an E.164 telephone number by default. Additionally, require the URI to be either a tel URI or a sip / sips URI with the user=phone parameter.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"stir_shaken\", \"e164_strict_mode\", 1)"
+    },
+    {
+      "name": "e164_max_length",
+      "type": "integer",
+      "default_value": "15",
+      "description": "This parameter allows the 15-digit number length restriction of the E.164 format to be bypassed. Especially useful in scenarios where various telephony number prefixes are in use, causing some numbers to exceed the standard maximum length.",
+      "example_value": "16",
+      "example_code": "modparam(\"stir_shaken\", \"e164_max_length\", 16)"
+    },
+    {
+      "name": "require_date_hdr",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Specifies whether the Date header is mandatory when doing verification with the stir_shaken_verify() function.\n\nA value of 1 means required and 0 not required.\n\nIf the parameter is set to \"not required\" but the Date header is present in the message, the header value will be used as normally to check the freshness (as configured in the verify_date_freshness parameter). If the Date header is indeed missing, the value of the _iat_ claim in the PASSporT will be used instead.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"stir_shaken\", \"require_date_hdr\", 0)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "stir_shaken_auth",
+      "signature": "stir_shaken_auth(attest, origid, cert, pkey, x5u, [orig], [dest], [out])",
+      "parameters": [
+        {
+          "name": "attest",
+          "type": "string",
+          "required": true,
+          "description": "value of the 'attest' claim to be included in the PASSporT.",
+          "valid_values": [
+            "A",
+            "full",
+            "B",
+            "partial",
+            "C",
+            "gateway"
+          ]
+        },
+        {
+          "name": "origid",
+          "type": "string",
+          "required": true,
+          "description": "value of the 'origid' claim to be included in the PASSporT. Treated by the module as an opaque string."
+        },
+        {
+          "name": "cert",
+          "type": "string",
+          "required": true,
+          "description": "the X.509 certificate used to compute the signature, in PEM format."
+        },
+        {
+          "name": "pkey",
+          "type": "string",
+          "required": true,
+          "description": "the private key used to compute the signature, in PEM format."
+        },
+        {
+          "name": "x5u",
+          "type": "string",
+          "required": true,
+          "description": "value of the 'x5u' claim to be included in the PASSporT. Treated by the module as an opaque string."
+        },
+        {
+          "name": "orig",
+          "type": "string",
+          "required": false,
+          "description": "telephone number to be used as the originating identity in the PASSporT. If missing, this value will be derived from the SIP message."
+        },
+        {
+          "name": "dest",
+          "type": "string",
+          "required": false,
+          "description": "telephone number to be used as the destination identity in the PASSporT. If missing, this value will be derived from the SIP message."
+        },
+        {
+          "name": "out",
+          "type": "string",
+          "required": false,
+          "description": "name of an output variable to store the Identity header or the following flags: req (append to current request), rpl (append to all replies). If missing, appended to current request.",
+          "valid_values": [
+            "req",
+            "rpl"
+          ]
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error"
+        },
+        {
+          "value": "-3",
+          "condition": "Failed to derive identity from SIP message because the URI is not a telephone number"
+        },
+        {
+          "value": "-4",
+          "condition": "Date header value is older than local policy for freshness"
+        },
+        {
+          "value": "-5",
+          "condition": "The current time or Date header value does not fall within the certificate validity"
+        }
+      ],
+      "description": "This function performs the steps of an authentication service. Before calling this function though, you must ensure: authority - the server is authoritative for the identity in question; authentication - the originator is authorized to claim the given identity.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nstir_shaken_auth(\"A\", \"4437c7eb-8f7a-4f0e-a863-f53a0e60251a\",\n\t$var(cert), $var(privKey), \"https://certs.example.org/cert.pem\");\n...",
+          "description": "stir_shaken_auth() usage"
+        }
+      ]
+    },
+    {
+      "name": "stir_shaken_verify",
+      "signature": "stir_shaken_verify(cert, err_code, err_reason, [orig], [dest])",
+      "parameters": [
+        {
+          "name": "cert",
+          "type": "string",
+          "required": true,
+          "description": "the X.509 certificate used to verify the signature, in PEM format."
+        },
+        {
+          "name": "err_code",
+          "type": "var",
+          "required": true,
+          "description": "output variable that will store the SIP response code associated with an eventual error of the verification process."
+        },
+        {
+          "name": "err_reason",
+          "type": "var",
+          "required": true,
+          "description": "output variable that will store the SIP response reason phrase associated with an eventual error of the verification process."
+        },
+        {
+          "name": "orig",
+          "type": "string",
+          "required": false,
+          "description": "telephone number to be used as the originating identity in the verification prcess. If missing, this value will be derived from the SIP message."
+        },
+        {
+          "name": "dest",
+          "type": "string",
+          "required": false,
+          "description": "telephone number to be used as the destination identity in the verification process. If missing, this value will be derived from the SIP message."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error"
+        },
+        {
+          "value": "-2",
+          "condition": "No Identity or Date header found"
+        },
+        {
+          "value": "-3",
+          "condition": "Failed to derive identity from SIP message because the URI is not a telephone number"
+        },
+        {
+          "value": "-4",
+          "condition": "Invalid identity header"
+        },
+        {
+          "value": "-5",
+          "condition": "Unsupported 'ppt' or 'alg' Identity header parameter"
+        },
+        {
+          "value": "-6",
+          "condition": "Date header value is older than local policy for freshness"
+        },
+        {
+          "value": "-7",
+          "condition": "The Date header value does not fall within the certificate validity"
+        },
+        {
+          "value": "-8",
+          "condition": "Invalid certificate"
+        },
+        {
+          "value": "-9",
+          "condition": "Signature does not verify successfully"
+        }
+      ],
+      "description": "This function performs the steps of an verification service.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$var(rc) = stir_shaken_verify($var(cert), $var(err_code), $var(err_reason));\nif ($var(rc) < -1) {\n\tsend_reply($var(err_sip_code), $var(err_sip_reason));\n\texit;\n}\n...",
+          "description": "stir_shaken_verify() usage"
+        }
+      ]
+    },
+    {
+      "name": "stir_shaken_check",
+      "signature": "stir_shaken_check()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error"
+        },
+        {
+          "value": "-2",
+          "condition": "No Identity header found"
+        },
+        {
+          "value": "-3",
+          "condition": "Invalid identity header"
+        },
+        {
+          "value": "-4",
+          "condition": "Unsupported 'ppt' or 'alg' Identity header parameter"
+        }
+      ],
+      "description": "This function checks the Identity header in order to validate the STIR/SHAKEN information in terms of format. It detects issues such as: missing or badly formated PASSporT claims, unsupported extensions etc.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (stir_shaken_check()) {\n\txlog(\"forwarding call to stir/shaken verification service\\n\");\n\t...\n}\n...",
+          "description": "stir_shaken_check() usage"
+        }
+      ]
+    },
+    {
+      "name": "stir_shaken_check_cert",
+      "signature": "stir_shaken_check_cert(cert)",
+      "parameters": [
+        {
+          "name": "cert",
+          "type": "string",
+          "required": true,
+          "description": "the X.509 certificate to check, in PEM format."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error"
+        },
+        {
+          "value": "-2",
+          "condition": "Certificate is not valid"
+        }
+      ],
+      "description": "This function checks if the current time falls within the given certificate's validity period.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# update expired cached certificates\ncache_fetch(\"local\", $identity(x5u), $var(cert));\nif (!stir_shaken_check_cert($var(cert))) {\n\trest_get($identity(x5u), $var(cert));\n\tcache_store(\"local\", $identity(x5u), $var(cert));\n}\n...",
+          "description": "stir_shaken_check_cert() usage"
+        }
+      ]
+    },
+    {
+      "name": "stir_shaken_disengagement",
+      "signature": "stir_shaken_disengagement(token)",
+      "parameters": [
+        {
+          "name": "token",
+          "type": "string",
+          "required": true,
+          "description": "The token provided by the authority during outage."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "0",
+          "condition": "Failed to add P-Identity-Bypass header"
+        }
+      ],
+      "description": "This function add P-Identity-Bypass header with token value at the end of SIP headers.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif ( is_method(\"INVITE\") && !has_totag()) {\n\t# equivalent to sipmsgops module: append_hf(\"P-Identity-Bypass: OSIP99-1234567890ABCDEF\\r\\n\");\n\tstir_shaken_disengagement(\"OSIP99-1234567890ABCDEF\");\n}\n...",
+          "description": "stir_shaken_disengagement() usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "stir_shaken:ca_reload",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Returns 'OK' upon successful reload."
+      },
+      "description": "Replaces obsolete MI command: _stir_shaken_ca_reload_.\n\nReload the file containing trusted CA certificates for the verifier and the directory containing trusted CA certificates for the verifier.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi stir_shaken:ca_reload\n\"OK\"",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "stir_shaken:crl_reload",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Returns 'OK' upon successful reload."
+      },
+      "description": "Replaces obsolete MI command: _stir_shaken_crl_reload_.\n\nReload the file containing certificate revocation lists (CRLs) for the verifier and the directory containing certificate revocation lists for the verifier.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi stir_shaken:crl_reload\n\"OK\"",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$identity(field)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "This is a read-only pseudo-variable that provides access to the parsed information from the Identity header, through the following subnames:\n\n* header - the entire PASSporT header;\n* x5u - the value of the 'x5u' PASSporT claim;\n* payload - the entire PASSporT payload;\n* attest - the value of the 'attest' PASSporT claim;\n* dest - the value of the 'tn' member of the 'dest' PASSporT claim;\n* iat - the value of the 'iat' PASSporT claim;\n* orig - the value of the 'tn' member of the 'orig' PASSporT claim;\n* origid - the value of the 'origid' PASSporT claim;\n\nExample 1.15. identity usage\n...\n# acquire the certificate to use for the verification process\n$var(rc) = rest_get($identity(x5u), $var(cert));\nif ($var(rc) < 0) {\n\tsend_reply(436, \"Bad Identity Info\");\n\texit;\n}\n...\nxlog(\"Verified caller:$identity(orig), attestation level: $identity(attest)\\n\");\n...",
+      "possible_values": [
+        "header",
+        "x5u",
+        "payload",
+        "attest",
+        "dest",
+        "iat",
+        "orig",
+        "origid"
+      ]
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `auth_date_freshness` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"auth_date_freshness\", 300)\n..."
+    },
+    {
+      "title": "Set `verify_date_freshness` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"verify_date_freshness\", 300)\n..."
+    },
+    {
+      "title": "Set `ca_list` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"ca_list\", \"/stir_certs/ca_list.pem\")\n..."
+    },
+    {
+      "title": "Set `ca_dir` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"ca_dir\", \"/stir_certs/cas\")\n..."
+    },
+    {
+      "title": "Set `crl_list` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"crl_list\", \"/stir_certs/crl_list.pem\")\n..."
+    },
+    {
+      "title": "Set `crl_dir` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"crl_dir\", \"/stir_certs/crls\")\n..."
+    },
+    {
+      "title": "Set `e164_strict_mode` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"e164_strict_mode\", 1)\n..."
+    },
+    {
+      "title": "Set `e164_max_length` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"e164_max_length\", 16)\n..."
+    },
+    {
+      "title": "Set `require_date_hdr` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"stir_shaken\", \"require_date_hdr\", 0)\n..."
+    },
+    {
+      "title": "`stir_shaken_auth()` usage",
+      "description": "",
+      "code": "...\nstir_shaken_auth(\"A\", \"4437c7eb-8f7a-4f0e-a863-f53a0e60251a\",\n\t$var(cert), $var(privKey), \"https://certs.example.org/cert.pem\");\n..."
+    },
+    {
+      "title": "`stir_shaken_verify()` usage",
+      "description": "",
+      "code": "...\n$var(rc) = stir_shaken_verify($var(cert), $var(err_code), $var(err_reason));\nif ($var(rc) < -1) {\n\tsend_reply($var(err_sip_code), $var(err_sip_reason));\n\texit;\n}\n..."
+    },
+    {
+      "title": "`stir_shaken_check()` usage",
+      "description": "",
+      "code": "...\nif (stir_shaken_check()) {\n\txlog(\"forwarding call to stir/shaken verification service\\n\");\n\t...\n}\n..."
+    },
+    {
+      "title": "`stir_shaken_check_cert()` usage",
+      "description": "",
+      "code": "...\n# update expired cached certificates\ncache_fetch(\"local\", $identity(x5u), $var(cert));\nif (!stir_shaken_check_cert($var(cert))) {\n\trest_get($identity(x5u), $var(cert));\n\tcache_store(\"local\", $identity(x5u), $var(cert));\n}\n..."
+    },
+    {
+      "title": "`stir_shaken_disengagement()` usage",
+      "description": "",
+      "code": "...\nif ( is_method(\"INVITE\") && !has_totag()) {\n\t# equivalent to sipmsgops module: append_hf(\"P-Identity-Bypass: OSIP99-1234567890ABCDEF\\r\\n\");\n\tstir_shaken_disengagement(\"OSIP99-1234567890ABCDEF\");\n}\n..."
+    },
+    {
+      "title": "`identity` usage",
+      "description": "",
+      "code": "...\n\t# acquire the certificate to use for the verification process\n\t$var(rc) = rest_get($identity(x5u), $var(cert));\n\tif ($var(rc) < 0) {\n\t\tsend_reply(436, \"Bad Identity Info\");\n\t\texit;\n\t}\n\t...\n\txlog(\"Verified caller:$identity(orig), attestation level: $identity(attest)\\n\");\n..."
+    }
+  ]
+}

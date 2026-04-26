@@ -1,0 +1,187 @@
+{
+  "id": "module-mi_script-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mi_script Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mi_script.html",
+  "content_markdown": "This module provides multiple hooks to run Management Interface commands directly from OpenSIPS script. It supports running both synchronous and asynchronous commands. Depending on the nature of the command (asynchronous or not), and on the way the _mi_ command is run from script, the returned result is different.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:26:17.567Z",
+  "module_name": "mi_script",
+  "overview": "This module provides multiple hooks to run Management Interface commands directly from OpenSIPS script. It supports running both synchronous and asynchronous commands. Depending on the nature of the command (asynchronous or not), and on the way the _mi_ command is run from script, the returned result is different.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "proto_hep",
+      "type": "module",
+      "reason": "in case MI tracing is used",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "pretty_printing",
+      "type": "integer",
+      "default_value": "0 - no pretty-printing",
+      "description": "Indicates whether the JSON responses stored in the return variable should be pretty-printed or not.",
+      "example_value": "1",
+      "example_code": "modparam(\"mi\\_script\", \"pretty\\_printing\", 1)"
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto\\_hep**. This is where traced mi messages will go.",
+      "example_value": "hep\\_dest",
+      "example_code": "modparam(\"proto\\_hep\", \"trace\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"mi\\_script\", \"trace\\_destination\", \"hep\\_dest\")",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\\_hep**)."
+    },
+    {
+      "name": "trace_bwlist",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Filter traced mi commands based on a blacklist or a whitelist. **trace\\_destination** must be defined for this parameter to have any purpose. Whitelists can be defined using 'w' or 'W', blacklists using 'b' or 'B'. The type is separate by the actual blacklist by ':'. The mi commands in the list must be separated by ','.\n\nDefining a blacklists means all the commands that are not blacklisted will be traced. Defining a whitelist means all the commands that are not whitelisted will not be traced. **WARNING:** One can't define both a whitelist and a blacklist. Only one of them is allowed. Defining the parameter a second time will just overwrite the first one.",
+      "example_value": "b: ps, which",
+      "example_code": "## blacklist ps and which mi commands\n## all the other commands shall be traced\nmodparam(\"mi\\_script\", \"trace\\_bwlist\", \"b: ps, which\")\n...\n## allow only sip\\_trace mi command\n## all the other commands will not be traced\nmodparam(\"mi\\_script\", \"trace\\_bwlist\", \"w: sip\\_trace\")",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto\\_hep)**."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "mi",
+      "signature": "mi(command, [ret_var [,params_avp[, vals_avp]]])",
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "required": true,
+          "description": "the MI command to be run. This can be a single token, representing the MI command to run (without parameters), or can be followed by several space separated parameters (no escaping is handled). Each space separated parameter will be passed to the MI command as an indexed parameter. NOTE: named parameters can not be specified using this parameter, and you will have to use the params_avp and/or the vals_avp parameters to specify named commands, in which case this parameter will only consist of the MI command."
+        },
+        {
+          "name": "ret_var",
+          "type": "var",
+          "required": false,
+          "description": "a variable used to store the return of the MI command execution. In case of success, a JSON is stored, otherwise an erorr message."
+        },
+        {
+          "name": "params_avp",
+          "type": "avp",
+          "required": false,
+          "description": "an AVP consisting of all the parameters names that will be sent to the MI command. If this parameter is used without the vals_avp, all the values inside the AVP will be passed to the MI command as indexed parameters, otherwise as named parameters. NOTE: if this parameter is used, the parameters specified in the command parameter are ignored. NOTE: the order the parameters are passed to the command is the same as the one you populate the AVPs (thus somehow reversed compared to the way AVPs are stored in memory - the first AVP added is the first parameter)"
+        },
+        {
+          "name": "vals_avp",
+          "type": "avp",
+          "required": false,
+          "description": "an AVP consisting of all the parameters values that will be sent to the MI command. This parameter only makes sense if the params_avp is set, and has to contain the same number of values as there are parameters. To specify array values, enclose your space-separated array elements in the __array() pseudo-function call. For example: \"__array(HEARTBEAT BACKGROUND_JOB)\""
+        }
+      ],
+      "return_type": "var",
+      "return_values": [
+        {
+          "value": "JSON",
+          "condition": "success"
+        },
+        {
+          "value": "error message",
+          "condition": "failure"
+        }
+      ],
+      "description": "Runs an MI command in synchronous mode, blocking until a response is available.\n\n_IMPORTANT:_ it is highly recommended to prevent using this function for tasks that take long time, such as reloads, as the function would block until the command ends. Moreover, if the running MI _command_ is configured to run in asynchronous mode (such as _t\\_uac\\_dlg_ the command blocks in a busy waiting manner until the response is received.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "mi(\"shm_check\");",
+          "description": "mi without params"
+        },
+        {
+          "language": "opensips",
+          "code": "mi(\"cache_remove local password_user1\");",
+          "description": "mi with params in command"
+        },
+        {
+          "language": "opensips",
+          "code": "mi(\"ds_list\", $var(ret));",
+          "description": "mi with return"
+        },
+        {
+          "language": "opensips",
+          "code": "$avp(params) = \"local\";\n$avp(params) = \"password_user1\";\nmi(\"cache_remove\",,$avp(params));",
+          "description": "mi without return but with indexed params"
+        },
+        {
+          "language": "opensips",
+          "code": "$avp(params) = \"callid\";\n$avp(vals) = \"SEARCH_FOR_THIS_CALLID\";\n$avp(params) = \"from_tag\";\n$avp(vals) = \"SEARCH_FOR_THIS_FROM_TAG\";\nmi(\"dlg_list\", $var(dlg), $avp(params), $avp(vals));",
+          "description": "mi with return and named parameters"
+        },
+        {
+          "language": "opensips",
+          "code": "$avp(params) = \"freeswitch_url\";\n$avp(vals) = \"fs://:ClueCon@192.168.20.8:8021\";\n$avp(params) = \"events\";\n$avp(vals) = \"__array(HEARTBEAT BACKGROUND_JOB)\";\nmi(\"fs_subscribe\", , $avp(params), $avp(vals));",
+          "description": "mi without return, with an array parameter value"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `pretty_printing` parameter",
+      "description": "Set `pretty_printing` parameter",
+      "code": "...\nmodparam(\"mi_script\", \"pretty_printing\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Set `trace_destination` parameter",
+      "code": "...\nmodparam(\"proto_hep\", \"trace_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"mi_script\", \"trace_destination\", \"hep_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Set `trace_destination` parameter",
+      "code": "...\n## blacklist ps and which mi commands\n## all the other commands shall be traced\nmodparam(\"mi_script\", \"trace_bwlist\", \"b: ps, which\")\n...\n## allow only sip_trace mi command\n## all the other commands will not be traced\nmodparam(\"mi_script\", \"trace_bwlist\", \"w: sip_trace\")\n..."
+    },
+    {
+      "title": "`mi` without params",
+      "description": "`mi` without params",
+      "code": "...\nmi(\"shm_check\");\n..."
+    },
+    {
+      "title": "`mi` with params in command",
+      "description": "`mi` with params in command",
+      "code": "...\n# this command is similar to the above\nmi(\"cache_remove local password_user1\");\n..."
+    },
+    {
+      "title": "`mi` with return",
+      "description": "`mi` with return",
+      "code": "...\nmi(\"ds_list\", $var(ret));\n..."
+    },
+    {
+      "title": "`mi` without return but with indexed params",
+      "description": "`mi` without return but with indexed params",
+      "code": "...\n$avp(params) = \"local\";\n$avp(params) = \"password_user1\";\nmi(\"cache_remove\",,$avp(params));\n\n# the following command is similar to the above\nmi(\"cache_remove local password_user1\");\n..."
+    },
+    {
+      "title": "`mi` with return and named parameters",
+      "description": "`mi` with return and named parameters",
+      "code": "...\n$avp(params) = \"callid\";\n$avp(vals) = \"SEARCH_FOR_THIS_CALLID\";\n$avp(params) = \"from_tag\";\n$avp(vals) = \"SEARCH_FOR_THIS_FROM_TAG\";\nmi(\"dlg_list\", $var(dlg), $avp(params), $avp(vals));\n..."
+    },
+    {
+      "title": "`mi` without return, with an array parameter value",
+      "description": "`mi` without return, with an array parameter value",
+      "code": "...\n$avp(params) = \"freeswitch_url\";\n$avp(vals) = \"fs://:ClueCon@192.168.20.8:8021\";\n$avp(params) = \"events\";\n$avp(vals) = \"__array(HEARTBEAT BACKGROUND_JOB)\";\nmi(\"fs_subscribe\", , $avp(params), $avp(vals));\n..."
+    },
+    {
+      "title": "`async mi call` usage",
+      "description": "`async mi call` usage",
+      "code": "...\nxlog(\"reload starting\\\\n\");\nasync(mi(\"dr_reload\"), after_reload);\n...\n\nroute[after_reload] {\n\txlog(\"reload completed\\\\n\");\n}"
+    }
+  ]
+}

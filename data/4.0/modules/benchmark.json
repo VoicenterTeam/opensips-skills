@@ -1,0 +1,268 @@
+{
+  "id": "module-benchmark-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "benchmark Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/benchmark.html",
+  "content_markdown": "This module helps developers to benchmark their module functions. By adding this module's functions via the configuration file or through its API, OpenSIPS can log profiling information for every function.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:37:18.072Z",
+  "module_name": "benchmark",
+  "overview": "This module helps developers to benchmark their module functions. By adding this module's functions via the configuration file or through its API, OpenSIPS can log profiling information for every function.",
+  "how_it_works": "The duration between calls to start\\_timer and log\\_timer is stored and logged via OpenSIPS's logging facility. Please note that all durations are given as microseconds (don't confuse with milliseconds!). Important note: as this benchmarking is intended to measure the time spent in executing different parts/blocks of the script (and not for measuring the time induced by the SIP signaling), the benchmark module is to be used within the SAME top route (request route, failure route, branch route, onreply rout, etc). It is not design to be used across different types of top routes (like started in request route and ended in failure route)!!",
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "enable",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Even when the module is loaded, benchmarking is not enabled per default. This variable may have three different values:\n\n*   -1 - Globally disable benchmarking\n    \n*   0 - Enable per-timer enabling. Single timers are inactive by default and can be activated through the MI interface as soon as that feature is implemented.\n    \n*   1 - Globally enable benchmarking",
+      "possible_values": [
+        "-1",
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"benchmark\", \"enable\", 1)\n..."
+    },
+    {
+      "name": "granularity",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Logging normally is not done for every reference to the log_timer() function, but only every n'th call. n is defined through this variable. A sensible granularity seems to be 100.\n\nIf granularity is set to 0, then nothing will be logged automatically. Instead benchmark:poll_results MI command can be used to retrieve the results and clean the local values.",
+      "example_value": "500",
+      "example_code": "...\nmodparam(\"benchmark\", \"granularity\", 500)\n..."
+    },
+    {
+      "name": "loglevel",
+      "type": "integer",
+      "default_value": "3",
+      "description": "Set the log level for the benchmark logs. These levels should be used:\n\n*   -3 - L_ALERT\n    \n*   -2 - L_CRIT\n    \n*   -1 - L_ERR\n    \n*   1 - L_WARN\n    \n*   2 - L_NOTICE\n    \n*   3 - L_INFO\n    \n*   4 - L_DBG",
+      "possible_values": [
+        "-3",
+        "-2",
+        "-1",
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "example_value": "4",
+      "example_code": "...\nmodparam(\"benchmark\", \"loglevel\", 4)\n...",
+      "notes": "This will set the logging level to L_DBG."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "bm_start_timer",
+      "signature": "bm_start_timer(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the timer to start."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Start timer “name”. A later call to “bm\\_log\\_timer()” logs this timer..",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "bm\\_start\\_timer(\"test\");",
+          "description": "Example 1.4. `bm_start_timer` usage"
+        }
+      ],
+      "related_functions": [
+        "bm_log_timer"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "bm_log_timer",
+      "signature": "bm_log_timer(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the timer to log."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function logs the timer with the given ID. The following data are logged:\n\n*   _Last msgs_ is the number of calls in the last logging interval. This equals the granularity variable.\n    \n*   _Last sum_ is the accumulated duration in the current logging interval (i.e. for the last “granularity” calls).\n    \n*   _Last min_ is the minimum duration between start/log\\_timer calls during the last interval.\n    \n*   _Last max_ - maximum duration.\n    \n*   _Last average_ is the average duration between bm\\_start\\_timer() and bm\\_log\\_timer() since the last logging.\n    \n*   _Global msgs_ number of calls to log\\_timer.\n    \n*   _Global sum_ total duration in microseconds.\n    \n*   _Global min_... You get the point. :)\n    \n*   _Global max_ also obvious.\n    \n*   _Global avg_ possibly the most interesting value.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "bm\\_log\\_timer(\"test\");",
+          "description": "Example 1.5. `bm_log_timer` usage"
+        }
+      ],
+      "related_functions": [
+        "bm_start_timer"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "benchmark:enable_global",
+      "parameters": [
+        {
+          "name": "enable",
+          "type": "integer",
+          "required": true,
+          "description": "value may be -1, 0 or 1. See discription of \"enable\" parameter."
+        }
+      ],
+      "description": "Replaces obsolete MI command: bm_enable_global.\n\nEnables/disables the module.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi benchmark:enable_global 1",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "benchmark:enable_timer",
+      "parameters": [
+        {
+          "name": "timer",
+          "type": "string",
+          "required": true,
+          "description": "timer name"
+        },
+        {
+          "name": "enable",
+          "type": "integer",
+          "required": true,
+          "description": "enable (1) or disable (0) timer"
+        }
+      ],
+      "description": "Replaces obsolete MI command: bm_enable_timer.\n\nEnable or disable a single timer.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi benchmark:enable_timer test 1",
+          "description": "Enabling a timer"
+        }
+      ]
+    },
+    {
+      "name": "benchmark:granularity",
+      "parameters": [
+        {
+          "name": "benchmark:granularity",
+          "type": "integer",
+          "required": true,
+          "description": "See discription of \"granularity\" parameter."
+        }
+      ],
+      "description": "Replaces obsolete MI command: bm_granularity.\n\nModifies the benchmarking granularity.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi benchmark:granularity 300",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "benchmark:loglevel",
+      "parameters": [
+        {
+          "name": "log_level",
+          "type": "integer",
+          "required": true,
+          "description": "See discription of \"loglevel\" parameter."
+        }
+      ],
+      "description": "Replaces obsolete MI command: bm_loglevel.\n\nModifies the module log level.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi benchmark:loglevel 4",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "benchmark:poll_results",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Returns the current and global results for each timer. Each timer will have 2 nodes - the local and the global values. Format of the values is the same as the one normally used in logfile.",
+        "structure": "register_timer\n\t3/40/12/14/13.333333\n\t9/204/12/97/22.666667\nsecurity_check_timer\n\t3/21/7/7/7.000000\n\t9/98/7/41/10.888889"
+      },
+      "description": "Replaces obsolete MI command: bm_poll_results.\n\nReturns the current and global results for each timer. This command is only available if the \"granularity\" variable is set to 0. It can be used to get results in stable time intervals instead of every N messages. Each timer will have 2 nodes - the local and the global values. Format of the values is the same as the one normally used in logfile. This way of getting the results allows to interface with external graphing applications like Munin.\n\nIf there were no new calls to bm_log_timer since last check, then all current values of a timer will be equal 0. Each call to benchmark:poll_results will reset current values (but not global ones).",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi benchmark:poll_results\nregister_timer\n\t3/40/12/14/13.333333\n\t9/204/12/97/22.666667\nsecurity_check_timer\n\t3/21/7/7/7.000000\n\t9/98/7/41/10.888889",
+          "description": "Getting the results via FIFO interface"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$BM_time_diff",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "the time difference elapsed between calls of bm_start_timer(name) and bm_log_timer(name). The value is 0 if no bm_log_timer() was called."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `enable` parameter",
+      "description": "Set `enable` parameter",
+      "code": "...\nmodparam(\"benchmark\", \"enable\", 1)\n..."
+    },
+    {
+      "title": "Set `granularity` parameter",
+      "description": "Set `granularity` parameter",
+      "code": "...\nmodparam(\"benchmark\", \"granularity\", 500)\n..."
+    },
+    {
+      "title": "Set `loglevel` parameter",
+      "description": "Set `loglevel` parameter",
+      "code": "...\nmodparam(\"benchmark\", \"loglevel\", 4)\n...",
+      "explanation": "This will set the logging level to L_DBG."
+    },
+    {
+      "title": "`bm_start_timer` usage",
+      "description": "`bm_start_timer` usage",
+      "code": "...\nbm_start_timer(\"test\");\n..."
+    },
+    {
+      "title": "`bm_log_timer` usage",
+      "description": "`bm_log_timer` usage",
+      "code": "...\nbm_log_timer(\"test\");\n..."
+    },
+    {
+      "title": "Enabling a timer",
+      "description": "Enabling a timer",
+      "code": "...\nopensips-cli -x mi benchmark:enable_timer test 1\n..."
+    },
+    {
+      "title": "Getting the results via FIFO interface",
+      "description": "Getting the results via FIFO interface",
+      "code": "...\nopensips-cli -x mi benchmark:poll_results\nregister_timer\n\t3/40/12/14/13.333333\n\t9/204/12/97/22.666667\nsecurity_check_timer\n\t3/21/7/7/7.000000\n\t9/98/7/41/10.888889\n..."
+    },
+    {
+      "title": "benchmark usage",
+      "description": "Measure the duration of user location lookup.",
+      "code": "...\nbm_start_timer(\"usrloc-lookup\");\nlookup(\"location\");\nbm_log_timer(\"usrloc-lookup\");\n..."
+    }
+  ]
+}

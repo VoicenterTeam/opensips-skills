@@ -1,0 +1,100 @@
+{
+  "id": "module-rabbitmq_consumer-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "rabbitmq_consumer Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/rabbitmq_consumer.html",
+  "content_markdown": "_RabbitMQ Consumer_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open source messaging server. It's purpose is to manage received messages in queues, taking advantage of the flexible AMQP protocol.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:18:39.073Z",
+  "module_name": "rabbitmq_consumer",
+  "overview": "_RabbitMQ Consumer_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open source messaging server. It's purpose is to manage received messages in queues, taking advantage of the flexible AMQP protocol.",
+  "how_it_works": "Using this module you can subscribe consumers to a RabbitMQ broker in order to receive AMQP messages for specified queues. The messages will be delivered by triggering events through the OpenSIPS Event Interface.",
+  "dependencies_required": [
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "Required if use_tls is enabled",
+      "optional": true
+    },
+    {
+      "name": "librabbitmq-dev",
+      "type": "library",
+      "reason": "Must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "connection_id",
+      "type": "string",
+      "description": "Specify the configuration for a RabbitMQ connection. It contains a set of parameters used to customize the connection to the server as well as the consumer subscription. The format of the parameter is _param1=value1; param2=value2;_. The _uri_, _queue_ and _event_ parameters are mandatory.\n\nThis parameter can be set multiple times, for each RabbitMQ connection.\n\nThe following parameters can be used:\n\n*   _uri_ - Mandatory parameter - a full _amqp_ URI as described [here](https://www.rabbitmq.com/uri-spec.html). Missing fields in the URI will receive default values, such as: _user: guest_, _password: guest_, _host: localhost_, _vhost: /_, _port: 5672_. TLS connections are specified using an _amqps_ URI.\n    \n*   _queue_ - Mandatory parameter - the name of the RabbitMQ queue to subscribe a consumer to. This parameter is mandatory.\n    \n*   _event_ - Mandatory parameter - the name of the OpenSIPS event that will be triggered for each AMQP message received.\n    \n*   _ack_ - flag that indicates to the broker that messages will be acknowledged upon receival. If you do not set this flag, the server will not expect ACKs and OpenSIPS will not send them.\n    \n*   _exclusive_ - flag that indicates to the broker that exclusive consumer access is requested, meaning only this consumer can access the queue.\n    \n*   _frame\\_max_ - the maximum size of an AMQP frame. Default size is 131072.\n    \n*   _heartbeat_ - interval in seconds used to send heartbeat messages. Default is disabled.\n    \n*   _tls\\_domain_ - indicates which TLS domain (as defined using the _tls\\_mgm_ module) to use for this connection. This must be an _amqps_ URI and the [use\\_tls](#param_use_tls \"1.3.4.�use_tls (integer)\") module parameter must be enabled.",
+      "example_value": "uri = amqp://127.0.0.1; queue = myqueue1; event = E_Q1_MSG; heartbeat = 5;",
+      "example_code": "...\n# connection to a RabbitMQ server on localhost, default port\n# with a 5 seconds interval for heartbeat messages\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqp://127.0.0.1; queue = myqueue1; event = E\\_Q1\\_MSG; heartbeat = 5;\")\n...\n# consumer that acknowledges messages\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqp://127.0.0.1; queue = myqueue2; event = E\\_Q2\\_MSG; ack;\")\n...\n# TLS connection\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqps://127.0.0.1; queue = myqueue3; event = E\\_Q3\\_MSG; tls\\_domain=rmq;\")\n..."
+    },
+    {
+      "name": "connect_timeout",
+      "type": "integer",
+      "default_value": "500",
+      "description": "The maximally allowed duration (in milliseconds) for the establishment of a TCP connection with a RabbitMQ server.",
+      "example_value": "1000",
+      "example_code": "...\nmodparam(\"rabbitmq\\_consumer\", \"connect\\_timeout\", 1000)\n..."
+    },
+    {
+      "name": "retry_timeout",
+      "type": "integer",
+      "default_value": "5000",
+      "description": "The interval (in milliseconds) after which OpenSIPS will try to re-establish a failed AMQP connection to a RabbitMQ server.",
+      "example_value": "10000",
+      "example_code": "...\nmodparam(\"rabbitmq\\_consumer\", \"retry\\_timeout\", 10000)\n..."
+    },
+    {
+      "name": "use_tls",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter will allow you to use TLS for broker connections. In order to enable TLS for a specific connection, you can use the \"tls\\_domain=_dom\\_name_\" parameter in the configuration specified through the [connection\\_id](#param_connection_id \"1.3.1.�connection\\_id (string)\") module parameter.\n\nWhen using this parameter, you must also ensure that _tls\\_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"tls\\_mgm\", \"client\\_domain\", \"rmq\")\nmodparam(\"tls\\_mgm\", \"certificate\", \"\\[rmq\\]/etc/pki/tls/certs/rmq.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"\\[rmq\\]/etc/pki/tls/private/rmq.key\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\",     \"\\[rmq\\]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"rabbitmq\\_consumer\", \"use\\_tls\", 1)\n..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "Custom Event Name",
+      "description": "An event with a custom name, as set in the _event_ field of the connection_id parameter, will be raised for each AMQP message received.",
+      "parameters": [
+        {
+          "name": "body",
+          "type": "string",
+          "description": "the AMQP message body."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `connection_id` parameter",
+      "description": "Set `connection_id` parameter",
+      "code": "...\n# connection to a RabbitMQ server on localhost, default port\n# with a 5 seconds interval for heartbeat messages\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqp://127.0.0.1; queue = myqueue1; event = E\\_Q1\\_MSG; heartbeat = 5;\")\n...\n# consumer that acknowledges messages\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqp://127.0.0.1; queue = myqueue2; event = E\\_Q2\\_MSG; ack;\")\n...\n# TLS connection\nmodparam(\"rabbitmq\\_consumer\", \"connection\\_id\",\n    \"uri = amqps://127.0.0.1; queue = myqueue3; event = E\\_Q3\\_MSG; tls\\_domain=rmq;\")\n..."
+    },
+    {
+      "title": "Setting the `connect_timeout` parameter",
+      "description": "Setting the `connect_timeout` parameter",
+      "code": "...\nmodparam(\"rabbitmq\\_consumer\", \"connect\\_timeout\", 1000)\n..."
+    },
+    {
+      "title": "Setting the `retry_timeout` parameter",
+      "description": "Setting the `retry_timeout` parameter",
+      "code": "...\nmodparam(\"rabbitmq\\_consumer\", \"retry\\_timeout\", 10000)\n..."
+    },
+    {
+      "title": "Set the `use_tls` parameter",
+      "description": "Set the `use_tls` parameter",
+      "code": "...\nmodparam(\"tls\\_mgm\", \"client\\_domain\", \"rmq\")\nmodparam(\"tls\\_mgm\", \"certificate\", \"\\[rmq\\]/etc/pki/tls/certs/rmq.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"\\[rmq\\]/etc/pki/tls/private/rmq.key\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\",     \"\\[rmq\\]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"rabbitmq\\_consumer\", \"use\\_tls\", 1)\n..."
+    }
+  ]
+}

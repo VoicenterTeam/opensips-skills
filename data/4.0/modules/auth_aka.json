@@ -1,0 +1,778 @@
+{
+  "id": "module-auth_aka-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "auth_aka Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/auth_aka.html",
+  "content_markdown": "This module contains functions that are used to perform digest authentication using the AKA (Authentication and Key Agreement) security protocol. This mechanism is being used in IMS networks to provide mutual authentication between the UE (device) and the 3G/4G/5G network.\n\nThe AKA protocol establishes a set of security keys, called authentication vectors (or AVs), and uses them to generate the digest challenge, as well as for computing the digest result and authenticating the UE. AVs are exchanged over a separate communication channel.\n\nAlthough the AKA protocol also requires to use the AVs to establish a secure channel between the UE and the network (by means of IPSec tunnels), this module does not handle that part - it just performs the authentication of the user and passes along the cyphering and integrity keys in the Authorization header, according to the _ETSI TS 129 229_ specifications. These are later on picked up by other components (such as P-CSCFs) to establish the secure channel.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:42:56.670Z",
+  "module_name": "auth_aka",
+  "overview": "This module contains functions that are used to perform digest authentication using the AKA (Authentication and Key Agreement) security protocol. This mechanism is being used in IMS networks to provide mutual authentication between the UE (device) and the 3G/4G/5G network.\n\nThe AKA protocol establishes a set of security keys, called authentication vectors (or AVs), and uses them to generate the digest challenge, as well as for computing the digest result and authenticating the UE. AVs are exchanged over a separate communication channel.\n\nAlthough the AKA protocol also requires to use the AVs to establish a secure channel between the UE and the network (by means of IPSec tunnels), this module does not handle that part - it just performs the authentication of the user and passes along the cyphering and integrity keys in the Authorization header, according to the _ETSI TS 129 229_ specifications. These are later on picked up by other components (such as P-CSCFs) to establish the secure channel.",
+  "how_it_works": "Authentication Vectors (or AVs) consist of a set of five parameter (RAND, AUTN, XRES, CK, IK) that are being used for mutual authentication. As these need to be exchanged between the device (UE) and network through a different channel (i.e. Diameter Cx interface in LTE networks), the module does not provide any means to fetch the AV information. It does, however, provide a generic interface (called AV Manage Interface) to store AVs (that are being fetched by other modules/channels), manage them and use them in the digest authentication algorithm.\n\nBasic AV operations that the module performs:\n\n*   Ask for a new AV to be fetched for a specific user identity\n    \n*   Manage an AV lifetime, including reuses\n    \n*   Mark an AV as being used in a digest challeng\n    \n*   Invalidate or discard an AV (due to various reasons)\n    \n\nA module that implements the AV Manage Interface (called AV Manager) should be able to fetch all five parameters of an AV, and push them in the AV Storage.",
+  "dependencies_required": [
+    {
+      "name": "auth",
+      "type": "module",
+      "reason": "Authentication framework",
+      "optional": false
+    },
+    {
+      "name": "AV manage module",
+      "type": "module",
+      "reason": "at least one module that fetches AVs and pushes them in the AV storage",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_av_mgm",
+      "type": "string",
+      "description": "The default AV Manager used in case the functions do not provide them explicitly.",
+      "example_value": "diameter",
+      "example_code": "modparam(\"auth\\_aka\", \"default\\_av\\_mgm\", \"diameter\") # fetch AVs through the Cx interface"
+    },
+    {
+      "name": "default_qop",
+      "type": "string",
+      "default_value": "auth",
+      "description": "The default qop parameter used during challenge, if the functions do not provide them explicitly.",
+      "example_value": "auth,auth-int",
+      "example_code": "modparam(\"auth\\_aka\", \"default\\_qop\", \"auth,auth-int\")"
+    },
+    {
+      "name": "default_algorithm",
+      "type": "string",
+      "default_value": "AKAv1-MD5",
+      "description": "The default algorithm to be advertise during challenge, if the functions do not provide them explicitly. Note that at least one of the algorithms provided should be an AKA one, otherwise it makes no sense to use this module.",
+      "example_value": "AKAv2-MD5",
+      "example_code": "modparam(\"auth\\_aka\", \"default\\_algorithm\", \"AKAv2-MD5\")",
+      "notes": "WARNING: only AKAv1* algorithms are currently supported."
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "4096",
+      "description": "The size of the hash that stores the AVs for each user. Must be a power of 2 number.",
+      "example_value": "1024",
+      "example_code": "modparam(\"auth\\_aka\", \"hash\\_size\", 1024)"
+    },
+    {
+      "name": "sync_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "The amount of milliseconds a synchronous call should wait for getting an authentication vector.",
+      "valid_range_min": 0,
+      "example_value": "200",
+      "example_code": "modparam(\"auth\\_aka\", \"sync\\_timeout\", 200)",
+      "notes": "A value of 0 indicates to wait indefinitely."
+    },
+    {
+      "name": "async_timeout",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "The amount of milliseconds an asynchronous call should wait for getting an authentication vector.",
+      "valid_range_min": 1,
+      "example_value": "2000",
+      "example_code": "modparam(\"auth\\_aka\", \"async\\_timeout\", 2000)",
+      "notes": "Must be a positive value, greater than 0. NOTE: the current timeout mechanism only has seconds granularity, therefore you should configure this parameter as a multiple of 1000."
+    },
+    {
+      "name": "unused_timeout",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The amount of seconds an authentication vector that has not been used can stay in memory. Once this timeout is reached, the authentication vector is removed.",
+      "valid_range_min": 1,
+      "example_value": "120",
+      "example_code": "modparam(\"auth\\_aka\", \"unused\\_timeout\", 120)",
+      "notes": "Must be a positive value, greater than 0."
+    },
+    {
+      "name": "unused_timeout",
+      "type": "integer",
+      "default_value": "30",
+      "description": "The amount of seconds an authentication vector that is being used in the authentication process shall stay in memory. Once this timeout is reached, the authentication vector is removed, and the authentication using it will fail.",
+      "valid_range_min": 1,
+      "example_value": "10",
+      "example_code": "modparam(\"auth\\_aka\", \"pending\\_timeout\", 10)",
+      "notes": "Must be a positive value, greater than 0. Note: The example code refers to this parameter as 'pending_timeout'."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "aka_www_authorize",
+      "signature": "aka_www_authorize([realm])",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": false,
+          "description": "Realm is a opaque string that the user agent should present to the user so he can decide what username and password to use. This is usually one of the domains the proxy is responsible for. If an empty string “” is used then the server will generate realm from host part of From header field URI."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-6",
+          "condition": "sync request - the auts parameter was was present, thus a sync was requested"
+        },
+        {
+          "value": "-5",
+          "condition": "generic error - some generic error occurred and no reply was sent out"
+        },
+        {
+          "value": "-4",
+          "condition": "no credentials - credentials were not found in request"
+        },
+        {
+          "value": "-3",
+          "condition": "unknown nonce - authentication vector with the corresponding nonce was not found"
+        },
+        {
+          "value": "-2",
+          "condition": "invalid password - password does not match the authentication vector"
+        },
+        {
+          "value": "-1",
+          "condition": "invalid username - no username found in the Authorize header"
+        },
+        {
+          "value": "positive",
+          "condition": "credentials verified successfully"
+        }
+      ],
+      "description": "The function verifies credentials according to RFC3310, by using an authentication vector priorly allocated by an aka_www_challenge() call, using the av_mgm manager. If the credentials are verified successfully the function will succeed, otherwise it will fail with an appropriate error code. In case the function succeeds, the WWW-Authenticate header is being added to the reply, containing the challenge information, as well as the Integrity-Key and the Confidentiality-Key values associated to the AV being used. If the credentials are verified successfully then the function will succeed and mark the credentials as authorized (marked credentials can be later used by some other functions).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aka_www_authorize(\"diameter\", \"siphub.com\"))\n\taka_www_challenge(\"diameter\", \"siphub.com\", \"auth\");\n...",
+          "description": "aka_www_authorize usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "aka_www_challenge"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "aka_proxy_authorize",
+      "signature": "aka_proxy_authorize([realm])",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": false,
+          "description": "Realm is a opaque string that the user agent should present to the user so he can decide what username and password to use. This is usually one of the domains the proxy is responsible for. If an empty string “” is used then the server will generate realm from host part of From header field URI."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-6",
+          "condition": "sync request - the auts parameter was was present, thus a sync was requested"
+        },
+        {
+          "value": "-5",
+          "condition": "generic error - some generic error occurred and no reply was sent out"
+        },
+        {
+          "value": "-4",
+          "condition": "no credentials - credentials were not found in request"
+        },
+        {
+          "value": "-3",
+          "condition": "unknown nonce - authentication vector with the corresponding nonce was not found"
+        },
+        {
+          "value": "-2",
+          "condition": "invalid password - password does not match the authentication vector"
+        },
+        {
+          "value": "-1",
+          "condition": "invalid username - no username found in the Authorize header"
+        },
+        {
+          "value": "positive",
+          "condition": "credentials verified successfully"
+        }
+      ],
+      "description": "The function behaves the same as aka_www_authorize(), but it authenticates the user from a proxy perspective. It receives the same parameters, with the same meaning, and returns the same values.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aka_proxy_authorize(\"siphub.com\"))\n\taka_proxy_challenge(\"diameter\", \"siphub.com\", \"auth\");\n...",
+          "description": "aka_proxy_authorize usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "aka_proxy_challenge",
+        "aka_www_authorize"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "aka_www_challenge",
+      "signature": "aka_www_challenge([av_mgm[, realm[ ,qop[, alg]]]])",
+      "parameters": [
+        {
+          "name": "av_mgm",
+          "type": "string",
+          "required": false,
+          "default": "value of default_av_mgm module parameter",
+          "description": "The AV Manager to be used for this challenge, in case an AV is not already available for the challenged user identity."
+        },
+        {
+          "name": "realm",
+          "type": "string",
+          "required": false,
+          "default": "value of From domain",
+          "description": "Realm is an opaque string that the user agent should present to the user so it can decide what username and password to use. Usually this is domain of the host the server is running on."
+        },
+        {
+          "name": "qop",
+          "type": "string",
+          "required": false,
+          "default": "value of default_qop module parameter",
+          "description": "Value of this parameter can be either “auth”, “auth-int” or both (separated by _,_). When this parameter is set the server will put a qop parameter in the challenge.",
+          "valid_values": [
+            "auth",
+            "auth-int"
+          ]
+        },
+        {
+          "name": "alg",
+          "type": "string",
+          "required": false,
+          "default": "value of default_algorithm module parameter",
+          "description": "Value of this parameter is a comma-separated list of digest algorithms to be offered for the UAC to use for authentication.",
+          "valid_values": [
+            "AKAv1-MD5",
+            "AKAv1-MD5-sess",
+            "AKAv1-SHA-256",
+            "AKAv1-SHA-256-sess",
+            "AKAv1-SHA-512-256",
+            "AKAv1-SHA-512-256-sess",
+            "AKAv2-MD5",
+            "AKAv2-MD5-sess",
+            "AKAv2-SHA-256",
+            "AKAv2-SHA-256-sess",
+            "AKAv2-SHA-512-256",
+            "AKAv2-SHA-512-256-sess"
+          ]
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "generic parsing error, generated when there is not enoough data to build the challange"
+        },
+        {
+          "value": "-2",
+          "condition": "no AV vector could not be fetched"
+        },
+        {
+          "value": "-3",
+          "condition": "authentication headers could not be built"
+        },
+        {
+          "value": "-5",
+          "condition": "a reply could not be sent"
+        },
+        {
+          "value": "positive",
+          "condition": "the number of successful chalanges being sent in the reply; this value can be lower than the number of algorithms being requested in case there was a timeout waiting for some AVs"
+        }
+      ],
+      "description": "The function challenges a user agent. It fetches an authentication vector for each algorigthm used through the av_mgm Manager and generate one or more WWW-Authenticate header fields containing digest challenges. It will put the header field(s) into a response generated from the request the server is processing and will send the reply. Upon reception of such a reply the user agent should compute credentials using the used authentication vector annd retry the request. For more information regarding digest authentication see RFC2617, RFC3261, RFC3310 and RFC8760.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aka_www_authorize(\"siphub.com\")) {\n\taka_www_challenge(,\"siphub.com\", \"auth-int\", \"AKAv1-MD5\");\n}\n...",
+          "description": "aka_www_challenge usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "aka_proxy_challenge",
+      "signature": "aka_proxy_challenge([realm])",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": false,
+          "default": "value of To domain",
+          "description": "Realm is an opaque string that the user agent should present to the user so it can decide what username and password to use. Usually this is domain of the host the server is running on."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "generic parsing error, generated when there is not enoough data to build the challange"
+        },
+        {
+          "value": "-2",
+          "condition": "no AV vector could not be fetched"
+        },
+        {
+          "value": "-3",
+          "condition": "authentication headers could not be built"
+        },
+        {
+          "value": "-5",
+          "condition": "a reply could not be sent"
+        },
+        {
+          "value": "positive",
+          "condition": "the number of successful chalanges being sent in the reply"
+        }
+      ],
+      "description": "The function behaves the same as aka_www_challenge(), but it challenges the user from a proxy perspective. It receives the same parameters, with the same meaning, the only difference being that in case of the realm is missing, then it is taken from the the To domain, rather than from From domain. The header added is Proxy-Authenticate, rather than WWW-Authenticate. The rest of the parameters, behavior, as well as return values are the same.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!aka_proxy_authorize(\"siphub.com\"))\n\taka_proxy_challenge(,\"siphub.com\", \"auth\");\n...",
+          "description": "aka_proxy_challenge usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "aka_www_challenge"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "aka_av_add",
+      "signature": "aka_av_add(public_identity, private_identity, authenticate, authorize, confidentiality_key, integrity_key[, algorithms])",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "The public identity (IMPU) of the user to add authentication vector for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "The private identity (IMPI) of the user to add authentication vector for."
+        },
+        {
+          "name": "authenticate",
+          "type": "string",
+          "required": true,
+          "description": "The concatenation of the authentication challenge RAND and the token AUTN, encoded in hexa format."
+        },
+        {
+          "name": "authorize",
+          "type": "string",
+          "required": true,
+          "description": "The authorization string (XRES) used for authorizing the user, encoded in hexa format."
+        },
+        {
+          "name": "confidentiality_key",
+          "type": "string",
+          "required": true,
+          "description": "The Confidentiality-Key used in the AKA IPSec process, encoded in hexa format."
+        },
+        {
+          "name": "integrity_key",
+          "type": "string",
+          "required": true,
+          "description": "The Integrity-Key used in the AKA IPSec process, encoded in hexa format."
+        },
+        {
+          "name": "algorithms",
+          "type": "string",
+          "required": false,
+          "description": "AKA algorithms this AV should be used for. If missing, the AV can be used for any AKA algorithm."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [],
+      "description": "Adds an authentication vector for the user identitied by public_identity and private_identity.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\naka_av_add(\"sip:test@siphub.com\", \"test@siphub.com\",\n\t\t\t\"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=\", /* authenticate */\n\t\t\t\"00000262c0000014000028af2d6398cbe26eea69\", /* authorize */\n\t\t\t\"db7f8c4a58e17083974bba3b936d34c4\", /* ck */\n\t\t\t\"6151667b9ef815c1dcb87473685f062a\"  /* ik */);\n...",
+          "description": "aka_av_add usage",
+          "context": "any route"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "aka_av_drop",
+      "signature": "aka_av_drop(public_identity, private_identity, authenticate)",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "The public identity (IMPU) of the user to drop authentication vector for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "The private identity (IMPI) of the user to drop authentication vector for."
+        },
+        {
+          "name": "authenticate",
+          "type": "string",
+          "required": true,
+          "description": "The authenticate/nonce that identifies the authentication vector to be dropped."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [],
+      "description": "Drops the authentication vector corresponding to the authenticate/nonce value for an user identitied by public_identity and private_identity.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\naka_av_drop(\"sip:test@siphub.com\", \"test@siphub.com\",\n\t\t\t\"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=\");\n...",
+          "description": "aka_av_drop usage",
+          "context": "any route"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "aka_av_drop_all",
+      "signature": "aka_av_drop_all(public_identity, private_identity[, count])",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "The public identity (IMPU) of the user to drop authentication vectors for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "The private identity (IMPI) of the user to drop authentication vectors for."
+        },
+        {
+          "name": "count",
+          "type": "variable",
+          "required": false,
+          "description": "A variable to return the number of authentication vectors dropped."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [],
+      "description": "Drops all authentication vectors for an user identitied by public_identity and private_identity. This function is useful when a synchronization must be done.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\naka_av_drop_all(\"sip:test@siphub.com\", \"test@siphub.com\", $var(count));\n...",
+          "description": "aka_av_drop_all usage",
+          "context": "any route"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "aka_av_fail",
+      "signature": "aka_av_fail(public_identity, private_identity[, count])",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "The public identity (IMPU) of the user to drop authentication vectors for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "The private identity (IMPI) of the user to drop authentication vectors for."
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "required": false,
+          "default": "1",
+          "description": "The number of authentication vectors that failed."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [],
+      "description": "Marks the engine that an authentication vector query for a user has failed, unlocking the processing of the message. Note: this function is useful when you know that fetching a new authentication vector is not possible (due to various reasons) - calling it will resume the message procesing, using only the available AVs fetched so far.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\naka_av_fail(\"sip:test@siphub.com\", \"test@siphub.com\", 3);\n...",
+          "description": "aka_av_fail usage",
+          "context": "any route"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "auth_aka:av_add",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "the public identity (IMPU) of the user to add authentication vector for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "the private identity (IMPI) of the user to add authentication vector for."
+        },
+        {
+          "name": "authenticate",
+          "type": "string",
+          "required": true,
+          "description": "the concatenation of the authentication challenge RAND and the token AUTN, encoded in hexa format."
+        },
+        {
+          "name": "authorize",
+          "type": "string",
+          "required": true,
+          "description": "the authorization string (XRES) used for authorizing the user, encoded in hexa format."
+        },
+        {
+          "name": "confidentiality_key",
+          "type": "string",
+          "required": true,
+          "description": "the Confidentiality-Key used in the AKA IPSec process, encoded in hexa format."
+        },
+        {
+          "name": "integrity_key",
+          "type": "string",
+          "required": true,
+          "description": "the Integrity-Key used in the AKA IPSec process, encoded in hexa format."
+        },
+        {
+          "name": "algorithms",
+          "type": "string",
+          "required": false,
+          "description": "AKA algorithms this AV should be used for. If missing, the AV can be used for any AKA algorithm."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _aka\\_av\\_add_.\n\nAdds an Authentication Vector through the MI interface.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi auth_aka:av_add \\\n\t\t\t\t\tsip:test@siphub.com\n\t\t\t\t\ttest@siphub.com\n\t\t\t\t\tKFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=\n\t\t\t\t\t00000262c0000014000028af2d6398cbe26eea69\n\t\t\t\t\tdb7f8c4a58e17083974bba3b936d34c4\n\t\t\t\t\t6151667b9ef815c1dcb87473685f062a",
+          "description": "adds an AKA AV"
+        }
+      ]
+    },
+    {
+      "name": "auth_aka:av_drop",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "the public identity (IMPU) of the user to add authentication vector for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "the private identity (IMPI) of the user to add authentication vector for."
+        },
+        {
+          "name": "authenticate",
+          "type": "string",
+          "required": true,
+          "description": "the authenticate/nonce to indentify the authentication vector."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _aka\\_av\\_drop_.\n\nInvalidates an Authentication Vector of an user identified by its authenticate value.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi auth_aka:av_drop \\\n\t\t\t\t\tsip:test@siphub.com\n\t\t\t\t\ttest@siphub.com\n\t\t\t\t\tKFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=",
+          "description": "adds an AKA AV"
+        }
+      ]
+    },
+    {
+      "name": "auth_aka:av_drop_all",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "the public identity (IMPU) of the user to drop authentication vectors for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "the private identity (IMPI) of the user to drop authentication vectors for."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _aka\\_av\\_drop\\_all_.\n\nInvalidates all Authentication Vectors of an user through the MI interface.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi auth_aka:av_drop_all \\\n\t\t\t\t\tsip:test@siphub.com\n\t\t\t\t\ttest@siphub.com",
+          "description": "adds an AKA AV"
+        }
+      ]
+    },
+    {
+      "name": "auth_aka:av_fail",
+      "parameters": [
+        {
+          "name": "public_identity",
+          "type": "string",
+          "required": true,
+          "description": "the public identity (IMPU) of the user to add authentication vector for."
+        },
+        {
+          "name": "private_identity",
+          "type": "string",
+          "required": true,
+          "description": "the private identity (IMPI) of the user to add authentication vector for."
+        },
+        {
+          "name": "count",
+          "type": "integer",
+          "required": false,
+          "description": "the number of authentication vectors failures."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _aka\\_av\\_fail_.\n\nIndicates the fact that the fetching of an authentication vector has failed, unlocking the processing of the message.\n\n_Note:_ this function is useful when you know that fetching a new authentication vector is not possible (due to various reasons) - calling it will resume the message procesing, using only the available AVs fetched so far.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "$ opensips-cli -x mi aka_av_drop \\\n\t\t\t\t\tsip:test@siphub.com\n\t\t\t\t\ttest@siphub.com\n\t\t\t\t\tKFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=",
+          "description": "adds an AKA AV"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`default_av_mgm` parameter usage",
+      "description": "`default_av_mgm` parameter usage",
+      "code": "modparam(\"auth_aka\", \"default_av_mgm\", \"diameter\") # fetch AVs through the Cx interface"
+    },
+    {
+      "title": "`default_qop` parameter usage",
+      "description": "`default_qop` parameter usage",
+      "code": "modparam(\"auth_aka\", \"default_qop\", \"auth,auth-int\")"
+    },
+    {
+      "title": "`default_algorithm` parameter usage",
+      "description": "`default_algorithm` parameter usage",
+      "code": "modparam(\"auth_aka\", \"default_algorithm\", \"AKAv2-MD5\")"
+    },
+    {
+      "title": "`hash_size` parameter usage",
+      "description": "`hash_size` parameter usage",
+      "code": "modparam(\"auth_aka\", \"hash_size\", 1024)"
+    },
+    {
+      "title": "`sync_timeout` parameter usage",
+      "description": "`sync_timeout` parameter usage",
+      "code": "modparam(\"auth_aka\", \"sync_timeout\", 200)"
+    },
+    {
+      "title": "`async_timeout` parameter usage",
+      "description": "`async_timeout` parameter usage",
+      "code": "modparam(\"auth_aka\", \"async_timeout\", 2000)"
+    },
+    {
+      "title": "`unused_timeout` parameter usage",
+      "description": "`unused_timeout` parameter usage",
+      "code": "modparam(\"auth_aka\", \"unused_timeout\", 120)"
+    },
+    {
+      "title": "`pending_timeout` parameter usage",
+      "description": "`pending_timeout` parameter usage",
+      "code": "modparam(\"auth_aka\", \"pending_timeout\", 10)"
+    },
+    {
+      "title": "`aka_www_authorize` usage",
+      "description": "`aka_www_authorize` usage",
+      "code": "...\nif (!aka_www_authorize(\"diameter\", \"siphub.com\"))\n\taka_www_challenge(\"diameter\", \"siphub.com\", \"auth\");\n..."
+    },
+    {
+      "title": "`aka_proxy_authorize` usage",
+      "description": "`aka_proxy_authorize` usage",
+      "code": "...\nif (!aka_proxy_authorize(\"siphub.com\"))\n\taka_proxy_challenge(\"diameter\", \"siphub.com\", \"auth\");\n..."
+    },
+    {
+      "title": "aka_www_challenge usage",
+      "description": "aka_www_challenge usage",
+      "code": "...\nif (!aka_www_authorize(\"siphub.com\")) {\n\taka_www_challenge(,\"siphub.com\", \"auth-int\", \"AKAv1-MD5\");\n}\n..."
+    },
+    {
+      "title": "`aka_proxy_challenge` usage",
+      "description": "`aka_proxy_challenge` usage",
+      "code": "...\nif (!aka_proxy_authorize(\"siphub.com\"))\n\taka_proxy_challenge(,\"siphub.com\", \"auth\");\n..."
+    },
+    {
+      "title": "`aka_av_add` usage",
+      "description": "`aka_av_add` usage",
+      "code": "...\naka_av_add(\"sip:test@siphub.com\", \"test@siphub.com\",\n\t\t\t\"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=\", /* authenticate */\n\t\t\t\"00000262c0000014000028af2d6398cbe26eea69\", /* authorize */\n\t\t\t\"db7f8c4a58e17083974bba3b936d34c4\", /* ck */\n\t\t\t\"6151667b9ef815c1dcb87473685f062a\"  /* ik */);\n..."
+    },
+    {
+      "title": "`aka_av_drop` usage",
+      "description": "`aka_av_drop` usage",
+      "code": "...\naka_av_drop(\"sip:test@siphub.com\", \"test@siphub.com\",\n\t\t\t\"KFQ/MpR3cE3V9PxucEQS5KED8uUNYIAALFyk59sIJI4=\");\n..."
+    },
+    {
+      "title": "`aka_av_drop_all` usage",
+      "description": "`aka_av_drop_all` usage",
+      "code": "...\naka_av_drop_all(\"sip:test@siphub.com\", \"test@siphub.com\", $var(count));\n..."
+    },
+    {
+      "title": "`aka_av_fail` usage",
+      "description": "`aka_av_fail` usage",
+      "code": "...\naka_av_fail(\"sip:test@siphub.com\", \"test@siphub.com\", 3);\n..."
+    }
+  ]
+}

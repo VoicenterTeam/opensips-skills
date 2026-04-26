@@ -1,0 +1,92 @@
+{
+  "id": "module-cachedb_couchbase-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "cachedb_couchbase Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/cachedb_couchbase.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with a Couchbase server. It uses the libcouchbase client library to connect to the server instance, It uses the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:05:20.122Z",
+  "module_name": "cachedb_couchbase",
+  "overview": "This module is an implementation of a cache system designed to work with a Couchbase server. It uses the libcouchbase client library to connect to the server instance, It uses the Key-Value interface exported from the core.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libcouchbase >= 3.0",
+      "type": "library",
+      "reason": "must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The urls of the server groups that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations. It can be set more than one time. The prefix part of the URL will be the identifier that will be used from the script. The format of the URL is couchbase[:identifier]://[username:password@]IP:Port/bucket_name",
+      "example_value": "couchbase:group1://localhost:6379/default",
+      "example_code": "modparam(\"cachedb\\_couchbase\", \"cachedb\\_url\",\"couchbase:group1://localhost:6379/default\")\nmodparam(\"cachedb\\_couchbase\", \"cachedb\\_url\",\"couchbase:cluster1://random\\_url:8888/my\\_bucket\")\n# Multiple hosts\nmodparam(\"cachedb\\_couchbase\", \"cachedb\\_url\",\"couchbase:cluster1://random\\_url1:8888,random\\_url2:8888,random\\_url3:8888/my\\_bucket\")"
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "default_value": "3000000 ( 3 seconds )",
+      "description": "The max duration in microseconds that a couchbase op is expected to last.",
+      "example_value": "5000000",
+      "example_code": "modparam(\"cachedb\\_couchbase\", \"timeout\",5000000);"
+    },
+    {
+      "name": "exec_threshold",
+      "type": "integer",
+      "default_value": "0 ( unlimited - no warnings )",
+      "description": "The maximum number of microseconds that a couchbase query can last. Anything above the threshold will trigger a warning message to the log",
+      "example_value": "100000",
+      "example_code": "modparam(\"cachedb\\_couchbase\", \"exec\\_threshold\", 100000)"
+    },
+    {
+      "name": "lazy_connect",
+      "type": "integer",
+      "default_value": "0 ( Connect to all buckets on startup )",
+      "description": "Delay connecting to a bucket until the first time it is used. Connecting to many buckets at startup can be time consuming. This option allows for faster startup by delaying connections until they are needed. This option can be dangerous for untested bucket configurations/settings. Always test first without lazy_connect. This option will show errors in the log during the first access made to a bucket.",
+      "example_value": "1",
+      "example_code": "modparam(\"cachedb\\_couchbase\", \"lazy_connect\", 1);"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Demonstrates how to set the cachedb_url parameter to define Couchbase server connections, including single and multiple hosts.",
+      "code": "...\nmodparam(\"cachedb_couchbase\", \"cachedb_url\",\"couchbase:group1://localhost:6379/default\")\nmodparam(\"cachedb_couchbase\", \"cachedb_url\",\"couchbase:cluster1://random_url:8888/my_bucket\")\n# Multiple hosts\nmodparam(\"cachedb_couchbase\", \"cachedb_url\",\"couchbase:cluster1://random_url1:8888,random_url2:8888,random_url3:8888/my_bucket\")\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Set `timeout` parameter",
+      "description": "Demonstrates how to set the timeout parameter for Couchbase operations.",
+      "code": "...\nmodparam(\"cachedb_couchbase\", \"timeout\",5000000);\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Set `exec_threshold` parameter",
+      "description": "Demonstrates how to set the exec_threshold parameter to trigger warnings for long-running queries.",
+      "code": "...\nmodparam(\"cachedb_couchbase\", \"exec_threshold\", 100000)\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Set `lazy_connect` parameter",
+      "description": "Demonstrates how to enable lazy connection to buckets to speed up startup.",
+      "code": "...\nmodparam(\"cachedb_couchbase\", \"lazy_connect\", 1);\n...",
+      "explanation": ""
+    },
+    {
+      "title": "Use CouchBase servers",
+      "description": "Demonstrates how to use the CouchBase servers in the OpenSIPS script using cache_store, cache_fetch, and cache_remove functions.",
+      "code": "...\ncache_store(\"couchbase:group1\",\"key\",\"$ru value\");\ncache_fetch(\"couchbase:cluster1\",\"key\",$avp(10));\ncache_remove(\"couchbase:cluster1\",\"key\");\n...",
+      "explanation": ""
+    }
+  ]
+}

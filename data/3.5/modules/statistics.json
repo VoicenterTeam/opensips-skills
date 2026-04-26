@@ -1,0 +1,281 @@
+{
+  "id": "module-statistics-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "statistics Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/statistics.html",
+  "content_markdown": "The Statistics module is a wrapper over the internal statistics manager, allowing the script writer to dynamically define and use of statistic variables.\n\nBy bringing the statistics support into the script, it takes advantage of the script flexibility in defining logics, making possible implementation of any kind of statistic scenario.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:19:02.521Z",
+  "module_name": "statistics",
+  "overview": "The Statistics module is a wrapper over the internal statistics manager, allowing the script writer to dynamically define and use of statistic variables.\n\nBy bringing the statistics support into the script, it takes advantage of the script flexibility in defining logics, making possible implementation of any kind of statistic scenario.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "variable",
+      "type": "string",
+      "description": "Name of a new statistic variable. The name may be followed by additional flag which describe the variable behavior:\n\n*   _no_reset_ : variable cannot be reset.",
+      "example_code": "modparam(\"statistics\", \"variable\", \"register\\_counter\")\nmodparam(\"statistics\", \"variable\", \"active\\_calls/no_reset\")"
+    },
+    {
+      "name": "stat_groups",
+      "type": "string",
+      "description": "A comma-separated values string, specifying the statistic groups that may be used throughout the OpenSIPS script. Groups cannot contain leading or trailing whitespace characters.",
+      "example_code": "modparam(\"statistics\", \"stat\\_groups\", \"method, packet, response\")"
+    },
+    {
+      "name": "stat_series_profile",
+      "type": "string",
+      "description": "Used to define a statistic series profile. Has the following format: _name: \\[attr=value\\]\\*_, where _name_ represents the name of the profile, and _attr=value_ contains multiple settings of the defined profile. Possible attributes and their values are:\n\n*   _algorithm_ - indicates the way data should be stored and accumulated over the specified timeframe. Possible values are: _accumulate_, _average_ and _percentage_, as described in the **[Section 1.3, “Statistic Series”](#section_stat_series \"1.3. Statistic Series\")** paragraph (default is _accumulate_)\n    \n*   _hash_size_ - each statistic defined/used is stored in a hash map attached to the profile; this setting tunes the size of the hash (default is: 8)\n    \n*   _group_ - indicates the group where the statistics beloging to this profile are grouped (as described in **[stat_groups](#param_stat_groups \"1.5.2. stat_groups (string)\")** (default is to use the same group as the profile)\n    \n*   _window_ - the number of seconds a timeframe has; all older values (out of the specified window) are discarded (default is _60_ seconds)\n    \n*   _slots_ - the number of slots per window; used to tune the granularity of the circular buffer; the higher the number of slots is, the more accurate the resulted statistic; (default is the same value of the _window_ parameter)\n    \n*   _percentage_factor_ - used for _percentage_ algorithm profiles to specify the percentage factor to be used (defaults to _100_)\n    \nThis parameter can be set multiple times, for each profile needed.",
+      "possible_values": [
+        "accumulate",
+        "average",
+        "percentage"
+      ],
+      "example_code": "...\n# define a statistic that accumulates average values in the last minute\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"avg: algorithm=average\")\n...\n# define a statistic that accumulates average values in the 10 minutes\n# with 1 minute granularity (10 slots out of the 600s window)\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"avg\\_10m: algorithm=average window=600 slots=10\")\n...\n# define a statistic that computes the percentage of values in the last hour\n# with 10 minutes granularity (6 slots out of the 3600s window)\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"perc\\_1h: algorithm=percentage window=3600 slots=6\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "update_stat",
+      "signature": "update_stat(variable, value)",
+      "parameters": [
+        {
+          "name": "variable",
+          "type": "string",
+          "required": true,
+          "description": "variable to be updated"
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "required": true,
+          "description": "value to update with; it may be also negative"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Updates the value of the statistic variable with the new value.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "update_stat(\"register_counter\", 1);\n$var(a_calls) = \"active_calls\";\nupdate_stat($var(a_calls), -1);",
+          "description": "update_stat usage"
+        }
+      ]
+    },
+    {
+      "name": "reset_stat",
+      "signature": "reset_stat(variable)",
+      "parameters": [
+        {
+          "name": "variable",
+          "type": "string",
+          "required": true,
+          "description": "variable to be reset-ed"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Resets to zero the value of the statistic variable.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "reset_stat(\"register_counter\");\n$var(reg_counter) = \"register_counter\";\nupdate_stat($var(reg_counter));",
+          "description": "reset_stat usage"
+        }
+      ]
+    },
+    {
+      "name": "stat_iter_init",
+      "signature": "stat_iter_init(group, iter)",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "iter",
+          "type": "string",
+          "required": true,
+          "description": "internally matched to a corresponding iterator"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Re-initializes \"iter\" in order to begin iterating through all statistics belonging to the given \"group\".",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "stat_iter_init(\"packet\", \"iter\");",
+          "description": "stat_iter_init usage"
+        }
+      ]
+    },
+    {
+      "name": "stat_iter_next",
+      "signature": "stat_iter_next(name, val, iter)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "var",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "val",
+          "type": "var",
+          "required": true,
+          "description": ""
+        },
+        {
+          "name": "iter",
+          "type": "string",
+          "required": true,
+          "description": "internally matched to a corresponding iterator"
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "when reaching the end of iteration"
+        }
+      ],
+      "description": "Attempts to fetch the current statistic to which \"iter\" points. If successful, the relevant data will be written to \"name\" and \"val\", while also advancing \"iter\". Returns negative when reaching the end of iteration.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# periodically clear packet-related data\ntimer_route [clear_packet_stats, 7200] {\n\tstat_iter_init(\"packet\", \"iter\");\n\twhile (stat_iter_next($var(stat), $var(val), \"iter\"))\n\t\treset_stat(\"packet:$var(stat)\");\n}",
+          "description": "stat_iter_next usage",
+          "context": "timer_route"
+        }
+      ]
+    },
+    {
+      "name": "update_stat_series",
+      "signature": "update_stat_series(profile, variable, value)",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "the profile as defined in stat_series_profile"
+        },
+        {
+          "name": "variable",
+          "type": "string",
+          "required": true,
+          "description": "variable to be updated"
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "required": true,
+          "description": "value to update with; it may be also negative; when using percentage algorithm, the resulted value represents the percentage of positive values out of the total number of values (positive + negative)"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Updates the value of a series statistic.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# account failed calls\nupdate_stat_series(\"perc_1h\", \"ASR_1h\", -1);\n\n# account successful calls\nupdate_stat_series(\"perc_1h\", \"ASR_1h\", 1);\n\n# compute average PDD\nupdate_stat_series(\"avg\", \"PDD\", $var(pdd_ms));",
+          "description": "update_stat_series usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$stat",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "",
+      "description": "Allows \"get\" or \"reset\" operations on the given statistics.\n\nThe name of a statistic may be optionally prefixed with a searching group, along with a colon separator.\n\nIf a searching group is not provided, the statistic is first searched for in the core groups. If not found, search continues with the \"dynamic\" group which, by default, holds all non-explicitly grouped statistics which are not exported by the OpenSIPS core.\n\n**Example 1.9. `$stat` usage**\n\n...\nxlog(\"SHM used size = $stat(used\\_size), no\\_invites = $stat(method:invite)\\\\n\");\n...\n$stat(err\\_requests) = 0;\n..."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "variable example",
+      "description": "Name of a new statistic variable. The name may be followed by additional flag which describe the variable behavior: *no_reset* : variable cannot be reset.",
+      "code": "modparam(\"statistics\", \"variable\", \"register\\_counter\")\nmodparam(\"statistics\", \"variable\", \"active\\_calls/no\\_reset\")"
+    },
+    {
+      "title": "setting the stat_groups parameter",
+      "description": "A comma-separated values string, specifying the statistic groups that may be used throughout the OpenSIPS script. Groups cannot contain leading or trailing whitespace characters.",
+      "code": "modparam(\"statistics\", \"stat\\_groups\", \"method, packet, response\")"
+    },
+    {
+      "title": "setting the stat_series_profile parameter",
+      "description": "Used to define a statistic series profile. Has the following format: name: [attr=value]*, where name represents the name of the profile, and attr=value contains multiple settings of the defined profile. Possible attributes and their values are: *algorithm* - indicates the way data should be stored and accumulated over the specified timeframe. Possible values are: *accumulate*, *average* and *percentage*, as described in the Section 1.3, “Statistic Series” paragraph (default is *accumulate*) *hash_size* - each statistic defined/used is stored in a hash map attached to the profile; this setting tunes the size of the hash (default is: 8) *group* - indicates the group where the statistics beloging to this profile are grouped (as described in stat_groups (default is to use the same group as the profile) *window* - the number of seconds a timeframe has; all older values (out of the specified window) are discarded (default is *60* seconds) *slots* - the number of slots per window; used to tune the granularity of the circular buffer; the higher the number of slots is, the more accurate the resulted statistic; (default is the same value of the *window* parameter) *percentage_factor* - used for *percentage* algorithm profiles to specify the percentage factor to be used (defaults to *100*) This parameter can be set multiple times, for each profile needed.",
+      "code": "...\n# define a statistic that accumulates average values in the last minute\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"avg: algorithm=average\")\n...\n# define a statistic that accumulates average values in the 10 minutes\n# with 1 minute granularity (10 slots out of the 600s window)\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"avg\\_10m: algorithm=average window=600 slots=10\")\n...\n# define a statistic that computes the percentage of values in the last hour\n# with 10 minutes granularity (6 slots out of the 3600s window)\nmodparam(\"statistics\", \"stat\\_series\\_profile\", \"perc\\_1h: algorithm=percentage window=3600 slots=6\")\n..."
+    },
+    {
+      "title": "`update_stat` usage",
+      "description": "Updates the value of the statistic variable with the new value. Meaning of the parameters is as follows: *variable* (string) - variable to be updated; *value* (int) - value to update with; it may be also negative. This function can be used from REQUEST_ROUTE, BRANCH_ROUTE, FAILURE_ROUTE and ONREPLY_ROUTE.",
+      "code": "...\nupdate\\_stat(\"register\\_counter\", 1);\n...\n$var(a\\_calls) = \"active\\_calls\";\nupdate\\_stat($var(a\\_calls), -1);\n..."
+    },
+    {
+      "title": "`reset_stat` usage",
+      "description": "Resets to zero the value of the statistic variable. Meaning of the parameters is as follows: *variable* (string) - variable to be reset-ed This function can be used from REQUEST_ROUTE, BRANCH_ROUTE, FAILURE_ROUTE and ONREPLY_ROUTE.",
+      "code": "...\nreset\\_stat(\"register\\_counter\");\n...\n$var(reg\\_counter) = \"register\\_counter\";\nupdate\\_stat($var(reg\\_counter));\n..."
+    },
+    {
+      "title": "`stat_iter_init` usage",
+      "description": "Re-initializes \"iter\" in order to begin iterating through all statistics belonging to the given \"group\". Meaning of the parameters is as follows: *group* (string) *iter* (string) - internally matched to a corresponding iterator This function can be used from REQUEST_ROUTE, BRANCH_ROUTE, FAILURE_ROUTE and ONREPLY_ROUTE.",
+      "code": "...\nstat\\_iter\\_init(\"packet\", \"iter\");\n..."
+    },
+    {
+      "title": "`stat_iter_next` usage",
+      "description": "Attempts to fetch the current statistic to which \"iter\" points. If successful, the relevant data will be written to \"name\" and \"val\", while also advancing \"iter\". Returns negative when reaching the end of iteration. Meaning of the parameters is as follows: *name* (var) *val* (var) *iter* (string) - internally matched to a corresponding iterator This function can be used from REQUEST_ROUTE, BRANCH_ROUTE, FAILURE_ROUTE and ONREPLY_ROUTE.",
+      "code": "...\n# periodically clear packet-related data\ntimer\\_route [clear\\_packet\\_stats, 7200] {\n\tstat\\_iter\\_init(\"packet\", \"iter\");\n\twhile (stat\\_iter\\_next($var(stat), $var(val), \"iter\"))\n\t\treset\\_stat(\"packet:$var(stat)\");\n}\n..."
+    },
+    {
+      "title": "`update_stat_series` usage",
+      "description": "Updates the value of a series statistic. Meaning of the parameters is as follows: *profile* (string) - the profile as defined in stat_series_profile *variable* (string) - variable to be updated; *value* (int) - value to update with; it may be also negative; when using *percentage* algorithm, the resulted value represents the percentage of positive values out of the total number of values (positive + negative) This function can be used from any route.",
+      "code": "...\n# account failed calls\nupdate\\_stat\\_series(\"perc\\_1h\", \"ASR\\_1h\", -1);\n\n# account successful calls\nupdate\\_stat\\_series(\"perc\\_1h\", \"ASR\\_1h\", 1);\n\n# compute average PDD\nupdate\\_stat\\_series(\"avg\", \"PDD\", $var(pdd\\_ms));\n..."
+    },
+    {
+      "title": "`$stat` usage",
+      "description": "Allows \"get\" or \"reset\" operations on the given statistics. The name of a statistic may be optionally prefixed with a searching group, along with a colon separator. If a searching group is not provided, the statistic is first searched for in the core groups. If not found, search continues with the \"dynamic\" group which, by default, holds all non-explicitly grouped statistics which are not exported by the OpenSIPS core.",
+      "code": "...\nxlog(\"SHM used size = $stat(used\\_size), no\\_invites = $stat(method:invite)\\n\");\n...\n$stat(err\\_requests) = 0;\n..."
+    }
+  ]
+}

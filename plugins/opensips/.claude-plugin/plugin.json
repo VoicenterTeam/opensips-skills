@@ -2,8 +2,8 @@
   "name": "opensips",
   "version": "1.0.0",
   "description": "OpenSIPs Skills: authoring, per-module reference, and security review for OpenSIPs SIP server configurations.",
-  "author": "OpenSIPS",
+  "author": "Voicenter",
   "homepage": "https://opensips.org",
-  "repository": "https://github.com/OpenSIPS/opensips-skills",
+  "repository": "https://github.com/VoicenterTeam/opensips-skills",
   "license": "GPL-3.0-or-later"
 }

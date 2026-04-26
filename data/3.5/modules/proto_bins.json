@@ -1,0 +1,183 @@
+{
+  "id": "module-proto_bins-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "proto_bins Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/proto_bins.html",
+  "content_markdown": "This module implements a secure Binary communication protocol over TLS, to be used by the OpenSIPS clustering engine provided by the clusterer module.\n\nOnce loaded, you will be able to define BINS listeners in your configuration file by adding their IP and, optionally, a listening port, similar to this example:\n...\nsocket= bins:127.0.0.1 \t\t# change the listening IP\nsocket= bins:127.0.0.1:5557\t# change the listening IP and port\n...",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:42:17.449Z",
+  "module_name": "proto_bins",
+  "overview": "This module implements a secure Binary communication protocol over TLS, to be used by the OpenSIPS clustering engine provided by the clusterer module.\n\nOnce loaded, you will be able to define BINS listeners in your configuration file by adding their IP and, optionally, a listening port, similar to this example:\n...\nsocket= bins:127.0.0.1 \t\t# change the listening IP\nsocket= bins:127.0.0.1:5557\t# change the listening IP and port\n...",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "tls_openssl or tls_wolfssl",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "proto_hep"
+  ],
+  "exported_parameters": [
+    {
+      "name": "bins_port",
+      "type": "integer",
+      "default_value": "5556",
+      "description": "The default port to be used by all BINS listeners.",
+      "example_value": "5557",
+      "example_code": "modparam(\"proto\\_bins\", \"bins\\_port\", 5557)"
+    },
+    {
+      "name": "bins_handshake_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Sets the timeout (in milliseconds) for the SSL/TLS handshake sequence to complete. It may be necessary to increase this value when using a CPU intensive cipher for the connection to allow time for keys to be generated and processed.\n\nThe timeout is invoked during acceptance of a new connection (inbound) and during the wait period when a new session is being initiated (outbound).",
+      "example_value": "200",
+      "example_code": "param(\"proto\\_tls\", \"bins\\_handshake\\_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "name": "bins_send_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "Sets the timeout (in milliseconds) for blocking send operations to complete.\n\nThe send timeout is invoked for all TLS write operations, excluding the handshake process (see: bins\\_handshake\\_timeout)",
+      "example_value": "200",
+      "example_code": "modparam(\"proto\\_bins\", \"bins\\_send\\_timeout\", 200)"
+    },
+    {
+      "name": "bins_max_msg_chunks",
+      "type": "integer",
+      "default_value": "32",
+      "description": "The maximum number of chunks in which a BINS message is expected to arrive via TCP. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "example_value": "8",
+      "example_code": "modparam(\"proto\\_bins\", \"bins\\_max\\_msg\\_chunks\", 8)"
+    },
+    {
+      "name": "bins_async",
+      "type": "integer",
+      "default_value": "1 (enabled)",
+      "description": "Specifies whether the TCP/TLS connect and write operations should be done in an asynchronous mode (non-blocking connect and write) or not. If disabled, OpenSIPS will block and wait for TCP/TLS operations like connect and write.",
+      "example_value": "0",
+      "example_code": "modparam(\"proto\\_bins\", \"bins\\_async\", 0)"
+    },
+    {
+      "name": "bins_async_max_postponed_chunks",
+      "type": "integer",
+      "default_value": "32",
+      "description": "If bins_async is enabled, this specifies the maximum number of BINS messages that can be stashed for later/async writing. If the connection pending writes exceed this number, the connection will be marked as broken and dropped.",
+      "example_code": "modparam(\"proto_bins\", \"bins_async_max_postponed_chunks\", 16)"
+    },
+    {
+      "name": "bins_async_local_connect_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "If bin_async is enabled, this specifies the number of milliseconds that a connect will be tried in blocking mode (optimization). If the connect operation lasts more than this, the connect will go to async mode and will be passed to TCP MAIN for polling.",
+      "example_code": "modparam(\"proto_bins\", \"bins_async_local_connect_timeout\", 200)"
+    },
+    {
+      "name": "bins_async_handshake_timeout",
+      "type": "integer",
+      "default_value": "10 ms",
+      "description": "If _tls_async_ is enabled, this specifies the number of milliseconds that a TLS handshake should be tried in blocking mode (optimization). If the handshake operation lasts more than this, the write will go to async mode and will be passed to tls MAIN for polling.",
+      "example_code": "modparam(\"proto_tls\", \"bins_async_handshake_timeout\", 100)"
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about the client and server certificates, master key and network layer information shall be sent.",
+      "example_code": "modparam(\"proto_hep\", \"hep_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto_bins\", \"trace_destination\", \"hep_dest\")",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**)."
+    },
+    {
+      "name": "trace_on",
+      "type": "int",
+      "default_value": "0(tracing inactive)",
+      "description": "This controls whether tracing for tls is on or not. You still need to define [trace_destination](#param_trace_destination \"1.3.9.�trace_destination (string)\")in order to work, but this value will be controlled using mi function [bins_trace](#mi_bins_trace \"1.4.1.� bins_trace\").",
+      "example_code": "modparam(\"proto_bins\", \"trace_on\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "bins_trace",
+      "parameters": [
+        {
+          "name": "trace_mode",
+          "type": "string",
+          "required": false,
+          "description": "set bins tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off ); Possible values: on, off"
+        }
+      ],
+      "description": "set bins tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off );",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi bins_trace on",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `bins_port` parameter",
+      "description": "Set `bins_port` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_port\", 5557)\n..."
+    },
+    {
+      "title": "Set `bins_handshake_timeout` variable",
+      "description": "Set `bins_handshake_timeout` variable",
+      "code": "param(\"proto_tls\", \"bins_handshake_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "title": "Set `bins_send_timeout` parameter",
+      "description": "Set `bins_send_timeout` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_send_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `bins_max_msg_chunks` parameter",
+      "description": "Set `bins_max_msg_chunks` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_max_msg_chunks\", 8)\n..."
+    },
+    {
+      "title": "Set `bins_async` parameter",
+      "description": "Set `bins_async` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_async\", 0)\n..."
+    },
+    {
+      "title": "Set `bins_async_max_postponed_chunks` parameter",
+      "description": "Set `bins_async_max_postponed_chunks` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_async_max_postponed_chunks\", 16)\n..."
+    },
+    {
+      "title": "Set `bins_async_local_connect_timeout` parameter",
+      "description": "Set `bins_async_local_connect_timeout` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"bins_async_local_connect_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `bins_async_handshake_timeout` parameter",
+      "description": "Set `bins_async_handshake_timeout` parameter",
+      "code": "\t...\n\tmodparam(\"proto_tls\", \"bins_async_handshake_timeout\", 100)\n\t..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Set `trace_destination` parameter",
+      "code": "...\nmodparam(\"proto_hep\", \"hep_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto_bins\", \"trace_destination\", \"hep_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "Set `trace_on` parameter",
+      "code": "...\nmodparam(\"proto_bins\", \"trace_on\", 1)\n..."
+    }
+  ]
+}

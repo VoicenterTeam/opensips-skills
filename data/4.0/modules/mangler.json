@@ -1,0 +1,241 @@
+{
+  "id": "module-mangler-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mangler Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mangler.html",
+  "content_markdown": "This is a module to help with SDP mangling. Note: This module is obselete and will be removed for the 1.5.0 release.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:03:48.002Z",
+  "module_name": "mangler",
+  "overview": "This is a module to help with SDP mangling. Note: This module is obselete and will be removed for the 1.5.0 release.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "contact_flds_separator",
+      "type": "string",
+      "default_value": "*",
+      "description": "First char of this parameter is used as separator for encoding/decoding Contact header.",
+      "example_value": "-",
+      "example_code": "...\nmodparam(\"mangler\", \"contact\\_flds\\_separator\", \"-\")\n...",
+      "notes": "First char of this field must be set to a value which is not used inside username,password or other fields of contact. Otherwise it is possible for the decoding step to fail/produce wrong results.\n\nthen an encoded uri might look sip:user-password-ip-port-protocol@PublicIP"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sdp_mangle_ip",
+      "signature": "sdp_mangle_ip(pattern, newip)",
+      "parameters": [
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": true,
+          "description": "A pair ip/mask used to match IP's located inside SDP package in lines c=IN IP4 ip. This lines will only be mangled if located IP is in the network described by this pattern. Examples of valid patterns are “10.0.0.0/255.0.0.0” or “10.0.0.0/8” etc.",
+          "valid_values": [
+            "10.0.0.0/255.0.0.0",
+            "10.0.0.0/8"
+          ]
+        },
+        {
+          "name": "newip",
+          "type": "string",
+          "required": true,
+          "description": "the new IP to be put inside SDP package if old IP address matches pattern."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "on error"
+        },
+        {
+          "value": "number of replacements + 1",
+          "condition": "on success"
+        }
+      ],
+      "description": "Changes IP addresses inside SDP package in lines describing connections like c=IN IP4 Currently in only changes IP4 addresses since IP6 probably will not need to traverse NAT :)",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sdp_mangle_ip(\"10.0.0.0/8\",\"193.175.135.38\");",
+          "description": "`sdp_mangle_ip` usage"
+        }
+      ]
+    },
+    {
+      "name": "sdp_mangle_port",
+      "signature": "sdp_mangle_port(offset)",
+      "parameters": [
+        {
+          "name": "offset",
+          "type": "int",
+          "required": true,
+          "description": "an integer which will be added/subtracted from the located port."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "on error"
+        },
+        {
+          "value": "number of replacements + 1",
+          "condition": "on success"
+        }
+      ],
+      "description": "Changes ports inside SDP package in lines describing media like m=audio 13451.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "sdp_mangle_port(-12000);",
+          "description": "`sdp_mangle_port` usage"
+        }
+      ]
+    },
+    {
+      "name": "encode_contact",
+      "signature": "encode_contact(encoding_prefix, public_ip)",
+      "parameters": [
+        {
+          "name": "encoding_prefix",
+          "type": "string",
+          "required": true,
+          "description": "Something to allow us to determine that a contact is encoded publicip--a routable IP, most probably you should put your external IP of your NAT box."
+        },
+        {
+          "name": "public_ip",
+          "type": "string",
+          "required": true,
+          "description": "The public IP which will be used in the encoded contact, as described by the example above."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "on error"
+        },
+        {
+          "value": "1",
+          "condition": "on success"
+        }
+      ],
+      "description": "This function will encode uri-s inside Contact header in the following manner sip:username:password@ip:port;transport=protocol goes sip:enc_pref*username*ip*port*protocol@public_ip * is the default separator.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ($si == 10.0.0.0/8) encode_contact(\"enc_prefix\",\"193.175.135.38\");",
+          "description": "`encode_contact` usage"
+        }
+      ]
+    },
+    {
+      "name": "decode_contact",
+      "signature": "decode_contact()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "on error"
+        },
+        {
+          "value": "1",
+          "condition": "on success"
+        }
+      ],
+      "description": "This function will decode the URI in first line in packets which come with encoded URI in the following manner sip:enc_pref*username*ip*port*protocol@public_ip goes to sip:username:password@ip:port;transport=protocol It uses the default set parameter for contact encoding separator.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ($ru =~ \"^enc*\") { decode_contact(); }",
+          "description": "`decode_contact` usage"
+        }
+      ]
+    },
+    {
+      "name": "decode_contact_header",
+      "signature": "decode_contact_header()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "negative",
+          "condition": "on error"
+        },
+        {
+          "value": "1",
+          "condition": "on success"
+        }
+      ],
+      "description": "This function will decode URIs inside Contact header in the following manner sip:enc_pref*username*ip*port*protocol@public_ip goes to sip:username:password@ip:port;transport=protocol. It uses the default set parameter for contact encoding separator.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ($ru =~ \"^enc*\") { decode_contact_header(); }",
+          "description": "`decode_contact_header` usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `contact_flds_separator` parameter",
+      "code": "...\nmodparam(\"mangler\", \"contact\\_flds\\_separator\", \"-\")\n...",
+      "explanation": "then an encoded uri might look sip:user-password-ip-port-protocol@PublicIP"
+    },
+    {
+      "title": "`sdp_mangle_ip` usage",
+      "description": "Usage of `sdp_mangle_ip` function",
+      "code": "...\nsdp\\_mangle\\_ip(\"10.0.0.0/8\",\"193.175.135.38\");\n..."
+    },
+    {
+      "title": "`sdp_mangle_port` usage",
+      "description": "Usage of `sdp_mangle_port` function",
+      "code": "...\nsdp\\_mangle\\_port(-12000);\n..."
+    },
+    {
+      "title": "`encode_contact` usage",
+      "description": "Usage of `encode_contact` function",
+      "code": "...\nif ($si == 10.0.0.0/8) encode\\_contact(\"enc\\_prefix\",\"193.175.135.38\"); \n..."
+    },
+    {
+      "title": "`decode_contact` usage",
+      "description": "Usage of `decode_contact` function",
+      "code": "...\nif ($ru =~ \"^enc\\*\") { decode\\_contact(); }\n..."
+    },
+    {
+      "title": "`decode_contact_header` usage",
+      "description": "Usage of `decode_contact_header` function",
+      "code": "...\nif ($ru =~ \"^enc\\*\") { decode\\_contact\\_header(); }\n..."
+    }
+  ]
+}

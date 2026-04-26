@@ -1,0 +1,413 @@
+{
+  "id": "module-ldap-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "ldap Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/ldap.html",
+  "content_markdown": "The LDAP module implements an LDAP search interface for OpenSIPS. It exports script functions to perform an LDAP search operation and to store the search results as OpenSIPS AVPs. This allows for using LDAP directory data in the OpenSIPS SIP message routing script.\n\nThe following features are offered by the LDAP module:\n\n*   LDAP search function taking an LDAP URL as input both synchronous and asynchronous\n    \n*   LDAP result parsing functions to store LDAP data as AVP\n    \n*   Support for accessing multiple LDAP servers\n    \n*   LDAP SIMPLE authentication\n    \n*   LDAP server failover and automatic reconnect\n    \n*   Configurable LDAP connection and bind timeouts\n    \n*   Module API for LDAP search operations that can be used by other OpenSIPS modules\n    \n*   StartTLS support",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:29:26.967Z",
+  "module_name": "ldap",
+  "overview": "The LDAP module implements an LDAP search interface for OpenSIPS. It exports script functions to perform an LDAP search operation and to store the search results as OpenSIPS AVPs. This allows for using LDAP directory data in the OpenSIPS SIP message routing script.\n\nThe following features are offered by the LDAP module:\n\n*   LDAP search function taking an LDAP URL as input both synchronous and asynchronous\n    \n*   LDAP result parsing functions to store LDAP data as AVP\n    \n*   Support for accessing multiple LDAP servers\n    \n*   LDAP SIMPLE authentication\n    \n*   LDAP server failover and automatic reconnect\n    \n*   Configurable LDAP connection and bind timeouts\n    \n*   Module API for LDAP search operations that can be used by other OpenSIPS modules\n    \n*   StartTLS support",
+  "how_it_works": "The module implementation makes use of the open source OpenLDAP library available on most UNIX/Linux platforms. Besides LDAP server failover and automatic reconnect, this module can handle multiple LDAP sessions concurrently allowing to access data stored on different LDAP servers. Each OpenSIPS worker process maintains one LDAP TCP connection per configured LDAP server. This enables parallel execution of LDAP requests and offloads LDAP concurrency control to the LDAP server(s).\n\nAn LDAP search module API is provided that can be used by other OpenSIPS modules. A module using this API does not have to implement LDAP connection management and configuration, while still having access to the full OpenLDAP API for searching and result handling.\n\nSince LDAP server implementations are optimized for fast read access they are a good choice to store SIP provisioning data. Performance tests have shown that this module achieves lower data access times and higher call rates than other database modules like e.g. the OpenSIPS MYSQL module.",
+  "dependencies_required": [
+    {
+      "name": "OpenLDAP library (libldap)",
+      "type": "library",
+      "reason": "needed for compilation",
+      "optional": false
+    },
+    {
+      "name": "libldap header files (libldap-dev)",
+      "type": "library",
+      "reason": "needed for compilation",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "config_file",
+      "type": "string",
+      "default_value": "/usr/local/etc/opensips/ldap.cfg",
+      "description": "Full path to LDAP configuration file.",
+      "example_value": "/etc/opensips/ldap.ini",
+      "example_code": "modparam(\"ldap\", \"config\\_file\", \"/etc/opensips/ldap.ini\")"
+    },
+    {
+      "name": "max_async_connections",
+      "type": "integer",
+      "default_value": "20",
+      "description": "Number of maximum asynchronous connections that will be started with the ldap server for executing asynchronous ldap\\_search calls. The number of connections is per process, so if there are 8 worker processes with 20 max\\_async\\_connections, there will be a maximum of 160 connections to the ldap server.",
+      "example_value": "50",
+      "example_code": "modparam(\"ldap\", \"max\\_async\\_connections\", 50)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "ldap_search",
+      "signature": "ldap_search(ldap_url)",
+      "parameters": [
+        {
+          "name": "ldap_url",
+          "type": "string",
+          "required": true,
+          "description": "An LDAP URL defining the LDAP search operation (refer to Section 1.1.2, “LDAP URLs” for a description of the LDAP URL format). The hostport part must be one of the LDAP session names declared in the LDAP configuration script."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "n > 0",
+          "condition": "Found n matching LDAP entries"
+        },
+        {
+          "value": "-1",
+          "condition": "No matching LDAP entries found"
+        },
+        {
+          "value": "-2",
+          "condition": "LDAP error (e.g. LDAP server unavailable), or internal error"
+        }
+      ],
+      "description": "Performs an LDAP search operation using given LDAP URL and stores result internally for later retrieval by ldap_result* functions. If one ore more LDAP entries are found the function returns the number of found entries which evaluates to TRUE in the OpenSIPS configuration script. It returns -1 (FALSE) in case no LDAP entry was found, and -2 (FALSE) if an internal error like e.g. an LDAP error occurred.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "text",
+          "code": "ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=schlatter)\n\nldap://ldap_1/dc=example,dc=com?\n       SIPIdentityUserName,SIPIdentityServiceLevel?sub?(cn=$(avp(name)))",
+          "description": "Search with LDAP session named sipaccounts, base ou=sip,dc=example,dc=com, one level deep using search filter (cn=schlatter) and returning all attributes. Subtree search with LDAP session named ldap1, base dc=example,dc=com using search filter (cn=$(avp(name))) and returning SIPIdentityUserName and SIPIdentityServiceLevel attributes"
+        },
+        {
+          "language": "opensips",
+          "code": "...\n# ldap search\nif (!ldap_search(\"ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=$rU)\"))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # no LDAP entry found\n        sl_send_reply(404, \"User Not Found\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\nxlog(\"L_INFO\", \"ldap_search: found [$retcode] entries for (cn=$rU)\");\n\n# save telephone number in $avp(tel_number)\nldap_result(\"telephoneNumber/$avp(tel_number)\");\n...",
+          "description": "Example Usage"
+        }
+      ]
+    },
+    {
+      "name": "ldap_result",
+      "signature": "ldap_result(ldap_attr_name, avp_spec, [avp_type], [regex_subst])",
+      "parameters": [
+        {
+          "name": "ldap_attr_name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the LDAP attribute who's value should be stored, e.g. SIPIdentityServiceLevel or telephonenumber"
+        },
+        {
+          "name": "avp_spec",
+          "type": "var",
+          "required": true,
+          "description": "Specification of destination AVP, e.g. $avp(service_level) or $avp(12)"
+        },
+        {
+          "name": "avp_type",
+          "type": "string",
+          "required": false,
+          "description": "Specification of destination AVP type, either str or int. If this parameter is not specified then the LDAP attribute values are stored as AVP of type string.",
+          "valid_values": [
+            "str",
+            "int"
+          ]
+        },
+        {
+          "name": "regex_subst",
+          "type": "string",
+          "required": false,
+          "description": "Regex substitution that gets applied to LDAP attribute value before storing it as AVP, e.g. \"/^sip:(.+)$/\\1/\" to strip off \"sip:\" from the beginning of an LDAP attribute value."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "n > 0",
+          "condition": "LDAP attribute ldap_attr_name found in LDAP result set and n LDAP attribute values stored in avp_spec"
+        },
+        {
+          "value": "-1",
+          "condition": "No LDAP attribute ldap_attr_name found in LDAP result set"
+        },
+        {
+          "value": "-2",
+          "condition": "Internal error occurred"
+        }
+      ],
+      "description": "This function converts LDAP attribute values into AVPs for later use in the message routing script. It accesses the LDAP result set fetched by the last ldap_search call. ldap_attr_name specifies the LDAP attribute name who's value should be stored in AVP avp_spec. Multi valued LDAP attributes generate an indexed AVP. The optional regex_subst parameter allows to further define what part of an attribute value should be stored as AVP. An AVP can either be of type string or integer. As default, ldap_result stores LDAP attribute values as AVP of type string. The optional avp_type parameter can be used to explicitly specify the type of the AVP. It can be either str for string, or int for integer. If avp_type is specified as int then ldap_result tries to convert the LDAP attribute values to integer. In this case, the values are only stored as AVP if the conversion to integer is successful.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\n# ldap_search call\n...\n\n# save SIPIdentityServiceLevel in $avp(service_level)\nif (!ldap_result(\"SIPIdentityServiceLevel\", $avp(service_level)))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # no SIPIdentityServiceLevel found\n        sl_send_reply(403, \"Forbidden\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\n\n# save SIP URI domain in $avp(10)\nldap_result(\"SIPIdentitySIPURI\", $avp(10), \"/^[^@]+@(.+)$/\\1/\");\n...",
+          "description": "Example Usage"
+        }
+      ]
+    },
+    {
+      "name": "ldap_result_check",
+      "signature": "ldap_result_check(ldap_attr_name, string_to_match, [, regex_subst])",
+      "parameters": [
+        {
+          "name": "ldap_attr_name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the LDAP attribute who's value should be matched, e.g. SIPIdentitySIPURI"
+        },
+        {
+          "name": "string_to_match",
+          "type": "string",
+          "required": true,
+          "description": "String to be matched. Included AVPs and pseudo variabels do get expanded."
+        },
+        {
+          "name": "regex_subst",
+          "type": "string",
+          "required": false,
+          "description": "Regex substitution that gets applied to LDAP attribute value before comparing it with string_to_match, e.g. \"/^[^@]@+(.+)$/\\1/\" to extract the domain part of a SIP URI"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "One or more ldap_attr_name attribute values match string_to_match (after regex_subst is applied)"
+        },
+        {
+          "value": "-1",
+          "condition": "ldap_attr_name attribute not found or attribute value doesn't match string_to_match (after regex_subst is applied)"
+        },
+        {
+          "value": "-2",
+          "condition": "Internal error occurred"
+        }
+      ],
+      "description": "This function compares ldap_attr_name's value with string_to_match for equality. It accesses the LDAP result set fetched by the last ldap_search call. The optional regex_subst parameter allows to further define what part of the attribute value should be used for the equality match. If ldap_attr_name is multi valued, each value is checked against string_to_match. If one or more of the values do match the function returns 1 (TRUE).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# ldap_search call\n...\n\n# check if 'sn' ldap attribute value equals username part of R-URI,\n# the same could be achieved with ldap_result_check(\"sn/$rU\")\nif (!ldap_result_check(\"sn\", $ru, \"/^sip:([^@]).*$/\\1/\"))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # R-URI username doesn't match sn\n        sl_send_reply(401, \"Unauthorized\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\n...",
+          "description": "Example Usage"
+        }
+      ]
+    },
+    {
+      "name": "ldap_result_next",
+      "signature": "ldap_result_next()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Another LDAP entry is present in the LDAP result set and result pointer is incremented by one"
+        },
+        {
+          "value": "-1",
+          "condition": "No more LDAP entries are available"
+        },
+        {
+          "value": "-2",
+          "condition": "Internal error"
+        }
+      ],
+      "description": "An LDAP search operation can return multiple LDAP entries. This function can be used to cycle through all returned LDAP entries. It returns 1 (TRUE) if there is another LDAP entry present in the LDAP result set and causes ldap_result* functions to work on the next LDAP entry. The function returns -1 (FALSE) if there are no more LDAP entries in the LDAP result set.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# ldap_search call\n...\n\nldap_result(\"telephonenumber/$avp(tel1)\");\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel2)\");\n}\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel3)\");\n}\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel4)\");\n}\n...",
+          "description": "Example Usage"
+        }
+      ]
+    },
+    {
+      "name": "ldap_filter_url_encode",
+      "signature": "ldap_filter_url_encode(string, avp_spec)",
+      "parameters": [
+        {
+          "name": "string",
+          "type": "string",
+          "required": true,
+          "description": "String to apply RFC 4515 and URL escpaing rules to. AVPs and pseudo variables do get expanded. Example: \"cn=$avp(name)\""
+        },
+        {
+          "name": "avp_spec",
+          "type": "var",
+          "required": true,
+          "description": "AVP to store resulting RFC 4515 and URL encoded string, e.g. $avp(ldap_search) or $avp(10)"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "RFC 4515 and URL encoded filter_component stored as AVP avp_name"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal error"
+        }
+      ],
+      "description": "This function applies the following escaping rules to string and stores the result in AVP avp_spec: * -> \\2a, ( -> \\28, ) -> \\29, \\ -> \\5c, ? -> %3F. The string stored in AVP avp_spec can be safely used in an LDAP URL filter string.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (!ldap_filter_url_encode(\"cn=$avp(name)\", $avp(name_esc)))\n{\n    # RFC 4515/URL encoding failed --> silently discard request\n    exit;\n}\n\nxlog(\"L_INFO\", \"encoded LDAP filter component: [$avp(name_esc)]\\n\");\n\nif (ldap_search(\n     \"ldap://h350/ou=commObjects,dc=example,dc=com??sub?($avp(name_esc))\"))\n    { ... }\n...",
+          "description": "Example Usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`ldap_server_url` examples",
+      "description": "LDAP URL including fully qualified domain name or IP address of LDAP server optionally followed by a colon and TCP port to connect: `ldap://<FQDN/IP>[:<port>]`. Failover LDAP servers can be added, each separated by a comma. In the event of connection errors, the module tries to connect to servers in order of appearance.",
+      "code": "ldap_server_url = \"ldap://localhost\"\nldap_server_url = \"ldap://ldap.example.com:7777\"\nldap_server_url = \"ldap://ldap1.example.com,\n                   ldap://ldap2.example.com:80389\""
+    },
+    {
+      "title": "`ldap_version` example",
+      "description": "Supported LDAP versions are 2 and 3.",
+      "code": "ldap_version = 2"
+    },
+    {
+      "title": "`ldap_bind_dn` example",
+      "description": "Authentication user DN used to bind to LDAP server (module currently only supports SIMPLE_AUTH). Empty string enables anonymous LDAP bind.",
+      "code": "ldap_bind_dn = \"cn=root,dc=example,dc=com\";"
+    },
+    {
+      "title": "`ldap_bind_password` example",
+      "description": "Authentication password used to bind to LDAP server (SIMPLE_AUTH). Empty string enables anonymous bind.",
+      "code": "ldap_bind_password = \"secret\";"
+    },
+    {
+      "title": "`ldap_network_timeout` example",
+      "description": "LDAP TCP connect timeout in milliseconds. Setting this parameter to a low value enables fast failover if `ldap_server_url` contains more than one LDAP server addresses.",
+      "code": "ldap_network_timeout = 500 ; setting TCP timeout to 500 ms"
+    },
+    {
+      "title": "`ldap_client_bind_timeout` example",
+      "description": "LDAP bind operation timeout in milliseconds.",
+      "code": "ldap_client_bind_timeout = 1000"
+    },
+    {
+      "title": "`ldap_ca_cert_file` example",
+      "description": "LDAP full path of the CA certificate file. No default value. It is mandatory in case you wish to use StartTLS",
+      "code": "ldap_ca_cert_file = \"/usr/local/CAcert.pem\""
+    },
+    {
+      "title": "`ldap_cert_file` example",
+      "description": "LDAP full path of the certificate file. No default value. It is mandatory in case you wish to use StartTLS",
+      "code": "ldap_cert_file = \"/usr/local/mycert.pem\""
+    },
+    {
+      "title": "`ldap_key_file` example",
+      "description": "LDAP full path of the key file. No default value. It is mandatory in case you wish to use StartTLS",
+      "code": "ldap_key_file = \"/usr/local/mykey.pem\""
+    },
+    {
+      "title": "`ldap_require_certificate` example",
+      "description": "LDAP peer certificate checking strategy, one of \"NEVER\", \"HARD\", \"DEMAND\", \"ALLOW\", \"TRY\". Lower case letters are also accepted.",
+      "code": "ldap_require_certificate = \"NEVER\""
+    },
+    {
+      "title": "Example LDAP Configuration File",
+      "description": "The following configuration file example includes two LDAP session definitions that could be used e.g. for accessing H.350 data and do phone number to name mappings.",
+      "code": "# LDAP session \"sipaccounts\":\n#\n# - using LDAPv3 (default)\n# - two redundant LDAP servers\n#\n[sipaccounts]\nldap_server_url = \"ldap://h350-1.example.com, ldap://h350-2.example.com\"\nldap_bind_dn = \"cn=sip_proxy,ou=accounts,dc=example,dc=com\"\nldap_bind_password = \"pwd\"\nldap_network_timeout = 500\nldap_client_bind_timeout = 500\n#using StartTLS\nldap_ca_cert_file = \"/ldap/path/to/ca/certificate.pem\"\nldap_cert_file = \"/ldap/path/to/certificate.pem\"\nldap_key_file = \"/ldap/path/to/key/file.pem\"\nldap_require_certificate = \"NEVER\"\n\n\n# LDAP session \"campus\":\n#\n# - using LDAPv2\n# - anonymous bind\n#\n[campus]\nldap_version = 2\nldap_server_url = \"ldap://ldap.example.com\"\nldap_network_timeout = 500\nldap_client_bind_timeout = 500"
+    },
+    {
+      "title": "`config_file` parameter usage",
+      "description": "Full path to LDAP configuration file.",
+      "code": "modparam(\"ldap\", \"config_file\", \"/etc/opensips/ldap.ini\")"
+    },
+    {
+      "title": "`max_async_connections` parameter usage",
+      "description": "Number of maximum asynchronous connections that will be started with the ldap server for executing asynchronous ldap_search calls.",
+      "code": "modparam(\"ldap\", \"max_async_connections\", 50)"
+    },
+    {
+      "title": "Example Usage of ldap_url",
+      "description": "Search with LDAP session named `sipaccounts`, base `ou=sip,dc=example,dc=com`, `one` level deep using search filter `(cn=schlatter)` and returning all attributes. Subtree search with LDAP session named `ldap1`, base `dc=example,dc=com` using search filter `(cn=$(avp(name)))` and returning `SIPIdentityUserName` and `SIPIdentityServiceLevel` attributes.",
+      "code": "ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=schlatter)\n\nSubtree search with LDAP session named `ldap1`, base `dc=example,dc=com` using search filter `(cn=$(avp(name)))` and returning `SIPIdentityUserName` and `SIPIdentityServiceLevel` attributes\n\nldap://ldap_1/dc=example,dc=com?\n       SIPIdentityUserName,SIPIdentityServiceLevel?sub?(cn=$(avp(name)))"
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\n# ldap search\nif (!ldap_search(\"ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=$rU)\"))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # no LDAP entry found\n        sl_send_reply(404, \"User Not Found\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\nxlog(\"L_INFO\", \"ldap_search: found [$retcode] entries for (cn=$rU)\");\n\n# save telephone number in $avp(tel_number)\nldap_result(\"telephoneNumber/$avp(tel_number)\");\n..."
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\n\n# ldap_search call\n...\n\n# save SIPIdentityServiceLevel in $avp(service_level)\nif (!ldap_result(\"SIPIdentityServiceLevel\", $avp(service_level)))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # no SIPIdentityServiceLevel found\n        sl_send_reply(403, \"Forbidden\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\n\n# save SIP URI domain in $avp(10)\nldap_result(\"SIPIdentitySIPURI\", $avp(10), \"/^[^@]+@(.+)$/\\\\1/\");\n..."
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\n# ldap_search call\n...\n\n# check if 'sn' ldap attribute value equals username part of R-URI,\n# the same could be achieved with ldap_result_check(\"sn/$rU\")\nif (!ldap_result_check(\"sn\", $ru, \"/^sip:([^@]).*$/\\\\1/\"))\n{\n    switch ($retcode)\n    {\n    case -1:\n        # R-URI username doesn't match sn\n        sl_send_reply(401, \"Unauthorized\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n}\n..."
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\n# ldap_search call\n...\n\nldap_result(\"telephonenumber/$avp(tel1)\");\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel2)\");\n}\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel3)\");\n}\nif (ldap_result_next())\n{\n\tldap_result(\"telephonenumber/$avp(tel4)\");\n}\n..."
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\nif (!ldap_filter_url_encode(\"cn=$avp(name)\", $avp(name_esc)))\n{\n    # RFC 4515/URL encoding failed --> silently discard request\n    exit;\n}\n\nxlog(\"L_INFO\", \"encoded LDAP filter component: [$avp(name_esc)]\\\\n\");\n\nif (ldap_search(\n     \"ldap://h350/ou=commObjects,dc=example,dc=com??sub?($avp(name_esc))\"))\n    { ... }\n..."
+    },
+    {
+      "title": "Example Usage of ldap_url",
+      "description": "Search with LDAP session named `sipaccounts`, base `ou=sip,dc=example,dc=com`, `one` level deep using search filter `(cn=schlatter)` and returning all attributes. Subtree search with LDAP session named `ldap1`, base `dc=example,dc=com` using search filter `(cn=$(avp(name)))` and returning `SIPIdentityUserName` and `SIPIdentityServiceLevel` attributes.",
+      "code": "ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=schlatter)\n\nSubtree search with LDAP session named `ldap1`, base `dc=example,dc=com` using search filter `(cn=$(avp(name)))` and returning `SIPIdentityUserName` and `SIPIdentityServiceLevel` attributes\n\nldap://ldap_1/dc=example,dc=com?\n       SIPIdentityUserName,SIPIdentityServiceLevel?sub?(cn=$(avp(name)))"
+    },
+    {
+      "title": "Example Usage",
+      "description": "",
+      "code": "...\n# ldap search\n\nroute {\n\tasync( ldap_search(\"ldap://sipaccounts/ou=sip,dc=example,dc=com??one?(cn=$rU)\"), resume);\n}\n....\nroute[resume] {\n{\n    switch ($rc)\n    {\n    case -1:\n        # no LDAP entry found\n        sl_send_reply(404, \"User Not Found\");\n        exit;\n    case -2:\n        # internal error\n        sl_send_reply(500, \"Internal server error\");\n        exit;\n    default:\n        exit;\n    }\n    xlog(\"L_INFO\", \"ldap_search: found [$retcode] entries for (cn=$rU)\");\n\n    # save telephone number in $avp(tel_number)\n    ldap_result(\"telephoneNumber\", $avp(tel_number)\");\n...\n}"
+    },
+    {
+      "title": "Example code fragment to load LDAP module API",
+      "description": "Loading the API is typically done inside a module's `mod_init` call as the following example shows:",
+      "code": "#include \"../../sr_module.h\"\n#include \"../ldap/api.h\"\n\n/*\n * global pointer to ldap api\n */\nextern ldap_api_t ldap_api;\n\n...\n\nstatic int mod_init(void)\n{\n    /*\n     * load the LDAP API\n     */\n    if (load_ldap_api(&ldap_api) != 0)\n    {\n        LM_ERR(\"Unable to load LDAP API - this module requires ldap module\\\\n\");\n        return -1;\n    }\n\n    ...\n}\n\n..."
+    },
+    {
+      "title": "Example LDAP module API function call",
+      "description": "The API functions can then be used like in the following example:",
+      "code": "...\n\t\n    rc = ldap_api.ldap_rfc4515_escape(str1, str2, 0);\t\n\t\t\t\n..."
+    },
+    {
+      "title": "Example Usage",
+      "description": "The following example shows how this API can be used to perform an LDAP search operation. It is assumed that the API is loaded and available through the `ldap_api` pointer.",
+      "code": "...\n\t\nint rc, ld_result_count, scope = 0;\nchar* sip_username = \"test\";\n\n/*\n * get LDAP search scope integer\n */\nscope = ldap_api.ldap_str2scope(\"sub\");\nif (scope == -1)\n{\n    LM_ERR(\"ldap_str2scope failed\\\\n\");\n    return -1;\n}\n\n/*\n * perform LDAP search\n */\n\nif (ldap_api.ldap_params_search(\n       &ld_result_count,\n       \"campus\",\n       \"dc=example,dc=com\",\n       scope,\n       NULL,\n       \"(&(objectClass=SIPIdentity)(SIPIdentityUserName=%s))\",\n       sip_username)\n     != 0)\n{\n    LM_ERR(\"LDAP search failed\\\\n\");\n    return -1;\n}\n\n/*\n * check result count\n */\nif (ld_result_count < 1)\n{\n    LM_ERR(\"LDAP search returned no entry\\\\n\");\n    return 1;\n}\n\n/*\n * get password attribute value \n */\n \nstruct berval **attr_vals = NULL;\nstr ldap_pwd_attr_name = str_init(\"SIPIdentityPassword\");\nstr res_password;\n\nrc = ldap_api.ldap_result_attr_vals(&ldap_pwd_attr_name, &attr_vals);\nif (rc < 0)\n{\n    LM_ERR(\"ldap_result_attr_vals failed\\\\n\");\n    ldap_api.ldap_value_free_len(attr_vals);\n    return -1;\n}\nif (rc == 1)\n{\n    LM_INFO(\"No password attribute value found for [%s]\\\\n\", sip_username);\n    ldap_api.ldap_value_free_len(attr_vals);\n    return 2;\n}\n\nres_password.s = attr_vals[0]->bv_val;\nres_password.len = attr_vals[0]->bv_len;\n\nldap_api.ldap_value_free_len(attr_vals);\n\nLM_INFO(\"Password for user [%s]: [%s]\\\\n\", sip_username, res_password.s);\n\n...\n\nreturn 0;"
+    }
+  ]
+}

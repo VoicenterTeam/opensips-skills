@@ -1,0 +1,66 @@
+{
+  "id": "module-mi_xmlrpc-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mi_xmlrpc Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mi_xmlrpc.html",
+  "content_markdown": "This module implements a xmlrpc server that handles xmlrpc requests and generates xmlrpc responses. When a xmlrpc message is received a default method is executed.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:26:34.453Z",
+  "module_name": "mi_xmlrpc",
+  "overview": "This module implements a xmlrpc server that handles xmlrpc requests and generates xmlrpc responses. When a xmlrpc message is received a default method is executed.",
+  "how_it_works": "At first, it looks up the MI command. If found it parses the called procedure's parameters into a MI tree and the command is executed. A MI reply tree is returned that is formatted back in xmlrpc. The response is built in two ways - like a string that contains the MI tree nodes information (name, values and attributes) or like an array whose elements are consisted of each MI tree node stored information.",
+  "dependencies_required": [
+    {
+      "name": "libxml2",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "httpd",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "http_root",
+      "type": "string",
+      "default_value": "RPC2",
+      "description": "Specifies the root path for xmlrpc requests: http://[opensips_IP]:[opensips_httpd_port]/[http_root]",
+      "example_value": "opensips_mi_xmlrpc",
+      "example_code": "...\nmodparam(\"mi_xmlrpc\", \"http_root\", \"opensips_mi_xmlrpc\")\n..."
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. This is where traced mi messages will go.",
+      "example_value": "hep_dest",
+      "example_code": "...\nmodparam(\"proto_hep\", \"trace_destination\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"mi_xmlrpc\", \"trace_destination\", \"hep_dest\")\n...",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**)."
+    },
+    {
+      "name": "trace_bwlist",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Filter traced mi commands based on a blacklist or a whitelist. **trace_destination** must be defined for this parameter to have any purpose. Whitelists can be defined using 'w' or 'W', blacklists using 'b' or 'B'. The type is separate by the actual blacklist by ':'. The mi commands in the list must be separated by ','.",
+      "example_value": "b: ps, which",
+      "example_code": "...\n## blacklist ps and which mi commands\n## all the other commands shall be traced\nmodparam(\"mi_xmlrpc\", \"trace_bwlist\", \"b: ps, which\")\n...\n## allow only sip_trace mi command\n## all the other commands will not be traced\nmodparam(\"mi_xmlrpc\", \"trace_bwlist\", \"w: sip_trace\")\n...",
+      "notes": "Defining a blacklists means all the commands that are not blacklisted will be traced. Defining a whitelist means all the commands that are not whitelisted will not be traced. **WARNING:** One can't define both a whitelist and a blacklist. Only one of them is allowed. Defining the parameter a second time will just overwrite the first one. **WARNING:** A tracing module must be loaded in order for this parameter to work. (for example **proto_hep)**."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.4. XMLRPC request",
+      "description": "This is an example showing the xmlrpc format for the “get\\_statistics net: shmem:” MI commad: response.",
+      "code": "POST /xmlrpc HTTP/1.0\nHost: my.host.com\nUser-Agent: My xmlrpc UA\nContent-Type: text/xml\nContent-Length: 216\n\n<?xml version='1.0'?>\n<methodCall>\n\t<methodName>get\\_statistics</methodName>\n\t<params>\n\t\t<param>\n\t\t<value>\n\t\t<struct>\n\t\t<member>\n\t\t\t<name>statistics</name>\n\t\t\t<value>\n\t\t\t<array>\n\t\t\t<data>\n\t\t\t\t<value><string>shmem:</string></value>\n\t\t\t\t<value><string>core:</string></value>\n\t\t\t</data>\n\t\t\t</array>\n\t\t\t</value>\n\t\t</member>\n\t\t</struct>\n\t\t</value>\n\t\t</param>\n\t</params>\n</methodCall>\n\n\nHTTP/1.0 200 OK\nContent-Length: 236\nContent-Type: text/xml; charset=utf-8\nDate: Mon, 8 Mar 2013 12:00:00 GMT\n\n<?xml version=\"1.0\" encoding=\"UTF-8\"?>.\n<methodResponse>\n<params><param>\n<value><struct><member><name>net:waiting\\_udp</name><value><string>0</string></value></member><member><name>net:waiting\\_tcp</name><value><string>0</string></value></member><member><name>net:waiting\\_tls</name><value><string>0</string></value></member><member><name>shmem:total\\_size</name><value><string>268435456</string></value></member><member><name>shmem:used\\_size</name><value><string>40032</string></value></member><member><name>shmem:real\\_used\\_size</name><value><string>277112</string></value></member><member><name>shmem:max\\_used\\_size</name><value><string>277112</string></value></member><member><name>shmem:free\\_size</name><value><string>268158344</string></value></member><member><name>shmem:fragments</name><value><string>194</string></value></member></struct></value></param></params>\n</methodResponse>."
+    }
+  ]
+}

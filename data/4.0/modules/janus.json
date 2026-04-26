@@ -1,0 +1,220 @@
+{
+  "id": "module-janus-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "janus Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/janus.html",
+  "content_markdown": "The _\"janus\"_ module is a C driver for the Janus websocket protocol. It can interact with one or more Janus servers either by issuing commands to them, or by receiving events from them.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:43:15.040Z",
+  "module_name": "janus",
+  "overview": "The _\"janus\"_ module is a C driver for the Janus websocket protocol. It can interact with one or more Janus servers either by issuing commands to them, or by receiving events from them.",
+  "how_it_works": "This driver can be seen as a centralized Janus connection manager. It will connect to each Janus server, establish the connection hanler ID and the clients can be transparent from the connection handler ID point of view, simply passing the desired Janus commands that they want to run.",
+  "dependencies_required": [
+    {
+      "name": "an SQL DB module",
+      "type": "module",
+      "reason": "must be loaded together with this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "janus_send_timeout",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "Time in milliseconds after a Janus WebSocket connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "example_value": "2000",
+      "example_code": "modparam(\"janus\", \"janus\\_send\\_timeout\", 2000)"
+    },
+    {
+      "name": "janus_max_msg_chunks",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of chunks in which a Janus message is expected to arrive via WebSocket. If a received packet is more fragmented than this, the connection is dropped",
+      "example_value": "8",
+      "example_code": "modparam(\"janus\", \"janus\\_max\\_msg\\_chunks\", 8)"
+    },
+    {
+      "name": "janus_cmd_timeout",
+      "type": "integer",
+      "default_value": "5000",
+      "description": "The maximally allowed duration for the execution of an Janus command. This interval does not include the connect duration.",
+      "example_value": "3000",
+      "example_code": "modparam(\"janus\", \"janus\\_cmd\\_timeout\", 3000)"
+    },
+    {
+      "name": "janus_cmd_polling_itv",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "The sleep interval used when polling for an Janus command response. Since the value of this parameter imposes a minimal duration for any Janus command, you should run OpenSIPS in debug mode in order to first determine an expected response time for an arbitrary Janus command, then tune this parameter accordingly.",
+      "example_value": "3000",
+      "example_code": "modparam(\"janus\", \"janus\\_cmd\\_polling\\_itv\", 3000)"
+    },
+    {
+      "name": "janus_ping_interval",
+      "type": "integer",
+      "default_value": "5",
+      "description": "The time interval at which OpenSIPS will do keepalive pinging on the Janus connect",
+      "example_value": "10",
+      "example_code": "modparam(\"janus\", \"janus\\_ping\\_interval\", 10)"
+    },
+    {
+      "name": "janus_db_url",
+      "type": "string",
+      "default_value": "none",
+      "description": "The DB URL from where OpenSIPS will load the list of Janus connection",
+      "example_value": "mysql://root@localhost/opensips",
+      "example_code": "modparam(\"janus\", \"janus\\_db\\_url\", \"mysql://root@localhost/opensips\")"
+    },
+    {
+      "name": "janus_db_table",
+      "type": "string",
+      "default_value": "janus",
+      "description": "The DB Table from where OpenSIPS will load the list of Janus connection",
+      "example_value": "my_janus_table",
+      "example_code": "modparam(\"janus\", \"janus\\_db\\_table\", \"my\\_janus\\_table\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "janus_send_request",
+      "signature": "janus_send_request(janus_id, janus_command[, response_var])",
+      "parameters": [
+        {
+          "name": "janus_id",
+          "type": "string",
+          "required": true,
+          "description": "the ID of the janus connection as defined in the databsae."
+        },
+        {
+          "name": "janus_command",
+          "type": "string",
+          "required": true,
+          "description": "the JANUS command to run."
+        },
+        {
+          "name": "response_var",
+          "type": "var",
+          "required": false,
+          "description": "a variable which will hold the text result of the Janus command."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "the Janus command executed successfully and any output variables were successfully written to. Note that this does not say anything about the nature of the Janus answer (it may well be a \"-ERR\" type of response)"
+        },
+        {
+          "value": "-1",
+          "condition": "internal error or the Janus command failed to execute"
+        }
+      ],
+      "description": "Run an arbitrary command on an arbitrary Janus socket. The janus_id must be defined in the database\n\nThe current OpenSIPS worker will block until an answer from Janus arrives. The timeout for this operation can be controlled via the janus_cmd_timeout param.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "ERROR_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# if the DB contains: \n#       id: 1\n# janus_id: test_janus\n# janus_url: janusws://my_janus_host:80/janus?room=abcd\n\n\t$var(rc) = janus_send_request(\"test_janus\", \"{\n  \"janus\": \"attach\",\n  \"plugin\": \"janus.plugin.videoroom\",\n  \"transaction\": \"abcdef123456\",\n  \"session_id\": 987654321\n}\", $var(response));\n\tif (!$var(rc)) {\n\t\txlog(\"failed to execute Janus command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n\txlog(\"Janus response is $var(response) \\\\n\");\n...\n...",
+          "description": "janus_send_request() usage",
+          "context": "ANY_ROUTE"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_JANUS_EVENT",
+      "description": "This event is raised when a notification is received from a Janus server.",
+      "parameters": [
+        {
+          "name": "janus_id",
+          "type": "string",
+          "description": "the janus id as defined in the database"
+        },
+        {
+          "name": "janus_url",
+          "type": "string",
+          "description": "the janus url as defined in the database"
+        },
+        {
+          "name": "janus_body",
+          "type": "string",
+          "description": "full body of the notification received from janus"
+        }
+      ],
+      "subscribe_method": "event_route",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# if the DB contains: \n#       id: 1\n# janus_id: test_janus\n# janus_url: janusws://my_janus_host:80/janus?room=abcd\n\nevent_route[E_JANUS_EVENT] {\n\txlog(\"Received janus event from $param(janus_id) - $param(janus_url) - $param(janus_body) \\\\n\");\n\t$json(janus_body) := $param(janus_body);\n\t$avp(janus_sender) =  $json(janus_body/sender);\n\tif ($avp(janus_sender) != NULL) {\n\t\txlog(\"Received event from sender $avp(janus_sender) \\\\n\");\n\t}\n}\n...",
+          "description": "E_JANUS_EVENT example"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `janus_send_timeout` parameter",
+      "description": "Setting the `janus_send_timeout` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_send\\_timeout\", 2000)\n..."
+    },
+    {
+      "title": "Setting the `janus_max_msg_chunks` parameter",
+      "description": "Setting the `janus_max_msg_chunks` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_max\\_msg\\_chunks\", 8)\n..."
+    },
+    {
+      "title": "Setting the `janus_cmd_timeout` parameter",
+      "description": "Setting the `janus_cmd_timeout` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_cmd\\_timeout\", 3000)\n..."
+    },
+    {
+      "title": "Setting the `janus_cmd_polling_itv` parameter",
+      "description": "Setting the `janus_cmd_polling_itv` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_cmd\\_polling\\_itv\", 3000)\n..."
+    },
+    {
+      "title": "Setting the `janus_ping_interval` parameter",
+      "description": "Setting the `janus_ping_interval` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_ping\\_interval\", 10)\n..."
+    },
+    {
+      "title": "Setting the `janus_db_url` parameter",
+      "description": "Setting the `janus_db_url` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_db\\_url\", \"mysql://root@localhost/opensips\")\n..."
+    },
+    {
+      "title": "Setting the `janus_db_table` parameter",
+      "description": "Setting the `janus_db_table` parameter",
+      "code": "...\nmodparam(\"janus\", \"janus\\_db\\_table\", \"my\\_janus\\_table\")\n..."
+    },
+    {
+      "title": "`_janus_send_request()_` usage",
+      "description": "`_janus_send_request()_` usage",
+      "code": "...\n# if the DB contains: \n#       id: 1\n# janus\\_id: test\\_janus\n# janus\\_url: janusws://my\\_janus\\_host:80/janus?room=abcd\n\n\t$var(rc) = janus\\_send\\_request(\"test\\_janus\", \"{\n  \"janus\": \"attach\",\n  \"plugin\": \"janus.plugin.videoroom\",\n  \"transaction\": \"abcdef123456\",\n  \"session\\_id\": 987654321\n}\", $var(response));\n\tif (!$var(rc)) {\n\t\txlog(\"failed to execute Janus command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n\txlog(\"Janus response is $var(response) \\\\n\");\n..."
+    },
+    {
+      "title": "`_E_JANUS_EVENT_` example",
+      "description": "`_E_JANUS_EVENT_` example",
+      "code": "...\n# if the DB contains: \n#       id: 1\n# janus\\_id: test\\_janus\n# janus\\_url: janusws://my\\_janus\\_host:80/janus?room=abcd\n\nevent\\_route\\[E\\_JANUS\\_EVENT\\] {\n\txlog(\"Received janus event from $param(janus\\_id) - $param(janus\\_url) - $param(janus\\_body) \\\\n\");\n\t$json(janus\\_body) := $param(janus\\_body);\n\t$avp(janus\\_sender) =  $json(janus\\_body/sender);\n\tif ($avp(janus\\_sender) != NULL) {\n\t\txlog(\"Received event from sender $avp(janus\\_sender) \\\\n\");\n\t}\n}\n..."
+    }
+  ]
+}

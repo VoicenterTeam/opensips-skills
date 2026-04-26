@@ -1,0 +1,1133 @@
+{
+  "id": "module-osp-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "osp Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/osp.html",
+  "content_markdown": "The OSP module enables OpenSIPS to support secure, multi-lateral peering using the OSP standard defined by ETSI (TS 101 321 V4.1.1). This module will enable your OpenSIPS to:\n\n*   Send a peering authorization request to a peering server.\n    \n*   Validate a digitally signed peering authorization token received in a SIP INVITE message.\n    \n*   Report usage information to a peering server.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:02:05.146Z",
+  "module_name": "osp",
+  "overview": "The OSP module enables OpenSIPS to support secure, multi-lateral peering using the OSP standard defined by ETSI (TS 101 321 V4.1.1). This module will enable your OpenSIPS to:\n\n*   Send a peering authorization request to a peering server.\n    \n*   Validate a digitally signed peering authorization token received in a SIP INVITE message.\n    \n*   Report usage information to a peering server.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "auth",
+      "type": "module",
+      "reason": "Authentication Framework module",
+      "optional": false
+    },
+    {
+      "name": "sqlops",
+      "type": "module",
+      "reason": "SQL operation module",
+      "optional": false
+    },
+    {
+      "name": "maxfwd",
+      "type": "module",
+      "reason": "Max-Forward processor module",
+      "optional": false
+    },
+    {
+      "name": "mi_fifo",
+      "type": "module",
+      "reason": "FIFO support for Management Interface",
+      "optional": false
+    },
+    {
+      "name": "options",
+      "type": "module",
+      "reason": "OPTIONS server replier module",
+      "optional": false
+    },
+    {
+      "name": "proto_udp",
+      "type": "module",
+      "reason": "UDP protocol module - implements UDP-plain transport for SIP",
+      "optional": false
+    },
+    {
+      "name": "registrar",
+      "type": "module",
+      "reason": "SIP Registrar implementation module",
+      "optional": false
+    },
+    {
+      "name": "rr",
+      "type": "module",
+      "reason": "Record-Route and Route module",
+      "optional": false
+    },
+    {
+      "name": "signaling",
+      "type": "module",
+      "reason": "SIP signaling module",
+      "optional": false
+    },
+    {
+      "name": "sipmsgops",
+      "type": "module",
+      "reason": "SIP operations module",
+      "optional": false
+    },
+    {
+      "name": "sl",
+      "type": "module",
+      "reason": "Stateless replier module",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "reason": "Transaction (stateful) module",
+      "optional": false
+    },
+    {
+      "name": "uac",
+      "type": "module",
+      "reason": "UAC functionalies (FROM mangling and UAC auth)",
+      "optional": false
+    },
+    {
+      "name": "uac_auth",
+      "type": "module",
+      "reason": "UAC Authentication functionality",
+      "optional": false
+    },
+    {
+      "name": "usrloc",
+      "type": "module",
+      "reason": "User location implementation module",
+      "optional": false
+    },
+    {
+      "name": "OSP Toolkit",
+      "type": "library",
+      "reason": "The OSP Toolkit, available from https://github.com/TransNexus/osptoolkit, must be built before building OpenSIPS with the OSP module. For instructions on building OpenSIPS with the OSP Toolkit, see http://www.http://transnexus.com/wp-content/uploads/OSP-Routing-and-CDR-Collection-Server-with-OpenSIPS-1.7.2.pdf. For OpenSIPS 2.4.0, OSP Toolkit 4.16.0 or later versions should be used.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "work_mode",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The work_mode (integer) parameter instructs the OSP module what mode it should work in. If this value is set to 0, the OSP module works in direct mode. If this value is set to 1, the OSP module works in indirect mode. The default value is 0.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"work_mode\",0)"
+    },
+    {
+      "name": "service_type",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The service_type (integer) parameter instructs the OSP module what services it should provide. If this value is set to 0, the OSP module provides normal voice service. If this value is set to 1, the OSP module provides ported number query service. If this value is set to 2, the OSP module provides CNAM query service. The default value is 0.",
+      "possible_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"service_type\",0)"
+    },
+    {
+      "name": "sp1_uri",
+      "type": "string",
+      "description": "These sp_uri (string) parameters define peering servers to be used for requesting peering authorization and routing information. At least one peering server must be configured. Others are required only if there are more than one peering servers. Each peering server address takes the form of a standard URL, and consists of up to four components: An optional indication of the protocol to be used for communicating with the peering server. Both HTTP and HTTP secured with SSL/TLS are supported and are indicated by \"http://\" and \"https://\" respectively. If the protocol is not explicitly indicated, the OpenSIPS defaults to HTTP secured with SSL. The Internet domain name for the peering server. An IP address may also be used, provided it is enclosed in square brackets such as [172.16.1.1]. An optional TCP port number for communicating with the peering server. If the port number is omitted, the OpenSIPS defaults to port 5045 (for HTTP) or port 1443 (for HTTP secured with SSL). The uniform resource identifier for requests to the peering server. This component is not optional and must be included.",
+      "example_value": "http://osptestserver.transnexus.com:5045/osp",
+      "example_code": "modparam(\"osp\",\"sp1_uri\",\"http://osptestserver.transnexus.com:5045/osp\")"
+    },
+    {
+      "name": "sp2_uri",
+      "type": "string",
+      "description": "These sp_uri (string) parameters define peering servers to be used for requesting peering authorization and routing information. At least one peering server must be configured. Others are required only if there are more than one peering servers. Each peering server address takes the form of a standard URL, and consists of up to four components: An optional indication of the protocol to be used for communicating with the peering server. Both HTTP and HTTP secured with SSL/TLS are supported and are indicated by \"http://\" and \"https://\" respectively. If the protocol is not explicitly indicated, the OpenSIPS defaults to HTTP secured with SSL. The Internet domain name for the peering server. An IP address may also be used, provided it is enclosed in square brackets such as [172.16.1.1]. An optional TCP port number for communicating with the peering server. If the port number is omitted, the OpenSIPS defaults to port 5045 (for HTTP) or port 1443 (for HTTP secured with SSL). The uniform resource identifier for requests to the peering server. This component is not optional and must be included.",
+      "example_value": "https://[1.2.3.4]:1443/osp",
+      "example_code": "modparam(\"osp\",\"sp2_uri\",\"https://[1.2.3.4]:1443/osp\")"
+    },
+    {
+      "name": "sp16_uri",
+      "type": "string",
+      "description": "These sp_uri (string) parameters define peering servers to be used for requesting peering authorization and routing information. At least one peering server must be configured. Others are required only if there are more than one peering servers. Each peering server address takes the form of a standard URL, and consists of up to four components: An optional indication of the protocol to be used for communicating with the peering server. Both HTTP and HTTP secured with SSL/TLS are supported and are indicated by \"http://\" and \"https://\" respectively. If the protocol is not explicitly indicated, the OpenSIPS defaults to HTTP secured with SSL. The Internet domain name for the peering server. An IP address may also be used, provided it is enclosed in square brackets such as [172.16.1.1]. An optional TCP port number for communicating with the peering server. If the port number is omitted, the OpenSIPS defaults to port 5045 (for HTTP) or port 1443 (for HTTP secured with SSL). The uniform resource identifier for requests to the peering server. This component is not optional and must be included."
+    },
+    {
+      "name": "sp1_weight, sp2_weight, ..., sp16_weight",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "These sp_weight (integer) parameters are used for load balancing peering requests to peering servers. These parameters are most effective when configured as factors of 1000. For example, if sp1_uri should manage twice the traffic load of sp2_uri, then set sp1_weight to 2000 and sp2_weight to 1000. Shared load balancing between peering servers is recommended. However, peering servers can be configured as primary and backup by assigning a sp_weight of 0 to the primary server and a non-zero sp_weight to the back-up server.",
+      "example_value": "1000",
+      "example_code": "modparam(\"osp\",\"sp1_weight\",1000)"
+    },
+    {
+      "name": "device_ip",
+      "type": "string",
+      "description": "The device_ip (string) is a recommended parameter that explicitly defines the IP address of OpenSIPS in a peering request message (as SourceAlternate type=transport). The dotted-decimal IP address must be in brackets as shown in the example below.",
+      "example_value": "[127.0.0.1]:5060",
+      "example_code": "modparam(\"osp\",\"device_ip\",\"[127.0.0.1]:5060\")"
+    },
+    {
+      "name": "use_security_features",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The use_security_features (integer) parameter instructs the OSP module how to use the OSP security features. If this value is set to 1, the OSP module uses the OSP security features. If this value is set to 0, the OSP module will not use the OSP security features.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"use_security_features\",0)"
+    },
+    {
+      "name": "token_format",
+      "type": "integer",
+      "default_value": "2",
+      "description": "When OpenSIPS receives a SIP INVITE with a peering token, the OSP module will validate the token to determine whether or not the call has been authorized by a peering server. Peering tokens may, or may not, be digitally signed. The token_format (integer) parameter defines if OpenSIPS will validate signed or unsigned tokens or both. The values for token format are defined below. The default value is 2.",
+      "possible_values": [
+        "0 - Validate only signed tokens. Calls with valid signed tokens are allowed.",
+        "1 - Validate only unsigned tokens. Calls with valid unsigned tokens are allowed.",
+        "2 - Validate both signed and unsigned tokens are allowed. Calls with valid tokens are allowed."
+      ],
+      "example_value": "2",
+      "example_code": "modparam(\"osp\",\"token\\_format\",2)",
+      "notes": "If use_security_features parameter is set to 0, signed tokens cannot be validated."
+    },
+    {
+      "name": "private_key",
+      "type": "string",
+      "default_value": "pkey.pem",
+      "description": "These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed.",
+      "example_value": "/usr/local/etc/opensips/pkey.pem",
+      "example_code": "modparam(\"osp\",\"private\\_key\",\"/usr/local/etc/opensips/pkey.pem\")",
+      "notes": "If use_security_features parameter is set to 0, these parameters will be ignored."
+    },
+    {
+      "name": "local_certificate",
+      "type": "string",
+      "default_value": "localcert.pem",
+      "description": "These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed.",
+      "example_value": "/usr/local/etc/opensips/localcert.pem",
+      "example_code": "modparam(\"osp\",\"local\\_certificate\",\"/usr/local/etc/opensips/localcert.pem\")",
+      "notes": "If use_security_features parameter is set to 0, these parameters will be ignored."
+    },
+    {
+      "name": "ca_certificates",
+      "type": "string",
+      "default_value": "cacert_0.pem",
+      "description": "These parameters identify files are used for validating peering authorization tokens and establishing a secure channel between OpenSIPS and a peering server using SSL. The files are generated using the 'Enroll' utility from the OSP Toolkit. By default, the proxy will look for pkey.pem, localcert.pem, and cacart_0.pem in the default configuration directory. The default config directory is set at compile time using CFG_DIR and defaults to /usr/local/etc/opensips/. The files may be copied to the expected file location or the parameters below may be changed.",
+      "example_value": "/usr/local/etc/opensips/cacert.pem",
+      "example_code": "modparam(\"osp\",\"ca\\_certificates\",\"/usr/local/etc/opensips/cacert.pem\")",
+      "notes": "If use_security_features parameter is set to 0, these parameters will be ignored."
+    },
+    {
+      "name": "enable_crypto_hardware_support",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The enable_crypto_hardware_support (integer) parameter is used to set the cryptographic hardware acceleration engine in the openssl library. The default value is 0 (no crypto hardware is present). If crypto hardware is used, the value should be set to 1.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"enable\\_crypto\\_hardware\\_support\",0)"
+    },
+    {
+      "name": "ssl_lifetime",
+      "type": "integer",
+      "default_value": "200",
+      "description": "The ssl_lifetime (integer) parameter defines the lifetime, in seconds, of a single SSL session key. Once this time limit is exceeded, the OSP module will negotiate a new session key. Communication exchanges in progress will not be interrupted when this time limit expires. This is an optional field with default value is 200 seconds.",
+      "example_value": "200",
+      "example_code": "modparam(\"osp\",\"ssl_lifetime\",200)"
+    },
+    {
+      "name": "persistence",
+      "type": "integer",
+      "description": "The persistence (integer) parameter defines the time, in seconds, that an HTTP connection should be maintained after the completion of a communication exchange. The OSP module will maintain the connection for this time period in anticipation of future communication exchanges to the same peering server.",
+      "example_value": "1000",
+      "example_code": "modparam(\"osp\",\"persistence\",1000)"
+    },
+    {
+      "name": "retry_delay",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The retry_delay (integer) parameter defines the time, in seconds, between retrying connection attempts to an OSP peering server. After exhausting all peering servers the OSP module will delay for this amount of time before resuming connection attempts. This is an optional field with default value is 1 second.",
+      "example_value": "1",
+      "example_code": "modparam(\"osp\",\"retry_delay\",1)"
+    },
+    {
+      "name": "retry_limit",
+      "type": "integer",
+      "default_value": "2",
+      "description": "The retry_limit (integer) parameter defines the maximum number of retries for connection attempts to a peering server. If no connection is established after this many retry attempts to all peering servers, the OSP module will cease connection attempts and return appropriate error codes. This number does not count the initial connection attempt, so that a retry_limit of 1 will result in a total of two connection attempts to every peering server. The default value is 2.",
+      "example_value": "2",
+      "example_code": "modparam(\"osp\",\"retry_limit\",2)"
+    },
+    {
+      "name": "timeout",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The timeout (integer) parameter defines the maximum time in milliseconds, to wait for a response from a peering server. If no response is received within this time, the current connection is aborted and the OSP module attempts to contact the next peering server. The default value is 10 seconds.",
+      "example_value": "10",
+      "example_code": "modparam(\"osp\",\"timeout\",10)"
+    },
+    {
+      "name": "support_nonsip_protocol",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The support_nonsip_protocol (integer) parameter is used to tell the OSP module if non-SIP signaling protocol destination devices are supported.",
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"support_nonsip_protocol\",0)"
+    },
+    {
+      "name": "max_destinations",
+      "type": "integer",
+      "default_value": "12",
+      "description": "The max_destinations (integer) parameter defines the maximum number of destinations that OpenSIPS requests the peering server to return in a peering response. The OSP module supports up to 12 destinations.",
+      "valid_range_max": 12,
+      "example_value": "12",
+      "example_code": "modparam(\"osp\",\"max_destinations\",12)"
+    },
+    {
+      "name": "report_networkid",
+      "type": "integer",
+      "default_value": "3",
+      "description": "The report_networkid (integer) parameter is used to tell the OSP module if to report network ID in completed call CDRs. If it is set to 0, ths OSP module does not report any network ID. If it is set to 1, the OSP module reports source network ID. If it is set to 2, the OSP module reports destination network ID. If it is set to 3, the OSP module report both source and destination network IDs.",
+      "possible_values": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "example_value": "3",
+      "example_code": "modparam(\"osp\",\"report_networkid\",3)"
+    },
+    {
+      "name": "validate_call_id",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The validate_call_id (integer) parameter instructs the OSP module to validate call id in the peering token. If this value is set to 1, the OSP module validates that the call id in the SIP INVITE message matches the call id in the peering token. If they do not match the INVITE is rejected. If this value is set to 0, the OSP module will not validate the call id in the peering token.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"osp\",\"validate_call_id\",1)"
+    },
+    {
+      "name": "use_number_portability",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The use_number_portability (integer) parameter instructs the OSP module how to use the number portability parameters in the Request URI of the SIP INVITE message. If this value is set to 1, the OSP module uses the number portability parameters in the Request URI when these parameters exist. If this value is set to 0, the OSP module will not use the number portability parameters.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"osp\",\"use_number_portablity\",1)"
+    },
+    {
+      "name": "append_userphone",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The append_userphone (integer) parameter instructs the OSP module if to append \"user=phone\" parameter in URI. If this value is set to 0, the OSP module does not append \"user=phone\" parameter. If this value is set to 1, the OSP module will append \"user=phone\" parameter.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"append\\_userphone\",0)"
+    },
+    {
+      "name": "networkid_location",
+      "type": "integer",
+      "default_value": "2",
+      "description": "The networkid_location (integer) parameter instructs the OSP module where the destination network ID should be appended.",
+      "possible_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "example_value": "2",
+      "example_code": "modparam(\"osp\",\"networkid\\_location\",2)"
+    },
+    {
+      "name": "networkid_parameter",
+      "type": "string",
+      "default_value": "networkid",
+      "description": "The networkid_parameter (string) parameter instructs the OSP module to use which parameter name in outbound destination URIs to append destination network ID.",
+      "example_value": "networkid",
+      "example_code": "modparam(\"osp\",\"networkid\\_param\",\"networkid\")"
+    },
+    {
+      "name": "switchid_location",
+      "type": "integer",
+      "default_value": "2",
+      "description": "The switchid_location (integer) parameter instructs the OSP module where the destination switch ID should be appended.",
+      "possible_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "example_value": "2",
+      "example_code": "modparam(\"osp\",\"switchid\\_location\",2)"
+    },
+    {
+      "name": "switchid_parameter",
+      "type": "string",
+      "default_value": "switchid",
+      "description": "The switchid_parameter (string) parameter instructs the OSP module to use which parameter name in outbound destination URIs to append destination switch ID.",
+      "example_value": "switchid",
+      "example_code": "modparam(\"osp\",\"switchid\\_param\",\"switchid\")"
+    },
+    {
+      "name": "parameterstring_location",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The parameterstring_location (integer) parameter instructs the OSP module where the parameter string should be appended.",
+      "possible_values": [
+        "0 - parameter string is not appended.",
+        "1 - parameter string is appended as userinfo parameter.",
+        "2 - parameter string is appended as URI parameter."
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"osp\",\"parameterstring_location\",0)"
+    },
+    {
+      "name": "parameterstring_value",
+      "type": "string",
+      "default_value": "\"\"",
+      "description": "The parameterstring_value (string) parameter instructs the OSP module to append the parameter string in outbound URIs.",
+      "example_value": "\"\"",
+      "example_code": "modparam(\"osp\",\"parameterstring_value\",\"\")"
+    },
+    {
+      "name": "source_device_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_source_device_)",
+      "description": "The source_device_avp (string) parameter instructs the OSP module to use the defined AVP to pass the source device IP value in the indirect work mode. Then the source device IP can be set by \"$avp(_osp_source_device_) = pseudo-variables\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(srcdev)",
+      "example_code": "modparam(\"osp\",\"source_device_avp\",\"$avp(srcdev)\")"
+    },
+    {
+      "name": "source_networkid_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_source_networkid_)",
+      "description": "The source_networkid_avp (string) parameter instructs the OSP module to use the defined AVP to pass the source network ID value. Then the source network ID can be set by \"$avp(_osp_source_networkid_) = pseudo-variables\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(snid)",
+      "example_code": "modparam(\"osp\",\"source_networkid_avp\",\"$avp(snid)\")"
+    },
+    {
+      "name": "source_switchid_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_source_switchid_)",
+      "description": "The source_switchid_avp (string) parameter instructs the OSP module to use the defined AVP to pass the source switch ID value. Then the source switch ID can be set by \"$avp(_osp_source_switchid_) = pseudo-variables\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(swid)",
+      "example_code": "modparam(\"osp\",\"source_switchid_avp\",\"$avp(swid)\")"
+    },
+    {
+      "name": "custom_info_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_custom_info_)",
+      "description": "The custom_info_avp (string) parameter instructs the OSP module to use the defined AVP to pass the custom information values. Then the custom information can be set by \"$avp(_osp_custom_info_) = pseudo-variables\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(cinfo)",
+      "example_code": "modparam(\"osp\",\"custom_info_avp\",\"$avp(cinfo)\")"
+    },
+    {
+      "name": "cnam_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_cnam_)",
+      "description": "The cnam_avp (string) parameter instructs the OSP module to use the defined AVP to pass the CNAM values. Then the CNAM can be used by \"$avp(_osp_cnam_)\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(cnam)",
+      "example_code": "modparam(\"osp\",\"cnam_avp\",\"$avp(cnam)\")"
+    },
+    {
+      "name": "extraheaders_value",
+      "type": "string",
+      "default_value": "",
+      "description": "The extraheaders_value (string) parameter instructs the OSP module to append the defined SIP headers in outbound SIP NOTIFY messages.",
+      "example_value": "Source: N",
+      "example_code": "modparam(\"osp\", \"extraheaders_value\", \"Source: N\")"
+    },
+    {
+      "name": "source_media_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_source_media_address_)",
+      "description": "These parameters are used to tell the OSP module which AVPs are used to store media addresses. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(srcmedia)",
+      "example_code": "modparam(\"osp\", \"source_media_avp\", \"$avp(srcmedia)\")"
+    },
+    {
+      "name": "destination_media_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_destination_media_address_)",
+      "description": "These parameters are used to tell the OSP module which AVPs are used to store media addresses. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(destmedia)",
+      "example_code": "modparam(\"osp\", \"destination_media_avp\", \"$avp(destmedia)\")"
+    },
+    {
+      "name": "request_date_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_request_date_)",
+      "description": "The request_date_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SIP request Date header values. Then the request date can be used by \"$avp(_osp_request_date_)\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(reqdate)",
+      "example_code": "modparam(\"osp\",\"request_date_avp\",\"$avp(reqdate)\")"
+    },
+    {
+      "name": "sdp_fingerprint_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_sdp_fingerprint_)",
+      "description": "The sdp_fingerprint_avp (string) parameter instructs the OSP module to use the defined AVP to pass the SDP fing print attribute values. Then the SDP finger print attributes can be used by \"$avp(_osp_sdp_fingerprint_)\". All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(sdpfp)",
+      "example_code": "modparam(\"osp\",\"sdp_fingerprint_avp\",\"$avp(sdpfp)\")"
+    },
+    {
+      "name": "identity_signature_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_identity_signature_)",
+      "description": "These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(idsign)",
+      "example_code": "modparam(\"osp\",\"identity_signature_avp\",\"$avp(idsign)\")"
+    },
+    {
+      "name": "identity_algorithm_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_identity_algorithm_)",
+      "description": "These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(idalg)",
+      "example_code": "modparam(\"osp\",\"identity_algorithm_avp\",\"$avp(idalg)\")"
+    },
+    {
+      "name": "identity_information_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_identity_information_)",
+      "description": "These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values. Then the indentity related values can be used by these AVPs. All pseudo variables are described in https://opensips.org/Resources/DocsCoreVar.",
+      "example_value": "$avp(idinfo)",
+      "example_code": "modparam(\"osp\",\"identity_information_avp\",\"$avp(idinfo)\")"
+    },
+    {
+      "name": "identity_type_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_identity_type_)",
+      "description": "These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values.",
+      "example_value": "$avp(idtype)",
+      "example_code": "modparam(\"osp\",\"identity_type_avp\",\"$avp(idtype)\")"
+    },
+    {
+      "name": "identity_canon_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_identity_canon_)",
+      "description": "These parameters instruct the OSP module to use the defined AVPs to pass the Identity related values.",
+      "example_value": "$avp(idcanon)",
+      "example_code": "modparam(\"osp\",\"identity_canon_avp\",\"$avp(idcanon)\")"
+    },
+    {
+      "name": "service_provider_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_service_provider_)",
+      "description": "These parameter is used to tell the OSP module which AVP is used to store source service provider information.",
+      "example_value": "$avp(sp)",
+      "example_code": "modparam(\"osp\", \"service_provider_avp\", \"$avp(sp)\")"
+    },
+    {
+      "name": "user_group_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_user_group_)",
+      "description": "These parameter is used to tell the OSP module which AVP is used to store source user group information.",
+      "example_value": "$avp(groupid)",
+      "example_code": "modparam(\"osp\", \"user_group_avp\", \"$avp(groupid)\")"
+    },
+    {
+      "name": "user_id_avp",
+      "type": "string",
+      "default_value": "$avp(_osp_user_id_)",
+      "description": "These parameter is used to tell the OSP module which AVP is used to store source user ID information.",
+      "example_value": "$avp(userid)",
+      "example_code": "modparam(\"osp\", \"user_id_avp\", \"$avp(userid)\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "checkospheader",
+      "signature": "checkospheader()",
+      "parameters": [],
+      "return_type": "integer",
+      "description": "This function checks for the existence of the OSP-Auth-Token header field.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (checkospheader()) {\n  log(1,\"OSP header field found.\\\\n\");\n} else {\n  log(1,\"no OSP header field present\\\\n\");\n};\n...",
+          "description": "checkospheader usage"
+        }
+      ]
+    },
+    {
+      "name": "validateospheader",
+      "signature": "validateospheader()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "If no OSP header is found or the header token is invalid or expired"
+        },
+        {
+          "value": "1",
+          "condition": "on successful validation"
+        }
+      ],
+      "description": "This function validates an OSP-Token specified in the OSP-Auth-Tokenheader field of the SIP message. If a peering token is present, it will be validated locally. If no OSP header is found or the header token is invalid or expired, -1 is returned; on successful validation 1 is returned.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (validateospheader()) {\n  log(1,\"valid OSP header found\\\\n\");\n} else {\n  log(1,\"OSP header not found, invalid or expired\\\\n\");\n};\n...",
+          "description": "validateospheader usage"
+        }
+      ]
+    },
+    {
+      "name": "getlocaladdress",
+      "signature": "getlocaladdress()",
+      "parameters": [],
+      "return_type": "integer",
+      "description": "This function gets the receiving IP address of SIP response and stores it as proxy egress address.",
+      "usage_context": [
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (getlocaladdress()) {\n  log(1,\"Obtain proxy local egress address\\\\n\");\n} else {\n  log(1,\"Failed to get proxy local egress address\\\\n\");\n};\n...",
+          "description": "getlocaladress usage"
+        }
+      ]
+    },
+    {
+      "name": "setrequestdate",
+      "signature": "setrequestdate()",
+      "parameters": [],
+      "return_type": "integer",
+      "description": "This function gets the receiving IP address of SIP response and stores it as proxy egress address.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (setrequest()) {\n  log(1,\"Set request date\\\\n\");\n} else {\n  log(1,\"Failed to set request date\\\\n\");\n};\n...",
+          "description": "setrequestdate usage"
+        }
+      ]
+    },
+    {
+      "name": "requestosprouting",
+      "signature": "requestosprouting()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "The address of the called party must be a valid E164 number, otherwise this function returns -1. If the transaction was accepted by the peering server, the uri is being rewritten and 1 returned, on errors (peering servers are not available, authentication failed or there is no route to destination or the route is blocked) -1 is returned."
+        },
+        {
+          "value": "1",
+          "condition": "If the transaction was accepted by the peering server, the uri is being rewritten and 1 returned"
+        }
+      ],
+      "description": "This function launches a query to the peering server requesting the IP address of one or more destination peers serving the called party. If destination peers are available, the peering server will return the IP address and a peering authorization token for each destination peer. The OSP-Auth-Token Header field is inserted into the SIP message and the SIP uri is rewritten to the IP address of destination peer provided by the peering server. The address of the called party must be a valid E164 number, otherwise this function returns -1. If the transaction was accepted by the peering server, the uri is being rewritten and 1 returned, on errors (peering servers are not available, authentication failed or there is no route to destination or the route is blocked) -1 is returned.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (requestosprouting()) {\n  log(1,\"successfully queried OSP server, now relaying call\\\\n\");\n} else {\n  log(1,\"Authorization request was rejected from OSP server\\\\n\");\n};\n...",
+          "description": "requestosprouting usage"
+        }
+      ]
+    },
+    {
+      "name": "checkosproute",
+      "signature": "checkosproute()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "There is at least one route for the call"
+        },
+        {
+          "value": "-1",
+          "condition": "There is not any route for the call"
+        }
+      ],
+      "description": "This function is used to check if there is any route for the call.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (checkosproute()) {\n  log(1,\"There is at least one route for the call\\\\n\");\n} else {\n  log(1,\"There is not any route for the call\\\\n\");\n};\n...",
+          "description": "checkosproute usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "prepareosproute"
+      ]
+    },
+    {
+      "name": "prepareosproute",
+      "signature": "prepareosproute()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Route prepared successfully"
+        },
+        {
+          "value": "-1",
+          "condition": "Route could not be prepared"
+        }
+      ],
+      "description": "This function tries to prepare the INVITE to be forwarded using the destination in the list returned by the peering server. If the calling number is translated, a RPID value for the RPID AVP will be set. If the route could not be prepared, the function returns 'FALSE' back to the script, which can then decide how to handle the failure. Note, if checkosproute has been called and returns 'TRUE' before calling prepareosproute, prepareosproute should not return 'FALSE' because checkosproute has confirmed that there is at least one route.",
+      "usage_context": [
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (prepareosproute()) {\n  log(1,\"successfully prepared the route, now relaying call\\\\n\");\n} else {\n  log(1,\"could not prepare the route, there is not route\\\\n\");\n};\n...",
+          "description": "prepareosproute usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "checkosproute"
+      ]
+    },
+    {
+      "name": "prepareospresponse",
+      "signature": "prepareospresponse()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Response prepared successfully"
+        },
+        {
+          "value": "-1",
+          "condition": "Could not prepare the response"
+        }
+      ],
+      "description": "This function tries to prepare all the routes in the list returned by the peering server into SIP 300 Redirect or SIP 380 Alternative Service message. The message is then replied to the source. If unsuccessful in preparing the routes a SIP 500 is sent back and a trace message is logged.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (prepareospresponse()) {\n  log(1,\"Response is prepared.\\\\n\");\n} else {\n  log(1,\"Could not prepare the response.\\\\n\");\n};\n...",
+          "description": "prepareospresponse usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "prepareallosproutes",
+      "signature": "prepareallosproutes()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Routes prepared successfully"
+        },
+        {
+          "value": "-1",
+          "condition": "Could not prepare the routes"
+        }
+      ],
+      "description": "This function tries to prepare all the routes in the list returned by the peering server. The message is then forked off to the destinations. If unsuccessful in preparing the routes a SIP 500 is sent back and a trace message is logged.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (prepareallosproutes()) {\n  log(1,\"Routes are prepared, now forking the call\\\\n\");\n} else {\n  log(1,\"Could not prepare the routes. No destination available\\\\n\");\n};\n...",
+          "description": "prepareallosproutes usage",
+          "context": ""
+        }
+      ]
+    },
+    {
+      "name": "checkcallingtranslation",
+      "signature": "checkcallingtranslation()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Calling number is translated"
+        },
+        {
+          "value": "-1",
+          "condition": "Calling number is not translated"
+        }
+      ],
+      "description": "This function is used to check if the calling number is translated. Before calling checkcallingtranslation, prepareosproute should be called. If the calling number does been translated, the original Remote-Party-ID, if it exists, should be removed from the INVITE message. And a new Remote-Party-ID header should be added (a RPID value for the RPID AVP has been set by prepareosproute). If the calling number is not translated, nothing should be done.",
+      "usage_context": [
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (checkcallingtranslation()) {\n  # Remove the Remote\\_Party-ID from the received message\n  # Otherwise it will be forwarded on to the next hop\n  remove\\_hf(\"Remote-Party-ID\");\n\n  # Append a new Remote\\_Party\n  append\\_rpid\\_hf();\n}\n...",
+          "description": "checkcallingtranslation usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "prepareosproute"
+      ]
+    },
+    {
+      "name": "reportospusage",
+      "signature": "reportospusage(release)",
+      "parameters": [
+        {
+          "name": "release",
+          "type": "integer",
+          "required": true,
+          "description": "Specifies which device releases the call.",
+          "valid_values": [
+            "0",
+            "1"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "TRUE",
+          "condition": "if the BYE includes an OSP cookie"
+        },
+        {
+          "value": "FALSE",
+          "condition": "if the BYE does not include an OSP cookie"
+        }
+      ],
+      "description": "This function should be called after receiving a BYE message. If the message contains an OSP cookie, the function will forward originating and/or terminating duration usage information to a peering server. The function returns TRUE if the BYE includes an OSP cookie. The actual usage message will be send on a different thread and will not delay BYE processing. The function should be called before relaying the message.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_direction(\"downstream\")) {\n  log(1,\"This BYE message is from SOURCE\\n\");\n  if (!reportospusage(0)) {\n    log(1,\"This BYE message does not include OSP usage information\\n\");\n  }\n} else {\n  log(1,\"This BYE message is from DESTINATION\\n\");\n  if (!reportospusage(1)) {\n    log(1,\"This BYE message does not include OSP usage information\\n\");\n  }\n}\n...",
+          "description": "reportospusage usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "processsubscribe",
+      "signature": "processsubscribe([cachedcnamrecord])",
+      "parameters": [
+        {
+          "name": "cachedcnamrecord",
+          "type": "string",
+          "required": false,
+          "description": "Cached CNAM record."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "This function should be called after receiving a SUBSCRIBE for CNAM message and there is a cached CNAM record for this message. This function generates a NOTIFY message including the cached CNAM record, then sends the NOTIFY message to the device sending the SUBSCRIBE message.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_method(\"SUBSCRIBE\")) {\n    if (($var(sevent) == \"calling-name\") && (is_myself(\"$rd\"))) {\n        if ($var(cnamrecord) != NULL) {\n            processsubscribe($(var(cnamrecord){s.b64decode}));\n        } else {\n            t_relay(\"1.2.3.4\", 0x02);\n        }\n    } else {\n        t_relay();\n    }\n}\n...",
+          "description": "processsubscribe usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Instructing the module to work in direct mode",
+      "description": "Instructing the module to work in direct mode",
+      "code": "modparam(\"osp\",\"work_mode\",0)"
+    },
+    {
+      "title": "Instructing the module to provide normal voice service",
+      "description": "Instructing the module to provide normal voice service",
+      "code": "modparam(\"osp\",\"service_type\",0)"
+    },
+    {
+      "title": "Setting the OSP servers",
+      "description": "Setting the OSP servers",
+      "code": "modparam(\"osp\",\"sp1_uri\",\"http://osptestserver.transnexus.com:5045/osp\")\nmodparam(\"osp\",\"sp2_uri\",\"https://[1.2.3.4]:1443/osp\")"
+    },
+    {
+      "title": "Setting the OSP server weights",
+      "description": "Setting the OSP server weights",
+      "code": "modparam(\"osp\",\"sp1_weight\",1000)"
+    },
+    {
+      "title": "Setting the device IP address",
+      "description": "Setting the device IP address",
+      "code": "modparam(\"osp\",\"device_ip\",\"[127.0.0.1]:5060\")"
+    },
+    {
+      "title": "Instructing the module not to use OSP security features",
+      "description": "Instructing the module not to use OSP security features",
+      "code": "modparam(\"osp\",\"use_security_features\",0)"
+    },
+    {
+      "title": "Setting the token format",
+      "description": "Setting the token format",
+      "code": "modparam(\"osp\",\"token_format\",2)"
+    },
+    {
+      "title": "Set authorization files",
+      "description": "If the default CFG_DIR value was used at compile time, the files will be loaded from:",
+      "code": "modparam(\"osp\",\"private_key\",\"/usr/local/etc/opensips/pkey.pem\")\nmodparam(\"osp\",\"local_certificate\",\"/usr/local/etc/opensips/localcert.pem\")\nmodparam(\"osp\",\"ca_certificates\",\"/usr/local/etc/opensips/cacert.pem\")"
+    },
+    {
+      "title": "Setting the hardware support",
+      "description": "Setting the hardware support",
+      "code": "modparam(\"osp\",\"enable_crypto_hardware_support\",0)"
+    },
+    {
+      "title": "Setting the ssl lifetime",
+      "description": "Setting the ssl lifetime",
+      "code": "modparam(\"osp\",\"ssl_lifetime\",200)"
+    },
+    {
+      "title": "Setting the persistence",
+      "description": "Setting the persistence",
+      "code": "modparam(\"osp\",\"persistence\",1000)"
+    },
+    {
+      "title": "Setting the retry delay",
+      "description": "Setting the retry delay",
+      "code": "modparam(\"osp\",\"retry_delay\",1)"
+    },
+    {
+      "title": "Setting the retry limit",
+      "description": "Setting the retry limit",
+      "code": "modparam(\"osp\",\"retry_limit\",2)"
+    },
+    {
+      "title": "Setting the timeout",
+      "description": "Setting the timeout",
+      "code": "modparam(\"osp\",\"timeout\",10)"
+    },
+    {
+      "title": "Setting support non-SIP destination devices",
+      "description": "Setting support non-SIP destination devices",
+      "code": "modparam(\"osp\",\"support_nonsip_protocol\",0)"
+    },
+    {
+      "title": "Setting the number of destination",
+      "description": "Setting the number of destination",
+      "code": "modparam(\"osp\",\"max_destinations\",12)"
+    },
+    {
+      "title": "Setting report network ID flag",
+      "description": "Setting report network ID flag",
+      "code": "modparam(\"osp\",\"report_networkid\",3)"
+    },
+    {
+      "title": "Instructing the module to validate call id",
+      "description": "Instructing the module to validate call id",
+      "code": "modparam(\"osp\",\"validate_call_id\",1)"
+    },
+    {
+      "title": "Instructing the module to use number portability parameters in Request URI",
+      "description": "Instructing the module to use number portability parameters in Request URI",
+      "code": "modparam(\"osp\",\"use_number_portablity\",1)"
+    },
+    {
+      "title": "Append user=phone parameter",
+      "description": "Append user=phone parameter",
+      "code": "modparam(\"osp\",\"append_userphone\",0)"
+    },
+    {
+      "title": "Append networkid location",
+      "description": "Append networkid location",
+      "code": "modparam(\"osp\",\"networkid_location\",2)"
+    },
+    {
+      "title": "Networkid parameter name",
+      "description": "Networkid parameter name",
+      "code": "modparam(\"osp\",\"networkid_param\",\"networkid\")"
+    },
+    {
+      "title": "Append switchid location",
+      "description": "Append switchid location",
+      "code": "modparam(\"osp\",\"switchid_location\",2)"
+    },
+    {
+      "title": "Networkid parameter name",
+      "description": "Networkid parameter name",
+      "code": "modparam(\"osp\",\"switchid_param\",\"switchid\")"
+    },
+    {
+      "title": "Append parameter string location",
+      "description": "Append parameter string location",
+      "code": "modparam(\"osp\",\"parameterstring_location\",0)"
+    },
+    {
+      "title": "Parameter string value",
+      "description": "Parameter string value",
+      "code": "modparam(\"osp\",\"parameterstring_value\",\"\")"
+    },
+    {
+      "title": "Setting the source device IP AVP",
+      "description": "Setting the source device IP AVP",
+      "code": "modparam(\"osp\",\"source_device_avp\",\"$avp(srcdev)\")"
+    },
+    {
+      "title": "Setting the source network ID AVP",
+      "description": "Setting the source network ID AVP",
+      "code": "modparam(\"osp\",\"source_networkid_avp\",\"$avp(snid)\")"
+    },
+    {
+      "title": "Setting the source switch ID AVP",
+      "description": "Setting the source switch ID AVP",
+      "code": "modparam(\"osp\",\"source_switchid_avp\",\"$avp(swid)\")"
+    },
+    {
+      "title": "Setting the custom info AVP",
+      "description": "Setting the custom info AVP",
+      "code": "modparam(\"osp\",\"custom_info_avp\",\"$avp(cinfo)\")"
+    },
+    {
+      "title": "Setting the CNAM AVP",
+      "description": "Setting the CNAM AVP",
+      "code": "modparam(\"osp\",\"cnam_avp\",\"$avp(cnam)\")"
+    },
+    {
+      "title": "Setting the NOTIFY extra headers",
+      "description": "Setting the NOTIFY extra headers",
+      "code": "modparam(\"osp\", \"extraheaders_value\", \"Source: N\")"
+    },
+    {
+      "title": "Setting the media address AVPs",
+      "description": "Setting the media address AVPs",
+      "code": "modparam(\"osp\", \"source_media_avp\", \"$avp(srcmedia)\")\nmodparam(\"osp\", \"destination_media_avp\", \"$avp(destmedia)\")"
+    },
+    {
+      "title": "Setting the request date AVP",
+      "description": "Setting the request date AVP",
+      "code": "modparam(\"osp\",\"request_date_avp\",\"$avp(reqdate)\")"
+    },
+    {
+      "title": "Setting the SDP finger print AVP",
+      "description": "Setting the SDP finger print AVP",
+      "code": "modparam(\"osp\",\"sdp_fingerprint_avp\",\"$avp(sdpfp)\")"
+    },
+    {
+      "title": "Setting the Identity related AVPs",
+      "description": "Setting the Identity related AVPs",
+      "code": "modparam(\"osp\",\"identity_signature_avp\",\"$avp(idsign)\")\nmodparam(\"osp\",\"identity_algorithm_avp\",\"$avp(idalg)\")\nmodparam(\"osp\",\"identity_information_avp\",\"$avp(idinfo)\")\nmodparam(\"osp\",\"identity_type_avp\",\"$avp(idtype)\")\nmodparam(\"osp\",\"identity_canon_avp\",\"$avp(idcanon)\")"
+    },
+    {
+      "title": "Setting the source service provider AVP",
+      "description": "Setting the source service provider AVP",
+      "code": "modparam(\"osp\", \"service_provider_avp\", \"$avp(sp)\")"
+    },
+    {
+      "title": "Setting the source user group AVP",
+      "description": "Setting the source user group AVP",
+      "code": "modparam(\"osp\", \"user_group_avp\", \"$avp(groupid)\")"
+    },
+    {
+      "title": "Setting the source user ID AVP",
+      "description": "Setting the source user ID AVP",
+      "code": "modparam(\"osp\", \"user_id_avp\", \"$avp(userid)\")"
+    },
+    {
+      "title": "checkospheader usage",
+      "description": "checkospheader usage",
+      "code": "...\nif (checkospheader()) {\n  log(1,\"OSP header field found.\\\\n\");\n} else {\n  log(1,\"no OSP header field present\\\\n\");\n};\n..."
+    },
+    {
+      "title": "validateospheader usage",
+      "description": "validateospheader usage",
+      "code": "...\nif (validateospheader()) {\n  log(1,\"valid OSP header found\\\\n\");\n} else {\n  log(1,\"OSP header not found, invalid or expired\\\\n\");\n};\n..."
+    },
+    {
+      "title": "getlocaladress usage",
+      "description": "getlocaladress usage",
+      "code": "...\nif (getlocaladdress()) {\n  log(1,\"Obtain proxy local egress address\\\\n\");\n} else {\n  log(1,\"Failed to get proxy local egress address\\\\n\");\n};\n..."
+    },
+    {
+      "title": "setrequestdate usage",
+      "description": "setrequestdate usage",
+      "code": "...\nif (setrequest()) {\n  log(1,\"Set request date\\\\n\");\n} else {\n  log(1,\"Failed to set request date\\\\n\");\n};\n..."
+    },
+    {
+      "title": "requestosprouting usage",
+      "description": "requestosprouting usage",
+      "code": "...\nif (requestosprouting()) {\n  log(1,\"successfully queried OSP server, now relaying call\\\\n\");\n} else {\n  log(1,\"Authorization request was rejected from OSP server\\\\n\");\n};\n..."
+    },
+    {
+      "title": "checkosproute usage",
+      "description": "checkosproute usage",
+      "code": "...\nif (checkosproute()) {\n  log(1,\"There is at least one route for the call\\\\n\");\n} else {\n  log(1,\"There is not any route for the call\\\\n\");\n};\n..."
+    },
+    {
+      "title": "prepareosproute usage",
+      "description": "prepareosproute usage",
+      "code": "...\nif (prepareosproute()) {\n  log(1,\"successfully prepared the route, now relaying call\\\\n\");\n} else {\n  log(1,\"could not prepare the route, there is not route\\\\n\");\n};\n..."
+    },
+    {
+      "title": "prepareospresponse usage",
+      "description": "prepareospresponse usage",
+      "code": "...\nif (prepareospresponse()) {\n  log(1,\"Response is prepared.\\\\n\");\n} else {\n  log(1,\"Could not prepare the response.\\\\n\");\n};\n..."
+    },
+    {
+      "title": "prepareallosproutes usage",
+      "description": "prepareallosproutes usage",
+      "code": "...\nif (prepareallosproutes()) {\n  log(1,\"Routes are prepared, now forking the call\\\\n\");\n} else {\n  log(1,\"Could not prepare the routes. No destination available\\\\n\");\n};\n..."
+    },
+    {
+      "title": "checkcallingtranslation usage",
+      "description": "checkcallingtranslation usage",
+      "code": "...\nif (checkcallingtranslation()) {\n  # Remove the Remote_Party-ID from the received message\n  # Otherwise it will be forwarded on to the next hop\n  remove_hf(\"Remote-Party-ID\");\n\n  # Append a new Remote_Party\n  append_rpid_hf();\n}\n..."
+    },
+    {
+      "title": "reportospusage usage",
+      "description": "reportospusage usage",
+      "code": "...\nif (is_direction(\"downstream\")) {\n  log(1,\"This BYE message is from SOURCE\\\\n\");\n  if (!reportospusage(0)) {\n    log(1,\"This BYE message does not include OSP usage information\\\\n\");\n  }\n} else {\n  log(1,\"This BYE message is from DESTINATION\\\\n\");\n  if (!reportospusage(1)) {\n    log(1,\"This BYE message does not include OSP usage information\\\\n\");\n  }\n}\n..."
+    },
+    {
+      "title": "processsubscribe usage",
+      "description": "processsubscribe usage",
+      "code": "...\nif (is_method(\"SUBSCRIBE\")) {\n    if (($var(sevent) == \"calling-name\") && (is_myself(\"$rd\"))) {\n        if ($var(cnamrecord) != NULL) {\n            processsubscribe($(var(cnamrecord){s.b64decode}));\n        } else {\n            t_relay(\"1.2.3.4\", 0x02);\n        }\n    } else {\n        t_relay();\n    }\n}\n..."
+    }
+  ]
+}

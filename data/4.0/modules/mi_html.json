@@ -1,0 +1,89 @@
+{
+  "id": "module-mi_html-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mi_html Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mi_html.html",
+  "content_markdown": "This module provides a minimal web user interface for the OpenSIPS's Management Interface.\n\nParameters for mi commands must be given in a json array format. For example, to get all statistics, the param is to be given as [[\"all\"]]. To get only dialog and tm statistics, the param is to be given as [[\"dialog:\",\"tm:\"]].",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:25:21.600Z",
+  "module_name": "mi_html",
+  "overview": "This module provides a minimal web user interface for the OpenSIPS's Management Interface.\n\nParameters for mi commands must be given in a json array format. For example, to get all statistics, the param is to be given as [[\"all\"]]. To get only dialog and tm statistics, the param is to be given as [[\"dialog:\",\"tm:\"]].",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "httpd",
+      "type": "module",
+      "reason": "The following modules must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "root",
+      "type": "string",
+      "default_value": "mi",
+      "description": "Specifies the root path for the HTTP requests. The link to the mi web interface must be constructed using the following patern: http://[opensips_IP]:[opensips_mi_port]/[root]",
+      "example_value": "opensips_mi",
+      "example_code": "...\nmodparam(\"mi_html\", \"root\", \"opensips_mi\")\n..."
+    },
+    {
+      "name": "http_method",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Specifies the HTTP request method to be used:",
+      "possible_values": [
+        "0 - use GET HTTP request",
+        "1 - use POST HTTP request"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"mi_html\", \"http_method\", 1)\n..."
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto_hep**. This is where traced mi messages will go.",
+      "example_value": "hep_dest",
+      "example_code": "...\nmodparam(\"proto_hep\", \"trace_destination\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"mi_html\", \"trace_destination\", \"hep_dest\")\n...",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep**)."
+    },
+    {
+      "name": "trace_bwlist",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Filter traced mi commands based on a blacklist or a whitelist. **trace_destination** must be defined for this parameter to have any purpose. Whitelists can be defined using 'w' or 'W', blacklists using 'b' or 'B'. The type is separate by the actual blacklist by ':'. The mi commands in the list must be separated by ','.\n\nDefining a blacklists means all the commands that are not blacklisted will be traced. Defining a whitelist means all the commands that are not whitelisted will not be traced. **WARNING:** One can't define both a whitelist and a blacklist. Only one of them is allowed. Defining the parameter a second time will just overwrite the first one.",
+      "example_value": "b: ps, which",
+      "example_code": "...\n## blacklist ps and which mi commands\n## all the other commands shall be traced\nmodparam(\"mi_html\", \"trace_bwlist\", \"b: ps, which\")\n...\n## allow only sip_trace mi command\n## all the other commands will not be traced\nmodparam(\"mi_html\", \"trace_bwlist\", \"w: sip_trace\")\n...",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example **proto_hep)**."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.1. Set `root` parameter",
+      "description": "Demonstrates setting the root parameter.",
+      "code": "...\nmodparam(\"mi_html\", \"root\", \"opensips_mi\")\n..."
+    },
+    {
+      "title": "Example 1.2. Set `http_method` parameter",
+      "description": "Demonstrates setting the http_method parameter.",
+      "code": "...\nmodparam(\"mi_html\", \"http_method\", 1)\n..."
+    },
+    {
+      "title": "Example 1.3. Set `trace_destination` parameter",
+      "description": "Demonstrates setting the trace_destination parameter.",
+      "code": "...\nmodparam(\"proto_hep\", \"trace_destination\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"mi_html\", \"trace_destination\", \"hep_dest\")\n..."
+    },
+    {
+      "title": "Example 1.4. Set `trace_destination` parameter",
+      "description": "Demonstrates setting the trace_bwlist parameter.",
+      "code": "...\n## blacklist ps and which mi commands\n## all the other commands shall be traced\nmodparam(\"mi_html\", \"trace_bwlist\", \"b: ps, which\")\n...\n## allow only sip_trace mi command\n## all the other commands will not be traced\nmodparam(\"mi_html\", \"trace_bwlist\", \"w: sip_trace\")\n..."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "id": "module-tls_openssl-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "tls_openssl Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/tls_openssl.html",
+  "content_markdown": "This module implements TLS operations using the openSSL libarary. It provides the primitives required by the tls_mgm module in order to expose a higher-level API used by TLS-based protocol modules like proto_tls or proto_wss etc.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:40:51.869Z",
+  "module_name": "tls_openssl",
+  "overview": "This module implements TLS operations using the openSSL libarary. It provides the primitives required by the tls_mgm module in order to expose a higher-level API used by TLS-based protocol modules like proto_tls or proto_wss etc.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "openssl",
+      "type": "library",
+      "reason": "Required for TLS v1.0 support (>= 0.9.6) and TLS v1.1/1.2 support (>= 1.0.1e). Also known as libssl.",
+      "optional": false
+    },
+    {
+      "name": "openssl-dev",
+      "type": "library",
+      "reason": "Required for TLS v1.0 support and TLS v1.1/1.2 support. Also known as libssl-dev.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": []
+}

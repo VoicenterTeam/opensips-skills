@@ -1,0 +1,121 @@
+{
+  "id": "module-exec-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "exec Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/exec.html",
+  "content_markdown": "The Exec module enables the execution of external commands from the OpenSIPS script. Any valid shell commands are accepted.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:33:13.832Z",
+  "module_name": "exec",
+  "overview": "The Exec module enables the execution of external commands from the OpenSIPS script. Any valid shell commands are accepted.",
+  "how_it_works": "The final input string is evaluated and executed using the \"/bin/sh\" symlink/binary. OpenSIPS may additionally pass a lot more information about the request using environment variables:\n\n*   SIP_HF_<hf_name> contains value of each header field in request. If a header field occurred multiple times, values are concatenated and comma-separated. <hf_name> is in capital letters. Ff a header-field name occurred in compact form, <hf_name> is canonical.\n    \n*   SIP_TID is transaction identifier. All request retransmissions or CANCELs/ACKs associated with a previous INVITE result in the same value.\n    \n*   SIP_DID is dialog identifier, which is the same as to-tag. Initially, it is empty.\n    \n*   SIP_SRCIP is source IP address from which request came.\n    \n*   SIP_ORURI is original request URI.\n    \n*   SIP_RURI is _current_ request URI (if unchanged, equal to original).\n    \n*   SIP_USER is userpart of _current_ request URI.\n    \n*   SIP_OUSER is userpart of original request URI.\n    \n\nNOTE: Any environment variables which are given to the exec module functions must be specified using the '$$' delimiter (e.g., $$SIP_OUSER), otherwise they will be evaluated as OpenSIPS pseudo-variables, throwing scripting errors.",
+  "dependencies_required": [],
+  "dependencies_optional": [],
+  "exported_parameters": [
+    {
+      "name": "setvars",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Set to 1 to enable setting all above-mentioned environment variables for all executed commands.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"exec\", \"setvars\", 1)\n...",
+      "notes": "WARNING: Before enabling this parameter, make sure your \"/bin/sh\" is safe from the Shellshock bash vulnerability!!!"
+    },
+    {
+      "name": "time_to_kill",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "If set, this parameter specifies the longest time (in seconds) that a program is allowed to execute. Once this duration is exceeded, the program is terminated (SIGTERM).",
+      "example_value": "20",
+      "example_code": "...\nmodparam(\"exec\", \"time_to_kill\", 20)\n...",
+      "notes": "NOTE: due to internal limitations, a SIGTERM will actually be sent to **all** job pids once the \"time\\_to\\_kill\" expiration timeout hits. On a standard system, this should have no side-effects, as pids are monotonically increasing in a slow manner, and OpenSIPS should run under the \"opensips\" user, thus rendering it unable to terminate non-child processes. If this is not the case on your system, do not use the OpenSIPS \"time_to_kill\" feature -- rather implement it within your external app!"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "exec",
+      "signature": "exec(command, [stdin], [stdout], [stderr], [envavp])",
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "required": true,
+          "description": "command to be executed"
+        },
+        {
+          "name": "stdin",
+          "type": "string",
+          "required": false,
+          "description": "string to be passed to the standard input of the command"
+        },
+        {
+          "name": "stdout",
+          "type": "var",
+          "required": false,
+          "description": "optional output variable which will hold the standard output of the process"
+        },
+        {
+          "name": "stderr",
+          "type": "var",
+          "required": false,
+          "description": "optional output variable which will hold the standard error of the process"
+        },
+        {
+          "name": "envavp",
+          "type": "var",
+          "required": false,
+          "description": "optional AVP which holds the values for the environment variables to be passed for the command. The names of the environment variables will be \"OSIPS_EXEC_#\", where \"#\" starts from 0. For example, if we push two values (e.g. \"b\" and \"a\") into an AVP variable, which acts like a stack, OSIPS_EXEC_0 will hold \"a\", while OSIPS_EXEC_1 will hold \"b\"."
+        }
+      ],
+      "return_type": "int",
+      "description": "Executes an external command. The input is passed to the standard input of the new process, if specified, and the output is saved in the output variable.\n\nThe function waits for the external script until it provided all its output (not necessary to actually finish). If no output (standard output or standard error) is required by the function, it will not block at all - it will simply launch the external script and continue the script.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$avp(env) = \"a\";\n$avp(env) = \"b\";\nexec(\"ls -l\", , $var(out), $var(err), $avp(env));\nxlog(\"The output is $var(out)\\n\");\nxlog(\"Received the following error\\n$var(err)\");\n...\n$var(input) = \"input\";\nexec(\"/home/../myscript.sh\", \"this is my $var(input) for exec\\n\", , , $avp(env));\n...",
+          "description": "Example 1.3. `exec` usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set “setvars” parameter",
+      "description": "Set to 1 to enable setting all above-mentioned environment variables for all executed commands.",
+      "code": "...\nmodparam(\"exec\", \"setvars\", 1)\n..."
+    },
+    {
+      "title": "Set “time_to_kill” parameter",
+      "description": "If set, this parameter specifies the longest time (in seconds) that a program is allowed to execute.",
+      "code": "...\nmodparam(\"exec\", \"time_to_kill\", 20)\n..."
+    },
+    {
+      "title": "`exec` usage",
+      "description": "Executes an external command. The input is passed to the standard input of the new process, if specified, and the output is saved in the output variable.",
+      "code": "...\n$avp(env) = \"a\";\n$avp(env) = \"b\";\nexec(\"ls -l\", , $var(out), $var(err), $avp(env));\nxlog(\"The output is $var(out)\\n\");\nxlog(\"Received the following error\\n$var(err)\");\n...\n$var(input) = \"input\";\nexec(\"/home/../myscript.sh\", \"this is my $var(input) for exec\\n\", , , $avp(env));\n..."
+    },
+    {
+      "title": "`async exec` usage",
+      "description": "Executes an external command. This function does exactly the same as exec() (in terms of input, output and processing), but in an asynchronous way.",
+      "code": "{\n...\nasync(exec(\"ruri-changer.sh\", $ru, $ru), resume);\n}\n\nroute [resume] {\n...\n}"
+    }
+  ]
+}

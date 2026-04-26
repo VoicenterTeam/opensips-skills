@@ -1,0 +1,66 @@
+{
+  "id": "module-dns_cache-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "dns_cache Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/dns_cache.html",
+  "content_markdown": "This module is an implementation of a cache system designed for DNS records. For successful DNS queries of all types, the module will store in a cache/db backend the mappings, for TTL number of seconds received in the DNS answer. Failed DNS queries will also be stored in the back-end, with a TTL that can be specified by the user. The module uses the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:50:39.233Z",
+  "module_name": "dns_cache",
+  "overview": "This module is an implementation of a cache system designed for DNS records. For successful DNS queries of all types, the module will store in a cache/db backend the mappings, for TTL number of seconds received in the DNS answer. Failed DNS queries will also be stored in the back-end, with a TTL that can be specified by the user. The module uses the Key-Value interface exported from the core.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "cachedb_*",
+      "type": "module",
+      "reason": "must be loaded before loading the dns_cache module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The url of the key-value back-end that will be used for storing the DNS records.",
+      "example_code": "#use internal cachedb\\_local module\nmodparam(\"dns\\_cache\", \"cachedb\\_url\",\"local://\")\n#use cachedb\\_memcached module with memcached server at 192.168.2.130\nmodparam(\"dns\\_cache\", \"cachedb\\_url\",\"memcached://192.168.2.130:8888/\")"
+    },
+    {
+      "name": "blacklist_timeout",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "The number of seconds that a failed DNS query will be kept in cache.",
+      "example_code": "modparam(\"dns\\_cache\", \"blacklist\\_timeout\",7200) # 2 hours"
+    },
+    {
+      "name": "min_ttl",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The minimum number of seconds that a DNS record will be kept in cache. If the TTL received in the DNS answer is lower than this value, the record will be cached for min\\_ttl seconds.",
+      "example_code": "modparam(\"dns\\_cache\", \"min\\_ttl\",300) # 5 minutes"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "The url of the key-value back-end that will be used for storing the DNS records.",
+      "code": "...\n#use internal cachedb\\_local module\nmodparam(\"dns\\_cache\", \"cachedb\\_url\",\"local://\")\n#use cachedb\\_memcached module with memcached server at 192.168.2.130\nmodparam(\"dns\\_cache\", \"cachedb\\_url\",\"memcached://192.168.2.130:8888/\")\n..."
+    },
+    {
+      "title": "Set `blacklist_timeout` parameter",
+      "description": "The number of seconds that a failed DNS query will be kept in cache. Default is 3600.",
+      "code": "...\nmodparam(\"dns\\_cache\", \"blacklist\\_timeout\",7200) # 2 hours\n..."
+    },
+    {
+      "title": "Set `min_ttl` parameter",
+      "description": "The minimum number of seconds that a DNS record will be kept in cache. If the TTL received in the DNS answer is lower than this value, the record will be cached for min_ttl seconds. Default value is 0 seconds (no minimum TTL is enforced).",
+      "code": "...\nmodparam(\"dns\\_cache\", \"min\\_ttl\",300) # 5 minutes\n..."
+    }
+  ]
+}

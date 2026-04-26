@@ -1,0 +1,160 @@
+{
+  "id": "module-pua_bla-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "pua_bla Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/pua_bla.html",
+  "content_markdown": "The pua_bla module enables Bridged Line Appearances support according to the specifications in draft-anil-sipping-bla-03.txt.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:24:05.057Z",
+  "module_name": "pua_bla",
+  "overview": "The pua_bla module enables Bridged Line Appearances support according to the specifications in draft-anil-sipping-bla-03.txt.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "usrloc",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "pua",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "presence",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "libxml",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_domain",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The default domain for the registered users to be used when constructing the uri for the registrar callback.",
+      "example_value": "opensips.org",
+      "example_code": "modparam(\"pua\\_bla\", \"default\\_domain\", \"opensips.org\")"
+    },
+    {
+      "name": "header_name",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The name of the header to be added to Publish requests. It will contain the uri of the user agent that sent the Notify that is transformed into Publish. It stops sending a Notification with the same information to the sender.",
+      "example_value": "Sender",
+      "example_code": "modparam(\"pua\\_bla\", \"header\\_name\", \"Sender\")"
+    },
+    {
+      "name": "outbound_proxy",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The outbound\\_proxy uri to be used when sending Subscribe requests.",
+      "example_value": "sip:proxy@opensips.org",
+      "example_code": "modparam(\"pua\\_bla\", \"outbound\\_proxy\", \"sip:proxy@opensips.org\")"
+    },
+    {
+      "name": "server_address",
+      "type": "string",
+      "description": "The IP address of the server.",
+      "example_value": "sip:bla@160.34.23.12",
+      "example_code": "modparam(\"pua\\_bla\", \"server\\_address\", \"sip:bla@160.34.23.12\")"
+    },
+    {
+      "name": "presence_server",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The address of the presence server - will be used as an outbound proxy when sending PUBLISH requests. It is optional.",
+      "example_value": "sip:pa@opensips.org",
+      "example_code": "modparam(\"pua\\_bla\", \"presence\\_server\", \"sip:pa@opensips.org\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "bla_set_flag",
+      "signature": "bla_set_flag()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [],
+      "description": "The function is used to mark REGISTER requests made to a BLA AOR. The modules subscribes to the registered contacts for dialog;sla event.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(is\\_method(\"REGISTER\") && $tu=~\"bla\\_aor@opensips.org\") \n\tbla\\_set\\_flag();\t\t\n...",
+          "description": "bla_set_flag usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "bla_handle_notify",
+      "signature": "bla_handle_notify()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [],
+      "description": "The function handles Notify requests sent from phones on the same BLA to the server. The message is transformed in Publish request and passed to presence module for further handling. in case of a successful processing a 2xx reply should be sent.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(is\\_method(\"NOTIFY\") && $tu=~\"bla\\_aor@opensips.org\") \n{\n\t\tif( bla\\_handle\\_notify() ) \n\t\t\tt\\_reply(200, \"OK\");\n}\t\n...",
+          "description": "bla_handle_notify usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `default_domain` parameter",
+      "description": "The default domain for the registered users to be used when constructing the uri for the registrar callback.",
+      "code": "...\nmodparam(\"pua\\_bla\", \"default\\_domain\", \"opensips.org\")\n..."
+    },
+    {
+      "title": "Set `header_name` parameter",
+      "description": "The name of the header to be added to Publish requests. It will contain the uri of the user agent that sent the Notify that is transformed into Publish. It stops sending a Notification with the same information to the sender.",
+      "code": "...\nmodparam(\"pua\\_bla\", \"header\\_name\", \"Sender\")\n..."
+    },
+    {
+      "title": "Set `outbound_proxy` parameter",
+      "description": "The outbound\\_proxy uri to be used when sending Subscribe requests.",
+      "code": "...\nmodparam(\"pua\\_bla\", \"outbound\\_proxy\", \"sip:proxy@opensips.org\")\n..."
+    },
+    {
+      "title": "Set `server_address` parameter",
+      "description": "The IP address of the server.",
+      "code": "...\nmodparam(\"pua\\_bla\", \"server\\_address\", \"sip:bla@160.34.23.12\")\n..."
+    },
+    {
+      "title": "Set `presence_server` parameter",
+      "description": "The address of the presence server - will be used as an outbound proxy when sending PUBLISH requests. It is optional.",
+      "code": "...\nmodparam(\"pua\\_bla\", \"presence\\_server\", \"sip:pa@opensips.org\")\n..."
+    },
+    {
+      "title": "`bla_set_flag` usage",
+      "description": "The function is used to mark REGISTER requests made to a BLA AOR. The modules subscribes to the registered contacts for dialog;sla event.",
+      "code": "...\nif(is\\_method(\"REGISTER\") && $tu=~\"bla\\_aor@opensips.org\") \n\tbla\\_set\\_flag();\t\t\n..."
+    },
+    {
+      "title": "`bla_handle_notify` usage",
+      "description": "The function handles Notify requests sent from phones on the same BLA to the server. The message is transformed in Publish request and passed to presence module for further handling. in case of a successful processing a 2xx reply should be sent.",
+      "code": "...\nif(is\\_method(\"NOTIFY\") && $tu=~\"bla\\_aor@opensips.org\") \n{\n\t\tif( bla\\_handle\\_notify() ) \n\t\t\tt\\_reply(200, \"OK\");\n}\t\n..."
+    }
+  ]
+}

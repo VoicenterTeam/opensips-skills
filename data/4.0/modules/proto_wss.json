@@ -1,0 +1,222 @@
+{
+  "id": "module-proto_wss-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "proto_wss Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/proto_wss.html",
+  "content_markdown": "The WSS (Secure WebSocket) module provides the ability to communicate with a WebSocket ([RFC 6455](http://tools.ietf.org/html/rfc6455)) client or server over a secure (TLS encrypted) channel. As part of the [WebRTC](https://webrtc.org/) specifications, this protocol can be used to provide secure VoIP calls to HTTPS enabled browsers.\n\nThis module behaves as any other transport protocol module: in order to use it, you must define one or more listeners that will handle the secure WebSocket traffic, _after_ the `mpath` parameter:\n\n...\nmpath=/path/to/modules\n...\nsocket=wss:10.0.0.1\t\t\t# change with the listening IP\nsocket=wss:10.0.0.1:5060\t# change with the listening IP and port\n...\n\nBesides that, you need to define the TLS parameters for securing the connection. This is done through the _tls\\_mgm_ module interface, similar to the _proto\\_tls_ module:\n\nmodparam(\"tls\\_mgm\", \"certificate\", \"/certs/biloxy.com/cert.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"/certs/biloxy.com/privkey.pem\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\", \"/certs/wellknownCAs\")\nmodparam(\"tls\\_mgm\", \"tls\\_method\", \"tlsv1\")\nmodparam(\"tls\\_mgm\", \"verify\\_cert\", \"1\")\nmodparam(\"tls\\_mgm\", \"require\\_cert\", \"1\")\n\nCheck the _tls\\_mgm_ module documentation for more info.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T16:01:40.133Z",
+  "module_name": "proto_wss",
+  "overview": "The WSS (Secure WebSocket) module provides the ability to communicate with a WebSocket ([RFC 6455](http://tools.ietf.org/html/rfc6455)) client or server over a secure (TLS encrypted) channel. As part of the [WebRTC](https://webrtc.org/) specifications, this protocol can be used to provide secure VoIP calls to HTTPS enabled browsers.\n\nThis module behaves as any other transport protocol module: in order to use it, you must define one or more listeners that will handle the secure WebSocket traffic, _after_ the `mpath` parameter:\n\n...\nmpath=/path/to/modules\n...\nsocket=wss:10.0.0.1\t\t\t# change with the listening IP\nsocket=wss:10.0.0.1:5060\t# change with the listening IP and port\n...\n\nBesides that, you need to define the TLS parameters for securing the connection. This is done through the _tls\\_mgm_ module interface, similar to the _proto\\_tls_ module:\n\nmodparam(\"tls\\_mgm\", \"certificate\", \"/certs/biloxy.com/cert.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"/certs/biloxy.com/privkey.pem\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\", \"/certs/wellknownCAs\")\nmodparam(\"tls\\_mgm\", \"tls\\_method\", \"tlsv1\")\nmodparam(\"tls\\_mgm\", \"verify\\_cert\", \"1\")\nmodparam(\"tls\\_mgm\", \"require\\_cert\", \"1\")\n\nCheck the _tls\\_mgm_ module documentation for more info.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "tls_openssl or tls_wolfssl",
+      "type": "module",
+      "reason": "depending on the desired TLS library",
+      "optional": false
+    },
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "proto_hep"
+  ],
+  "exported_parameters": [
+    {
+      "name": "listen",
+      "type": "string",
+      "description": "This is a global parameter that specifies what interface/IP and port should handle WSS traffic.",
+      "scope": "global",
+      "example_value": "wss:1.2.3.4:44344",
+      "example_code": "...\nsocket= wss:1.2.3.4:44344\n..."
+    },
+    {
+      "name": "wss_port",
+      "type": "integer",
+      "default_value": "443",
+      "description": "The default port to be used for all WSS related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the WSS listeners) and the SIP sending part (if the destination WSS URI has no explicit port).\n\nIf you want to change only the listening port for WSS, use the port option in the SIP listener defintion.",
+      "example_value": "44344",
+      "example_code": "...\nmodparam(\"proto\\_wss\", \"wss\\_port\", 44344)\n..."
+    },
+    {
+      "name": "wss_max_msg_chunks",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of chunks in which a SIP message is expected to arrive via WSS. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "example_value": "8",
+      "example_code": "...\nmodparam(\"proto\\_wss\", \"wss\\_max\\_msg\\_chunks\", 8)\n..."
+    },
+    {
+      "name": "wss_resource",
+      "type": "string",
+      "default_value": "/",
+      "description": "The resource queried for when a WebSocket handshake is initiated.",
+      "example_value": "/wss",
+      "example_code": "...\nmodparam(\"proto\\_wss\", \"wss\\_resource\", \"/wss\")\n..."
+    },
+    {
+      "name": "wss_handshake_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "This parameter specifies the time in milliseconds the proto\\_wss module waits for a WebSocket handshake reply from a WebSocket server.",
+      "example_value": "300",
+      "example_code": "...\nmodparam(\"proto\\_wss\", \"wss\\_handshake\\_timeout\", 300)\n..."
+    },
+    {
+      "name": "cert_check_on_conn_reusage",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "This parameter turns on or off the extra checking/matching of the TLS domain (SSL certificate) when comes to reusing an existing TLS connection. Without this extra check, only IP and port of the connections will be check (in order to re-use an existing connection). With this extra check, the connection to be reused must have the same SSL certificate as the one set for the current signaling operation.\n\nThis checking is done only when comes to send SIP traffic via TLS and it is applied only against connections that were created / initiated by OpenSIPS (as TLS client). Any accepte connection (as TLS server) will automatically match (the extra test will be skipped).",
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"proto_wss\", \"cert_check_on_conn_reusage\", 1)"
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined)",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is proto_hep. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about the client and server certificate, master key, http request and reply belonging to web socket protocol handshake and network layer information shall be sent.",
+      "scope": "global",
+      "example_value": "hep_dest",
+      "example_code": "modparam(\"proto_hep\", \"hep_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto_wss\", \"trace_destination\", \"hep_dest\")",
+      "notes": "WARNING: A tracing module must be loaded in order for this parameter to work. (for example proto_hep)."
+    },
+    {
+      "name": "trace_on",
+      "type": "int",
+      "default_value": "0(tracing inactive)",
+      "description": "This controls whether tracing for wss is on or not. You still need to define trace_destination in order to work, but this value will be controlled using mi function wss:trace.",
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"proto_wss\", \"trace_on\", 1)"
+    },
+    {
+      "name": "trace_filter_route",
+      "type": "string",
+      "default_value": "none(no route is set)",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be drop, any other exit mode resulting in tracing the current connection ( of course you still have to define a trace_destination and trace must be on at the time this connection is opened).",
+      "scope": "global",
+      "example_value": "wss_filter",
+      "example_code": "modparam(\"proto_wss\", \"trace_filter_route\", \"wss_filter\")\n/* all wss connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[wss_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket_in(ip) == \"1.1.1.10\"  && $socket_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}",
+      "notes": "IMPORTANT: Filtering on ip addresses and ports can be made using $si and $sp for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( $si meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) $socket_in(ip) (ip) and $socket_in(port) (port) can be used.\n\nWARNING: IF trace_on is set to 0 or tracing is deactived via the mi command wss:trace this route won't be called."
+    },
+    {
+      "name": "wss_tls_handshake_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Sets the timeout (in milliseconds) for the SSL handshake sequence to complete. It may be necessary to increase this value when using a CPU intensive cipher for the connection to allow time for keys to be generated and processed.\n\nThe timeout is invoked during acceptance of a new connection (inbound) and during the wait period when a new session is being initiated (outbound).",
+      "scope": "global",
+      "example_value": "200",
+      "example_code": "param(\"proto_wss\", \"wss_tls_handshake_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "name": "wss_send_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Sets the timeout (in milliseconds) for the send operations to complete\n\nThe send timeout is invoked for all TLS write operations, excluding the handshake process (see: wss_tls_handshake_timeout)",
+      "example_value": "200",
+      "example_code": "modparam(\"proto\\_wss\", \"wss\\_send\\_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "name": "require_origin",
+      "type": "integer",
+      "default_value": "1(require Origin header).",
+      "description": "Controls whether the module should require the Origin header or not.",
+      "example_value": "no",
+      "example_code": "modparam(\"proto\\_wss\", \"require\\_origin\", no)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "wss:trace",
+      "parameters": [
+        {
+          "name": "trace_mode",
+          "type": "string",
+          "required": false,
+          "description": "set wss tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off ); Possible values: on, off"
+        }
+      ],
+      "description": "Replaces obsolete MI command: _wss\\_trace_.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi wss:trace on",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `listen` variable",
+      "description": "This is a global parameter that specifies what interface/IP and port should handle WSS traffic.",
+      "code": "...\nsocket= wss:1.2.3.4:44344\n..."
+    },
+    {
+      "title": "Set `wss_port` variable",
+      "description": "The default port to be used for all WSS related operation. Be careful as the default port impacts both the SIP listening part (if no port is defined in the WSS listeners) and the SIP sending part (if the destination WSS URI has no explicit port). If you want to change only the listening port for WSS, use the port option in the SIP listener defintion.",
+      "code": "...\nmodparam(\"proto_wss\", \"wss_port\", 44344)\n..."
+    },
+    {
+      "title": "Set `wss_max_msg_chunks` parameter",
+      "description": "The maximum number of chunks in which a SIP message is expected to arrive via WSS. If a received packet is more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending very fragmented traffic in order to decrease server performance).",
+      "code": "...\nmodparam(\"proto_wss\", \"wss_max_msg_chunks\", 8)\n..."
+    },
+    {
+      "title": "Set `wss_resource` parameter",
+      "description": "The resource queried for when a WebSocket handshake is initiated.",
+      "code": "...\nmodparam(\"proto_wss\", \"wss_resource\", \"/wss\")\n..."
+    },
+    {
+      "title": "Set `wss_handshake_timeout` parameter",
+      "description": "This parameter specifies the time in milliseconds the proto_wss module waits for a WebSocket handshake reply from a WebSocket server.",
+      "code": "...\nmodparam(\"proto_wss\", \"wss_handshake_timeout\", 300)\n..."
+    },
+    {
+      "title": "Set `cert_check_on_conn_reusage` parameter",
+      "description": "This parameter turns on or off the extra checking/matching of the TLS domain (SSL certificate) when comes to reusing an existing TLS connection. Without this extra check, only IP and port of the connections will be check (in order to re-use an existing connection). With this extra check, the connection to be reused must have the same SSL certificate as the one set for the current signaling operation. This checking is done only when comes to send SIP traffic via TLS and it is applied only against connections that were created / initiated by OpenSIPS (as TLS client). Any accepte connection (as TLS server) will automatically match (the extra test will be skipped).",
+      "code": "...\nmodparam(\"proto_wss\", \"cert_check_on_conn_reusage\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is proto_hep. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process. For each connection that is created an event containing information about the client and server certificate, master key, http request and reply belonging to web socket protocol handshake and network layer information shall be sent.",
+      "code": "...\nmodparam(\"proto_hep\", \"hep_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\nmodparam(\"proto_wss\", \"trace_destination\", \"hep_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "This controls whether tracing for wss is on or not. You still need to define trace_destinationin order to work, but this value will be controlled using mi function wss:trace.",
+      "code": "...\nmodparam(\"proto_wss\", \"trace_on\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_filter_route` parameter",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be drop, any other exit mode resulting in tracing the current connection ( of course you still have to define a trace_destination and trace must be on at the time this connection is opened). IMPORTANT Filtering on ip addresses and ports can be made using $si and $sp for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( $si meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) $socket_in(ip) (ip) and $socket_in(port) (port) can be used. WARNING: IF trace_on is set to 0 or tracing is deactived via the mi command wss:trace this route won't be called.",
+      "code": "...\nmodparam(\"proto_wss\", \"trace_filter_route\", \"wss_filter\")\n...\n/* all wss connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[wss_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket_in(ip) == \"1.1.1.10\"  && $socket_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}\n..."
+    },
+    {
+      "title": "Set `wss_tls_handshake_timeout` variable",
+      "description": "Sets the timeout (in milliseconds) for the SSL handshake sequence to complete. It may be necessary to increase this value when using a CPU intensive cipher for the connection to allow time for keys to be generated and processed. The timeout is invoked during acceptance of a new connection (inbound) and during the wait period when a new session is being initiated (outbound).",
+      "code": "param(\"proto_wss\", \"wss_tls_handshake_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "title": "Set `wss_send_timeout` variable",
+      "description": "Sets the timeout (in milliseconds) for the send operations to complete The send timeout is invoked for all TLS write operations, excluding the handshake process (see: wss_tls_handshake_timeout)",
+      "code": "modparam(\"proto_wss\", \"wss_send_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "title": "Set `require_origin` parameter",
+      "description": "Controls whether the module should require the Origin header or not.",
+      "code": "modparam(\"proto_wss\", \"require_origin\", no)"
+    }
+  ]
+}

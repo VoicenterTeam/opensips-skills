@@ -1,0 +1,721 @@
+{
+  "id": "module-load_balancer-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "load_balancer Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/load_balancer.html",
+  "content_markdown": "The Load-Balancer module comes to provide traffic routing based on load. Shortly, when OpenSIPS routes calls to a set of destinations, it is able to keep the load status (as number of ongoing calls) of each destination and to choose to route to the less loaded destination (at that moment). OpenSIPS is aware of the capacity of each destination - it is preconfigured with the maximum load accepted by the destinations. To be more precise, when routing, OpenSIPS will consider the less loaded destination not the destination with the smallest number of ongoing calls, but the destination with the largest available slot.\n\nAlso the module has the capability to do failover (to try a new destination if the selected one does not respond), to keep state of the destinations (to remember the failed destination and avoid using them agai) and to check the health of the destination (by doing probing of the destination and auto re-enabling).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T13:55:41.003Z",
+  "module_name": "load_balancer",
+  "overview": "The Load-Balancer module comes to provide traffic routing based on load. Shortly, when OpenSIPS routes calls to a set of destinations, it is able to keep the load status (as number of ongoing calls) of each destination and to choose to route to the less loaded destination (at that moment). OpenSIPS is aware of the capacity of each destination - it is preconfigured with the maximum load accepted by the destinations. To be more precise, when routing, OpenSIPS will consider the less loaded destination not the destination with the smallest number of ongoing calls, but the destination with the largest available slot.\n\nAlso the module has the capability to do failover (to try a new destination if the selected one does not respond), to keep state of the destinations (to remember the failed destination and avoid using them agai) and to check the health of the destination (by doing probing of the destination and auto re-enabling).",
+  "how_it_works": "Please refer to the Load-Balancer tutorial from the OpenSIPS website: https://opensips.org/Documentation/Tutorials-LoadBalancing-1-9",
+  "dependencies_required": [
+    {
+      "name": "Dialog",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    },
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "one of the DB modules",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "freeswitch (only if fetch_freeswitch_stats is enabled)",
+    "TM (only if probing is enabled)",
+    "clusterer (only if cluster_id option is enabled)"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "The URL pointing to the database where the load-balancing rules are stored.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"load\\_balancer\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "load_balancer",
+      "description": "The name of the DB table containing the load-balancing rules.",
+      "example_value": "lb",
+      "example_code": "modparam(\"load\\_balancer\", \"db\\_table\", \"lb\")"
+    },
+    {
+      "name": "probing_interval",
+      "type": "integer",
+      "default_value": "30",
+      "description": "How often (in seconds) the probing of a destination should be done. If set to 0, the probing will be disabled as functionality (for all destinations)",
+      "example_value": "60",
+      "example_code": "modparam(\"load\\_balancer\", \"probing\\_interval\", 60)"
+    },
+    {
+      "name": "probing_method",
+      "type": "string",
+      "default_value": "\"OPTIONS\"",
+      "description": "The SIP method to be used for the probing requests.",
+      "example_value": "INFO",
+      "example_code": "modparam(\"load\\_balancer\", \"probing\\_method\", \"INFO\")"
+    },
+    {
+      "name": "probing_from",
+      "type": "string",
+      "default_value": "\"sip:prober@localhost\"",
+      "description": "The FROM SIP URI to be advertised in the SIP probing requests.",
+      "example_value": "sip:pinger@192.168.2.10",
+      "example_code": "modparam(\"load\\_balancer\", \"probing\\_from\", \"sip:pinger@192.168.2.10\")"
+    },
+    {
+      "name": "probing_reply_codes",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "A comma separted list of SIP reply codes. The codes defined here will be considered as valid reply codes for probing messages, apart for 200.",
+      "scope": "global",
+      "example_value": "501, 403",
+      "example_code": "modparam(\"load\\_balancer\", \"probing\\_reply\\_codes\", \"501, 403\")"
+    },
+    {
+      "name": "probing_verbose",
+      "type": "number",
+      "default_value": "0 (disabled)",
+      "description": "A boolean option to enable extra logging related to the enabling or disabling of the destinations based on probing replies and MI commands.\n\nA 0 value means disabled, anything else means enabled.\n\nThe extra logging will be done on INFO level.",
+      "possible_values": [
+        "0 (disabled)",
+        "anything else (enabled)"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"load\\_balancer\", \"probing\\_verbose\", 1)"
+    },
+    {
+      "name": "lb_define_blacklist",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Defines a blacklist based on a lb group. This list will contain the IPs (no port, all protocols) of the destinations matching the given group.\n\nMultiple instances of this param are allowed.",
+      "scope": "global",
+      "example_value": "list= 1,4,3",
+      "example_code": "modparam(\"load\\_balancer\", \"lb\\_define\\_blacklist\", \"list= 1,4,3\")\nmodparam(\"load\\_balancer\", \"lb\\_define\\_blacklist\", \"blist2= 2,10,6\")",
+      "notes": "Multiple instances of this param are allowed."
+    },
+    {
+      "name": "fetch_freeswitch_stats",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "If enabled, the maximum value of a resource may also consist of FreeSWITCH Event Socket Layer URLs, e.g. _\"channels=fs://:password@freeswitch.example.com\"_ or _\"channels=fs://user:password@127.0.0.1:8021\"_. The default ESL port is 8021.\n\nOpenSIPS will establish a connection with the given socket and periodically update the internal maximum value of the given resource using statistics pushed by the FreeSWITCH box.\n\nThe max value of a resource is updated every _event\\_heartbeat\\_interval_ seconds (see the \"freeswitch\" OpenSIPS module for more details regarding this setting), as the stats arrive from FreeSWITCH.\n\nGiven the following format for FreeSWITCH heartbeat messages:\n\n{\n  ...\n  \"FreeSWITCH-Hostname\": \"pbx2\",\n  \"FreeSWITCH-IPv4\": \"172.17.0.3\",\n  \"Idle-CPU\": \"78.400000\",\n  \"Max-Sessions\": \"1000\",\n  \"Session-Count\": \"0\",\n  ...\n}\n\n, the load balancer uses the following formula in order to periodically update its \"max\\_load\" values for each FreeSWITCH box (FreeSWITCH data is highlighted in bold):\n\n_max\\_load = (**Idle-CPU** / 100) \\* (**Max-Sessions** - (**Session-Count** - current\\_load))_",
+      "possible_values": [
+        "0 (disabled)",
+        "1 (enabled)"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"load\\_balancer\", \"fetch\\_freeswitch\\_stats\", 1)"
+    },
+    {
+      "name": "initial_freeswitch_load",
+      "type": "integer",
+      "default_value": "1000",
+      "description": "This parameter is only relevant for some seconds after module startup/reload, when no statistics from newly loaded FreeSWITCH ESL sockets have arrived, yet the routing of calls must remain unaffected. Any FreeSWITCH-enabled resource will inherit this value for the entire interval mentioned above (up to 20 seconds!).",
+      "scope": "global",
+      "example_value": "200",
+      "example_code": "modparam(\"load\\_balancer\", \"initial\\_freeswitch\\_load\", 200)",
+      "notes": "Relevant for up to 20 seconds after module startup/reload."
+    },
+    {
+      "name": "cluster_id",
+      "type": "integer",
+      "default_value": "0 (none)",
+      "description": "The ID of the cluster the module is part of. The clustering support is used in load-balancer module for two purposes: for sharing the status of the destinations and for controlling the pinging to destinations. If clustering enbled, the module will automatically share changes over the status of the destinations with the other OpenSIPS instances that are part of a cluster. Whenever such a status changes (following an MI command, a probing result, a script command), the module will replicate this status change to all the nodes in this given cluster. The clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to destinations. See the cluster_sharing_tag option. This OpenSIPS cluster exposes the \"load_balancer-status-repl\" capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have at least one node marked with the \"seed\" value as the clusterer.flags column/property in order to be fully functional. Consult the clusterer - Capabilities chapter for more details. For more info on how to define and populate a cluster (with OpenSIPS nodes) see the \"clusterer\" module.",
+      "scope": "global",
+      "example_value": "9",
+      "example_code": "# replicate destination status with all OpenSIPS in cluster ID 9\nmodparam(\"load_balancer\", \"cluster_id\", 9)"
+    },
+    {
+      "name": "cluster_sharing_tag",
+      "type": "string",
+      "default_value": "empty (none)",
+      "description": "The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform the self-triggered actions in the module. Such actions may be the destination probing or sharing the changes in the destination status. If defined, only the node with active status of this tag will perform the actions (pinging and sharing status). The cluster_id must be defined for this option to work. This is an optional parameter. If not set, all the nodes in the cluster will individually do the probing and share the status changes.",
+      "scope": "global",
+      "example_value": "vip",
+      "example_code": "# only the node with the active \"vip\" sharing tag will perform pinging\n# and broadcast the status changes\nmodparam(\"load_balancer\", \"cluster_id\", 9)\nmodparam(\"load_balancer\", \"cluster_sharing_tag\", \"vip\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "lb_start",
+      "signature": "lb_start(grp,resources[,flags],[attrs])",
+      "parameters": [
+        {
+          "name": "grp",
+          "type": "int",
+          "required": true,
+          "description": "group id for the destinations; the destination may be grouped in several groups you can you for differnet scenarios."
+        },
+        {
+          "name": "resources",
+          "type": "string",
+          "required": true,
+          "description": "a semi-colon separated list of resources required by the current call."
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "various flags to controll the LB algorithm ( or computing the available load on the system)",
+          "valid_values": [
+            "n",
+            "r",
+            "s"
+          ]
+        },
+        {
+          "name": "attrs",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable to be populated with the attributes of the selected destination."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if a new destination URI is set, pointing to the selected destination. NOTE that the RURI will not be changed by this function."
+        },
+        {
+          "value": "-1",
+          "condition": "generic internal error (memory allocation, parsing)"
+        },
+        {
+          "value": "-2",
+          "condition": "no capacity available (detinations are up and available, but they do not have any availabe channels)"
+        },
+        {
+          "value": "-3",
+          "condition": "no destinations available (the requested resources did not match any active destination)"
+        },
+        {
+          "value": "-4",
+          "condition": "bad resources (requested resources do not exist)"
+        }
+      ],
+      "description": "The function starts a new load-balancing session over the available destinations. This translates into finding the less loaded destination that can provide the requested resources and belong to a requested group.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (lb_start(1,\"trascoding;conference\")) {\n\t# dst URI points to the new destination\n\txlog(\"sending call to $du\\n\");\n\tt_relay();\n\texit;\n}\n...",
+          "description": "lb_start usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "lb_next",
+      "signature": "lb_next([attrs])",
+      "parameters": [
+        {
+          "name": "attrs",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable to be populated with the attributes of the selected destination."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "if a new destination URI is set, pointing to the selected destination. NOTE that the RURI will not be changed by this function."
+        },
+        {
+          "value": "-1",
+          "condition": "generic internal error (memory allocation, parsing)"
+        },
+        {
+          "value": "-2",
+          "condition": "no capacity available (detinations are up and available, but they do not have any availabe channels)"
+        },
+        {
+          "value": "-3",
+          "condition": "no more destinations available (the requested resources did not match any active destination)"
+        }
+      ],
+      "description": "Function to be used to pull the next available (and less loaded) destination. You need to have an ongoing LB session (started with lb_start()). This function is mainly used for implementing failover for the LB destinations.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\t/* check next available LB destination */\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t\texit;\n\t}\n}\n...",
+          "description": "lb_next() usage",
+          "context": "FAILURE_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "lb_start_or_next",
+      "signature": "lb_start_or_next(grp,resources[,flags],[attrs])",
+      "parameters": [
+        {
+          "name": "grp",
+          "type": "int",
+          "required": true,
+          "description": "group id for the destinations"
+        },
+        {
+          "name": "resources",
+          "type": "string",
+          "required": true,
+          "description": "a semi-colon separated list of resources required by the current call"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "various flags to controll the LB algorithm"
+        },
+        {
+          "name": "attrs",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable to be populated with the attributes of the selected destination"
+        }
+      ],
+      "return_type": "int",
+      "description": "This is just a wrapper function to simplify scripting. If there is no ongoing LB session, it acts as lb_start(); If there is an ongoing LB session, it acts as lb_next().",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": []
+    },
+    {
+      "name": "load_balance",
+      "signature": "load_balance(grp,resources[,flags],[attrs])",
+      "parameters": [
+        {
+          "name": "grp",
+          "type": "int",
+          "required": true,
+          "description": "group id for the destinations"
+        },
+        {
+          "name": "resources",
+          "type": "string",
+          "required": true,
+          "description": "a semi-colon separated list of resources required by the current call"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "various flags to controll the LB algorithm"
+        },
+        {
+          "name": "attrs",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable to be populated with the attributes of the selected destination"
+        }
+      ],
+      "return_type": "int",
+      "description": "Old name of the lb_start_or_next() function. Take care, this will become obsolete.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": []
+    },
+    {
+      "name": "lb_reset",
+      "signature": "lb_reset()",
+      "parameters": [],
+      "return_type": "int",
+      "description": "Function to stop and flush a current LB session. To be used in failure route, if you want to stop the current LB session (not to try any other destinations from this session) and to start a completly new one.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (t_check_status(\"(5[0-9][0-9])\")) {\n\t/* check next available LB destination */\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t\texit;\n\t}\n} else if (t_check_status(\"(408)\")) {\n\tlb_reset();\n\tif (lb_start(1,\"conference\")) {\n\t\tt_relay();\n\t\texit;\n\t}\n}\n...",
+          "description": "lb_next() usage",
+          "context": "FAILURE_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "lb_is_started",
+      "signature": "lb_is_started()",
+      "parameters": [],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if there is an ongoing LB session"
+        }
+      ],
+      "description": "Function to check if there is any ongoing LB session. Returns true if so.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": []
+    },
+    {
+      "name": "lb_disable_dst",
+      "signature": "lb_disable_dst()",
+      "parameters": [],
+      "return_type": "int",
+      "description": "Marks as disabled the last destination that was used for the current call. The disabling done via this function will prevent the destination to be used for usage from now on. The probing mechanism can re-enable this peer (see the probing section in the beginning)",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\tlb_disable_dst();\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t} else {\n\t\tt_reply(500,\"Error\");\n\t}\n}\n...",
+          "description": "lb_disable_dst() usage",
+          "context": "FAILURE_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "lb_is_destination",
+      "signature": "lb_is_destination(ip,port,[group],[active],[attrs])",
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "required": true,
+          "description": "IP to be checked"
+        },
+        {
+          "name": "port",
+          "type": "int",
+          "required": true,
+          "description": "PORT to be checked. A value 0 means \"any\" - will match any port."
+        },
+        {
+          "name": "group",
+          "type": "int",
+          "required": false,
+          "description": "in what LB group the destination should be looked for; If not specified, the search will be in all groups."
+        },
+        {
+          "name": "active",
+          "type": "int",
+          "required": false,
+          "description": "if \"1\", the search will be performed only over \"active\" (not disabled) destinations. If missing, the search will consider any kind of destinations."
+        },
+        {
+          "name": "attrs",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable to be populated with the attributes of the identified destination."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if found and active (see the \"active\" parameter)"
+        }
+      ],
+      "description": "Checks if the given IP and PORT belongs to a destination configured in the load-balancer's list. Returns true if found and active (see the \"active\" parameter).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (lb_is_destination($si,$sp) ) {\n\t# request from a LB destination\n}\n...",
+          "description": "lb_is_destination usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "lb_count_call",
+      "signature": "lb_count_call(ip,port,grp,resources[,undo])",
+      "parameters": [
+        {
+          "name": "ip",
+          "type": "string",
+          "required": true,
+          "description": "IP to identify the destination the call has to be counted for."
+        },
+        {
+          "name": "port",
+          "type": "int",
+          "required": true,
+          "description": "PORT to identify the destination the call has to be counted for."
+        },
+        {
+          "name": "grp",
+          "type": "int",
+          "required": true,
+          "description": "group id for the destinations; if no knows, \"-1\" will mean all groups."
+        },
+        {
+          "name": "resources",
+          "type": "string",
+          "required": true,
+          "description": "a semi-colon separated list of resources required by the current call."
+        },
+        {
+          "name": "undo",
+          "type": "int",
+          "required": false,
+          "description": "if set to a non zero value, it will force the function to un-count - actually it will undo the counting of this call as load in the current LB session; this might be needed if we count call for particular resources and then need to un-count it."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the call was properly taken into consideration for estimating the load on the destination"
+        }
+      ],
+      "description": "The function counts the current call as load for a given destination with some given resources. Note that this call is not going through the load-balancing logic (there are not routing decision taken for the call); it is simply counted by LB as ongoing call for a destination;",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# count as load also the calls orgininated by lb destinations\nif (lb_is_destination($si,$sp) ) {\n\t# inbound call from destination\n\tlb_count_call($si,$sp,-1,\"conference\");\n} else {\n\t# outbound call to destinations\n\tif ( !load_balance(1,\"conference\") ) {\n\t\tsend_reply(503,\"unavailable\");\n\t\texit();\n\t}\n\t# dst URI points to the new destination\n\txlog(\"sending call to $du\\n\");\n\tt_relay();\n\texit;\n}\n...",
+          "description": "lb_count_call usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "load_balancer:reload",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _lb_reload_. Trigers the reload of the load balancing data from the DB.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi load_balancer:reload",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "load_balancer:resize",
+      "parameters": [
+        {
+          "name": "destination_id",
+          "type": "integer",
+          "required": true,
+          "description": "the ID (as per DB) of the destination."
+        },
+        {
+          "name": "res_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the resource you want to resize."
+        },
+        {
+          "name": "new_capacity",
+          "type": "integer",
+          "required": true,
+          "description": "new resource capacity."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _lb_resize_. Changes the capacity for a resource of a destination.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi load_balancer:resize 11 voicemail 56",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "load_balancer:list",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _lb_list_. Lists all the destinations and the maximum and current load for each resource of the destination.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi load_balancer:list\nDestination:: sip:127.0.0.1:5100 id=1 enabled=yes auto-re=on\n        Resource:: pstn max=3 load=0\n        Resource:: transc max=5 load=1\n        Resource:: vm max=5 load=2\nDestination:: sip:127.0.0.1:5200 id=2 enabled=no auto-re=on\n        Resource:: pstn max=6 load=0\n        Resource:: trans max=57 load=0\n        Resource:: vm max=5 load=0",
+          "description": "load_balancer:list usage"
+        }
+      ]
+    },
+    {
+      "name": "load_balancer:status",
+      "parameters": [
+        {
+          "name": "destination_id",
+          "type": "integer",
+          "required": true,
+          "description": "the ID (as per DB) of the destination."
+        },
+        {
+          "name": "new_status",
+          "type": "integer",
+          "required": false,
+          "description": "If no new status is given, the function will return the current status. If a new status is given (0 - disable, 1 - enable), this status will be forced for the destination."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _lb_status_. Gets or sets the status (enabled or disabled) of a destination.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi load_balancer:status 2\nenable:: no\n$ opensips-cli -x mi load_balancer:status 2 1\n$ opensips-cli -x mi load_balancer:status 2\nenable:: yes",
+          "description": "load_balancer:status usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_LOAD_BALANCER_STATUS",
+      "description": "This event is raised when the module changes the state of a destination, either through MI or probing.",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "integer",
+          "description": "the group of the destination."
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "description": "the URI of the destination."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "disabled if the destination was disabled or enabled if the destination is being used."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"db_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `db_table` parameter",
+      "description": "Set `db_table` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"db_table\", \"lb\")\n..."
+    },
+    {
+      "title": "Set `probing_interval` parameter",
+      "description": "Set `probing_interval` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"probing_interval\", 60)\n..."
+    },
+    {
+      "title": "Set `probing_method` parameter",
+      "description": "Set `probing_method` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"probing_method\", \"INFO\")\n..."
+    },
+    {
+      "title": "Set `probing_from` parameter",
+      "description": "Set `probing_from` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"probing_from\", \"sip:pinger@192.168.2.10\")\n..."
+    },
+    {
+      "title": "Set `probing_reply_codes` parameter",
+      "description": "Set `probing_reply_codes` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"probing_reply_codes\", \"501, 403\")\n..."
+    },
+    {
+      "title": "Set `probing_verbose` parameter",
+      "description": "Set `probing_verbose` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"probing_verbose\", 1)\n..."
+    },
+    {
+      "title": "Set the `lb_define_blacklist` parameter",
+      "description": "Set the `lb_define_blacklist` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"lb_define_blacklist\", \"list= 1,4,3\")\nmodparam(\"load_balancer\", \"lb_define_blacklist\", \"blist2= 2,10,6\")\n..."
+    },
+    {
+      "title": "Set the `fetch_freeswitch_load` parameter",
+      "description": "Set the `fetch_freeswitch_load` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"fetch_freeswitch_stats\", 1)\n..."
+    },
+    {
+      "title": "Set `initial_freeswitch_load` parameter",
+      "description": "Set `initial_freeswitch_load` parameter",
+      "code": "...\nmodparam(\"load_balancer\", \"initial_freeswitch_load\", 200)\n..."
+    },
+    {
+      "title": "Set `cluster_id` parameter",
+      "description": "Set `cluster_id` parameter",
+      "code": "...\n# replicate destination status with all OpenSIPS in cluster ID 9\nmodparam(\"load_balancer\", \"cluster_id\", 9)\n..."
+    },
+    {
+      "title": "Set `cluster_sharing_tag` parameter",
+      "description": "Set `cluster_sharing_tag` parameter",
+      "code": "...\n# only the node with the active \"vip\" sharing tag will perform pinging\n# and broadcast the status changes\nmodparam(\"load_balancer\", \"cluster_id\", 9)\nmodparam(\"load_balancer\", \"cluster_sharing_tag\", \"vip\")\n..."
+    },
+    {
+      "title": "`lb_start` usage",
+      "description": "`lb_start` usage",
+      "code": "...\nif (lb_start(1,\"trascoding;conference\")) {\n\t# dst URI points to the new destination\n\txlog(\"sending call to $du\\n\");\n\tt_relay();\n\texit;\n}\n..."
+    },
+    {
+      "title": "`lb_next()` usage",
+      "description": "`lb_next()` usage",
+      "code": "...\nif (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\t/* check next available LB destination */\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t\texit;\n\t}\n}\n..."
+    },
+    {
+      "title": "`lb_next()` usage",
+      "description": "`lb_next()` usage",
+      "code": "...\nif (t_check_status(\"(5[0-9][0-9])\")) {\n\t/* check next available LB destination */\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t\texit;\n\t}\n} else if (t_check_status(\"(408)\")) {\n\tlb_reset();\n\tif (lb_start(1,\"conference\")) {\n\t\tt_relay();\n\t\texit;\n\t}\n}\n..."
+    },
+    {
+      "title": "`lb_disable_dst()` usage",
+      "description": "`lb_disable_dst()` usage",
+      "code": "...\nif (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\tlb_disable_dst();\n\tif ( lb_next() ) {\n\t\tt_on_failure(\"1\");\n\t\txlog(\"-----------new dst is $du\\n\");\n\t\tt_relay();\n\t} else {\n\t\tt_reply(500,\"Error\");\n\t}\n}\n..."
+    },
+    {
+      "title": "`lb_is_destination` usage",
+      "description": "`lb_is_destination` usage",
+      "code": "...\nif (lb_is_destination($si,$sp) ) {\n\t# request from a LB destination\n}\n..."
+    },
+    {
+      "title": "`lb_count_call` usage",
+      "description": "`lb_count_call` usage",
+      "code": "...\n# count as load also the calls orgininated by lb destinations\nif (lb_is_destination($si,$sp) ) {\n\t# inbound call from destination\n\tlb_count_call($si,$sp,-1,\"conference\");\n} else {\n\t# outbound call to destinations\n\tif ( !load_balance(1,\"conference\") ) {\n\t\tsend_reply(503,\"unavailable\");\n\t\texit();\n\t}\n\t# dst URI points to the new destination\n\txlog(\"sending call to $du\\n\");\n\tt_relay();\n\texit;\n}\n..."
+    },
+    {
+      "title": "`load_balancer:list` usage",
+      "description": "`load_balancer:list` usage",
+      "code": "$ opensips-cli -x mi load_balancer:list\nDestination:: sip:127.0.0.1:5100 id=1 enabled=yes auto-re=on\n        Resource:: pstn max=3 load=0\n        Resource:: transc max=5 load=1\n        Resource:: vm max=5 load=2\nDestination:: sip:127.0.0.1:5200 id=2 enabled=no auto-re=on\n        Resource:: pstn max=6 load=0\n        Resource:: trans max=57 load=0\n        Resource:: vm max=5 load=0"
+    },
+    {
+      "title": "`load_balancer:status` usage",
+      "description": "`load_balancer:status` usage",
+      "code": "$ opensips-cli -x mi load_balancer:status 2\nenable:: no\n$ opensips-cli -x mi load_balancer:status 2 1\n$ opensips-cli -x mi load_balancer:status 2\nenable:: yes"
+    }
+  ]
+}

@@ -1,0 +1,265 @@
+{
+  "id": "module-domainpolicy-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "domainpolicy Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/domainpolicy.html",
+  "content_markdown": "The Domain Policy module implements draft-lendl-domain-policy-ddds-02 in combination with draft-lendl-speermint-federations-02 and draft-lendl-speermint-technical-policy-00. These drafts define DNS records with which a domain can announce its federation memberships. A local database can be used to map policy rules to routing policy decisions. This database can also contain rules concerning destination domains independently of draft-lendl-domain-policy-ddds-02. This module requires a database. No caching is implemented.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:48:46.778Z",
+  "module_name": "domainpolicy",
+  "overview": "The Domain Policy module implements draft-lendl-domain-policy-ddds-02 in combination with draft-lendl-speermint-federations-02 and draft-lendl-speermint-technical-policy-00. These drafts define DNS records with which a domain can announce its federation memberships. A local database can be used to map policy rules to routing policy decisions. This database can also contain rules concerning destination domains independently of draft-lendl-domain-policy-ddds-02. This module requires a database. No caching is implemented.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "Any database module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensipsro:opensipsro@localhost/opensips",
+      "description": "This is URL of the database to be used.",
+      "example_value": "postgresql://user:pass@db_host/opensips",
+      "example_code": "modparam(\"domainpolicy\", \"db\\_url\", \"postgresql://user:pass@db\\_host/opensips\")"
+    },
+    {
+      "name": "dp_table",
+      "type": "string",
+      "default_value": "domainpolicy",
+      "description": "Name of table containing the local support domain policy setup.",
+      "example_value": "supportedpolicies",
+      "example_code": "modparam(\"domainpolicy\", \"dp\\_table\", \"supportedpolicies\")"
+    },
+    {
+      "name": "dp_col_rule",
+      "type": "string",
+      "default_value": "rule",
+      "description": "Name of column containing the domain policy rule name which is equal to the URI as published in the domain policy NAPTRs.",
+      "example_value": "rules",
+      "example_code": "modparam(\"domainpolicy\", \"dp\\_col\\_rule\", \"rules\")"
+    },
+    {
+      "name": "dp_col_type",
+      "type": "string",
+      "default_value": "type",
+      "description": "Name of column containing the domain policy rule type. In the case of federation names, this is \"fed\". For standard referrals according to draft-lendl-speermint-technical-policy-00, this is \"std\". For direct domain lookups, this is \"dom\".",
+      "possible_values": [
+        "fed",
+        "std",
+        "dom"
+      ],
+      "example_value": "type",
+      "example_code": "modparam(\"domainpolicy\", \"dp\\_col\\_rule\", \"type\")"
+    },
+    {
+      "name": "dp_col_att",
+      "type": "string",
+      "default_value": "att",
+      "description": "Name of column containing the AVP's name. If the rule stored in this row triggers, than dp\\_can\\_connect() will add an AVP with that name.",
+      "example_value": "attribute",
+      "example_code": "modparam(\"domainpolicy\", \"dp\\_col\\_att\", \"attribute\")"
+    },
+    {
+      "name": "dp_col_val",
+      "type": "string",
+      "default_value": "val",
+      "description": "Name of column containing the value for AVPs created by dp_can_connect().",
+      "example_value": "values",
+      "example_code": "modparam(\"domainpolicy\", \"dp_col_val\", \"values\")"
+    },
+    {
+      "name": "port_override_avp",
+      "type": "string",
+      "default_value": "portoverride",
+      "description": "This parameter defines the name of the AVP where dp_apply_policy() will look for an override port number.",
+      "example_value": "portoverride",
+      "example_code": "modparam(\"domainpolicy\", \"port_override_avp\", \"portoverride\")"
+    },
+    {
+      "name": "transport_override_avp",
+      "type": "string",
+      "default_value": "transportoverride",
+      "description": "Name of the AVP which contains the override transport setting.",
+      "example_value": "transportoverride",
+      "example_code": "modparam(\"domainpolicy\", \"transport_override_avp\", \"transportoverride\")"
+    },
+    {
+      "name": "domain_replacement_avp",
+      "type": "string",
+      "default_value": "domainreplacement",
+      "description": "Name of the AVP which contains a domain replacement.",
+      "example_value": "domainreplacement",
+      "example_code": "modparam(\"domainpolicy\", \"domain_replacement_avp\", \"domainreplacement\")"
+    },
+    {
+      "name": "domain_prefix_avp",
+      "type": "string",
+      "default_value": "domainprefix",
+      "description": "Name of the AVP which contains a domain prefix.",
+      "example_value": "domainprefix",
+      "example_code": "modparam(\"domainpolicy\", \"domain_prefix_avp\", \"domainprefix\")"
+    },
+    {
+      "name": "domain_suffix_avp",
+      "type": "string",
+      "default_value": "domainsuffix",
+      "description": "Name of the AVP which contains a domain suffix.",
+      "example_value": "domainsuffix",
+      "example_code": "# string named AVP\nmodparam(\"domainpolicy\", \"domain_suffix_avp\", \"domainsuffix\")"
+    },
+    {
+      "name": "send_socket_avp",
+      "type": "string",
+      "default_value": "sendsocket",
+      "description": "Name of the AVP which contains a send_socket. The format of the send socket (the payload of this AVP) must be in the format [proto:]ip_address[:port]. The function dp_apply_policy will look for this AVP and if defined, it will force the send socket to its value (smilar to the force_send_socket core function).",
+      "example_value": "sendsocket",
+      "example_code": "# string named AVP\nmodparam(\"domainpolicy\", \"send_socket_avp\", \"sendsocket\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "dp_can_connect",
+      "signature": "dp_can_connect()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-2",
+          "condition": "on errors during the evaluation. (DNS, DB, ...)"
+        },
+        {
+          "value": "-1",
+          "condition": "D2P+SIP records were found, but the policy is not fullfillable."
+        },
+        {
+          "value": "1",
+          "condition": "D2P+SIP records were found and a call is possible"
+        },
+        {
+          "value": "2",
+          "condition": "No D2P+SIP records were found. The destination domain does not announce a policy for incoming SIP calls."
+        }
+      ],
+      "description": "Checks the interconnection policy of the caller. It uses the domain in the request URI to perform the DP-DDDS algorithm according to draft-lendl-domain-policy-ddds-02 to retrieve the domain's policy announcements. As of this version, only records conforming to draft-lendl-speermint-federations-02 and draft-lendl-speermint-technical-policy-00 are supported.\n\nNon-terminal NAPTR records will cause recursion to the replacement domain. dp_can_connect() will thus look for policy rules in the referenced domain. Furthermore, an AVP for \"domainreplacement\" (containing the new domain) will be added to the call. This will redirect SRV/A record lookups to the new domain.\n\nIn order to simplify direct domain-based peerings all destination domains are treated as if they contain a top priority \"D2P+SIP:dom\" rule with the domain itself as the value of the rule. Thus any database row with type = 'dom' and rule = 'example.com' will override any dynamic DNS-discovered rules.\n\nFor NAPTRs with service-type \"D2P+SIP:fed\", the federation IDs (as extracted from the regexp field) are used to retrieve policy records from a local local database (basically: \"SELECT dp_col_att, dp_col_val FROM dp_table WHERE dp_col_rule = '[federationID]' AND type = 'fed'). If records are found (and all other records with the same order value are fulfillable) then AVPs will be created from the dp_col_att and dp_col_val columns.\n\nFor NAPTRs with service-type \"D2P+SIP:std\", the same procedure is performed. This time, the database lookup searched for type = 'std', though.\n\n\"D2P+SIP:fed\" and \"D2P+SIP:std\" can be mixed freely. If two rules with the same \"order\" match and try to set the same AVP, then the behaviour is undefined.\n\nThe dp_col_att column specifies the AVP's name. If the AVP start with \"s:\" or \"i:\", the corresponding AVP type (string named or integer named) will be generated. If the excat specifier is omited, the AVP type will be guessed.\n\nThe dp_col_val column will always be interpreted as string. Thus, the AVP's value is always string based.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\ndp_can_connect();\nswitch(retcode) {\n\tcase -2:\n\t\txlog(\"L_INFO\",\"Errors during the DP evaluation\\\\n\");\n\t\tsl_send_reply(404, \"We can't connect you.\");\n\t\tbreak;\n\tcase -1:\n\t\txlog(\"L_INFO\",\"We can't connect to that domain\\\\n\");\n\t\tsl_send_reply(404, \"We can't connect you.\");\n\t\tbreak;\n\tcase 1:\n\t\txlog(\"L_INFO\",\"We found matching policy records\\\\n\");\n\t\tavp_print();\n\t\tdp_apply_policy();\n\t\tt_relay();\n\t\tbreak;\n\tcase 2:\n\t\txlog(\"L_INFO\",\"No DP records found\\\\n\");\n\t\tt_relay();\n\t\tbreak;\n}\n...",
+          "description": "dp_can_connect usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "dp_apply_policy()"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "dp_apply_policy",
+      "signature": "dp_apply_policy()",
+      "parameters": [],
+      "return_type": "int",
+      "description": "This function sets the destination URI according to the policy returned from the `dp_can_connect()` function. Parameter exchange between `dp_can_connect()` and `dp_apply_policy()` is done via AVPs. The AVPs can be configured in the module's parameter section.\n\nNote: The name of the AVPs must correspond with the names in the _att_ column in the domainpolicy table.\n\nSetting the following AVPs in `dp_can_connect()` (or by any other means) cause the following actions in `dp_apply_policy()`:\n\n*   _port_override_avp_: If this AVP is set, the port in the destination URI is set to this port. Setting an override port disables NAPTR and SRV lookups according to RFC 3263.\n    \n    \n*   _transport_override_avp_: If this AVP is set, the transport parameter in the destination URI is set to the specified transport (\"udp\", \"tcp\", \"tls\"). Setting an override transport also disables NAPTR lookups, but retains an SRV lookup according to RFC 3263.\n    \n    \n*   _domain_replacement_avp_: If this AVP is set, the domain in the destination URI will be replaced by this domain.\n    \n    A non-terminal NAPTR and thus a referral to a new domain implicitly sets _domain_replacement_avp_ to the new domain.\n    \n    \n*   _domain_prefix_avp_: If this AVP is set, the domain in the destination URI will be prefixed with this \"subdomain\". E.g. if the domain in the request URI is \"example.com\" and the domain_prefix_avp contains \"inbound\", the domain in the destinaton URI is set to \"inbound.example.com\".\n    \n    \n*   _domain_suffix_avp_: If this AVP is set, the domain in the destination URI will have the content of the AVP appended to it. E.g. if the domain in the request URI is \"example.com\" and the domain_suffix_avp contains \"myroot.com\", the domain in the destination URI is set to \"example.com.myroot.com\".\n    \n    \n*   _send_socket_avp_: If this AVP is set, the sending socket will be forced to the socket in the AVP. The payload format of this AVP must be \\[proto:\\]ip_address\\[:port\\].\n    \n\nIf both prefix/suffix and domain replacements are used, then the replacement is performed first and the prefix/suffix are applied to the new domain.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (dp_apply_policy()) {\n\tt_relay();\n}\n...",
+          "description": "dp_apply_policy usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "dp_can_connect()"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting db_url parameter",
+      "description": "Setting db_url parameter",
+      "code": "modparam(\"domainpolicy\", \"db\\_url\", \"postgresql://user:pass@db\\_host/opensips\")"
+    },
+    {
+      "title": "Setting dp_table parameter",
+      "description": "Setting dp_table parameter",
+      "code": "modparam(\"domainpolicy\", \"dp\\_table\", \"supportedpolicies\")"
+    },
+    {
+      "title": "Setting dp_col_rule parameter",
+      "description": "Setting dp_col_rule parameter",
+      "code": "modparam(\"domainpolicy\", \"dp\\_col\\_rule\", \"rules\")"
+    },
+    {
+      "title": "Setting dp_col_rule parameter",
+      "description": "Setting dp_col_rule parameter",
+      "code": "modparam(\"domainpolicy\", \"dp\\_col\\_type\", \"type\")"
+    },
+    {
+      "title": "Setting dp_col_att parameter",
+      "description": "Setting dp_col_att parameter",
+      "code": "modparam(\"domainpolicy\", \"dp\\_col\\_att\", \"attribute\")"
+    },
+    {
+      "title": "Setting dp_col_val parameter",
+      "description": "Setting dp_col_val parameter",
+      "code": "modparam(\"domainpolicy\", \"dp\\_col\\_val\", \"values\")"
+    },
+    {
+      "title": "Setting port_override_avp parameter",
+      "description": "Setting port_override_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"port\\_override\\_avp\", \"portoverride\")"
+    },
+    {
+      "title": "Setting transport_override_avp parameter",
+      "description": "Setting transport_override_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"transport\\_override\\_avp\", \"transportoverride\")"
+    },
+    {
+      "title": "Setting domain_replacement_avp parameter",
+      "description": "Setting domain_replacement_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"domain\\_replacement\\_avp\", \"domainreplacement\")"
+    },
+    {
+      "title": "Setting domain_prefix_avp parameter",
+      "description": "Setting domain_prefix_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"domain\\_prefix\\_avp\", \"domainprefix\")"
+    },
+    {
+      "title": "Setting domain_suffix_avp parameter",
+      "description": "Setting domain_suffix_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"domain\\_suffix\\_avp\", \"domainsuffix\")"
+    },
+    {
+      "title": "Setting send_socket_avp parameter",
+      "description": "Setting send_socket_avp parameter",
+      "code": "# string named AVP\nmodparam(\"domainpolicy\", \"send\\_socket\\_avp\", \"sendsocket\")"
+    },
+    {
+      "title": "dp_can_connect usage",
+      "description": "dp_can_connect usage",
+      "code": "...\ndp\\_can\\_connect();\nswitch(retcode) {\n\tcase -2:\n\t\txlog(\"L\\_INFO\",\"Errors during the DP evaluation\\\\n\");\n\t\tsl\\_send\\_reply(404, \"We can't connect you.\");\n\t\tbreak;\n\tcase -1:\n\t\txlog(\"L\\_INFO\",\"We can't connect to that domain\\\\n\");\n\t\tsl\\_send\\_reply(404, \"We can't connect you.\");\n\t\tbreak;\n\tcase 1:\n\t\txlog(\"L\\_INFO\",\"We found matching policy records\\\\n\");\n\t\tavp\\_print();\n\t\tdp\\_apply\\_policy();\n\t\tt\\_relay();\n\t\tbreak;\n\tcase 2:\n\t\txlog(\"L\\_INFO\",\"No DP records found\\\\n\");\n\t\tt\\_relay();\n\t\tbreak;\n}\n..."
+    },
+    {
+      "title": "dp_apply_policy usage",
+      "description": "dp_apply_policy usage",
+      "code": "...\nif (dp\\_apply\\_policy()) {\n\tt\\_relay();\n}\n..."
+    }
+  ]
+}

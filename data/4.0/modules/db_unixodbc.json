@@ -1,0 +1,54 @@
+{
+  "id": "module-db_unixodbc-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "db_unixodbc Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/db_unixodbc.html",
+  "content_markdown": "This module allows to use the unixodbc package with OpenSIPS. It have been tested with mysql and the odbc connector, but it should work also with other database. The auth_db module works.\n\nFor more information, see the [http://www.unixodbc.org/](http://www.unixodbc.org/) project web page.\n\nTo see what DB engines can be used via unixodbc, look at [http://www.unixodbc.org/drivers.html](http://www.unixodbc.org/drivers.html).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:03:34.981Z",
+  "module_name": "db_unixodbc",
+  "overview": "This module allows to use the unixodbc package with OpenSIPS. It have been tested with mysql and the odbc connector, but it should work also with other database. The auth_db module works.\n\nFor more information, see the [http://www.unixodbc.org/](http://www.unixodbc.org/) project web page.\n\nTo see what DB engines can be used via unixodbc, look at [http://www.unixodbc.org/drivers.html](http://www.unixodbc.org/drivers.html).",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "auto_reconnect",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Turns on or off the auto\\_reconnect mode.",
+      "example_value": "0",
+      "example_code": "modparam(\"db\\_unixodbc\", \"auto\\_reconnect\", 0)"
+    },
+    {
+      "name": "use_escape_common",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Escape values in query using internal escape\\_common() function. It escapes single quote ''', double quote '\"', backslash '\\\\', and NULL characters.\n\nYou should enable this parameter if you know that the ODBC driver considers the above characters as special (for marking begin and end of a value, escape other characters ...). It prevents against SQL injection.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"db\\_unixodbc\", \"use\\_escape\\_common\", 1)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set the “auto\\_reconnect” parameter",
+      "description": "Turns on or off the auto\\_reconnect mode.",
+      "code": "...\nmodparam(\"db\\_unixodbc\", \"auto\\_reconnect\", 0)\n..."
+    },
+    {
+      "title": "Set the “use\\_escape\\_common” parameter",
+      "description": "Escape values in query using internal escape\\_common() function. It escapes single quote ''', double quote '\"', backslash '\\\\', and NULL characters.",
+      "code": "...\nmodparam(\"db\\_unixodbc\", \"use\\_escape\\_common\", 1)\n..."
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "id": "module-http2d-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "http2d Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/http2d.html",
+  "content_markdown": "This module provides an RFC 7540/9113 HTTP/2 server implementation with \"h2\" ALPN support, based on the **nghttp2** library ([https://nghttp2.org/](https://nghttp2.org/)).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:26:18.510Z",
+  "module_name": "http2d",
+  "overview": "This module provides an RFC 7540/9113 HTTP/2 server implementation with \"h2\" ALPN support, based on the **nghttp2** library ([https://nghttp2.org/](https://nghttp2.org/)).",
+  "how_it_works": "HTTP/2, introduced in 2015, is a binary protocol with added transactional layers (SESSION, FRAME), which allow identifying and managing multiple, concurrent transfers over the same TCP/TLS connection. Thus, the revised protocol primarily aims to reduce resource usage for both clients and servers, by reducing the amount of TCP and/or TLS handshakes performed when loading a given web page.\n\nThe OpenSIPS **http2d** server includes support for both \"h2\" (TLS secured) and \"h2c\" (cleartext) HTTP/2 connections. The requests arrive at _opensips.cfg_ level using the [E\\_HTTP2\\_REQUEST](#event_http2_request \"1.5.1.� E_HTTP2_REQUEST\") event, where script writers may process the data and respond accordingly.",
+  "dependencies_required": [
+    {
+      "name": "libnghttp2",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libevent",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libevent_openssl",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libssl",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "libcrypto",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "ip",
+      "type": "string",
+      "default_value": "127.0.0.1",
+      "description": "The listening IPv4 address.",
+      "example_value": "127.0.0.2",
+      "example_code": "modparam(\"http2d\", \"ip\", \"127.0.0.2\")"
+    },
+    {
+      "name": "port",
+      "type": "integer",
+      "default_value": "443",
+      "description": "The listening port.",
+      "example_value": "5000",
+      "example_code": "modparam(\"http2d\", \"port\", 5000)"
+    },
+    {
+      "name": "tls_cert_path",
+      "type": "string",
+      "default_value": "NULL (not set)",
+      "description": "File path to the TLS certificate, in PEM format.",
+      "example_value": "/etc/pki/http2/cert.pem",
+      "example_code": "modparam(\"http2d\", \"tls\\_cert\\_path\", \"/etc/pki/http2/cert.pem\")"
+    },
+    {
+      "name": "tls_cert_key",
+      "type": "string",
+      "default_value": "NULL (not set)",
+      "description": "File path to the TLS private key, in PEM format.",
+      "example_value": "/etc/pki/http2/private/key.pem",
+      "example_code": "modparam(\"http2d\", \"tls\\_cert\\_key\", \"/etc/pki/http2/private/key.pem\")"
+    },
+    {
+      "name": "max_headers_size",
+      "type": "integer",
+      "default_value": "8192",
+      "description": "The maximum amount of bytes allowed for all header field names and values combined in a single HTTP/2 request processed by the server. Once this threshold is reached, extra headers will no longer be provided at script level and will be reported as errors instead.",
+      "example_value": "16384",
+      "example_code": "modparam(\"http2d\", \"max\\_headers\\_size\", 16384)"
+    },
+    {
+      "name": "response_timeout",
+      "type": "integer",
+      "default_value": "2000",
+      "description": "The maximum amount of time, in milliseconds, that the library will allow the opensips.cfg processing to take for a given HTTP/2 request.\n\nOnce this timeout is reached, the module will auto-generate a 408 (request timeout) reply.",
+      "example_value": "5000",
+      "example_code": "modparam(\"http2d\", \"response\\_timeout\", 5000)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "http2_send_response",
+      "signature": "http2_send_response(code, [headers_json], [data])",
+      "parameters": [
+        {
+          "name": "code",
+          "type": "integer",
+          "required": true,
+          "description": "The HTTP/2 reply code"
+        },
+        {
+          "name": "headers_json",
+          "type": "string",
+          "required": false,
+          "default": "NULL",
+          "description": "Optional JSON Array containing {\"header\": \"value\"} elements, denoting HTTP/2 headers and their values to be included in the response message."
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "required": false,
+          "default": "NULL",
+          "description": "Optional DATA payload to include in the response message."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Internal Error"
+        }
+      ],
+      "description": "Sends a response for the HTTP/2 request being processed. The _\":status\"_ header field will be automatically included by the module as 1st header, so it must not be included in the _headers\\_json_ array.",
+      "usage_context": [
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "event_route [E_HTTP2_REQUEST] {\n  xlog(\":: Method:  $param(method)\\n\");\n  xlog(\":: Path:    $param(path)\\n\");\n  xlog(\":: Headers: $param(headers)\\n\");\n  xlog(\":: Data:    $param(data)\\n\");\n\n  $json(hdrs) := $param(headers);\n  xlog(\"content-type: $json(hdrs/content-type)\\n\");\n\n  $var(rpl_headers) = \"[\n\t{ \\\"content-type\\\": \\\"application/json\\\" },\n\t{ \\\"server\\\": \\\"OpenSIPS 3.5\\\" },\n\t{ \\\"x-current-time\\\": \\\"1711457142\\\" },\n\t{ \\\"x-call-cost\\\": \\\"0.355\\\" }\n  ]\";\n\n  $var(data) = \"{\\\"status\\\": \\\"success\\\"}\";\n\n  if (!http2_send_response(200, $var(rpl_headers), $var(data)))\n    xlog(\"ERROR - failed to send HTTP/2 response\\n\");\n}",
+          "description": "`http2_send_response()` usage",
+          "context": "event_route [E_HTTP2_REQUEST]"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_HTTP2_REQUEST",
+      "description": "This event is raised whenever the _http2d_ module is loaded and OpenSIPS receives an HTTP/2 request on the configured listening interface(s).",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "description": "value of the \":method\" HTTP/2 header"
+        },
+        {
+          "name": "path",
+          "type": "string",
+          "description": "value of the \":path\" HTTP/2 header"
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "description": "JSON Array with all headers of the request, including pseudo-headers"
+        },
+        {
+          "name": "data",
+          "type": "string",
+          "description": "If the request included a payload, this parameter will hold its contents"
+        }
+      ],
+      "subscribe_method": "event_route",
+      "examples": []
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `ip` parameter",
+      "description": "The listening IPv4 address.",
+      "code": "modparam(\"http2d\", \"ip\", \"127.0.0.2\")"
+    },
+    {
+      "title": "Setting the `port` parameter",
+      "description": "The listening port.",
+      "code": "modparam(\"http2d\", \"port\", 5000)"
+    },
+    {
+      "title": "Setting the `tls_cert_path` parameter",
+      "description": "File path to the TLS certificate, in PEM format.",
+      "code": "modparam(\"http2d\", \"tls\\_cert\\_path\", \"/etc/pki/http2/cert.pem\")"
+    },
+    {
+      "title": "Setting the `tls_cert_key` parameter",
+      "description": "File path to the TLS private key, in PEM format.",
+      "code": "modparam(\"http2d\", \"tls\\_cert\\_key\", \"/etc/pki/http2/private/key.pem\")"
+    },
+    {
+      "title": "Setting the `max_headers_size` parameter",
+      "description": "The maximum amount of bytes allowed for all header field names and values combined in a single HTTP/2 request processed by the server. Once this threshold is reached, extra headers will no longer be provided at script level and will be reported as errors instead.",
+      "code": "modparam(\"http2d\", \"max\\_headers\\_size\", 16384)"
+    },
+    {
+      "title": "Setting the `response_timeout` parameter",
+      "description": "The maximum amount of time, in milliseconds, that the library will allow the opensips.cfg processing to take for a given HTTP/2 request. Once this timeout is reached, the module will auto-generate a 408 (request timeout) reply.",
+      "code": "modparam(\"http2d\", \"response\\_timeout\", 5000)"
+    },
+    {
+      "title": "`http2_send_response()` usage",
+      "description": "Sends a response for the HTTP/2 request being processed. The _\":status\"_ header field will be automatically included by the module as 1st header, so it must not be included in the _headers\\_json_ array.",
+      "code": "event\\_route \\[E\\_HTTP2\\_REQUEST\\] {\n  xlog(\":: Method:  $param(method)\\\\n\");\n  xlog(\":: Path:    $param(path)\\\\n\");\n  xlog(\":: Headers: $param(headers)\\\\n\");\n  xlog(\":: Data:    $param(data)\\\\n\");\n\n  $json(hdrs) := $param(headers);\n  xlog(\"content-type: $json(hdrs/content-type)\\\\n\");\n\n  $var(rpl\\_headers) = \"\\[\n\t{ \\\\\"content-type\\\\\": \\\\\"application/json\\\\\" },\n\t{ \\\\\"server\\\\\": \\\\\"OpenSIPS 3.5\\\\\" },\n\t{ \\\\\"x-current-time\\\\\": \\\\\"1711457142\\\\\" },\n\t{ \\\\\"x-call-cost\\\\\": \\\\\"0.355\\\\\" }\n  \\]\";\n\n  $var(data) = \"{\\\\\"status\\\\\": \\\\\"success\\\\\"}\";\n\n  if (!http2\\_send\\_response(200, $var(rpl\\_headers), $var(data)))\n    xlog(\"ERROR - failed to send HTTP/2 response\\\\n\");\n}"
+    }
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "id": "module-mqueue-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mqueue Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mqueue.html",
+  "content_markdown": "The mqueue module offers a generic message queue system in shared memory for inter-process communication using the config file. One example of usage is to send time consuming operations to one or several timer processes that consumes items in the queue, without affecting SIP message handling in the socket-listening process.\n\nThere can be many defined queues. Access to queued values is done via pseudo variables.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:39:46.642Z",
+  "module_name": "mqueue",
+  "overview": "The mqueue module offers a generic message queue system in shared memory for inter-process communication using the config file. One example of usage is to send time consuming operations to one or several timer processes that consumes items in the queue, without affecting SIP message handling in the socket-listening process.\n\nThere can be many defined queues. Access to queued values is done via pseudo variables.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL (do not connect)",
+      "description": "The URL to connect to database for loading values in mqueue table at start up and/or saving values at shutdown.",
+      "example_code": "...\nmodparam(\"mqueue\", \"db\\_url\", \"mysql://opensips:opensipsrw@localhost/opensips\")\n\n# Example of table in sqlite,\n# you have the set the fields to support the length according\n# to the data that will be present in the mqueue\nCREATE TABLE mqueue\\_name (\nid INTEGER PRIMARY KEY AUTOINCREMENT,\nkey character varying(64) DEFAULT \"\" NOT NULL,\nval character varying(4096) DEFAULT \"\" NOT NULL\n);\n..."
+    },
+    {
+      "name": "mqueue",
+      "type": "string",
+      "default_value": "none",
+      "description": "Definition of a memory queue",
+      "example_code": "...\nmodparam(\"mqueue\", \"mqueue\", \"name=myq;size=20;\")\nmodparam(\"mqueue\", \"mqueue\", \"name=myq;size=10000;addmode=2\")\nmodparam(\"mqueue\", \"mqueue\", \"name=qaz\")\nmodparam(\"mqueue\", \"mqueue\", \"name=qaz;addmode=1\")\n...",
+      "notes": "Value must be a list of parameters: attr=value;...\n\nMandatory attributes:\n\n* name: name of the queue.\n\nOptional attributes:\n\n* size: size of the queue. Specifies the maximum number of items in queue. If exceeded the oldest one is removed. If not set the queue will be limitless.\n* dbmode: If set to 1, the content of the queue is written to database table when the SIP server is stopped (i.e., ensure persistency over restarts). If set to 2, it is written at shutdown but not read at startup. If set to 3, it is read at sartup but not written at shutdown. Default value is 0 (no db table interaction).\n* addmode: how to add new (key,value) pairs.\n    * 0: Will push all new (key,value) pairs at the end of the queue. (default)\n    * 1: Will keep oldest (key,value) pair in the queue, based on the key.\n    * 2: Will keep newest (key,value) pair in the queue, based on the key.\n\nThe parameter can be set many times, each holding the definition of one queue."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "mq_add",
+      "signature": "mq_add(queue, key, value)",
+      "parameters": [
+        {
+          "name": "queue",
+          "type": "string",
+          "required": true,
+          "description": "The name of the queue."
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "The key of the item to add."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "The value of the item to add."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Add a new item (key, value) in the queue. If max size of queue is exceeded, the oldest one is removed.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmq\\_add(\"myq\", \"$rU\", \"call from $fU\");\n...",
+          "description": "`mq_add` usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "mq_fetch",
+      "signature": "mq_fetch(queue)",
+      "parameters": [
+        {
+          "name": "queue",
+          "type": "string",
+          "required": true,
+          "description": "The name of the queue."
+        }
+      ],
+      "return_type": "",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "true on success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        },
+        {
+          "value": "-2",
+          "condition": "no item fetched"
+        }
+      ],
+      "description": "Take oldest item from queue and fill $mqk(queue) and $mqv(queue) pseudo variables.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nwhile(mq\\_fetch(\"myq\"))\n{\n\txlog(\"$mqk(myq) - $mqv(myq)\\\\n\");\n}\n...",
+          "description": "`mq_fetch` usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "mq_pv_free",
+      "signature": "mq_pv_free(queue)",
+      "parameters": [
+        {
+          "name": "queue",
+          "type": "string",
+          "required": true,
+          "description": "The name of the queue."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Free the item fetched in pseudo-variables. It is optional, a new fetch frees the previous values.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmq\\_pv\\_free(\"myq\");\n...",
+          "description": "`mq_pv_free` usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "mq_size",
+      "signature": "mq_size(queue)",
+      "parameters": [
+        {
+          "name": "queue",
+          "type": "string",
+          "required": true,
+          "description": "The name of the queue."
+        }
+      ],
+      "return_type": "",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "the mqueue is empty"
+        },
+        {
+          "value": "-2",
+          "condition": "the mqueue is not found"
+        }
+      ],
+      "description": "Returns the current number of elements in the mqueue.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n$var(q\\_size) = mq\\_size(\"queue\");\nxlog(\"L\\_INFO\", \"Size of queue is: $var(q\\_size)\\\\n\");\n...",
+          "description": "`mq_size` usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "mqueue:get_size",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of memory queue"
+        }
+      ],
+      "description": "Replaces obsolete MI command: _mq_get_size_.\n\nGet the size of a memory queue.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mqueue:get_size xyz",
+          "description": "Example 1.7. `mqueue:get_size` usage"
+        }
+      ]
+    },
+    {
+      "name": "mqueue:fetch",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of memory queue"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "if used, an array with up to _limit_ records are being returned."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _mq_fetch_.\n\nFetch one (or up to limit) key-value pair from a memory queue.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mqueue:fetch xyz",
+          "description": "Example 1.8. `mqueue:fetch` usage"
+        }
+      ]
+    },
+    {
+      "name": "mqueue:get_sizes",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _mq_get_sizes_.\n\nGet the size for all memory queues.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "opensips-cli -x mqueue:get_sizes",
+          "description": "Example 1.9. `mqueue:get_sizes` usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$mqk(mqueue)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The variable is read-only and returns the most recent item key fetched from the specified mqueue."
+    },
+    {
+      "name": "$mqv(mqueue)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The variable is read-only and returns the most recent item value fetched from the specified mqueue."
+    },
+    {
+      "name": "$mq_size(mqueue)",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The variable is read-only and returns the size of the specified mqueue."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "The URL to connect to database for loading values in mqueue table at start up and/or saving values at shutdown.",
+      "code": "...\nmodparam(\"mqueue\", \"db\\_url\", \"mysql://opensips:opensipsrw@localhost/opensips\")\n\n# Example of table in sqlite,\n# you have the set the fields to support the length according\n# to the data that will be present in the mqueue\nCREATE TABLE mqueue\\_name (\nid INTEGER PRIMARY KEY AUTOINCREMENT,\nkey character varying(64) DEFAULT \"\" NOT NULL,\nval character varying(4096) DEFAULT \"\" NOT NULL\n);\n..."
+    },
+    {
+      "title": "Set `mqueue` parameter",
+      "description": "Definition of a memory queue",
+      "code": "...\nmodparam(\"mqueue\", \"mqueue\", \"name=myq;size=20;\")\nmodparam(\"mqueue\", \"mqueue\", \"name=myq;size=10000;addmode=2\")\nmodparam(\"mqueue\", \"mqueue\", \"name=qaz\")\nmodparam(\"mqueue\", \"mqueue\", \"name=qaz;addmode=1\")\n..."
+    },
+    {
+      "title": "`mq_add` usage",
+      "description": "Add a new item (key, value) in the queue.",
+      "code": "...\nmq\\_add(\"myq\", \"$rU\", \"call from $fU\");\n..."
+    },
+    {
+      "title": "`mq_fetch` usage",
+      "description": "Take oldest item from queue and fill $mqk(queue) and $mqv(queue) pseudo variables.",
+      "code": "...\nwhile(mq\\_fetch(\"myq\"))\n{\n\txlog(\"$mqk(myq) - $mqv(myq)\\\\n\");\n}\n..."
+    },
+    {
+      "title": "`mq_pv_free` usage",
+      "description": "Free the item fetched in pseudo-variables.",
+      "code": "...\nmq\\_pv\\_free(\"myq\");\n..."
+    },
+    {
+      "title": "`mq_size` usage",
+      "description": "Returns the current number of elements in the mqueue.",
+      "code": "...\n$var(q\\_size) = mq\\_size(\"queue\");\nxlog(\"L\\_INFO\", \"Size of queue is: $var(q\\_size)\\\\n\");\n..."
+    },
+    {
+      "title": "`mqueue:get_size` usage",
+      "description": "Get the size of a memory queue.",
+      "code": "...\nopensips-cli -x mqueue:get\\_size xyz\n..."
+    },
+    {
+      "title": "`mqueue:fetch` usage",
+      "description": "Fetch one (or up to limit) key-value pair from a memory queue.",
+      "code": "...\nopensips-cli -x mqueue:fetch xyz\n..."
+    },
+    {
+      "title": "`mqueue:get_sizes` usage",
+      "description": "Get the size for all memory queues.",
+      "code": "...\nopensips-cli -x mqueue:get\\_sizes\n..."
+    }
+  ]
+}

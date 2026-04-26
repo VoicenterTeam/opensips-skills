@@ -1,0 +1,72 @@
+{
+  "id": "module-uac_auth-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "uac_auth Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/uac_auth.html",
+  "content_markdown": "UAC AUTH (User Agent Client Authentication) module provides a common API for building authentication headers.\n\nIt also provides a common set of authentication credetials to be used by other modules.\n\nNote that authentication provided by this module supports both qop \"auth\" and qop \"auth-int\" but if both values are presented by the server, \"auth\" will be prefered.\n\n### 1.1.1. RFC 8760 Support (Strenghtened Authentication)\n\nStarting with OpenSIPS 3.2, the [auth](auth), [auth_db](auth_db) and [uac_auth](uac_auth) modules include support for two new digest authentication algorithms (\"SHA-256\" and \"SHA-512-256\"), according to the [RFC 8760](https://datatracker.ietf.org/doc/html/rfc8760) specs.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:10:33.420Z",
+  "module_name": "uac_auth",
+  "overview": "UAC AUTH (User Agent Client Authentication) module provides a common API for building authentication headers.\n\nIt also provides a common set of authentication credetials to be used by other modules.\n\nNote that authentication provided by this module supports both qop \"auth\" and qop \"auth-int\" but if both values are presented by the server, \"auth\" will be prefered.\n\n### 1.1.1. RFC 8760 Support (Strenghtened Authentication)\n\nStarting with OpenSIPS 3.2, the [auth](auth), [auth_db](auth_db) and [uac_auth](uac_auth) modules include support for two new digest authentication algorithms (\"SHA-256\" and \"SHA-512-256\"), according to the [RFC 8760](https://datatracker.ietf.org/doc/html/rfc8760) specs.",
+  "how_it_works": null,
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "credential",
+      "type": "string",
+      "description": "Contains a multiple definition of credentials used to perform authentication.",
+      "example_code": "...\nmodparam(\"uac\\_auth\",\"credential\",\"username:domain:password\")\nmodparam(\"uac\\_auth\",\"credential\",\"username:domain:0xc17ba8157756f263d07e158504204629\")\n...",
+      "notes": "NOTE that the password can be provided as a plain text password or as a precalculated HA1 as a hexa (lower case) string (of 32 chars) prefixed with \"0x\" (so a total of 34 chars).\n\nThis parameter is required if UAC authentication is used."
+    },
+    {
+      "name": "auth_realm_avp",
+      "type": "string",
+      "description": "The definition of an AVP that might contain the realm to be used to perform authentication.",
+      "example_code": "...\nmodparam(\"uac\\_auth\",\"auth\\_realm\\_avp\",\"$avp(10)\")\n...",
+      "notes": "If you define it, you also need to define “auth_username_avp” and “auth_password_avp”."
+    },
+    {
+      "name": "auth_username_avp",
+      "type": "string",
+      "description": "The definition of an AVP that might contain the username to be used to perform authentication.",
+      "example_code": "...\nmodparam(\"uac\\_auth\",\"auth\\_username\\_avp\",\"$avp(11)\")\n...",
+      "notes": "If you define it, you also need to define “auth_realm_avp” and “auth_password_avp”."
+    },
+    {
+      "name": "auth_password_avp",
+      "type": "string",
+      "description": "The definition of an AVP that might contain the password to be used to perform authentication. The password can be provided as a plain text password or as a precalculated HA1 as a hexa (lower case) string (of 32 chars) prefixed with \"0x\" (so a total of 34 chars) (for example \"0xc17ba8157756f263d07e158504204629\")",
+      "example_code": "...\nmodparam(\"uac\\_auth\",\"auth\\_password\\_avp\",\"$avp(12)\")\n...",
+      "notes": "If you define it, you also need to define “auth_realm_avp” and “auth_username_avp”."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `credential` parameter",
+      "description": "Contains a multiple definition of credentials used to perform authentication.",
+      "code": "...\nmodparam(\"uac\\_auth\",\"credential\",\"username:domain:password\")\nmodparam(\"uac\\_auth\",\"credential\",\"username:domain:0xc17ba8157756f263d07e158504204629\")\n..."
+    },
+    {
+      "title": "Set `auth_realm_avp` parameter",
+      "description": "The definition of an AVP that might contain the realm to be used to perform authentication.",
+      "code": "...\nmodparam(\"uac\\_auth\",\"auth\\_realm\\_avp\",\"$avp(10)\")\n..."
+    },
+    {
+      "title": "Set `auth_username_avp` parameter",
+      "description": "The definition of an AVP that might contain the username to be used to perform authentication.",
+      "code": "...\nmodparam(\"uac\\_auth\",\"auth\\_username\\_avp\",\"$avp(11)\")\n..."
+    },
+    {
+      "title": "Set `auth_password_avp` parameter",
+      "description": "The definition of an AVP that might contain the password to be used to perform authentication.",
+      "code": "...\nmodparam(\"uac\\_auth\",\"auth\\_password\\_avp\",\"$avp(12)\")\n..."
+    }
+  ]
+}

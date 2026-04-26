@@ -1,0 +1,237 @@
+{
+  "id": "module-alias_db-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "alias_db Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/alias_db.html",
+  "content_markdown": "ALIAS_DB module can be used as an alternative for user aliases via usrloc. The main feature is that it does not store all adjacent data as for user location and always uses database for search (no memory caching).\n\nHaving no memory caching, search speed might decrease but provisioning is easier. With very fast databases like MySQL, speed penalty can be lowered. Also, search can be performed on different tables in the same script.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:47:19.567Z",
+  "module_name": "alias_db",
+  "overview": "ALIAS_DB module can be used as an alternative for user aliases via usrloc. The main feature is that it does not store all adjacent data as for user location and always uses database for search (no memory caching).\n\nHaving no memory caching, search speed might decrease but provisioning is easier. With very fast databases like MySQL, speed penalty can be lowered. Also, search can be performed on different tables in the same script.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensipsro:opensipsro@localhost/opensips",
+      "description": "Database URL.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"alias\\_db\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "user_column",
+      "type": "string",
+      "default_value": "username",
+      "description": "Name of the column storing username.",
+      "example_value": "susername",
+      "example_code": "modparam(\"alias\\_db\", \"user\\_column\", \"susername\")"
+    },
+    {
+      "name": "domain_column",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of the column storing user's domain.",
+      "example_value": "sdomain",
+      "example_code": "modparam(\"alias\\_db\", \"domain\\_column\", \"sdomain\")"
+    },
+    {
+      "name": "alias_user_column",
+      "type": "string",
+      "default_value": "alias_username",
+      "description": "Name of the column storing alias username.",
+      "example_value": "auser",
+      "example_code": "modparam(\"alias\\_db\", \"alias\\_user\\_column\", \"auser\")"
+    },
+    {
+      "name": "alias_domain_column",
+      "type": "string",
+      "default_value": "alias_domain",
+      "description": "Name of the column storing alias domain.",
+      "example_value": "adomain",
+      "example_code": "modparam(\"alias\\_db\", \"alias\\_domain\\_column\", \"adomain\")"
+    },
+    {
+      "name": "domain_prefix",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Specifies the prefix to be stripped from the domain in R-URI before doing the search.",
+      "example_value": "sip.",
+      "example_code": "modparam(\"alias\\_db\", \"domain\\_prefix\", \"sip.\")"
+    },
+    {
+      "name": "append_branches",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If the alias resolves to many SIP IDs, the first is replacing the R-URI, the rest are added as branches.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"alias\\_db\", \"append\\_branches\", 1)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "alias_db_lookup",
+      "signature": "alias_db_lookup(table_name, [flags])",
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to search for the alias"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "set of character flags to control the alias lookup process",
+          "valid_values": [
+            "d",
+            "r"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "TRUE",
+          "condition": "if R-URI is alias and it was replaced by user's SIP uri"
+        }
+      ],
+      "description": "The function takes the R-URI and search to see whether it is an alias or not. If it is an alias for a local user, the R-URI is replaced with user's SIP uri.\n\nThe function returns TRUE if R-URI is alias and it was replaced by user's SIP uri.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nalias\\_db\\_lookup(\"dbaliases\", \"rd\");\nalias\\_db\\_lookup(\"dba\\_$(rU{s.substr,0,1})\");\n...",
+          "description": "alias_db_lookup() usage"
+        }
+      ]
+    },
+    {
+      "name": "alias_db_find",
+      "signature": "alias_db_find(table_name, input_uri, output_var, [flags])",
+      "parameters": [
+        {
+          "name": "table_name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the table to search for the alias"
+        },
+        {
+          "name": "input_uri",
+          "type": "string",
+          "required": true,
+          "description": "a SIP URI to look up"
+        },
+        {
+          "name": "output_var",
+          "type": "var",
+          "required": true,
+          "description": "a variable to hold the SIP URI result"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "set of flags (char based flags) to control the alias lookup process",
+          "valid_values": [
+            "d",
+            "r"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "TRUE",
+          "condition": "if any alias mapping was found and returned"
+        }
+      ],
+      "description": "The function is very similar to `alias_db_lookup()`, but instead of using fixed input (RURI) and output (RURI) is able to get the input SIP URI from a pseudo-variable and place the result back also in a pseudo-variable.\n\nThe function is useful as the alias lookup does not affect the request itself (no RURI changes), can be used in a reply context (as it does not work with RURI only) and can be used for others URI than the RURI (To URI, From URI, custom URI).\n\nThe function returns TRUE if any alias mapping was found and returned.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# do revers alias lookup and find the alias for the FROM URI\nalias\\_db\\_find(\"dbaliases\", $fu, $avp(from_alias), \"r\");\n...",
+          "description": "alias_db_find() usage"
+        }
+      ],
+      "related_functions": [
+        "alias_db_lookup"
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Database URL.",
+      "code": "...\nmodparam(\"alias\\_db\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set `user_column` parameter",
+      "description": "Name of the column storing username.",
+      "code": "...\nmodparam(\"alias\\_db\", \"user\\_column\", \"susername\")\n..."
+    },
+    {
+      "title": "Set `domain_column` parameter",
+      "description": "Name of the column storing user's domain.",
+      "code": "...\nmodparam(\"alias\\_db\", \"domain\\_column\", \"sdomain\")\n..."
+    },
+    {
+      "title": "Set `alias_user_column` parameter",
+      "description": "Name of the column storing alias username.",
+      "code": "...\nmodparam(\"alias\\_db\", \"alias\\_user\\_column\", \"auser\")\n..."
+    },
+    {
+      "title": "Set `alias_domain_column` parameter",
+      "description": "Name of the column storing alias domain.",
+      "code": "...\nmodparam(\"alias\\_db\", \"alias\\_domain\\_column\", \"adomain\")\n..."
+    },
+    {
+      "title": "Set `domain_prefix` parameter",
+      "description": "Specifies the prefix to be stripped from the domain in R-URI before doing the search.",
+      "code": "...\nmodparam(\"alias\\_db\", \"domain\\_prefix\", \"sip.\")\n..."
+    },
+    {
+      "title": "Set `append_branches` parameter",
+      "description": "If the alias resolves to many SIP IDs, the first is replacing the R-URI, the rest are added as branches.",
+      "code": "...\nmodparam(\"alias\\_db\", \"append\\_branches\", 1)\n..."
+    },
+    {
+      "title": "`alias_db_lookup()` usage",
+      "description": "The function takes the R-URI and search to see whether it is an alias or not. If it is an alias for a local user, the R-URI is replaced with user's SIP uri.",
+      "code": "...\nalias\\_db\\_lookup(\"dbaliases\", \"rd\");\nalias\\_db\\_lookup(\"dba\\_$(rU{s.substr,0,1})\");\n..."
+    },
+    {
+      "title": "`alias_db_find()` usage",
+      "description": "The function is very similar to `alias_db_lookup()`, but instead of using fixed input (RURI) and output (RURI) is able to get the input SIP URI from a pseudo-variable and place the result back also in a pseudo-variable.",
+      "code": "...\n# do revers alias lookup and find the alias for the FROM URI\nalias\\_db\\_find(\"dbaliases\", $fu, $avp(from\\_alias), \"r\");\n..."
+    }
+  ]
+}

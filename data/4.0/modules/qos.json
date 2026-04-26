@@ -1,0 +1,44 @@
+{
+  "id": "module-qos-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "qos Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/qos.html",
+  "content_markdown": "The qos module provides a way to keep track of per dialog SDP session(s).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:58:00.526Z",
+  "module_name": "qos",
+  "overview": "The qos module provides a way to keep track of per dialog SDP session(s).",
+  "how_it_works": "The qos module uses the dialog module to be notified of any new or updated dialogs. It will then look for and extract the SDP session (if present) from SIP requests and replies and keep track of it for the entire life of a dialog.\n\nAll of this happens with a properly configured dialog and qos module and setting the dialog flag and the qos flag at the time any INVITE sip message is seen. There is no config script function call required to set the SDP session tracking mechanism. See the dialog module users guide for more information.\n\nA dialog can have one or more SDP sessions active in one of the following states:\n\n*   _pending_ - only one end point of the SDP session is known.\n    \n*   _negotiated_ - both end points of the SDP session are known.\n    \n\nAn SDP session can be established in one of the following scenarios:\n\n*   _INVITE/200ok_ - typical \"INVITE\" and \"200 OK\" SDP exchange.\n    \n*   _200ok/ACK_ - \"200 OK\" and \"ACK\" SDP exchange (for calls starting with an empty INVITE).\n    \n*   _183/PRACK_ - early media via \"183 Session Progress\" and \"PRACK\" (see rfc3959 for more information) - not implemented yet.",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "dialog module and its decencies (tm)",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "qos_flag",
+      "type": "string",
+      "default_value": "Not set!",
+      "description": "Keeping with OpenSIPS, the module will not do anything to any message unless instructed to do so via the config script. You must set the qos\\_flag value in the setflag() call of the INVITE you want the qos module to process. But before you can do that, you need to tell the qos module which flag value you are assigning to qos.\n\nIn most cases when ever you create a new dialog via create\\_dialog() function,you will want to set the qos flag. If create\\_dialog() is not called and the qos flag is set, it will not have any effect.\n\nThis parameter must be set of the module will not load.",
+      "example_value": "QOS_FLAG",
+      "example_code": "...\nmodparam(\"qos\", \"qos\\_flag\", \"QOS\\_FLAG\")\n...\nroute {\n  ...\n  if ($rm==\"INVITE\") {\n    setflag(QOS\\_FLAG); # Set the qos flag\n\tcreate\\_dialog(); # create the dialog\n  }\n  ...\n}"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `qos_flag` parameter",
+      "description": "Sets the qos_flag parameter and uses it in the script.",
+      "code": "...\nmodparam(\"qos\", \"qos\\_flag\", \"QOS\\_FLAG\")\n...\nroute {\n  ...\n  if ($rm==\"INVITE\") {\n    setflag(QOS\\_FLAG); # Set the qos flag\n\tcreate\\_dialog(); # create the dialog\n  }\n  ...\n}"
+    }
+  ]
+}

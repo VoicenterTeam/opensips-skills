@@ -1,0 +1,57 @@
+{
+  "id": "module-presence_reginfo-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "presence_reginfo Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/presence_reginfo.html",
+  "content_markdown": "The module enables the handling of \"Event: reg\" (as defined in RFC 3680) inside of the presence module. This can be used distribute the registration-info status to the subscribed watchers.\n\nThe module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle_publish() and handle_subscribe() functions.\n\nNote: This module only activates the processing of the \"reg\" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the reg info to the presence module. For example you can use the pua_reginfo module or any external component. This approach allows to have the presence server and the reg-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:14:48.666Z",
+  "module_name": "presence_reginfo",
+  "overview": "The module enables the handling of \"Event: reg\" (as defined in RFC 3680) inside of the presence module. This can be used distribute the registration-info status to the subscribed watchers.\n\nThe module does not currently implement any authorization rules. It assumes that publish requests are only issued by an authorized application and subscribe requests only by authorized users. Authorization can thus be easily done in OpenSIPS configuration file before calling handle_publish() and handle_subscribe() functions.\n\nNote: This module only activates the processing of the \"reg\" in the presence module. To send dialog-info to watchers you also need a source which PUBLISH the reg info to the presence module. For example you can use the pua_reginfo module or any external component. This approach allows to have the presence server and the reg-info aware publisher (e.g. the main proxy) on different OpenSIPS instances.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "presence",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_expires",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "The default expires value used when missing from SUBSCRIBE message (in seconds).",
+      "example_value": "3600",
+      "example_code": "...\nmodparam(\"presence\\_reginfo\", \"default\\_expires\", 3600)\n..."
+    },
+    {
+      "name": "aggregate_presentities",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Whether to aggregate in a single notify body all registration presentities. Useful to have all registrations on first NOTIFY following initial SUBSCRIBE.",
+      "example_value": "1",
+      "example_code": "\t\t\t\t...\n\t\t\t\tmodparam(\"presence\\_reginfo\", \"aggregate\\_presentities\", 1)\n\t\t\t\t..."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `default_expires` parameter",
+      "description": "The default expires value used when missing from SUBSCRIBE message (in seconds).",
+      "code": "...\nmodparam(\"presence\\_reginfo\", \"default\\_expires\", 3600)\n..."
+    },
+    {
+      "title": "Set `aggregate_presentities` parameter",
+      "description": "Whether to aggregate in a single notify body all registration presentities. Useful to have all registrations on first NOTIFY following initial SUBSCRIBE.",
+      "code": "...\nmodparam(\"presence\\_reginfo\", \"aggregate\\_presentities\", 1)\n..."
+    }
+  ]
+}

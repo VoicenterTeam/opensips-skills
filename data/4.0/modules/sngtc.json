@@ -1,0 +1,152 @@
+{
+  "id": "module-sngtc-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "sngtc Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/sngtc.html",
+  "content_markdown": "The **Sangoma transcoding module** offers the possibility of performing voice transcoding with the [D-series transcoding cards manufactured by Sangoma](https://wiki.sangoma.com/display/MTC/Media+Transcoding). The module makes use of the Sangoma Transcoding API in order to manage transcoding sessions on the dedicated equipment. For the cards in the network to be detected, the Sangoma SOAP server must be up and running (_sngtc\\_server_ daemon).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:50:13.407Z",
+  "module_name": "sngtc",
+  "overview": "The **Sangoma transcoding module** offers the possibility of performing voice transcoding with the [D-series transcoding cards manufactured by Sangoma](https://wiki.sangoma.com/display/MTC/Media+Transcoding). The module makes use of the Sangoma Transcoding API in order to manage transcoding sessions on the dedicated equipment. For the cards in the network to be detected, the Sangoma SOAP server must be up and running (_sngtc\\_server_ daemon).",
+  "how_it_works": "The module performs several modifications in the SDP body of SIP INVITE, 200 OK and ACK messages. In all transcoding scenarios, the UAC performs early SDP negotiation, while the UAS does late negotiation. This way, OpenSIPS becomes responsible for intersecting the codec offer and answer, together with the management of transcoding sessions on the Sangoma cards.\n\nThis scenario brings about a couple of **restrictions**:\n\n*   UACs MUST only perform early SDP negotiation\n    \n*   UASs MUST support late SDP negotiation (rfc 3261 requirement)\n    \n\nSince the _sngtc\\_node_ library performs several memory allocations with each newly created transcoding session, the module uses a dedicated process, responsible for the management of the above-mentioned sessions. The _sangoma\\_worker_ process communicates with the OpenSIPS UDP receivers through a series of pipes.",
+  "dependencies_required": [
+    {
+      "name": "dialog",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "sngtc_node library",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "sngtc_server",
+      "type": "application",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [
+    {
+      "name": "sngtc_offer",
+      "signature": "sngtc_offer()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "SDP parsing error"
+        },
+        {
+          "value": "-3",
+          "condition": "internal error / no more memory"
+        }
+      ],
+      "description": "The function strips off the SDP offer from a SIP INVITE, thus asking for another SDP offer from the opposite endpoint (late negotiation).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif (is_method(\"INVITE\")) {\n\t\tt_newtran();\n\t\tcreate_dialog();\n\t\tsngtc_offer();\n\t}\n...",
+          "description": "sngtc_offer usage"
+        }
+      ]
+    },
+    {
+      "name": "sngtc_callee_answer",
+      "signature": "sngtc_callee_answer([listen_if_A], [listen_if_B])",
+      "parameters": [
+        {
+          "name": "listen_if_A",
+          "type": "string",
+          "required": false,
+          "description": "the interface where the UAC (the caller) will send RTP after the call is established (IP from the 'c=' SDP line(s))"
+        },
+        {
+          "name": "listen_if_B",
+          "type": "string",
+          "required": false,
+          "description": "the interface where the UAS (the callee) will send RTP after the call is established (IP from the 'c=' SDP line(s))"
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "SDP parsing error"
+        },
+        {
+          "value": "-2",
+          "condition": "failed to create transcoding session"
+        },
+        {
+          "value": "-3",
+          "condition": "internal error / no more memory"
+        }
+      ],
+      "description": "Handles the SDP offer from 200 OK responses, intersects both offers with the capabilities of the transcoding card and creates a new transcoding session on the card **only if** necessary. It then rewrites the 200 OK SDP so that it contains the information resulted from the codec intersection.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nonreply_route[1] {\n\tif ($rs == 200)\n\t\tsngtc_callee_answer(\"11.12.13.14\", \"11.12.13.14\");\n}\n...",
+          "description": "sngtc_callee_answer usage"
+        }
+      ]
+    },
+    {
+      "name": "sngtc_caller_answer",
+      "signature": "sngtc_caller_answer()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-3",
+          "condition": "internal error / no more memory"
+        }
+      ],
+      "description": "Attaches an SDP body to the caller's ACK request, so that it matches the late SDP negotiation done by the UAS.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif (has_totag()) {\n\t\tif (loose_route()) {\n\t\t\t...\n\t\t\tif (is_method(\"ACK\"))\n\t\t\t\tsngtc_caller_answer();\n\t\t}\n\t\t...\n\t}\n...",
+          "description": "sngtc_caller_answer usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`sngtc_offer` usage",
+      "description": "The function strips off the SDP offer from a SIP INVITE, thus asking for another SDP offer from the opposite endpoint (late negotiation).",
+      "code": "...\nif (is_method(\"INVITE\")) {\n\tt_newtran();\n\tcreate_dialog();\n\tsngtc_offer();\n}\n..."
+    },
+    {
+      "title": "`sngtc_callee_answer` usage",
+      "description": "Handles the SDP offer from 200 OK responses, intersects both offers with the capabilities of the transcoding card and creates a new transcoding session on the card only if necessary. It then rewrites the 200 OK SDP so that it contains the information resulted from the codec intersection.",
+      "code": "...\nonreply_route[1] {\n\tif ($rs == 200)\n\t\tsngtc_callee_answer(\"11.12.13.14\", \"11.12.13.14\");\n}\n..."
+    },
+    {
+      "title": "`sngtc_caller_answer` usage",
+      "description": "Attaches an SDP body to the caller's ACK request, so that it matches the late SDP negotiation done by the UAS.",
+      "code": "...\nif (has_totag()) {\n\tif (loose_route()) {\n\t\t...\n\t\tif (is_method(\"ACK\"))\n\t\t\tsngtc_caller_answer();\n\t}\n\t...\n}\n..."
+    }
+  ]
+}

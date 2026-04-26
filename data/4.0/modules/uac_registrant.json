@@ -1,0 +1,778 @@
+{
+  "id": "module-uac_registrant-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "uac_registrant Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/uac_registrant.html",
+  "content_markdown": "The module enable OpenSIPS to register itself on a remote SIP registrar.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T13:43:36.512Z",
+  "module_name": "uac_registrant",
+  "overview": "The module enable OpenSIPS to register itself on a remote SIP registrar.",
+  "how_it_works": "At startup, the registrant records are loaded into a hash table in memory and a timer is started. The hash index is computed over the AOR field.\n\nThe timer interval for checking records in a hash bucket is computed by dividing the timer_interval module param by the number of hash buckets. When the timer fires for the first time, the first hash bucket will be checked and REGISTERs will be sent out for each record that is found. On the next timeout fire, the second hash bucket will be checked and so on. If the configured timer_interval module param is lower then the number of buckets, the module will fail to start.\n\nExample: setting the timer_interval module to 8 with a hash_size of 2, will result in having 4 hash buckets (2^2=4) and buckets will be checked one by one every 2s (8/4=2).\n\nEach registrant has it's own state. Registrant's status can be inspected via \"uac_registrant:list\" MI command.\n\nUAC registrant states:\n\n*   _0_ - NOT_REGISTERED_STATE - the initial state (no REGISTER has been sent out yet);\n    \n*   _1_ - REGISTERING_STATE - waiting for a reply from the registrar after a REGISTER without authentication header was sent;\n    \n*   _2_ - AUTHENTICATING_STATE - waiting for a reply from the registrar after a REGISTER with authentication header was sent;\n    \n*   _3_ - REGISTERED_STATE - the uac is successfully registered;\n    \n*   _4_ - REGISTER_TIMEOUT_STATE : no reply received from the registrar;\n    \n*   _5_ - INTERNAL_ERROR_STATE - some errors were found/encountered during the processing of a reply;\n    \n*   _6_ - WRONG_CREDENTIALS_STATE - credentials rejected by the registrar;\n    \n*   _7_ - REGISTRAR_ERROR_STATE - error reply received from the registrar;\n    \n*   _8_ - UNREGISTERING_STATE - waiting for a reply from the registrar after an unREGISTER without authentication header was sent;\n    \n*   _9_ - AUTHENTICATING_UNREGISTER_STATE - waiting for a reply from the registrar after an unREGISTER with authentication header was sent;",
+  "dependencies_required": [
+    {
+      "name": "uac_auth",
+      "type": "module",
+      "reason": "UAC authentication module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The size of the hash table internally used to keep the registrants. A larger table distributes better the registration load in time but consumes more memory. The hash size is a power of number two.",
+      "example_value": "2",
+      "example_code": "modparam(\"uac_registrant\", \"hash_size\", 2)"
+    },
+    {
+      "name": "timer_interval",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Defines the periodic timer for checking the registrations status.",
+      "example_value": "120",
+      "example_code": "modparam(\"uac_registrant\", \"timer_interval\", 120)"
+    },
+    {
+      "name": "failure_retry_interval",
+      "type": "integer",
+      "default_value": "0 (not set)",
+      "description": "Defines a custom interval to retry the registration upon error/failure. Normally, after any kind of failure (timeout, credentials, internal error), the registration is re-taken after \"expires\" seconds. The parameter here, if set, overrides that value.",
+      "example_value": "3600",
+      "example_code": "modparam(\"uac_registrant\", \"failure_retry_interval\", 3600)"
+    },
+    {
+      "name": "enable_clustering",
+      "type": "integer",
+      "default_value": "0 / off",
+      "description": "This parameter enables the clustering support in the module. This is used to share this registration between all the nodes in the cluster. When using this option, you should define (for each registrant record) a sharing tag - this sharing tag will control at the cluster level which node is entitled to perform the registation (only the node having that tag as active will do the registation, the onther nodes being idle).",
+      "example_value": "1",
+      "example_code": "modparam(\"uac_registrant\", \"enable_clustering\", 1)"
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "“NULL” (use default DB URL from core)",
+      "description": "Database where to load the registrants from.",
+      "example_value": "\"mysql://user:passw@localhost/database\"",
+      "example_code": "modparam(\"uac_registrant\", \"db_url\", \"mysql://user:passw@localhost/database\")"
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "registrant",
+      "description": "The database table that holds the registrant records.",
+      "example_value": "my_registrant",
+      "example_code": "modparam(\"uac\\_registrant\", \"table\\_name\", \"my\\_registrant\")"
+    },
+    {
+      "name": "registrar_column",
+      "type": "string",
+      "default_value": "registrar",
+      "description": "The column's name in the database storing the URI pointing to the remote registrar (mandatory field). OpenSIPS expects a valid URI.",
+      "example_value": "registrant_uri",
+      "example_code": "modparam(\"uac\\_registrant\", \"registrar\\_column\", \"registrant\\_uri\")"
+    },
+    {
+      "name": "proxy_column",
+      "type": "string",
+      "default_value": "proxy",
+      "description": "The column's name in the database storing the URI pointing to the outbond proxy (not mandatory field). An empty or NULL value means no outbound proxy, otherwise OpenSIPS expects a valid URI.",
+      "example_value": "proxy_uri",
+      "example_code": "modparam(\"uac\\_registrant\", \"proxy\\_column\", \"proxy\\_uri\")"
+    },
+    {
+      "name": "aor_column",
+      "type": "string",
+      "default_value": "aor",
+      "description": "The column's name in the database storing the URI defining the address of record (mandatory field). The URI stored here will be used in the To URI of the REGISTER. OpenSIPS expects a valid URI.",
+      "example_value": "to_uri",
+      "example_code": "modparam(\"uac\\_registrant\", \"aor\\_column\", \"to\\_uri\")"
+    },
+    {
+      "name": "third_party_registrant_column",
+      "type": "string",
+      "default_value": "third_party_registrant",
+      "description": "The column's name in the database storing the URI defining the third party registrant (not mandatory field). The URI stored here will be used in the From URI of the REGISTER. An empty or NULL value means no third party registration (the From URI will be identical to To URI), otherwise OpenSIPS expects a valid URI.",
+      "example_value": "from_uri",
+      "example_code": "modparam(\"uac\\_registrant\", \"third\\_party\\_registrant\\_column\", \"from\\_uri\")"
+    },
+    {
+      "name": "username_column",
+      "type": "string",
+      "default_value": "username",
+      "description": "The column's name in the database storing the username for authentication (mandatory if the registrar requires authentication).",
+      "example_value": "auth_username",
+      "example_code": "modparam(\"uac\\_registrant\", \"username\\_column\", \"auth\\_username\")"
+    },
+    {
+      "name": "password_column",
+      "type": "string",
+      "default_value": "password",
+      "description": "The column's name in the database storing the password for authentication (mandatory if the registrar requires authntication).",
+      "example_value": "auth_passowrd",
+      "example_code": "modparam(\"uac\\_registrant\", \"password\\_column\", \"auth\\_passowrd\")"
+    },
+    {
+      "name": "binding_URI_column",
+      "type": "string",
+      "default_value": "binding_URI",
+      "description": "The column's name in the database storing the binding URI in REGISTER (mandatory field). The URI stored here will be used in the Contact URI of the REGISTER. OpenSIPS expects a valid URI.",
+      "example_value": "contact_uri",
+      "example_code": "modparam(\"uac\\_registrant\", \"binding\\_URI\\_column\", \"contact\\_uri\")"
+    },
+    {
+      "name": "binding_params_column",
+      "type": "string",
+      "default_value": "binding_params",
+      "description": "The column's name in the database storing the binding params in REGISTER (not mandatory field). If not NULL or not empty, the string stored here will be added as params to the Contact URI in REGISTER (it MUST start with “;”.\n\nIf the following two params are present, then the binding will be enforced to be unique (if two bindings are received in a 200ok, a complete binding removal will be performed before re-registering):\n\n*   _reg-id_\n    \n*   _+sip.instance_\n    \nExample of params that will force unique binding:\n\n;reg-id=1;+sip.instance=\"<urn:uuid:11111111-AABBCCDDEEFF>\"",
+      "example_value": "contact_params",
+      "example_code": "modparam(\"uac\\_registrant\", \"binding\\_params\\_column\", \"contact\\_params\")"
+    },
+    {
+      "name": "expiry_column",
+      "type": "string",
+      "default_value": "expiry",
+      "description": "The column's name in the database storing the expiration time (not mandatory).",
+      "example_value": "registration_timeout",
+      "example_code": "modparam(\"uac\\_registrant\", \"expiry\\_column\", \"registration\\_timeout\")"
+    },
+    {
+      "name": "forced_socket_column",
+      "type": "string",
+      "default_value": "forced_socket",
+      "description": "The column's name in the database storing the socket for sending the REGISTER (not mandatory). If a forced socket is provided, the socket MUST be explicitely set as a global listening socket in the config (see “socket” core parameter).",
+      "example_value": "fs",
+      "example_code": "modparam(\"uac\\_registrant\", \"forced\\_socket\\_column\", \"fs\")"
+    },
+    {
+      "name": "cluster_shtag_column",
+      "type": "string",
+      "default_value": "cluster_shtag",
+      "description": "The column's name in the database storing the cluster sharing tag in \\[tag\\_name/cluster\\_id\\] format (not mandatory). If a cluster sharing tag is provided, the REGISTER requests will be fired out only when the tag is active.",
+      "example_value": "sh",
+      "example_code": "modparam(\"uac\\_registrant\", \"cluster\\_shtag\\_column\", \"sh\")"
+    },
+    {
+      "name": "state_column",
+      "type": "string",
+      "default_value": "state",
+      "description": "The column's name in the database storing the current state of the registrant. When a registrant is disabled, OpenSIPS will no longer send REGISTERs for it. A value of _0_ for this column means enabled and _1_ disabled.",
+      "example_value": "status",
+      "example_code": "modparam(\"uac\\_registrant\", \"state\\_column\", \"status\")"
+    },
+    {
+      "name": "reregister_expiry_percentage",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Percentage describing how much sooner a RE-REGISTER needs to be send based on the Expiry. a 100 value means the RE-REGISTER will be send right on the edge of expiry ( old behavior ), which might lead to registration loss. a 90 value means the RE-REGISTER will be sent sooner , at 90% of the Expiry, etc.",
+      "example_value": "90",
+      "example_code": "modparam(\"uac\\_registrant\", \"reregister\\_expiry\\_percentage\", 90)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "uac_registrant:list",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": false,
+          "description": "URI defining the address of record. If provided, _contact_ and _registrar_ parameters are also required and only a specific record will be listed."
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": false,
+          "description": "Contact URI. If provided, _aor_ and _registrar_ parameters are also required and only a specific record will be listed."
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": false,
+          "description": "URI pointing to the remote registrar. If provided, _aor_ and _contact_ parameters are also required and only a specific record will be listed."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Lists the registrant records and their status."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_list_. Lists the registrant records and their status.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:list",
+          "description": "List all registrant records."
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:list sip:alice@opensips.org  sip:alice@127.0.0.1:5060 sip:opensips.org",
+          "description": "List a specific registrant record."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:reload",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": false,
+          "description": "URI defining the address of record. If provided, _contact_ and _registrar_ parameters are also required and only a specific record will be reloaded."
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": false,
+          "description": "Contact URI. If provided, _aor_ and _registrar_ parameters are also required and only a specific record will be reloaded."
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": false,
+          "description": "URI pointing to the remote registrar. If provided, _aor_ and _contact_ parameters are also required and only a specific record will be reloaded."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Reloads the registrant records from the database."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_reload_. Reloads the registrant records from the database.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:reload",
+          "description": "Reload all registrant records."
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi reg\\_leload sip:alice@opensips.org  sip:alice@127.0.0.1:5060 sip:opensips.org",
+          "description": "Reload a specific registrant record."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:enable",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": true,
+          "description": "URI defining the address of record."
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": true,
+          "description": "Contact URI."
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": true,
+          "description": "URI pointing to the remote registrar."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Enables a specific registrant. OpenSIPS will immediately send a REGISTER if the registrant was previously disabled and will update the state in the database."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_enable_. Enables a specific registrant. OpenSIPS will immediately send a REGISTER if the registrant was previously disabled and will update the state in the database.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:enable sip:alice@opensips.org  sip:alice@127.0.0.1:5060 sip:opensips.org",
+          "description": "Enable a specific registrant."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:disable",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": false,
+          "description": "URI defining the address of record. If provided, _contact_ and _registrar_ parameters are also required and only a specific record will be disabled."
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": false,
+          "description": "Contact URI. If provided, _aor_ and _registrar_ parameters are also required and only a specific record will be disabled."
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": false,
+          "description": "URI pointing to the remote registrar. If provided, _aor_ and _contact_ parameters are also required and only a specific record will be disabled."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Disables a specific registrant. OpenSIPS will immediately send an unREGISTER if the registrant was previously enabled and will update the state in the database."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_disable_. Disables a specific registrant. OpenSIPS will immediately send an unREGISTER if the registrant was previously enabled and will update the state in the database.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:disable sip:alice@opensips.org  sip:alice@127.0.0.1:5060 sip:opensips.org",
+          "description": "Disable a specific registrant."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:force_register",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": true,
+          "description": "URI defining the address of record. If provided, _contact_ and _registrar_ parameters are also required and only a specific record will be forced to re-register."
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": true,
+          "description": "Contact URI. If provided, _aor_ and _registrar_ parameters are also required and only a specific record will be forced to re-register."
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": true,
+          "description": "URI pointing to the remote registrar. If provided, _aor_ and _contact_ parameters are also required and only a specific record will be forced to re-register."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Forces the re-registration (or registation) of a specific registrant (depending on its state). Note that the registrant must be enabled."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_force\\_register_. Forces the re-registration (or registation) of a specific registrant (depending on its state). Note that the registrant must be enabled.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:force\\_register sip:alice@opensips.org  sip:alice@127.0.0.1:5060 sip:opensips.org",
+          "description": "Force re-registration of a specific registrant."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:upsert",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": true,
+          "description": "URI defining the address"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": true,
+          "description": "Contact URI"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": true,
+          "description": "URI pointing to the remote registrar"
+        },
+        {
+          "name": "proxy",
+          "type": "string",
+          "required": true,
+          "description": "URI of a registration proxy"
+        },
+        {
+          "name": "third_party_registrant",
+          "type": "string",
+          "required": true,
+          "description": "3rd party registrant"
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "the username for auth purposes"
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": true,
+          "description": "the password for auth purposes"
+        },
+        {
+          "name": "binding_params",
+          "type": "string",
+          "required": true,
+          "description": "params to be added to the registration"
+        },
+        {
+          "name": "expiry",
+          "type": "integer",
+          "required": true,
+          "description": "number of seconds that the registration will be valid"
+        },
+        {
+          "name": "forced_socket",
+          "type": "string",
+          "required": true,
+          "description": "opensips socket to send out the register out through"
+        },
+        {
+          "name": "cluster_shtag",
+          "type": "string",
+          "required": true,
+          "description": "the sharing tag for this registration"
+        },
+        {
+          "name": "state",
+          "type": "integer",
+          "required": true,
+          "description": "0 for enabled, 1 for disabled"
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Inserts or updates the in-memory contents of the AOR/Contact/Registrar. No Database queries are done when calling this MI command, all parameters are passed via MI."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_upsert_. Inserts or updates the in-memory contents of the AOR/Contact/Registrar. No Database queries are done when calling this MI command, all parameters are passed via MI.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:upsert aor=sip:vlad@test.com contact=sip:test@localhost registrar=sip:127.0.0.1:5061 proxy=\"\" third\\_party\\_registrant=\"\" username=\"vlad\" password=\"1234\" binding\\_params=\"\" expiry=60 forced\\_socket=\"\" cluster\\_shtag=\"\" state=0",
+          "description": "Upsert a registrant record."
+        }
+      ]
+    },
+    {
+      "name": "uac_registrant:delete",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": true,
+          "description": "URI defining the address"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "required": true,
+          "description": "Contact URI"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "required": true,
+          "description": "URI pointing to the remote registrar"
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Deletes the in-memory contents of the AOR/Contact/Registrar. No Database queries are done when calling this MI command, all parameters are passed via MI."
+      },
+      "description": "Replaces obsolete MI command: _reg\\_delete_. Deletes the in-memory contents of the AOR/Contact/Registrar. No Database queries are done when calling this MI command, all parameters are passed via MI.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi uac\\_registrant:delete aor=sip:vlad@test.com contact=sip:test@localhost registrar=sip:127.0.0.1:5061",
+          "description": "Delete a registrant record."
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_REGISTRANT_REGISTERING",
+      "description": "This event is raised when the module sent the initial REGISTER and started the registration process.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_AUTHENTICATING",
+      "description": "This event is raised when the initial REGISTER has been challenged and a new REGISTER with credentials has been sent out.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_REGISTERED",
+      "description": "This event is raised when a REGISTER has been 200 OKd.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_REGISTER_TIMEOUT",
+      "description": "This event is raised when a REGISTER received no reply from the registrar.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_INTERNAL_ERROR",
+      "description": "This event is raised when a REGISTER procesing was stopped due to an internal OpenSIPS error.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_WRONG_CREDENTIALS",
+      "description": "This event is raised when a REGISTER with credentials was still rejected by the registrar",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_REGISTRAR_ERROR",
+      "description": "This event is raised when a REGISTER is rejected by the registrar with a non-standard sip code.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_UNREGISTERING",
+      "description": "This event is raised when a de-REGISTER is sent by OpenSIPS.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    },
+    {
+      "name": "E_REGISTRANT_AUTHENTICATING_UNREGISTER",
+      "description": "This event is raised when a de-REGISTER is challenged and auth is sent by OpenSIPS.",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "description": "the AOR"
+        },
+        {
+          "name": "contact",
+          "type": "string",
+          "description": "the Contact"
+        },
+        {
+          "name": "registrar",
+          "type": "string",
+          "description": "the Registrar"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "Set `hash_size` parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"hash\\_size\", 2)\n..."
+    },
+    {
+      "title": "Set `timer_interval` parameter",
+      "description": "Set `timer_interval` parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"timer\\_interval\", 120)\n..."
+    },
+    {
+      "title": "Set `failure_retry_interval` parameter",
+      "description": "Set `failure_retry_interval` parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"failure\\_retry\\_interval\", 3600)\n..."
+    },
+    {
+      "title": "Set `enable_clustering` parameter",
+      "description": "Set `enable_clustering` parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"enable\\_clustering\", 1)\n..."
+    },
+    {
+      "title": "Set “db\\_url” parameter",
+      "description": "Set “db\\_url” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"db\\_url\", \"mysql://user:passw@localhost/database\")\n..."
+    },
+    {
+      "title": "Set “table\\_name” parameter",
+      "description": "Set “table\\_name” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"table\\_name\", \"my\\_registrant\")\n..."
+    },
+    {
+      "title": "Set “registrar\\_column” parameter",
+      "description": "Set “registrar\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"registrar\\_column\", \"registrant\\_uri\")\n..."
+    },
+    {
+      "title": "Set “proxy\\_column” parameter",
+      "description": "Set “proxy\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"proxy\\_column\", \"proxy\\_uri\")\n..."
+    },
+    {
+      "title": "Set “aor\\_column” parameter",
+      "description": "Set “aor\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"aor\\_column\", \"to\\_uri\")\n..."
+    },
+    {
+      "title": "Set “third\\_party\\_registrant\\_column” parameter",
+      "description": "Set “third\\_party\\_registrant\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"third\\_party\\_registrant\\_column\", \"from\\_uri\")\n..."
+    },
+    {
+      "title": "Set “username\\_column” parameter",
+      "description": "Set “username\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"username\\_column\", \"auth\\_username\")\n..."
+    },
+    {
+      "title": "Set “password\\_column” parameter",
+      "description": "Set “password\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"password\\_column\", \"auth\\_passowrd\")\n..."
+    },
+    {
+      "title": "Set “binding\\_URI\\_column” parameter",
+      "description": "Set “binding\\_URI\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"binding\\_URI\\_column\", \"contact\\_uri\")\n..."
+    },
+    {
+      "title": "Set “binding\\_params\\_column” parameter",
+      "description": "Set “binding\\_params\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"binding\\_params\\_column\", \"contact\\_params\")\n..."
+    },
+    {
+      "title": "Set “expiry\\_column” parameter",
+      "description": "Set “expiry\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"expiry\\_column\", \"registration\\_timeout\")\n..."
+    },
+    {
+      "title": "Set “forced\\_socket\\_column” parameter",
+      "description": "Set “forced\\_socket\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"forced\\_socket\\_column\", \"fs\")\n..."
+    },
+    {
+      "title": "Set “cluster\\_shtag\\_column” parameter",
+      "description": "Set “cluster\\_shtag\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"cluster\\_shtag\\_column\", \"sh\")\n..."
+    },
+    {
+      "title": "Set “state\\_column” parameter",
+      "description": "Set “state\\_column” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"state\\_column\", \"status\")\n..."
+    },
+    {
+      "title": "Set “reregister\\_expiry\\_percentage” parameter",
+      "description": "Set “reregister\\_expiry\\_percentage” parameter",
+      "code": "...\nmodparam(\"uac\\_registrant\", \"reregister\\_expiry\\_percentage\", 90)\n..."
+    }
+  ]
+}

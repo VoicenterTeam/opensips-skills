@@ -1,0 +1,1401 @@
+{
+  "id": "module-drouting-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "drouting Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/drouting.html",
+  "content_markdown": "Dynamic Routing is a module for selecting (based on multiple criteria) the best gateway/destination to be used for delivering a certain call. Least Cost Routing (LCR) is a special case of dynamic routing - when the rules are ordered based on costs. Dynamic Routing comes with many features regarding routing rule selection:\n\n*   prefix based\n    \n*   caller/group based\n    \n*   time based\n    \n*   priority based\n    \n, processing :\n\n*   stripping and prefixing\n    \n*   default rules\n    \n*   inbound and outbound processing\n    \n*   script route triggering\n    \nand failure handling:\n\n*   serial forking\n    \n*   weight based GW selection\n    \n*   random GW selection\n    \n*   GW probing for crashes\n    \nThe dynamic routing implementation for OpenSIPS is designed with the following properties:\n\n*   The routing info (destinations, carriers, rules, groups) is stored in a database and loaded into memory at start up time; reload at runtime via a Management Interface command.\n    \n*   weight-based or random selection of the destinations (from a rule or from a carrier), failure detection of gateways (with switching to next available gateway).\n    \n*   able to handle large volume of routing info (10M of rules) with minimal speed/time and memory consumption penalties\n    \n*   script integration - Pseudo-variable support in functions; scripting route triggering when rules are matched\n    \n*   bidirectional behavior - inbound and outbound processing (strip and prefixing when sending and receiving from a destination/GW)\n    \n*   blacklisting - the module allows definition of blacklists based on the destination IPs. This blacklists are to be used to prevent malicious forwarding to GWs (based on DNS lookups) when the script logic does none-GE forwarding (like foreign domains).\n    \n*   loading routing information from multiple databases - the gateways, rules, groups and carriers can be grouped by partitions, and each partition may be loaded from different databases/tables. This makes the routing process partition based. In order to be able to use a table from a partition, its name must be found in the \"version\" table belonging to the database defined in the partition's db_url.\n    \nThere were several tests performed regarding the performance of the module when dealing with a large number of routing rules.\n\nThe tests were performed with a set of 383000 rules and measured:\n\n*   time to load from DB\n    \n*   used shared memory\n    \nThe time to load was varying between 4 seconds and 8 seconds, depending of the caching of the DB client - the first load was the slowest (as the DB query hits the disk drive); the following are faster as data is already cached in the DB client. So technically speaking, the time to load (without the time to query which is DB type dependent) is ~4 seconds\n\nAfter loading the data into shared memory ~ 96M of memory were used exclusively for the DR data.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T13:52:33.734Z",
+  "module_name": "drouting",
+  "overview": "Dynamic Routing is a module for selecting (based on multiple criteria) the best gateway/destination to be used for delivering a certain call. Least Cost Routing (LCR) is a special case of dynamic routing - when the rules are ordered based on costs. Dynamic Routing comes with many features regarding routing rule selection:\n\n*   prefix based\n    \n*   caller/group based\n    \n*   time based\n    \n*   priority based\n    \n, processing :\n\n*   stripping and prefixing\n    \n*   default rules\n    \n*   inbound and outbound processing\n    \n*   script route triggering\n    \nand failure handling:\n\n*   serial forking\n    \n*   weight based GW selection\n    \n*   random GW selection\n    \n*   GW probing for crashes\n    \nThe dynamic routing implementation for OpenSIPS is designed with the following properties:\n\n*   The routing info (destinations, carriers, rules, groups) is stored in a database and loaded into memory at start up time; reload at runtime via a Management Interface command.\n    \n*   weight-based or random selection of the destinations (from a rule or from a carrier), failure detection of gateways (with switching to next available gateway).\n    \n*   able to handle large volume of routing info (10M of rules) with minimal speed/time and memory consumption penalties\n    \n*   script integration - Pseudo-variable support in functions; scripting route triggering when rules are matched\n    \n*   bidirectional behavior - inbound and outbound processing (strip and prefixing when sending and receiving from a destination/GW)\n    \n*   blacklisting - the module allows definition of blacklists based on the destination IPs. This blacklists are to be used to prevent malicious forwarding to GWs (based on DNS lookups) when the script logic does none-GE forwarding (like foreign domains).\n    \n*   loading routing information from multiple databases - the gateways, rules, groups and carriers can be grouped by partitions, and each partition may be loaded from different databases/tables. This makes the routing process partition based. In order to be able to use a table from a partition, its name must be found in the \"version\" table belonging to the database defined in the partition's db_url.\n    \nThere were several tests performed regarding the performance of the module when dealing with a large number of routing rules.\n\nThe tests were performed with a set of 383000 rules and measured:\n\n*   time to load from DB\n    \n*   used shared memory\n    \nThe time to load was varying between 4 seconds and 8 seconds, depending of the caching of the DB client - the first load was the slowest (as the DB query hits the disk drive); the following are faster as data is already cached in the DB client. So technically speaking, the time to load (without the time to query which is DB type dependent) is ~4 seconds\n\nAfter loading the data into shared memory ~ 96M of memory were used exclusively for the DR data.",
+  "how_it_works": "DR engine uses several concepts in order to define how the routing should be done (describing all the dependencies between destinations and routing rules).\n\n#### 1.1.4.1.�Destination/Gateways\n\nThese are the end SIP entities where actually the traffic needs to be sent after routing. They are stored in a table called “dr_gateways”. Gateway addresses are stored in a separate table because of the need to access them independent of Dynamic Routing processing (e.g., adding/ removing gateway PRI prefix before/after performing other operation -- receiving/relaying to gateway).\n\nIn DR, a gateway is defined by:\n\n*   id (string)\n    \n*   SIP address (SIP URI)\n    \n*   type (integer which allows GWs to be grouped by purpose, e.g. inbound, outbound, etc.)\n    \n*   strip value (number of digits) from dialled number\n    \n*   prefix (string) to be added to dialled number\n    \n*   attributes (not used by DR engine, but only pushed to script level when routing to this GW)\n    \n*   probing mode (how the GW should be probed at SIP level - see the probing chapter)\n    \nThe Gateways are to be used from the routing rule or from the carrier definition. They are all the time referred by their ID.\n\n#### 1.1.4.2.�Carriers\n\nThe carrier concept is used if you need to group gateways in order to have a better control on how the GWs will be used by DR rules; like in what order the GWs will be used.\n\nBasically, a carrier is a set of gateways which have its own sorting algorithm and its own attribute string. They are by default defined in the “dr_carriers” table.\n\nIn DR, a carrier is defined by:\n\n*   id (string)\n    \n*   list of gateways with/without weights (string) (Ex:“gw1=10,gw4=10” or “gw1,gw2”\n    \n*   flags : 0x1 - use only the first gateway from the carrier (depending on the sorting); 0x2 - disable the usage of this carrier\n    \n*   sort algorithm : how the list of the gateways should be sorted before being used, NULL - use the DB given order, W - do weight based re-ordering, Q - do quality based sorting (requires the qrouting module)\n    \n*   attributes (not used by DR engine, but only pushed to script level when routing to this carrier)\n    \nThe Carriers are to be used only from the routing rule definition. They are all the time referred by their ID.\n\n#### 1.1.4.3.�Routing Rules\n\nThese are the actual rules which control the routing. Using different criterias (prefix, time, priority, etc), they will decide to which gateways the call will be sent.\n\nDefault name for the table storing rule definitions is “dr_rules”.\n\nIn DR, a routing rule is defined by:\n\n*   group (list of numbers) - rules can be grouped (a rule may belong to multiple groups in the same time ) and you can use only a certain group at a point; like having a “premium” or “standard” or “interstate” or “intrastate” groups of rules to be used in different cases\n    \n*   prefix (string with digits only) - prefix to be used for matching this rule (longest prefix matching)\n    \n*   time validity (time recurrence string) - when this rule is valid from time point of view (see RFC 2445)\n    \n*   priority (number) - priority of the rule - higher value, higher priority (see rule section alg)\n    \n*   script route ID (string) - if defined, then execute the route with the specified ID when this rule is matched. That's it, a route which can be used to perform custom operations on message. NOTE that no modification is performed at signaling level and you must NOT do any signaling operations in that script route\n    \n*   list of GWs/carriers (string) - a comma separated list of gateways or carriers (defined by IDs) to be used for this rule; the carrier IDs are prefixed with “#” sign. For each ID (GW or carrier) you may specify a weight. For how this list will be interpreted (as order) see the rule selection section. Example of list: “gw1,gw4,#cr3” or “gw1=10,gw4=10,#cr3=80”\n    \n*   attributes (not used by DR engine, but only pushed to script level when this rule matched and been used)\n    \nMore on time recurrence:\n\n*   A date-time expression that defines the time recurrence to be matched for current rule. Time recurrences are based closely on the recurring time intervals from the Internet Calendaring and Scheduling Core Object Specification (calendar COS), RFC 2445. The set of attributes used in a routing rule specification is a subset of time recurrence attributes.\n    \n*   The value stored in database has the basic format of: <timezone>|<dtstart>|<dtend>|<duration>|<freq>|<until>|<interval>|<byday>|<bymonthday>|<byyearday>|<byweekno>|<bymonth> , identical to the input of the check_time_rec() function of the cfgutils module, including the optional use of logical operators linking multiple such strings into a larger expression.\n    \n*   When an attribute is not specified, the corresponding place must be left empty, whenever another attribute that follows in the list has to be specified.\n    \nThe module can be used to find out which is the best gateway to use for new calls terminated to PSTN. The algorithm to select the rule is as follows:\n\n*   the module discovers the routing group of the originating user. This step is skipped if a routing group is passed from the script as parameter.\n    \n*   once the group is known, in the subset of the rules for this group the module looks for the one that matches the destination based on \"prefix\" column. The set of rules with the longest prefix is chosen. If no digit from the prefix matches, the default rules are used (rules with no prefix)\n    \n*   within the set of rules is applied the time criteria, and the rule which has the highest priority and matches the time criteria is selected to drive the routing.\n    \n*   Once found the rule, it may contain a route ID to execute. If a certain flag is set, then the processing is stopped after executing the route block.\n    \n*   The rule must contain a chain of gateways and carriers. The module will execute serial forking for each address in the chain (ordering is either done by simply using the definition order or it may weight-based - weight selection must be enabled). The next address in chain is used only if the previously has failed.\n    \n*   With the right gateway address found, the prefix (PRI) of the gateway is added to the request URI and then the request is forwarded.\n    \nIf no rule is found to match the selection criteria an default action must be taken (e.g., error response sent back). If the gateway in the chain has no prefix the request is forwarded without adding any prefix to the request URI.\n\nThe module has the capability to monitor the status of the destinations by doing SIP probing (sending SIP requests like OPTIONS).\n\nFor each destination, you can configure what kind of probing should be done (probe_mode column):\n\n*   _(0)_ - no probing at all;\n    \n*   _(1)_ - probing only when the destination is in disabled mode (disabling via MI command will completely stop the probing also). The destination will be automatically re-enabled when the probing will succeed next time;\n    \n*   _(2)_ - probing all the time. If disabled, the destination will be automatically re-enabled when the probing will succeed next time;\n    \nA destination can become disabled in two ways:\n\n*   _script detection_ - by calling from script the dr_disable() function after trying the destination. In this case, if probing mode for the destination is (1) or (2), the destination will be automatically re-enabled when the probing will succeed.\n*   _MI command_ - by calling the drouting:gw_status MI command for disabling (on demand) the destination. If so, the probing and re-enabling of this destination will be completly disabled until you re-enable it again via MI command - this is designed to allow controlled and complete disabling of some destination during maintenance.",
+  "dependencies_required": [
+    {
+      "name": "a database module",
+      "type": "module",
+      "reason": "The following modules must be loaded before this module",
+      "optional": false
+    },
+    {
+      "name": "tm module",
+      "type": "module",
+      "reason": "The following modules must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "clusterer"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The database url.",
+      "example_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "example_code": "...\nmodparam(\"drouting\", \"db\\_url\",\n\t\"mysql://opensips:opensipsrw@localhost/opensips\")\n..."
+    },
+    {
+      "name": "drd_table",
+      "type": "string",
+      "default_value": "dr_gateways",
+      "description": "The name of the db table storing gateway addresses.",
+      "example_value": "dr_gateways",
+      "example_code": "...\nmodparam(\"drouting\", \"drd\\_table\", \"dr\\_gateways\")\n..."
+    },
+    {
+      "name": "drr_table",
+      "type": "string",
+      "default_value": "dr_rules",
+      "description": "The name of the db table storing routing rules.",
+      "example_value": "rules",
+      "example_code": "...\nmodparam(\"drouting\", \"drr\\_table\", \"rules\")\n..."
+    },
+    {
+      "name": "drg_table",
+      "type": "string",
+      "default_value": "dr_groups",
+      "description": "The name of the db table storing groups.",
+      "example_value": "groups",
+      "example_code": "...\nmodparam(\"drouting\", \"drg\\_table\", \"groups\")\n..."
+    },
+    {
+      "name": "drc_table",
+      "type": "string",
+      "default_value": "dr_carriers",
+      "description": "The name of the db table storing definitions of the carriers that will be used directly by the routing rules.",
+      "example_value": "my_dr_carriers",
+      "example_code": "...\nmodparam(\"drouting\", \"drc\\_table\", \"my\\_dr\\_carriers\")\n..."
+    },
+    {
+      "name": "ruri_avp",
+      "type": "string",
+      "default_value": "$avp(___dr_ruri___) if use_partitions parameter is 0 or $avp(___dr_ruri___partition_name) where partition_name is the name of the partition containing the AVP (as fetched from the database) if use_partitions parameter is 1.",
+      "description": "The name of the avp for storing Request URIs to be later used (alternative destiantions for the current one).",
+      "example_value": "$avp(dr_ruri)",
+      "example_code": "...\nmodparam(\"drouting\", \"ruri_avp\", '$avp(dr_ruri)')\nmodparam(\"drouting\", \"ruri_avp\", '$avp(33)')\n..."
+    },
+    {
+      "name": "gw_id_avp",
+      "type": "string",
+      "default_value": "$avp(___dr_gw_id___) if use_partitions parameter is 0 or $avp(___dr_gw_id___partition_name) where partition_name is the name of the partition containing the AVP (as fetched from the database) if use_partitions parameter is 1.",
+      "description": "The name of the avp for storing the id of the current selected gateway/destination - once a new destination is selected (via the use_next_gw() function), the AVP will be updated with the ID of the new selected gateway/destination.",
+      "example_value": "$avp(gw_id)",
+      "example_code": "...\nmodparam(\"drouting\", \"gw_id_avp\", '$avp(gw_id)')\nmodparam(\"drouting\", \"gw_id_avp\", '$avp(334)')\n..."
+    },
+    {
+      "name": "gw_priprefix_avp",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The name of the avp for storing the PRI prefix of the current selected destination/gateway - once a new destination is selected (via the use_next_gw() function), the AVP will be updated with the PRI prefix of the new used destination.",
+      "example_value": "$avp(gw_priprefix)",
+      "example_code": "...\nmodparam(\"drouting\", \"gw_priprefix_avp\", '$avp(gw_priprefix)')\n..."
+    },
+    {
+      "name": "rule_id_avp",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The name of the avp for storing the id of the current matched routing rule (see dr_rules table).",
+      "example_value": "$avp(rule_id)",
+      "example_code": "...\nmodparam(\"drouting\", \"rule_id_avp\", '$avp(rule_id)')\nmodparam(\"drouting\", \"rule_id_avp\", '$avp(335)')\n..."
+    },
+    {
+      "name": "rule_prefix_avp",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The actual prefix that matched the routing rule (the part from RURI username that matched the routing rule).",
+      "example_value": "$avp(dr_prefix)",
+      "example_code": "...\nmodparam(\"drouting\", \"rule_prefix_avp\", '$avp(dr_prefix)')\n..."
+    },
+    {
+      "name": "carrier_id_avp",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "AVP to be populate with the ID string for the carrier the current GW belongs to.",
+      "example_code": "...\nmodparam(\"drouting\", \"carrier\\_id\\_avp\", '$avp(carrier\\_id)')\n..."
+    },
+    {
+      "name": "gw_sock_avp",
+      "type": "string",
+      "default_value": "$avp(___dr_sock___) if use_partitions parameter is 0 or $avp(___dr_sock___partition_name) where partition_name is the name of the partition containing the AVP (as fetched from the database) if use_partitions parameter is 1.",
+      "description": "The name of the avp for storing sockets for alternative destinations defined by ruri_avp.",
+      "example_code": "...\nmodparam(\"drouting\", \"gw\\_sock\\_avp\", '$avp(dr\\_sock)')\nmodparam(\"drouting\", \"gw\\_sock\\_avp\", '$avp(77)')\n..."
+    },
+    {
+      "name": "define_blacklist",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Defines a blacklist based on a list of GW types - the blacklist will be populated with the IPs (no port, all protocols) of the GWs having the specified types.\n\nIf partitions are used, prefix the blacklist definition string with the name of the partition followed by \":\" separator.\n\nMultiple instances of this param are allowed.",
+      "example_code": "...\nmodparam(\"drouting\", \"define\\_blacklist\", 'bl\\_name= 3,5,25,23')\nmodparam(\"drouting\", \"define\\_blacklist\", 'list= 4,2')\nmodparam(\"drouting\", \"define\\_blacklist\", 'pstn:list2 = 5,6')\nmodparam(\"drouting\", \"define\\_blacklist\", 'pstn:list3 = 7,8')\n...",
+      "notes": "Multiple instances of this param are allowed."
+    },
+    {
+      "name": "default_group",
+      "type": "integer",
+      "default_value": "NONE",
+      "description": "Group to be used if the caller (FROM user) is not found in the GROUP table.",
+      "example_code": "...\nmodparam(\"drouting\", \"default\\_group\", 4)\n..."
+    },
+    {
+      "name": "force_dns",
+      "type": "integer",
+      "default_value": "1 (enabled)",
+      "description": "Force DNS resolving of GW/destination names (if not IPs) during startup. If not enabled, the GW name will be blindly used during routing.",
+      "example_code": "...\nmodparam(\"drouting\", \"force\\_dns\", 0)\n..."
+    },
+    {
+      "name": "persistent_state",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Specifies whether the _state_ column should be loaded at startup and flushed during runtime or not.",
+      "example_value": "0",
+      "example_code": "# disable all DB operations with the state of a gateway\nmodparam(\"drouting\", \"persistent\\_state\", 0)"
+    },
+    {
+      "name": "no_concurrent_reload",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If enabled, the module will not allow do run multiple drouting:reload MI commands in parallel (with overlapping) Any new reload will be rejected (and discarded) while an existing reload is in progress.\n\nIf you have a large routing set (millions of rules/prefixes), you should consider disabling concurrent reload as they will exhaust the shared memory (by reloading into memory, in the same time, multiple instances of routing data).",
+      "example_value": "1",
+      "example_code": "# do not allow parallel reload operations\nmodparam(\"drouting\", \"no\\_concurrent\\_reload\", 1)"
+    },
+    {
+      "name": "probing_interval",
+      "type": "integer",
+      "default_value": "30",
+      "description": "How often (in seconds) the probing of a destination should be done. If set to 0, the probing will be disabled as functionality (for all destinations)",
+      "example_value": "60",
+      "example_code": "modparam(\"drouting\", \"probing\\_interval\", 60)"
+    },
+    {
+      "name": "probing_method",
+      "type": "string",
+      "default_value": "OPTIONS",
+      "description": "The SIP method to be used for the probing requests.",
+      "example_value": "INFO",
+      "example_code": "modparam(\"drouting\", \"probing\\_method\", \"INFO\")"
+    },
+    {
+      "name": "probing_from",
+      "type": "string",
+      "default_value": "sip:prober@localhost",
+      "description": "The FROM SIP URI to be advertised in the SIP probing requests.",
+      "example_value": "sip:pinger@192.168.2.10",
+      "example_code": "modparam(\"drouting\", \"probing\\_from\", \"sip:pinger@192.168.2.10\")"
+    },
+    {
+      "name": "probing_reply_codes",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "A comma separted list of SIP reply codes. The codes defined here will be considered as valid reply codes for probing messages, apart for 200.",
+      "possible_values": [],
+      "scope": "global",
+      "example_value": "501, 403",
+      "example_code": "modparam(\"drouting\", \"probing_reply_codes\", \"501, 403\")"
+    },
+    {
+      "name": "probing_socket",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "A socket description [proto:]host[:port] of the local socket (which is used by OpenSIPS for SIP traffic) to be used (if multiple) for sending the probing messages from.\n\nFor probing gateway the highest priority has socket from gateway configuration in dr_gateways table. Then socket from global `probing_socket` parameter and the lowest priority is default behaviour with auto selected socket wich OpenSIPS listens on.",
+      "possible_values": [],
+      "scope": "global",
+      "example_value": "udp:192.168.1.100:5060",
+      "example_code": "modparam(\"drouting\", \"probing_socket\", \"udp:192.168.1.100:5060\")"
+    },
+    {
+      "name": "gw_socket_filter_mode",
+      "type": "string",
+      "default_value": "\"all\"",
+      "description": "This parameter controls the gateway filtering during DB loading, or which gateways are loaded or not into memory depending on the configured socket they have.\n\nThe supported filtering modes are:\n\n*   **\"all\"** - all the gateways defined in DB are loaded into memory, disregarding what socket value they have. NOTE: for the gw sockets not matching any OpenSIPS listeners/sockets, the GW will be loaded with NULL/no socket.\n    \n*   **\"ignore\"** - all the gateways defined in DB are loaded into memory, but ignoring the socket value they have (the socket will be set to NULL/NONE with no attempt to check it against the OpenSIPS listeners/sockets).\n    \n*   **\"matched-only\"** - in this mode the module will load from DB only the gateways that have a configured a socket matching any of the the OpenSIPS listeners/sockets. If the gateways socket does not match, it will be discards, not loaded into memory at all.",
+      "possible_values": [
+        "all",
+        "ignore",
+        "matched-only"
+      ],
+      "scope": "global",
+      "example_value": "matched-only",
+      "example_code": "# multiple OpenSIPS instances sharing a DR setting, so each should\n# load only the GWs they have sockets for.\nmodparam(\"drouting\", \"gw_socket_filter_mode\", \"matched-only\")\n...\n# an OpenSIPs instance not doing routing, but needing to be\n# aware of all the gws, so load them all ignoring the sockets\nmodparam(\"drouting\", \"gw_socket_filter_mode\", \"ignore\")"
+    },
+    {
+      "name": "cluster_id",
+      "type": "integer",
+      "default_value": "0 (none)",
+      "description": "The ID of the cluster the module is part of. The clustering support is used in drouting module for two purposes: for sharing the status of the gateways/carriers and for controlling the pinging to gateways.\n\nIf clustering enbled, the module will automatically share changes over the status of the gateways/destinations/carriers with the other OpenSIPS instances that are part of a cluster. Whenever such a status changes (following an MI command, a probing result, a script command), the module will replicate this status change to all the nodes in this given cluster.\n\nThe clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to gateways. See the [cluster_sharing_tag](#param_cluster_sharing_tag \"1.3.25.�cluster_sharing_tag (string)\") option.\n\nThis OpenSIPS cluster exposes the **\"drouting-status-repl\"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **\"seed\"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.\n\nFor more info on how to define and populate a cluster (with OpenSIPS nodes) see the [clusterer](clusterer) module.",
+      "possible_values": [],
+      "scope": "global",
+      "example_value": "9",
+      "example_code": "# replicate gw/carrier status with all OpenSIPS in cluster ID 9\nmodparam(\"drouting\", \"cluster_id\", 9)"
+    },
+    {
+      "name": "cluster_sharing_tag",
+      "type": "string",
+      "default_value": "empty (none)",
+      "description": "The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform the self-triggered actions in the module. Such actions may be the gateway probing (see also the [cluster_probing_mode](#param_cluster_probing_mode \"1.3.26.�cluster_probing_mode (string)\") parameter) or sharing the gateway/carrier status changes. If defined, only the node with active status of this tag will perform the actions (pinging and sharing status).\n\nThe [cluster_id](#param_cluster_id \"1.3.24.�cluster_id (integer)\") must be defined for this option to work.\n\nThis is an optional parameter. If not set, all the nodes in the cluster will share the status changes.",
+      "possible_values": [],
+      "scope": "global",
+      "example_value": "vip",
+      "example_code": "# only the node with the active \"vip\" sharing tag will perform pinging\n# and broadcast the status changes\nmodparam(\"drouting\", \"cluster_id\", 9)\nmodparam(\"drouting\", \"cluster_sharing_tag\", \"vip\")"
+    },
+    {
+      "name": "cluster_probing_mode",
+      "type": "string",
+      "default_value": "\"all\"",
+      "description": "This paramter controls how the probing/pinging should be done when using the clustering support. It is about which node in the cluster pings which gateway/destination. The cluster_id must be defined for this option to work.",
+      "possible_values": [
+        "all",
+        "by-shtag",
+        "distributed"
+      ],
+      "example_value": "by-shtag",
+      "example_code": "...\n# only the node with the active \"vip\" sharing tag will perform pinging\nmodparam(\"drouting\", \"cluster_id\", 9)\nmodparam(\"drouting\", \"cluster_sharing_tag\", \"vip\")\nmodparam(\"drouting\", \"cluster_probing_mode\", \"by-shtag\")\n...\n# the pinging effort is distributed across all the nodes\nmodparam(\"drouting\", \"cluster_id\", 9)\nmodparam(\"drouting\", \"cluster_probing_mode\", \"distributed\")\n..."
+    },
+    {
+      "name": "use_domain",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Flag to configure whether to use domain match when querying database for user's routing group.",
+      "example_value": "0",
+      "example_code": "...\nmodparam(\"drouting\", \"use_domain\", 0)\n..."
+    },
+    {
+      "name": "drg_user_col",
+      "type": "string",
+      "default_value": "\"username\"",
+      "description": "The name of the column in group db table where the username is stored.",
+      "example_value": "user",
+      "example_code": "...\nmodparam(\"drouting\", \"drg_user_col\", \"user\")\n..."
+    },
+    {
+      "name": "drg_domain_col",
+      "type": "string",
+      "default_value": "\"domain\"",
+      "description": "The name of the column in group db table where the domain is stored.",
+      "example_value": "host",
+      "example_code": "...\nmodparam(\"drouting\", \"drg_domain_col\", \"host\")\n..."
+    },
+    {
+      "name": "drg_grpid_col",
+      "type": "string",
+      "default_value": "\"groupid\"",
+      "description": "The name of the column in group db table where the group id is stored.",
+      "example_value": "grpid",
+      "example_code": "...\nmodparam(\"drouting\", \"drg_grpid_col\", \"grpid\")\n..."
+    },
+    {
+      "name": "use_partitions",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Flag to configure whether to use partitions for routing. If this flag is set then the `db_partitions_url` and `db_partitions_table` variables become mandatory.",
+      "example_value": "1",
+      "example_code": "modparam(\"drouting\", \"use_partitions\", 1)"
+    },
+    {
+      "name": "db_partitions_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The url to the database containing partition-specific information. (partition-specific information includes partition name, url to the database where information about the partition is preserved, the names of the tables in which it is preserved and the AVPs that can be accessed using the .cfg script). The `use_partitions` parameter must be set to 1.",
+      "example_value": "mysql://user:password@localhost/opensips_partitions",
+      "example_code": "modparam(\"drouting\", \"db_partitions_url\", \"mysql://user:password@localhost/opensips_partitions\")"
+    },
+    {
+      "name": "db_partitions_table",
+      "type": "string",
+      "default_value": "dr_partitions",
+      "description": "The name of the table containing partition definitions. To be used with `use_partitions` and `db_partitions_url`.",
+      "example_value": "partition_defs",
+      "example_code": "modparam(\"drouting\", \"db_partitions_table\", \"partition_defs\")"
+    },
+    {
+      "name": "partition_id_pvar",
+      "type": "pvar",
+      "default_value": "null(not used)",
+      "description": "Variable which will store the name of the name partition when _wildcard(*)_ operatior is used. _Use_partitions_ must be set in order to use this parameter.",
+      "example_value": "$var(matched_partition)",
+      "example_code": "modparam(\"drouting\", \"partition_id_pvar\", \"$var(matched_partition)\")",
+      "notes": "NOTE: The variable must be WRITABLE!"
+    },
+    {
+      "name": "enable_restart_persistency",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Parameter set to enable restart persistency for the Dynamic Routing module. When this parameter is set, the drouting module no longer loads the data from the database after restart, but uses the persistent storage file, and loads data from it “on demand”, improving the startup performance.",
+      "example_value": "yes",
+      "example_code": "modparam(\"drouting\", \"enable_restart_persistency\", yes)",
+      "notes": "NOTE: If the restart persistent cache is not populated from a previous run, then the data will be loaded from database at startup! NOTE: A reload will update the cached data."
+    },
+    {
+      "name": "extra_prefix_chars",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "List of ASCII (0-127) characters to be additionally accepted in the prefixes. By default only '0' - '9' chars (digits) are accepted.",
+      "example_code": "...\nmodparam(\"drouting\", \"extra\\_prefix\\_chars\", \"#-%\")\n..."
+    },
+    {
+      "name": "extra_id_chars",
+      "type": "string",
+      "default_value": "\\_-.",
+      "description": "A set of extra characters to be allowed in both Gateway and Carrier unique string identifiers, on top of alphanumeric characters.",
+      "example_code": "...\nmodparam(\"drouting\", \"extra\\_id\\_chars\", \":\\_-.\")\n..."
+    },
+    {
+      "name": "rule_tables_query",
+      "type": "string",
+      "description": "This parameter offers a dynamic, SQL-based way of building a set of _dr\\_rules_\\-compatible table names, to be each loaded and then merged into a single \"dr\\_rules\" table, for any given partition.\n\nThe syntax of the parameter is: \"**token** : **query**\", where **token** is a special name given to a \"dr\\_rules\" table, so OpenSIPS can match it against the custom queries defined using this parameter.\n\nThis parameter may be set multiple times (each definition creates a new mapping).",
+      "example_code": "...\n# first, set the \"dr\\_rules\" table name to the name of your query\nmodparam(\"drouting\", \"drr\\_table\", \"MY\\_RULES\\_QUERY\")\n\n# next, instruct drouting to load both 'dr\\_rules\\_a' and 'dr\\_rules\\_b',\n# then merge all of their rules\nmodparam(\"drouting\", \"rule\\_tables\\_query\", \"\n\tMY\\_RULES\\_QUERY:\n\t\tSELECT 'dr\\_rules\\_a' UNION SELECT 'dr\\_rules\\_b'\")\n..."
+    },
+    {
+      "name": "generate_data_checksum",
+      "type": "integer",
+      "description": "If enabled, it will generate a checksum ( MD5 ) for drouting loaded data, attach that to the reload\\_status MI command output and to the reload generated status reports",
+      "example_code": "...\nmodparam(\"drouting\", \"generate\\_data\\_checksum\", 1)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "do_routing",
+      "signature": "do_routing([groupID], [flags], [gw_whitelist], [rule_attrs_pvar], [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "groupID",
+          "type": "int",
+          "required": false,
+          "description": "number to specify the group of the caller for routing purposes. If none specified the function will automatically try to query the dr_group table to get this"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "a list of letter-like flags for controlling the routing behavior.",
+          "valid_values": [
+            "F",
+            "L",
+            "C"
+          ]
+        },
+        {
+          "name": "gw_whitelist",
+          "type": "string",
+          "required": false,
+          "description": "a comma separated white list of gateways. This will force routing over, at most, this list of carriers or gateways (in other words, the whitelist will be intersected with the results of the search through the rules)."
+        },
+        {
+          "name": "rule_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable which will be populated with the attributes of the matched dynamic routing rule."
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable which will be populated with the attributes of the matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a a writable variable which will be populated with the attributes of the matched carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Besides specifing the name of one partition, you can use the \"*\" wildcard sign to force routing over all partitions."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Function to trigger routing of the message according to the rules in the database table and the configured parameters.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# all groups, sort on order, `use_partitions` is 0\ndo_routing();",
+          "description": "all groups, sort on order, `use_partitions` is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "# all groups, sort on order, `use_partitions` is 1, route by partition named \"part\"\ndo_routing( , , , , , ,\"part\");",
+          "description": "all groups, sort on order, `use_partitions` is 1, route by partition named \"part\""
+        },
+        {
+          "language": "opensips",
+          "code": "# group id 0, sort on order, `use_partitions` is 0\ndo_routing(0);",
+          "description": "group id 0, sort on order, `use_partitions` is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "# group id 0, sort on order, `use_partitions` is 1, route by partition named \"part\"\ndo_routing(0, , , , , , \"part\");",
+          "description": "group id 0, sort on order, `use_partitions` is 1, route by partition named \"part\""
+        },
+        {
+          "language": "opensips",
+          "code": "# group id from $var(id), sort on order, `use_partitions` is 0\ndo_routing($var(id));",
+          "description": "group id from $var(id), sort on order, `use_partitions` is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "# all groups, sort on weights, `use_partitions` is 0\ndo_routing(, \"W\");",
+          "description": "all groups, sort on weights, `use_partitions` is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "# `use_partitions` is 1, partition and group supplied by AVPs, do strict length matching\ndo_routing( $avp(grp),\"L\", , , , ,$avp(partition))",
+          "description": "`use_partitions` is 1, partition and group supplied by AVPs, do strict length matching"
+        },
+        {
+          "language": "opensips",
+          "code": "# group id 2, sort on order, fallback rule and also return the gateway attributes\ndo_routing(2, \"F\", , , $var(gw_attributes));",
+          "description": "group id 2, sort on order, fallback rule and also return the gateway attributes"
+        }
+      ]
+    },
+    {
+      "name": "route_to_carrier",
+      "signature": "route_to_carrier( carriers, [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "carriers",
+          "type": "string",
+          "required": true,
+          "description": "comma separated carrier IDs (names)"
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the currently matched gateway of this carrier."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of this carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is not accepted by the function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Function to trigger the direct routing to a given set carriers (one or more). So, the routing is not done prefix based, but carrier based (call will be sent to the GWs of that carrier, based on carrier policy).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\nif ( route_to_carrier(\"my_top_carrier, def_carrier\", , $var(carrier_att)) ) {\n\txlog(\"Routing to \\\"my_top_carrier\\\" - $var(carrier_att)\\n\");\n\tt_on_failure(\"next_gw\");\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is not set"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\nif ( route_to_carrier(\"my_top_carrier\", , $var(carrier_att), \"part\") ) {\n\txlog(\"Routing to \\\"my_top_carrier\\\" - $var(carrier_att)\\n\");\n\tt_on_failure(\"next_gw\");\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\nif ( route_to_carrier($var(carrierId), , , $var(my_partition)) ) {\n\txlog(\"Routing to \\\"my_top_carrier\\\"\\n\");\n\tt_on_failure(\"next_gw\");\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        }
+      ]
+    },
+    {
+      "name": "route_to_gw",
+      "signature": "route_to_gw(gw_id, [gw_attrs_var], [carrier_attrs_var], [partition])",
+      "parameters": [
+        {
+          "name": "gw_id",
+          "type": "string",
+          "required": true,
+          "description": "comma separated list of gateway IDs to be used."
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the currently matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of this carrier. NOTE: the first carrier pointing to the GW(s) will be considered!"
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is not accepted by the function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Function to trigger the direct routing to a given gateway (or list of gateways). Attributes and per-gw processing will be available.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\nif ( route_to_gw(\"gw_europe\") ) {\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is not set"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\nif ( route_to_gw(\"gw1,gw2,gw3\", $var(gw_attrs)) ) {\n\txlog(\"Relaying to first gateway from our list - $var(gw_attrs)\\n\");\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is not set"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\nif ( route_to_gw(\"gw_europe\", , , \"my_partition\") ) {\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\nif ( route_to_gw(\"gw1,gw2,gw3\", $var(gw_attrs), , \"my_partition\") ) {\n\txlog(\"Relaying to first gateway from our list - $var(gw_attrs)\\n\");\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        }
+      ]
+    },
+    {
+      "name": "use_next_gw",
+      "signature": "use_next_gw( [rule_attrs_pvar], [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "rule_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched dynamic routing rule."
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is not accepted by the function."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "a new RURI was set"
+        },
+        {
+          "value": "false",
+          "condition": "no other alternative destinations are found or in case of an internal processing error"
+        }
+      ],
+      "description": "The function takes the next available destination (set by do_routing, as alternative destinations) and pushes it into the RURI. Note that the function just sets the RURI (nothing more). If a new RURI is set, the used destination is removed from the pending set of alternative destinations.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\nif (use_next_gw()) {\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is not set"
+        },
+        {
+          "language": "opensips",
+          "code": "# Also fetch the carrier attributes, if any\nif (use_next_gw(, , $var(carrier_attrs))) {\n\txlog(\"Carrier attributes of current gateway: $var(carrier_attrs)\\n\");\n\tt_relay();\n\texit;\n}",
+          "description": "Also fetch the carrier attributes, if any"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\nif (use_next_gw( , , ,\"my_partition\")) {\n\tt_relay();\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        },
+        {
+          "language": "opensips",
+          "code": "# Also fetch the carrier attributes, if any\nif (use_next_gw( , ,$var(carrier_attrs), \"my_partition\")) {\n\txlog(\"Carrier attributes of current gateway: $var(carrier_attrs)\\n\");\n\tt_relay();\n\texit;\n}",
+          "description": "Also fetch the carrier attributes, if any"
+        }
+      ]
+    },
+    {
+      "name": "goes_to_gw",
+      "signature": "goes_to_gw( [type], [flags], [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "int",
+          "required": false,
+          "description": "number for the GW/destination type to be checked; when omitting this parameter or specifying the special value -1, matching will be done against all types.",
+          "valid_values": [
+            "-1"
+          ]
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "letter like flags for controlling what operations should be performed when a GW matches",
+          "valid_values": [
+            "s",
+            "p",
+            "i",
+            "n",
+            "c"
+          ]
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is accepted by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Function returns true if the destination of the current request (destination URI or Request URI) points (as IP) to one of the gateways. There no DNS lookups done if the domain part of the URI is not an IP. This function does not change anything in the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\nif (goes_to_gw( 1, , $var(gw_attrs))) {\n\tsl_send_reply(403,\"Forbidden\");\n\texit;\n}",
+          "description": "use_partitions is not set"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabledt\nif (goes_to_gw(1, , $var(gw_attrs), , \"my_partition\")) {\n\tsl_send_reply(403,\"Forbidden\");\n\texit;\n}",
+          "description": "use_partitions is enabled"
+        }
+      ]
+    },
+    {
+      "name": "is_from_gw",
+      "signature": "is_from_gw([type], [flags], [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "type",
+          "type": "int",
+          "required": false,
+          "description": "number for the GW/destination type to be checked; when omitting this parameter or specifying the special value -1, matching will be done against all types.",
+          "valid_values": [
+            "-1"
+          ]
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "letter like flags for controlling what operations should be performed when a GW matches",
+          "valid_values": [
+            "s",
+            "p",
+            "i",
+            "n",
+            "r",
+            "c"
+          ]
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is accepted by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "The function checks if the sender of the message (source IP + source port) is a gateway from a certain group. This function does not change anything in the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# use_partitions is not set\n# match the source IP (only) against all gateways\nif (is_from_gw(-1, \"n\")) {\n\t...\n}",
+          "description": "use_partitions is not set, match the source IP (only) against all gateways"
+        },
+        {
+          "language": "opensips",
+          "code": "# use_partitions is enabled\n# match the source IP and port against all gateways from the \"outbound\"\n# partition and return the matched gateway's carrier\nif (is_from_gw(, \"c\", , , \"outbound\")) {\n\t...\n}",
+          "description": "use_partitions is enabled, match the source IP and port against all gateways from the \"outbound\" partition and return the matched gateway's carrier"
+        }
+      ]
+    },
+    {
+      "name": "dr_is_gw",
+      "signature": "dr_is_gw( sip_uri, [type], [flags], [gw_attrs_pvar], [carrier_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "sip_uri",
+          "type": "string",
+          "required": true,
+          "description": "SIP URI. If the URI hostname part is a FQDN, it will be resolved prior to matching."
+        },
+        {
+          "name": "type",
+          "type": "int",
+          "required": false,
+          "description": "number for the GW/destination type to be checked; when omitting this parameter or specifying the special value -1, matching will be done against all types.",
+          "valid_values": [
+            "-1"
+          ]
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "letter like flags for controlling what operations should be performed when a GW matches",
+          "valid_values": [
+            "s",
+            "p",
+            "i",
+            "n",
+            "c"
+          ]
+        },
+        {
+          "name": "gw_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched gateway."
+        },
+        {
+          "name": "carrier_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "an output writable variable which will be populated with the attributes of the matched carrier."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is accepted by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "The function checks if the SIP URI hostname part stored inside the \"src_pv\" pseudo-variable is a gateway from a certain group. This function does not change anything in the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# match the SIP URI host within $var(uac) against all gateways\nif (dr_is_gw( $var(uac), , \"n\")) {\n\t...\n}",
+          "description": "match the SIP URI host within $var(uac) against all gateways"
+        },
+        {
+          "language": "opensips",
+          "code": "# match the SIP URI host within $var(uac) against\n# all gws in \"outbound\" partition\nif (dr_is_gw( $avp(uac), , \"n\", , , \"partition\")) {\n\t...\n}",
+          "description": "match the SIP URI host within $var(uac) against all gws in \"outbound\" partition"
+        }
+      ]
+    },
+    {
+      "name": "dr_disable",
+      "signature": "dr_disable([partition])",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on. Wildcard sign is accepted by this function."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Marks as disabled the last destination that was used for the current call. The disabling done via this function will prevent the destination to be used for usage from now on. The probing mechanism can re-enable this peer (see the probing section in the beginning)",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\tdr_disable();\n}",
+          "description": "dr_disable usage"
+        },
+        {
+          "language": "opensips",
+          "code": "if (t_check_status(\"(408)|(5[0-9][0-9])\")) {\n\tdr_disable(\"my_partition\");\n}",
+          "description": "dr_disable usage with partition"
+        }
+      ]
+    },
+    {
+      "name": "dr_match",
+      "signature": "dr_match(groupID, [flags], number, [rule_attrs_pvar], [partition])",
+      "parameters": [
+        {
+          "name": "groupID",
+          "type": "int",
+          "required": true,
+          "description": "number to specify the dr group (set of rules) to perform the check against"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "a list of letter-like flags for controlling the checking/matching behavior.",
+          "valid_values": [
+            "L"
+          ]
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "the number to check"
+        },
+        {
+          "name": "rule_attrs_pvar",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable which will be populated with the attributes of the matched dynamic routing rule."
+        },
+        {
+          "name": "partition",
+          "type": "string",
+          "required": false,
+          "description": "the name of the DR partition to be used. This parameter is to be defined ONLY if the \"use_partition\" module parameter is turned on."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "The function tries to match/check the given number against the rules from the database.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE",
+        "ONREPLY_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( dr_match( 1, \"L\" , $fU, ,\"dids\") )\n\txlog(\"Full From Username $fU found in group 1 partition DIDS\\n\");",
+          "description": "dr_match usage with partition"
+        },
+        {
+          "language": "opensips",
+          "code": "if ( dr_match( 1, , $var(did) ) )\n\txlog(\"DID $var(did) matches rules in group 1\\n\");",
+          "description": "dr_match usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "drouting:reload",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "If not provided all the partitions will be reloaded, otherwise just the partition given as parameter will be reloaded. Only applicable if use_partition is set to 1."
+        },
+        {
+          "name": "inherit_state",
+          "type": "string",
+          "required": false,
+          "description": "Whether inherit old state of the gateway, default is y. Valid values: \"n\" (no inherit state), \"y\" (inherit state)."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_reload. Command to reload routing rules from database.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi drouting:reload part_1",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "drouting:gw_status",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "The partition name. Required if use_partitions is set to 1."
+        },
+        {
+          "name": "gw_id",
+          "type": "string",
+          "required": false,
+          "description": "The id of a gateway. If provided, the function will return/set (depending if the second parameter is given) the status of that gateway, otherwise it will list all gateways along with their statuses."
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "required": false,
+          "description": "The new status to be forced for a GW (0 - disable, 1 - enable). Only makes sense if gw_id is provided."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_gw_status. Gets the status (enabled or disabled) of one or multiple gateways. The function can also be used to set the status of a single gateway.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:gw_status gw_id=2\nState:: Active\n$ opensips-cli -x mi drouting:gw_status gw_id=2 status=0\n$ opensips-cli -x mi drouting:gw_status gw_id=2\nEnabled:: Disabled MI\n$ opensips-cli -x mi drouting:gw_status gw_id=3\nEnabled:: Inactive",
+          "description": "usage when use_partitions is set to 0"
+        },
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:gw_status partition_name=part_1 gw_id=my_gw\nState:: Active\n$ opensips-cli -x mi drouting:gw_status partition_name=part_1 gw_id=my_gw status=0\n$ opensips-cli -x mi drouting:gw_status partition_name=part_1 gw_id=my_gw\nenabled:: disabled mi\n$ opensips-cli -x mi drouting:gw_status partition_name=partition8 status=3\nenabled:: inactive",
+          "description": "usage when use_partitions is set to 1"
+        }
+      ]
+    },
+    {
+      "name": "drouting:carrier_status",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "The partition name. Required if use_partitions is set to 1."
+        },
+        {
+          "name": "carrier_id",
+          "type": "string",
+          "required": false,
+          "description": "The id of a carrier. If provided, the function will return/set (depending if the second parameter is given) the status of that carrier, otherwise it will list all carriers along with their statuses."
+        },
+        {
+          "name": "status",
+          "type": "integer",
+          "required": false,
+          "description": "The new status to be forced for a carrier (0 - disable, 1 - enable). Only makes sense if carrier_id is provided."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_carrier_status. Gets the status (enabled or disabled) of one or multiple carriers. The function can also be used to set the status of a single carrier.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:carrier_status carrier_id=CR1\nEnabled:: no\n$ opensips-cli -x mi drouting:carrier_status carrier_id=CR1 status=1\n$ opensips-cli -x mi drouting:carrier_status carrier_id=CR1\nEnabled:: yes",
+          "description": "usage when use_partitions is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:carrier_status partition_name=my_partition carrier_id=CR1\nEnabled:: no\n$ opensips-cli -x mi drouting:carrier_status partition_name=partition_1 carrier_id=CR1 status=1\n$ opensips-cli -x mi drouting:carrier_status partition_name=partition_3 carrier_id=CR1\nEnabled:: yes",
+          "description": "usage when use_partitions is 1"
+        }
+      ]
+    },
+    {
+      "name": "drouting:reload_status",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "If not provided the function will list the time of the last update for every partition. Otherwise, the function will list the time of the last reload for the given partition. Only applicable if use_partition is set to 1."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_reload_status. Gets the time of the last reload for any partition.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:reload_status\nDate:: Tue Aug 12 12:26:00 2014",
+          "description": "usage when use_partitions is 0"
+        },
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:reload_status\nPartition:: part_test Date=Tue Aug 12 12:24:13 2014\nPartition:: part_2 Date=Tue Aug 12 12:24:13 2014\n$ opensips-cli -x mi drouting:reload_status part_test\nPartition:: part_test Date=Tue Aug 12 12:24:13 2014",
+          "description": "usage when use_partitions is 1"
+        }
+      ]
+    },
+    {
+      "name": "drouting:number_routing",
+      "parameters": [
+        {
+          "name": "partition_name",
+          "type": "string",
+          "required": false,
+          "description": "The partition name. Required if use_partition is set to 1."
+        },
+        {
+          "name": "group_id",
+          "type": "integer",
+          "required": false,
+          "description": "The group id of the rules to check against."
+        },
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "The number to test against."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_number_routing. Gets the matched prefix along with the list of the gateways / carriers to which a number would be routed when using the do_routing function.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi drouting:number_routing partition_name=part1 group_id=3 number=012340987",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "drouting:enable_probing",
+      "parameters": [
+        {
+          "name": "status",
+          "type": "integer",
+          "required": false,
+          "description": "1 - enable, 0 - disable gateway probing."
+        }
+      ],
+      "description": "Replaces obsolete MI command: dr_enable_probing. Enables/disables gateway probing or returns the current gateway probing status.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$ opensips-cli -x mi drouting:enable_probing\nStatus:: 1\n$ opensips-cli -x mi drouting:enable_probing 0\n$ opensips-cli -x mi drouting:enable_probing\nStatus:: 0",
+          "description": "usage"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_DROUTING_STATUS",
+      "description": "This event is raised when the module changes the state of a gateway, either through an MI command, probing or script function.",
+      "parameters": [
+        {
+          "name": "partition",
+          "type": "string",
+          "description": "the name of the partition."
+        },
+        {
+          "name": "gwid",
+          "type": "string",
+          "description": "the gateway identifier."
+        },
+        {
+          "name": "address",
+          "type": "string",
+          "description": "the address of the gateway."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "_disabled MI_ if the gateway was disabled using MI commands, _probing_ if the gateway is being pinged, _inactive_ if it was disabled from the script or _active_ if the gateway is enabled."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `db_url` parameter",
+      "description": "Set `db_url` parameter",
+      "code": "...\nmodparam(\"drouting\", \"db\\_url\",\n\t\"mysql://opensips:opensipsrw@localhost/opensips\")\n..."
+    },
+    {
+      "title": "Set `drd_table` parameter",
+      "description": "Set `drd_table` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drd\\_table\", \"dr\\_gateways\")\n..."
+    },
+    {
+      "title": "Set `drr_table` parameter",
+      "description": "Set `drr_table` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drr\\_table\", \"rules\")\n..."
+    },
+    {
+      "title": "Set `drg_table` parameter",
+      "description": "Set `drg_table` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drg\\_table\", \"groups\")\n..."
+    },
+    {
+      "title": "Set `drc_table` parameter",
+      "description": "Set `drc_table` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drc\\_table\", \"my\\_dr\\_carriers\")\n..."
+    },
+    {
+      "title": "Set `ruri_avp` parameter",
+      "description": "Set `ruri_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"ruri\\_avp\", '$avp(dr\\_ruri)')\nmodparam(\"drouting\", \"ruri\\_avp\", '$avp(33)')\n..."
+    },
+    {
+      "title": "Set `gw_id_avp` parameter",
+      "description": "Set `gw_id_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"gw\\_id\\_avp\", '$avp(gw\\_id)')\nmodparam(\"drouting\", \"gw\\_id\\_avp\", '$avp(334)')\n..."
+    },
+    {
+      "title": "Set `gw_priprefix_avp` parameter",
+      "description": "Set `gw_priprefix_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"gw\\_priprefix\\_avp\", '$avp(gw\\_priprefix)')\n..."
+    },
+    {
+      "title": "Set `rule_id_avp` parameter",
+      "description": "Set `rule_id_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"rule\\_id\\_avp\", '$avp(rule\\_id)')\nmodparam(\"drouting\", \"rule\\_id\\_avp\", '$avp(335)')\n..."
+    },
+    {
+      "title": "Set `rule_prefix_avp` parameter",
+      "description": "Set `rule_prefix_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"rule\\_prefix\\_avp\", '$avp(dr\\_prefix)')\n..."
+    },
+    {
+      "title": "Set `carrier_id_avp` parameter",
+      "description": "Set `carrier_id_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"carrier\\_id\\_avp\", '$avp(carrier\\_id)')\n..."
+    },
+    {
+      "title": "Set `gw_sock_avp` parameter",
+      "description": "Set `gw_sock_avp` parameter",
+      "code": "...\nmodparam(\"drouting\", \"gw\\_sock\\_avp\", '$avp(dr\\_sock)')\nmodparam(\"drouting\", \"gw\\_sock\\_avp\", '$avp(77)')\n..."
+    },
+    {
+      "title": "Set `define_blacklist` parameter",
+      "description": "Set `define_blacklist` parameter",
+      "code": "...\nmodparam(\"drouting\", \"define\\_blacklist\", 'bl\\_name= 3,5,25,23')\nmodparam(\"drouting\", \"define\\_blacklist\", 'list= 4,2')\nmodparam(\"drouting\", \"define\\_blacklist\", 'pstn:list2 = 5,6')\nmodparam(\"drouting\", \"define\\_blacklist\", 'pstn:list3 = 7,8')\n..."
+    },
+    {
+      "title": "Set `default_group` parameter",
+      "description": "Set `default_group` parameter",
+      "code": "...\nmodparam(\"drouting\", \"default\\_group\", 4)\n..."
+    },
+    {
+      "title": "Set `force_dns` parameter",
+      "description": "Set `force_dns` parameter",
+      "code": "...\nmodparam(\"drouting\", \"force\\_dns\", 0)\n..."
+    },
+    {
+      "title": "Set the `persistent_state` parameter",
+      "description": "Set the `persistent_state` parameter",
+      "code": "...\n# disable all DB operations with the state of a gateway\nmodparam(\"drouting\", \"persistent\\_state\", 0)\n..."
+    },
+    {
+      "title": "Set `no_concurrent_reload` parameter",
+      "description": "Set `no_concurrent_reload` parameter",
+      "code": "...\n# do not allow parallel reload operations\nmodparam(\"drouting\", \"no\\_concurrent\\_reload\", 1)\n..."
+    },
+    {
+      "title": "Set `probing_interval` parameter",
+      "description": "Set `probing_interval` parameter",
+      "code": "...\nmodparam(\"drouting\", \"probing\\_interval\", 60)\n..."
+    },
+    {
+      "title": "Set `probing_method` parameter",
+      "description": "Set `probing_method` parameter",
+      "code": "...\nmodparam(\"drouting\", \"probing\\_method\", \"INFO\")\n..."
+    },
+    {
+      "title": "Set `probing_from` parameter",
+      "description": "Set `probing_from` parameter",
+      "code": "...\nmodparam(\"drouting\", \"probing\\_from\", \"sip:pinger@192.168.2.10\")\n..."
+    },
+    {
+      "title": "Set `probing_reply_codes` parameter",
+      "description": "Set `probing_reply_codes` parameter",
+      "code": "...\nmodparam(\"drouting\", \"probing\\_reply\\_codes\", \"501, 403\")\n..."
+    },
+    {
+      "title": "Set `probing_socket` parameter",
+      "description": "Set `probing_socket` parameter",
+      "code": "...\nmodparam(\"drouting\", \"probing\\_socket\", \"udp:192.168.1.100:5060\")\n..."
+    },
+    {
+      "title": "Set `gw_socket_filter_mode` parameter",
+      "description": "Set `gw_socket_filter_mode` parameter",
+      "code": "...\n# multiple OpenSIPS instances sharing a DR setting, so each should\n# load only the GWs they have sockets for.\nmodparam(\"drouting\", \"gw\\_socket\\_filter\\_mode\", \"matched-only\")\n...\n# an OpenSIPs instance not doing routing, but needing to be\n# aware of all the gws, so load them all ignoring the sockets\nmodparam(\"drouting\", \"gw\\_socket\\_filter\\_mode\", \"ignore\")\n..."
+    },
+    {
+      "title": "Set `cluster_id` parameter",
+      "description": "Set `cluster_id` parameter",
+      "code": "...\n# replicate gw/carrier status with all OpenSIPS in cluster ID 9\nmodparam(\"drouting\", \"cluster\\_id\", 9)\n..."
+    },
+    {
+      "title": "Set `cluster_sharing_tag` parameter",
+      "description": "Set `cluster_sharing_tag` parameter",
+      "code": "...\n# only the node with the active \"vip\" sharing tag will perform pinging\n# and broadcast the status changes\nmodparam(\"drouting\", \"cluster\\_id\", 9)\nmodparam(\"drouting\", \"cluster\\_sharing\\_tag\", \"vip\")\n..."
+    },
+    {
+      "title": "Set `cluster_probing_mode` parameter",
+      "description": "Set `cluster_probing_mode` parameter",
+      "code": "...\n# only the node with the active \"vip\" sharing tag will perform pinging\nmodparam(\"drouting\", \"cluster\\_id\", 9)\nmodparam(\"drouting\", \"cluster\\_sharing\\_tag\", \"vip\")\nmodparam(\"drouting\", \"cluster\\_probing\\_mode\", \"by-shtag\")\n...\n# the pinging effort is distributed across all the nodes\nmodparam(\"drouting\", \"cluster\\_id\", 9)\nmodparam(\"drouting\", \"cluster\\_probing\\_mode\", \"distributed\")\n..."
+    },
+    {
+      "title": "Set `use_domain` parameter",
+      "description": "Set `use_domain` parameter",
+      "code": "...\nmodparam(\"drouting\", \"use\\_domain\", 0)\n..."
+    },
+    {
+      "title": "Set `drg_user_col` parameter",
+      "description": "Set `drg_user_col` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drg\\_user\\_col\", \"user\")\n..."
+    },
+    {
+      "title": "Set `drg_domain_col` parameter",
+      "description": "Set `drg_domain_col` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drg\\_domain\\_col\", \"host\")\n..."
+    },
+    {
+      "title": "Set `drg_grpid_col` parameter",
+      "description": "Set `drg_grpid_col` parameter",
+      "code": "...\nmodparam(\"drouting\", \"drg\\_grpid\\_col\", \"grpid\")\n..."
+    },
+    {
+      "title": "Set `use_partitions` parameter",
+      "description": "Set `use_partitions` parameter",
+      "code": "...\nmodparam(\"drouting\", \"use\\_partitions\", 1)\n..."
+    },
+    {
+      "title": "Set `db_partitions_url` parameter",
+      "description": "Set `db_partitions_url` parameter",
+      "code": "...\nmodparam(\"drouting\", \"db\\_partitions\\_url\", \"mysql://user:password@localhost/opensips\\_partitions\")\n..."
+    },
+    {
+      "title": "Set `db_partitions_table` parameter",
+      "description": "Set `db_partitions_table` parameter",
+      "code": "...\nmodparam(\"drouting\", \"db\\_partitions\\_table\", \"partition\\_defs\")\n..."
+    },
+    {
+      "title": "Set `partition_id_pvar` parameter",
+      "description": "Set `partition_id_pvar` parameter",
+      "code": "...\nmodparam(\"drouting\", \"partition\\_id\\_pvar\", \"$var(matched\\_partition)\")\n..."
+    },
+    {
+      "title": "Set `enable_restart_persistency` parameter",
+      "description": "Set `enable_restart_persistency` parameter",
+      "code": "...\nmodparam(\"drouting\", \"enable\\_restart\\_persistency\", yes)\n..."
+    },
+    {
+      "title": "Set `extra_prefix_chars` parameter",
+      "description": "Set `extra_prefix_chars` parameter",
+      "code": "...\nmodparam(\"drouting\", \"extra\\_prefix\\_chars\", \"#-%\")\n..."
+    },
+    {
+      "title": "Set `extra_id_chars` parameter",
+      "description": "Set `extra_id_chars` parameter",
+      "code": "...\nmodparam(\"drouting\", \"extra\\_id\\_chars\", \":\\_-.\")\n..."
+    },
+    {
+      "title": "Set the `rule_tables_query` parameter",
+      "description": "Set the `rule_tables_query` parameter",
+      "code": "...\n# first, set the \"dr\\_rules\" table name to the name of your query\nmodparam(\"drouting\", \"drr\\_table\", \"MY\\_RULES\\_QUERY\")\n\n# next, instruct drouting to load both 'dr\\_rules\\_a' and 'dr\\_rules\\_b',\n# then merge all of their rules\nmodparam(\"drouting\", \"rule\\_tables\\_query\", \"\n\tMY\\_RULES\\_QUERY:\n\t\tSELECT 'dr\\_rules\\_a' UNION SELECT 'dr\\_rules\\_b'\")\n..."
+    },
+    {
+      "title": "Set the `generate_data_checksum` parameter",
+      "description": "Set the `generate_data_checksum` parameter",
+      "code": "...\nmodparam(\"drouting\", \"generate\\_data\\_checksum\", 1)\n..."
+    },
+    {
+      "title": "`do_routing` usage",
+      "description": "`do_routing` usage",
+      "code": "...\n# all groups, sort on order, `use_partitions` is 0\ndo\\_routing();\n...\n# all groups, sort on order, `use_partitions` is 1, route by partition named \"part\"\ndo\\_routing( , , , , , ,\"part\");\n...\n# group id 0, sort on order, `use_partitions` is 0\ndo\\_routing(0);\n...\n# group id 0, sort on order, `use_partitions` is 1, route by partition named \"part\"\ndo\\_routing(0, , , , , , \"part\");\n...\n# group id from $var(id), sort on order, `use_partitions` is 0\ndo\\_routing($var(id));\n...\n# all groups, sort on weights, `use_partitions` is 0\ndo\\_routing(, \"W\");\n...\n# `use_partitions` is 1, partition and group supplied by AVPs, do strict length matching\ndo\\_routing( $avp(grp),\"L\", , , , ,$avp(partition))\n...\n# group id 2, sort on order, fallback rule and also return the gateway attributes\ndo\\_routing(2, \"F\", , , $var(gw\\_attributes));\n..."
+    },
+    {
+      "title": "`route_to_carrier` usage",
+      "description": "`route_to_carrier` usage",
+      "code": "...\n# use\\_partitions is not set\nif ( route\\_to\\_carrier(\"my\\_top\\_carrier, def\\_carrier\", , $var(carrier\\_att)) ) {\n\txlog(\"Routing to \\\\\"my\\_top\\_carrier\\\\\" - $var(carrier\\_att)\\\\n\");\n\tt\\_on\\_failure(\"next\\_gw\");\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is enabled\nif ( route\\_to\\_carrier(\"my\\_top\\_carrier\", , $var(carrier\\_att), \"part\") ) {\n\txlog(\"Routing to \\\\\"my\\_top\\_carrier\\\\\" - $var(carrier\\_att)\\\\n\");\n\tt\\_on\\_failure(\"next\\_gw\");\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is enabled\nif ( route\\_to\\_carrier($var(carrierId), , , $var(my\\_partition)) ) {\n\txlog(\"Routing to \\\\\"my\\_top\\_carrier\\\\\"\\\\n\");\n\tt\\_on\\_failure(\"next\\_gw\");\n\tt\\_relay();\n\texit;\n}\n..."
+    },
+    {
+      "title": "`route_to_gw` usage",
+      "description": "`route_to_gw` usage",
+      "code": "...\n# use\\_partitions is not set\nif ( route\\_to\\_gw(\"gw\\_europe\") ) {\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is not set\nif ( route\\_to\\_gw(\"gw1,gw2,gw3\", $var(gw\\_attrs)) ) {\n\txlog(\"Relaying to first gateway from our list - $var(gw\\_attrs)\\\\n\");\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is enabled\nif ( route\\_to\\_gw(\"gw\\_europe\", , , \"my\\_partition\") ) {\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is enabled\nif ( route\\_to\\_gw(\"gw1,gw2,gw3\", $var(gw\\_attrs), , \"my\\_partition\") ) {\n\txlog(\"Relaying to first gateway from our list - $var(gw\\_attrs)\\\\n\");\n\tt\\_relay();\n\texit;\n}\n..."
+    },
+    {
+      "title": "`use_next_gw` usage",
+      "description": "`use_next_gw` usage",
+      "code": "...\n# use\\_partitions is not set\nif (use\\_next\\_gw()) {\n\tt\\_relay();\n\texit;\n}\n...\n# Also fetch the carrier attributes, if any\nif (use\\_next\\_gw(, , $var(carrier\\_attrs))) {\n\txlog(\"Carrier attributes of current gateway: $var(carrier\\_attrs)\\\\n\");\n\tt\\_relay();\n\texit;\n}\n...\n# use\\_partitions is enabled\nif (use\\_next\\_gw( , , ,\"my\\_partition\")) {\n\tt\\_relay();\n\texit;\n}\n...\n# Also fetch the carrier attributes, if any\nif (use\\_next\\_gw( , ,$var(carrier\\_attrs), \"my\\_partition\")) {\n\txlog(\"Carrier attributes of current gateway: $var(carrier\\_attrs)\\\\n\");\n\tt\\_relay();\n\texit;\n}\n..."
+    },
+    {
+      "title": "`goes_to_gw` usage",
+      "description": "`goes_to_gw` usage",
+      "code": "...\n# use\\_partitions is not set\nif (goes\\_to\\_gw( 1, , $var(gw\\_attrs))) {\n\tsl\\_send\\_reply(403,\"Forbidden\");\n\texit;\n}\n...\n# use\\_partitions is enabledt\nif (goes\\_to\\_gw(1, , $var(gw\\_attrs), , \"my\\_partition\")) {\n\tsl\\_send\\_reply(403,\"Forbidden\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`is_from_gw` usage",
+      "description": "`is_from_gw` usage",
+      "code": "\\# use\\_partitions is not set\n# match the source IP (only) against all gateways\nif (is\\_from\\_gw(-1, \"n\")) {\n\t...\n}\n\n# use\\_partitions is enabled\n# match the source IP and port against all gateways from the \"outbound\"\n# partition and return the matched gateway's carrier\nif (is\\_from\\_gw(, \"c\", , , \"outbound\")) {\n\t...\n}"
+    },
+    {
+      "title": "`dr_is_gw` usage",
+      "description": "`dr_is_gw` usage",
+      "code": "\\# match the SIP URI host within $var(uac) against all gateways\nif (dr\\_is\\_gw( $var(uac), , \"n\")) {\n\t...\n}\n\n\n# match the SIP URI host within $var(uac) against\n# all gws in \"outbound\" partition\nif (dr\\_is\\_gw( $avp(uac), , \"n\", , , \"partition\")) {\n\t...\n}"
+    },
+    {
+      "title": "`dr_disable()` usage",
+      "description": "`dr_disable()` usage",
+      "code": "...\nif (t\\_check\\_status(\"(408)|(5\\[0-9\\]\\[0-9\\])\")) {\n\tdr\\_disable();\n\n}\n...\nif (t\\_check\\_status(\"(408)|(5\\[0-9\\]\\[0-9\\])\")) {\n\tdr\\_disable(\"my\\_partition\");\n\n}\n..."
+    },
+    {
+      "title": "`dr_match` usage",
+      "description": "`dr_match` usage",
+      "code": "...\nif ( dr\\_match( 1, \"L\" , $fU, ,\"dids\") )\n\txlog(\"Full From Username $fU found in group 1 partition DIDS\\\\n\");\n...\nif ( dr\\_match( 1, , $var(did) ) )\n\txlog(\"DID $var(did) matches rules in group 1\\\\n\");\n..."
+    }
+  ]
+}

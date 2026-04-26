@@ -1,0 +1,48 @@
+{
+  "id": "module-cachedb_dynamodb-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "cachedb_dynamodb Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/cachedb_dynamodb.html",
+  "content_markdown": "This module is an implementation of a cachedb system designed to work with Amazon DynamoDB. It uses the AWS SDK library for C++ to connect to a DynamoDB instance. It leverages the Key-Value interface exported from the core.\n\nhttps://aws.amazon.com/pm/dynamodb/",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:16:29.021Z",
+  "module_name": "cachedb_dynamodb",
+  "overview": "This module is an implementation of a cachedb system designed to work with Amazon DynamoDB. It uses the AWS SDK library for C++ to connect to a DynamoDB instance. It leverages the Key-Value interface exported from the core.\n\nhttps://aws.amazon.com/pm/dynamodb/",
+  "how_it_works": "The module provides the following functionalities:\n\n* set - sets a key in DynamoDB using the cachedb_store function\n* get - queries a key from DynamoDB using the cachedb_fetch function\n* remove - removes a key from DynamoDB using the cachedb_remove function\n* get_counter - queries a key with a numerical value from DynamoDB using the cachedb_counter_fetch function\n* add - increments the value of a specific item with a given value using the cachedb_add function\n* sub - decrements the value of a specific item with a given value using the cachedb_sub function\n\nThe following are internally used by OpenSIPS:\n\n* map_get\n* map_set\n* map_remove",
+  "dependencies_required": [
+    {
+      "name": "AWS SDK for C++",
+      "type": "library",
+      "reason": "Must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The URLs of the server groups that OpenSIPS will connect to in order to use, from script, the cache_store(), cache_fetch(), etc. operations. It may be set more than once. The prefix part of the URL will be the identifier that will be used from the script.\n\nThere are some default parameters that can appear in the URL:\n\n*   _region_ - specifies the AWS region where the DynamoDB table is located\n    \n*   _key_ - specifies the table's Key column; default value is _\"opensipskey\"_\n    \n*   _val_ - specifies the table's Value column on which cache operations such as cache_store, cache_fetch, etc., will be performed; default value is _\"opensipsval\"_\n    \n\nSyntax for _cachedb_url_\n\n*   when using a previously created table (you have to specify the key and value):\n    \n    *   host and port\n        \n        `\"dynamodb://id_host:id_port/tableName?key=key1;val=val1\"`\n    *   region\n        \n        `\"dynamodb:///tableName?region=regionName;key=key2;val=val2\"`\n    \n*   when using the default key and value:\n    \n    *   host and port\n        \n        `\"dynamodb://id_host:id_port/tableName\"`\n    *   region\n        \n        `\"dynamodb:///tableName?region=regionName\"`",
+      "example_value": "dynamodb://localhost:8000/table1",
+      "example_code": "# single-instance URLs\nmodparam(\"cachedb\\_dynamodb\", \"cachedb\\_url\", \"dynamodb://localhost:8000/table1\")\nmodparam(\"cachedb\\_dynamodb\", \"cachedb\\_url\", \"dynamodb:///table2?region=central-1\")\n\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb\\_dynamodb\", \"cachedb\\_url\", \n\t\"dynamodb://localhost:8000/table1?key=Key;val=Val\")\nmodparam(\"cachedb\\_dynamodb\", \"cachedb\\_url\", \n\t\"dynamodb:///table2?region=central-1;key=Key;val=Val\")"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Demonstrates setting the cachedb_url parameter for single-instance and multi-instance URLs.",
+      "code": "...\n\n# single-instance URLs\nmodparam(\"cachedb_dynamodb\", \"cachedb_url\", \"dynamodb://localhost:8000/table1\")\nmodparam(\"cachedb_dynamodb\", \"cachedb_url\", \"dynamodb:///table2?region=central-1\")\n\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb_dynamodb\", \"cachedb_url\", \n\t\"dynamodb://localhost:8000/table1?key=Key;val=Val\")\nmodparam(\"cachedb_dynamodb\", \"cachedb_url\", \n\t\"dynamodb:///table2?region=central-1;key=Key;val=Val\")\n\n\n..."
+    },
+    {
+      "title": "Use Dynamodb servers",
+      "description": "Demonstrates script operations such as cache_store, cache_fetch, cache_remove, cache_add, and cache_sub.",
+      "code": "...\n\ncache_store(\"dynamodb\", \"call1\", \"10\");\ncache_store(\"dynamodb\", \"call2\", \"25\", 150) // expires = 150s -optional\ncache_fetch(\"dynamodb\", \"call1\", $var(total));\ncache_remove(\"dynamodb\", \"call1\");\n\n\ncache_store(\"dynamodb\", \"counter1\", \"200\");\ncache_sub(\"dynamodb\", \"counter1\", 4, 1000); // expires = 1000s -mandatory parameter\ncache_add(\"dynamodb\", \"call2\", 5, 0) // -this update will not expire  -mandatory parameter\ncache_remove(\"dynamodb\", \"counter1\");\n\n..."
+    }
+  ]
+}

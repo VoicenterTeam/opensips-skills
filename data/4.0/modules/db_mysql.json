@@ -1,0 +1,130 @@
+{
+  "id": "module-db_mysql-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "db_mysql Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/db_mysql.html",
+  "content_markdown": "This is a module which provides MySQL connectivity for OpenSIPS. It implements the DB API defined in OpenSIPS.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:01:38.606Z",
+  "module_name": "db_mysql",
+  "overview": "This is a module which provides MySQL connectivity for OpenSIPS. It implements the DB API defined in OpenSIPS.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libmysqlclient-dev",
+      "type": "library",
+      "reason": "the development libraries of mysql-client",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "tls_mgm"
+  ],
+  "exported_parameters": [
+    {
+      "name": "exec_query_threshold",
+      "type": "integer",
+      "default_value": "0 - disabled",
+      "description": "If queries take longer than 'exec\\_query\\_threshold' microseconds, warning messages will be written to logging facility.",
+      "example_value": "60000",
+      "example_code": "modparam(\"db\\_mysql\", \"exec\\_query\\_threshold\", 60000)"
+    },
+    {
+      "name": "timeout_interval",
+      "type": "integer",
+      "default_value": "2 (6 sec)",
+      "description": "Time interval after which a connection attempt (read or write request) is aborted. The value counts three times, as several retries are done from the driver before it gives up. The read timeout parameter is ignored on driver versions prior to “5.1.12”, “5.0.25” and “4.1.22”. The write timeout parameter is ignored on version prior to “5.1.12” and “5.0.25”, the “4.1” release don't support it at all.",
+      "example_value": "2",
+      "example_code": "modparam(\"db\\_mysql\", \"timeout\\_interval\", 2)"
+    },
+    {
+      "name": "max_db_queries",
+      "type": "integer",
+      "default_value": "2",
+      "description": "The maximum number of retries to execute a failed query due to connections problems. If this parameter is set improperly, it is set to default value.",
+      "example_value": "2",
+      "example_code": "modparam(\"db\\_mysql\", \"max\\_db\\_queries\", 2)"
+    },
+    {
+      "name": "max_db_retries",
+      "type": "integer",
+      "default_value": "3",
+      "description": "The maximum number of database connection retries. If this parameter is set improperly, it is set to default value.",
+      "example_value": "2",
+      "example_code": "modparam(\"db\\_mysql\", \"max\\_db\\_retries\", 2)"
+    },
+    {
+      "name": "ps_max_col_size",
+      "type": "integer",
+      "default_value": "1024 (bytes)",
+      "description": "The maximum size of a column's data, when fetched using prepared statements. Particularly relevant for variable-length data, such as CHAR, BLOB, etc.",
+      "example_value": "4096",
+      "example_code": "modparam(\"db\\_mysql\", \"ps\\_max\\_col\\_size\", 4096)",
+      "notes": "NOTE: Should a column's data exceed this limit, the value will be silently truncated to fit the buffer, without reporting any errors!"
+    },
+    {
+      "name": "use_tls",
+      "type": "integer",
+      "default_value": "0 (not enabled)",
+      "description": "Setting this parameter will allow you to use TLS for MySQL connections. In order to enable TLS for a specific connection, you can use the \"**tls\\_domain=**dom\\_name\" URL parameter in the db\\_url of the respective OpenSIPS module. This should be placed at the end of the URL after the **'?'** character. Additionally, the query string may include the \"**tls\\_opts=** PKEY,CERT,CA,CA\\_DIR,CIPHERS\" CSV parameter, in order to control/limit the amount of TLS options passed to the TLS library. When using this parameter, you must also ensure that _tls\\_mgm_ is loaded and properly configured. Refer to the the module for additional info regarding TLS client domains.",
+      "example_value": "1",
+      "example_code": "modparam(\"tls\\_mgm\", \"client\\_domain\", \"dom1\")\nmodparam(\"tls\\_mgm\", \"certificate\", \"\\[dom1\\]/etc/pki/tls/certs/opensips.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"\\[dom1\\]/etc/pki/tls/private/opensips.key\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\",     \"\\[dom1\\]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"db\\_mysql\", \"use\\_tls\", 1)\n...\nmodparam(\"usrloc\", \"db\\_url\", \"mysql://root:1234@localhost/opensips?tls\\_domain=dom1\")\n...\nmodparam(\"usrloc\", \"db\\_url\", \"mysql://root:1234@localhost/opensips?tls\\_domain=dom1&tls\\_opts=PKEY,CERT,CA,CA\\_DIR,CIPHERS\")",
+      "notes": "Note that if you want to use this feature, the TLS domain must be provisioned in the configuration file, _NOT_ in the database. In case you are loading TLS certificates from the database, you must at least define one domain in the configuration script, to use for the initial connection to the DB. Also, you can _NOT_ enable TLS for the connection to the database of the _tls\\_mgm_ module itself."
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_MYSQL_CONNECTION",
+      "description": "This event is raised when a MySQL connection is lost or recovered.",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "description": "the URL of the connection as specified by the _db\\_url_ parameter."
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "description": "_connected_ if the connection recovered, or _disconnected_ if the connection was lost."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `exec_query_threshold` parameter",
+      "description": "Set `exec_query_threshold` parameter",
+      "code": "...\nmodparam(\"db\\_mysql\", \"exec\\_query\\_threshold\", 60000)\n..."
+    },
+    {
+      "title": "Set `timeout_interval` parameter",
+      "description": "Set `timeout_interval` parameter",
+      "code": "...\nmodparam(\"db\\_mysql\", \"timeout\\_interval\", 2)\n..."
+    },
+    {
+      "title": "Set `max_db_queries` parameter",
+      "description": "Set `max_db_queries` parameter",
+      "code": "...\nmodparam(\"db\\_mysql\", \"max\\_db\\_queries\", 2)\n..."
+    },
+    {
+      "title": "Set `max_db_retries` parameter",
+      "description": "Set `max_db_retries` parameter",
+      "code": "...\nmodparam(\"db\\_mysql\", \"max\\_db\\_retries\", 2)\n..."
+    },
+    {
+      "title": "Set `ps_max_col_size` parameter",
+      "description": "Set `ps_max_col_size` parameter",
+      "code": "...\nmodparam(\"db\\_mysql\", \"ps\\_max\\_col\\_size\", 4096)\n..."
+    },
+    {
+      "title": "Set the `use_tls` parameter",
+      "description": "Set the `use_tls` parameter",
+      "code": "...\nmodparam(\"tls\\_mgm\", \"client\\_domain\", \"dom1\")\nmodparam(\"tls\\_mgm\", \"certificate\", \"\\[dom1\\]/etc/pki/tls/certs/opensips.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"\\[dom1\\]/etc/pki/tls/private/opensips.key\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\",     \"\\[dom1\\]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"db\\_mysql\", \"use\\_tls\", 1)\n...\nmodparam(\"usrloc\", \"db\\_url\", \"mysql://root:1234@localhost/opensips?tls\\_domain=dom1\")\n...\nmodparam(\"usrloc\", \"db\\_url\", \"mysql://root:1234@localhost/opensips?tls\\_domain=dom1&tls\\_opts=PKEY,CERT,CA,CA\\_DIR,CIPHERS\")\n..."
+    }
+  ]
+}

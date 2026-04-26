@@ -1,0 +1,241 @@
+{
+  "id": "module-proto_ipsec-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "proto_ipsec Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/proto_ipsec.html",
+  "content_markdown": "The **proto\\_ipsec** module provides IPSec sockets for establishing secure communication channels. It relies on RFC 3329 (Security Mechanism Agreement for the Session Initiation Protocol (SIP)) to establish the IPSec parameters necessary for creating dynamic Security Associations (SAs) for each connection.\n\nThis module has been developed to fully comply with the VoLTE specification (GSMA PRD IR.92) and implements the extensions defined in TS 33.203 (3G Security: Access Security for IP-based Services).",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:57:51.367Z",
+  "module_name": "proto_ipsec",
+  "overview": "The **proto\\_ipsec** module provides IPSec sockets for establishing secure communication channels. It relies on RFC 3329 (Security Mechanism Agreement for the Session Initiation Protocol (SIP)) to establish the IPSec parameters necessary for creating dynamic Security Associations (SAs) for each connection.\n\nThis module has been developed to fully comply with the VoLTE specification (GSMA PRD IR.92) and implements the extensions defined in TS 33.203 (3G Security: Access Security for IP-based Services).",
+  "how_it_works": "It allows creation of both UDP and TCP secure connections on the same IP:port pair, defined as sockets. Essentially, when defining a socket using the _proto\\_ipsec_ protocol, two new internal/hidden sockets are created on the specified port. For example, defining the following socket:\n\n...\nsocket=ipsec:127.0.0.1:5100\n...\n\nInternally, two different sockets are created:\n\n...\nsocket=udp:127.0.0.1:5100\nsocket=tcp:127.0.0.1:5100\n...\n\nCommunication through these sockets should be done over IPSec, thus appropriate security associations (SAs) should be made prior to using these listeners, as defined in RFC 3329.\n\n_NOTE_ that this means that you can no longer define these sockets in your config, otherwise they will overlap with the internally defined ones.\n\nIPSec communication requires each participant to define at least two ports for each connection: one when the entity behaves as a client and another when it behaves as a server. Consequently, it's typically necessary to define at least two IPSec sockets for the module to function correctly.\n\nThe module implements the entire logic of keeping track of the registration status by hooking into the usrloc module and listening for contact changes updates. It also ensures the persistency of the tunnels by restoring them after a restart.\n\nWhen a request is received over an IPSec tunnel, the module provides two variables, [$ipsec(field)](#pv_ipsec \"1.5.1.�$ipsec\") and [$ipsec\\_ue(field)](#pv_ipsec_ue \"1.5.2.�$ipsec_ue\") to inspect details about it.",
+  "dependencies_required": [
+    {
+      "name": "tm",
+      "type": "module",
+      "reason": "used to keep track of IPSec SA context between requests and replies.",
+      "optional": false
+    },
+    {
+      "name": "usrloc",
+      "type": "module",
+      "reason": "used to identify when a successful registration/de-registration happens.",
+      "optional": false
+    },
+    {
+      "name": "proto_udp",
+      "type": "module",
+      "reason": "used for handling IPSec UDP connections operations.",
+      "optional": false
+    },
+    {
+      "name": "proto_tcp",
+      "type": "module",
+      "reason": "used for handling IPSec TCP connections operations.",
+      "optional": false
+    },
+    {
+      "name": "libmnl",
+      "type": "library",
+      "reason": "Minimalistic Netlink Library used to create IPSec SA using the XFRM kernel interface.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "port",
+      "type": "integer",
+      "default_value": "5062",
+      "description": "Default IPSec port used when no prot is being specified in the _socket_ global parameter.",
+      "example_value": "5100",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"port\", 5100)\n..."
+    },
+    {
+      "name": "min_spi",
+      "type": "integer",
+      "default_value": "65536",
+      "description": "This parameter represents the minimum value for the Security Association's (SA) SPI parameter. In conjunction with the _max\\_spi_ setting, it defines the SPI range _\\[min\\_spi, max\\_spi\\]_ that must be unique within the system.",
+      "example_value": "10000",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"min\\_spi\", 10000)\n..."
+    },
+    {
+      "name": "max_spi",
+      "type": "integer",
+      "default_value": "262144",
+      "description": "This parameter represents the maximum value for the Security Association's (SA) SPI parameter. In conjunction with the _min\\_spi_ setting, it defines the SPI range _\\[min\\_spi, max\\_spi\\]_ that must be unique within the system.",
+      "example_value": "20000",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"max\\_spi\", 20000)\n..."
+    },
+    {
+      "name": "temporary_timeout",
+      "type": "integer",
+      "default_value": "30",
+      "description": "Sets the timeout (in seconds) a temporary security association can be stored in memory until in is confirmed (or used) by the remote endpoint.\n\nThe timeout signifies the duration elapsed after sending the Security Association's (SA) parameters in the 401 reply and when the User Equipment (UE) transmits the initial message over the new secure channel.",
+      "example_value": "10",
+      "example_code": "param(\"proto\\_ipsec\", \"temporary\\_timeout\", 10) # number of seconds"
+    },
+    {
+      "name": "default_client_port",
+      "type": "integer",
+      "default_value": "not defined - a random socket is being used, but needs to be different from the server socket.",
+      "description": "Default port value to be used when we act as clients in the IPSec communication.",
+      "example_value": "5100",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"default\\_client\\_port\", 5100)\n..."
+    },
+    {
+      "name": "default_server_port",
+      "type": "integer",
+      "default_value": "not defined - a random socket is being used, but needs to be different from the client socket.",
+      "description": "Default port value to be used when we act as server in the IPSec communication.",
+      "example_value": "6100",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"default\\_server\\_port\", 6100)\n..."
+    },
+    {
+      "name": "allowed_algorithms",
+      "type": "string",
+      "default_value": "none - this means that all algorithms can be used.",
+      "description": "Whitelists the authentication and encryption algorithms that can be used for IPSec.\n\nIts format is: _alg|ealg|alg=ealg_\n\nMultiple algorithms pairs can be specified separated by comma.\n\nCurrently supported algorithms are:\n\n*   Authentication algorithms:\n    *   hmac-md5-96\n    *   hmac-sha-1-96\n    *   aes-gmac\n    *   null\n*   Encryption algorithms:\n    *   des-ede3-cbc\n    *   aes-cbc\n    *   aes-gcm\n    *   null",
+      "possible_values": [
+        "hmac-md5-96",
+        "hmac-sha-1-96",
+        "aes-gmac",
+        "null",
+        "des-ede3-cbc",
+        "aes-cbc",
+        "aes-gcm"
+      ],
+      "example_value": "null",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"null\")\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"hmac-sha-1-96=null\")\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"hmac-sha-1-96=null,aes-gmac=aes-gcm\")\n..."
+    },
+    {
+      "name": "disable_deprecated_algorithms",
+      "type": "integer",
+      "default_value": "false - all algorithms can be used.",
+      "description": "Indicates whether we should ignore deprecated algorithms, as defined in TS 33.203 (3G Security: Access Security for IP-based Services). At the moment, this disables the following algorithms:\n\n*   _hmac-md5-96_ and _hmac-sha-1-96_ authentication algorithms\n*   _des-ede3-cbc_ and _aes-cbc_ encryption algorithms",
+      "example_value": "yes",
+      "example_code": "...\nmodparam(\"proto\\_ipsec\", \"disable\\_deprecated\\_algorithms\", yes)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "ipsec_create",
+      "signature": "ipsec_create([port_server], [port_client], [algos])",
+      "parameters": [
+        {
+          "name": "port_server",
+          "type": "integer",
+          "required": false,
+          "default": "default_client_port",
+          "description": "the server port to be used in the IPSec communication. It should be an existing IPSec port and is advertised in the _Security-Server_ header."
+        },
+        {
+          "name": "port_client",
+          "type": "integer",
+          "required": false,
+          "default": "default_server_port",
+          "description": "the client port to be used in the IPSec communication. It should be an existing IPSec port and is advertised in the _Security-Server_ header."
+        },
+        {
+          "name": "algos",
+          "type": "string",
+          "required": false,
+          "default": "disable_allowed_algorithms",
+          "description": "a list of algorithms that should be used for creating this security association. It has the same format as disable_allowed_algorithms and overwrites its value when used."
+        }
+      ],
+      "return_type": "",
+      "description": "Creates an IPSec SA/tunnel according to the _Security-Client_ header and the AKA information received in the 401 reply.\n\nThis function should only be called on a 401 reply for a REGISTER message.\n\nUpon successful creation of the IPSec tunnel, it builds the _Security-Server_ header and appends it to the reply.",
+      "usage_context": [
+        "REPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nonreply_route[ipsec] {\n\tif ($T_reply_code == 401)\n\t\tif (ipsec_create())\n}\n...",
+          "description": "`ipsec_create()` usage",
+          "context": "onreply_route"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$ipsec",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the local IPSec endpoint.\n\nThe following fields can be retrieved:\n\n*   _ik_ - integrity key being used by the IPSec tunnel.\n    \n*   _ck_ - confidentiality key being used by the IPSec tunnel.\n    \n*   _alg_ - authentication algorithm being used.\n    \n*   _ealg_ - encryption algorithm being used.\n    \n*   _ip_ - local IP bound for this tunnel.\n    \n*   _spi-c_ - local SPI chosen for receiving messages through the client channel.\n    \n*   _spi-s_ - local SPI chosen for receiving messages through the server channel.\n    \n*   _port-c_ - local port chosen for communicating through the client channel.\n    \n*   _port-c_ - local port chosen for communicating through the server channel.\n    \n**Example 1.10. `$ipsec(field)` usage**\n\n...\nxlog(\"Using $ipsec(ip):$ipsec(port-c) and $ipsec(ip):$ipsec(port-s) socket\\\\n\");\n..."
+    },
+    {
+      "name": "$ipsec_ue",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "request",
+      "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the remote IPSec endpoint.\n\nThe following fields can be retrieved:\n\n*   _ik_ - integrity key being used by the IPSec tunnel.\n    \n*   _ck_ - confidentiality key being used by the IPSec tunnel.\n    \n*   _alg_ - authentication algorithm being used.\n    \n*   _ealg_ - encryption algorithm being used.\n    \n*   _ip_ - remote IP of the UE that uses this tunnel.\n    \n*   _spi-c_ - remote SPI chosen for sending messages through the client channel.\n    \n*   _spi-s_ - remote SPI chosen for sending messages through the server channel.\n    \n*   _port-c_ - remote port chosen for communicating through the client channel.\n    \n*   _port-c_ - remote port chosen for communicating through the server channel.\n    \n**Example 1.11. `$ipsec_ue(field)` usage**\n\n...\nxlog(\"Using $ipsec\\_ue(ip):$ipsec\\_ue(port-c) and $ipsec\\_ue(ip):$ipsec\\_ue(port-s) socket\\\\n\");\n..."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `port` parameter",
+      "description": "Default IPSec port used when no prot is being specified in the _socket_ global parameter.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"port\", 5100)\n..."
+    },
+    {
+      "title": "Set `min_spi` parameter",
+      "description": "This parameter represents the minimum value for the Security Association's (SA) SPI parameter.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"min\\_spi\", 10000)\n..."
+    },
+    {
+      "title": "Set `max_spi` parameter",
+      "description": "This parameter represents the maximum value for the Security Association's (SA) SPI parameter.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"max\\_spi\", 20000)\n..."
+    },
+    {
+      "title": "Set `temporary_timeout` variable",
+      "description": "Sets the timeout (in seconds) a temporary security association can be stored in memory until in is confirmed (or used) by the remote endpoint.",
+      "code": "param(\"proto\\_ipsec\", \"temporary\\_timeout\", 10) # number of seconds"
+    },
+    {
+      "title": "Set `default_client_port` parameter",
+      "description": "Default port value to be used when we act as clients in the IPSec communication.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"default\\_client\\_port\", 5100)\n..."
+    },
+    {
+      "title": "Set `default_server_port` parameter",
+      "description": "Default port value to be used when we act as server in the IPSec communication.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"default\\_server\\_port\", 6100)\n..."
+    },
+    {
+      "title": "Set `allowed_algorithms` parameter",
+      "description": "Whitelists the authentication and encryption algorithms that can be used for IPSec.",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"null\")\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"hmac-sha-1-96=null\")\nmodparam(\"proto\\_ipsec\", \"allowed\\_algorithms\", \"hmac-sha-1-96=null,aes-gmac=aes-gcm\")\n..."
+    },
+    {
+      "title": "Set `disable_deprecated_algorithms` parameter",
+      "description": "Indicates whether we should ignore deprecated algorithms, as defined in TS 33.203 (3G Security: Access Security for IP-based Services).",
+      "code": "...\nmodparam(\"proto\\_ipsec\", \"disable\\_deprecated\\_algorithms\", yes)\n..."
+    },
+    {
+      "title": "`ipsec_create()` usage",
+      "description": "Creates an IPSec SA/tunnel according to the _Security-Client_ header and the AKA information received in the 401 reply.",
+      "code": "...\nonreply\\_route\\[ipsec\\] {\n\tif ($T\\_reply\\_code == 401)\n\t\tif (ipsec\\_create())\n}\n..."
+    },
+    {
+      "title": "`$ipsec(field)` usage",
+      "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the local IPSec endpoint.",
+      "code": "...\nxlog(\"Using $ipsec(ip):$ipsec(port-c) and $ipsec(ip):$ipsec(port-s) socket\\\\n\");\n..."
+    },
+    {
+      "title": "`$ipsec_ue(field)` usage",
+      "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the remote IPSec endpoint.",
+      "code": "...\nxlog(\"Using $ipsec\\_ue(ip):$ipsec\\_ue(port-c) and $ipsec\\_ue(ip):$ipsec\\_ue(port-s) socket\\\\n\");\n..."
+    }
+  ]
+}

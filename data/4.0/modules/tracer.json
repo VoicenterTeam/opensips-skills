@@ -1,0 +1,354 @@
+{
+  "id": "module-tracer-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "tracer Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/tracer.html",
+  "content_markdown": "Offer a possibility to store incoming/outgoing SIP messages in database. Since version 2.2, proto_hep module needs to be loaded in order to duplicate with hep. All hep parameters moved inside proto_hep.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:49:54.767Z",
+  "module_name": "tracer",
+  "overview": "Offer a possibility to store incoming/outgoing SIP messages in database. Since version 2.2, proto_hep module needs to be loaded in order to duplicate with hep. All hep parameters moved inside proto_hep.",
+  "how_it_works": "The 2.2 version of OpenSIPS came with a major improvement in tracer module. Now all you have to do is call _trace()_ function with the proper parameters and it will do the job for you. Now you can trace messages, transactions and dialogs with the same function. Also, you can trace to multiple databases, multiple hep destinations and sip destinations using only one parameter. All you need now is defining _trace_id_ parameters in modparam section and switch between them in tracer function. Also you cand turn tracing on and off using _trace_on_ either globally(for all trace_ids) or for a certain trace_id.\n\nIMPORTANT: In 2.2 version support for stateless trace has been removed.\n\nThe tracing tracing can be turned on/off using fifo command.\n\nopensips-cli -x mi trace on opensips-cli -x mi trace \\[some\\_trace\\_id\\] on\n\nopensips-cli -x mi trace off opensips-cli -x mi trace \\[some\\_trace\\_id\\] off\n\nStarting with OpenSIPS 3.0 you can use the _trace_start_ to create dynamic dynamic tracing destinations based on some custom filters.",
+  "dependencies_required": [
+    {
+      "name": "database module",
+      "type": "module",
+      "reason": "mysql, postrgress, dbtext, unixodbc... only if you are using a database type trace id",
+      "optional": false
+    },
+    {
+      "name": "b2b_logic",
+      "type": "module",
+      "reason": "only if you want to trace B2B sessions",
+      "optional": false
+    },
+    {
+      "name": "dialog",
+      "type": "module",
+      "reason": "only if you want to trace SIP dialogs (INVITE based)",
+      "optional": false
+    },
+    {
+      "name": "tm",
+      "type": "module",
+      "reason": "only if you want to trace SIP transactions",
+      "optional": false
+    },
+    {
+      "name": "proto_hep",
+      "type": "module",
+      "reason": "only if you want to trace / replicate messages over HEP protocol",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "trace_on",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Parameter to enable/disable trace (on(1)/off(0))",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"tracer\", \"trace_on\", 1)"
+    },
+    {
+      "name": "trace_local_ip",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The address to be used in the fields that specify the source address (protocol, ip and port) for locally generated messages. If not set, the module sets it to the address of the socket that will be used to send the message. Protocol and/or port are optional and if omitted will take the default values: udp and 5060.",
+      "example_value": "10.1.1.1:5064",
+      "example_code": "modparam(\"tracer\", \"trace_local_ip\", \"10.1.1.1:5064\")"
+    },
+    {
+      "name": "trace_id",
+      "type": "string",
+      "description": "Specify a destination for the trace. This can be a hep id defined in proto_hep, a sip uri, a file, a syslog facility or a database url and a table. All parameters inside trace_id must be separated by ;, excepting the last one. The parameters are given in key-value format, the possible keys being uri for HEP and SIP IDs and uri and table for databases. The format is [id_name]key1=value1;key2=value2;. HEP id's MUST be defined in proto_hep in order to be able to use them here.\n\nWhen the uri is a file, the path to the file has to be specified after the colon. The output is always appended if the file exists, or created if it doesn't, using file_mode permissions.\n\nWhen the uri is syslog, it has to follow the following format: syslog[:FACILITY[:LEVEL]]. The default facility and levels are the ones used by OpenSIPS (syslog_facility and log_level). These can be tuned using syslog_default_facility and syslog_default_level parameters.\n\nOne can declare multiple types of tracing under the same trace id, being identified by their name. So if you define two database url, one hep uri and one sip uri with the same name, when calling trace() with this name tracing shall be done to all the destinations.\n\nAll the old parameter such as db_url, table and duplicate_uri will form the trace id with the name \"default\".",
+      "example_value": "[tid]\nuri=mysql://xxxx:xxxx@10.10.10.10/opensips;\ntable=new_sip_trace;",
+      "example_code": "modparam(\"tracer\", \"trace_id\",\n\"[tid]\nuri=mysql://xxxx:xxxx@10.10.10.10/opensips;\ntable=new_sip_trace;\")",
+      "notes": "No default value. If not set the module will be useless."
+    },
+    {
+      "name": "syslog_default_facility",
+      "type": "string",
+      "default_value": "the value of syslog_facility",
+      "description": "When syslog tracing is used, this parameter specifies the log facility to write traces to.",
+      "example_value": "LOG_DAEMON",
+      "example_code": "modparam(\"tracer\", \"syslog_default_facility\", \"LOG_DAEMON\")"
+    },
+    {
+      "name": "syslog_default_level",
+      "type": "integer",
+      "default_value": "the value of log_level",
+      "description": "When syslog tracing is used, this parameter specifies the level to write traces to.",
+      "example_value": "2",
+      "example_code": "modparam(\"tracer\", \"syslog_default_level\", 2)"
+    },
+    {
+      "name": "file_mode",
+      "type": "integer",
+      "default_value": "0600 (rw-------)",
+      "description": "When file tracing is used, this parameter specifies the permissions to be used to create the trace files. It follows the UNIX conventions.",
+      "example_value": "0644",
+      "example_code": "modparam(\"tracer\", \"file_mode\", 0644)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "trace",
+      "signature": "trace(trace_id, [scope], [type], [trace_attrs], [flags], [correlation_id])",
+      "parameters": [
+        {
+          "name": "trace_id",
+          "type": "string",
+          "required": true,
+          "description": "the name of the trace_id specifying where to do the tracing."
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "required": false,
+          "description": "what do you want to trace: dialog, transaction, B2B session or only the message. If not specified, will try the topmost trace that can be done: if dialog module loaded will trace dialogs, else if tm module loaded will trace transaction and if none of these loaded will trace messages.",
+          "valid_values": [
+            "m",
+            "M",
+            "t",
+            "T",
+            "d",
+            "D",
+            "b",
+            "B"
+          ]
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "list of types of messages to be traced by this function; if not set only sip messages shall be traced; if the parameter is set, but sip is not specified, sip shall not be traced; all the parameters from the list shall be separated by '|'",
+          "valid_values": [
+            "sip",
+            "xlog",
+            "rest"
+          ]
+        },
+        {
+          "name": "trace_attrs",
+          "type": "string",
+          "required": false,
+          "description": "this parameter replaces the traced_user_avp from the old version. To avoid duplicating an entry only for this parameter, whatever you put here(string/pvar) shall be stored in the trace_attrs column in the sip_trace table."
+        },
+        {
+          "name": "flags",
+          "type": "string,pvar",
+          "required": false,
+          "description": "are some control flags over the tracing process (how and what to be traced).",
+          "valid_values": [
+            "C",
+            "c"
+          ]
+        },
+        {
+          "name": "correlation_id",
+          "type": "string,pvar",
+          "required": false,
+          "description": "a custom SIP correlation ID to be forced (normally the SIP Call-ID is used) to correlate this traffic (transaction, dialog) with other traffic."
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Store or replicate current processed SIP message, transaction / dialog or B2B session. It is stored in the form prior applying chages made to it. The traced_user_avp parameter is now an argument to trace() function. Since version 2.2, this function also catches internally generated replies in stateless mode(sl_send_reply(...)). This function has replaced the _sip_trace()_ in OpenSIPS 3.0.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n/* see declaration of tid in trace_id section */\n\t$var(trace_id) = \"tid\";\n\t$var(user) = \"osip_user@opensips.org\";\n\n...\n/* Example 1: how to trace a dialog sip and xlog */\n\tif (has_totag()) {\n\t\tmatch_dialog();\n\t} else {\n\t\tif (is_method(\"INVITE\") {\n\t\t\ttrace($var(trace_id), \"d\", \"sip|xlog\", $var(user));\n\t\t}\n\t}",
+          "description": "Example 1: how to trace a dialog sip and xlog"
+        },
+        {
+          "language": "opensips",
+          "code": "...\n/* Example 2: how to trace initial INVITE and BYE, sip and rest */\n\tif (has_totag()) {\n\t\tif (is_method(\"BYE\")) {\n\t\t\ttrace($var(trace_id), \"m\", \"sip|rest\", $var(user));\n\t\t}\n\t} else {\n\t\tif (is_method(\"INVITE\")) {\n\t\t\ttrace($var(trace_id), \"m\", \"sip|rest\", $var(user));\n\t\t}\n\t}",
+          "description": "Example 2: how to trace initial INVITE and BYE, sip and rest"
+        },
+        {
+          "language": "opensips",
+          "code": "...\n/* Example 3: trace initial INVITE transaction's only xlog and rest, no sip */\n\tif (!has_totag()) {\n\t\tif (is_method(\"INVITE\")) {\n\t\t\ttrace($var(trace_id), \"t\", \"xlog|rest\", $var(user));\n\t\t}\n\t}",
+          "description": "Example 3: trace initial INVITE transaction's only xlog and rest, no sip"
+        },
+        {
+          "language": "opensips",
+          "code": "...\n/* Example 4: stateless transaction aware mode!*/\n/* tm module must not be loaded */\n\tif (is_method(\"REGISTER\")) {\n\t\ttrace($var(trace_id), \"t\", \"xlog|rest\", $var(user));\n\t\tif (!www_authorize(\"\", \"subscriber\")) {\n\t\t\t/* tracer will also catch the 401 generated by www_challenge() */\n\t\t\twww_challenge(\"\", \"auth\");\n\t\t}\n\t}",
+          "description": "Example 4: stateless transaction aware mode!"
+        }
+      ],
+      "related_functions": [
+        "sip_trace"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "trace",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": false,
+          "description": "the name of the tracing instance. If this parameter is missing the command will either dump info for all tace ids(and return the global tracing state) or set the global tracing state."
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "required": false,
+          "description": "possible values are: \"on\" - enable tracing, \"off\" - disable tracing. If the first parameter is missing, the command wil set the global tracing state, otherwise it will set the state for a specific trace id. If you turn global trace on but some of the trace ids had tracing set to off, then they shall not do tracing. If you want to turn the tracing on for all trace ids you will have to set it separately for each of them. If this parameter is missing but the first is set, the command will only dump info about that specific trace id. If both parameters are missing, the command will return the global tracing state and dump info for each id."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Returns the global tracing state and dumps info about trace ids."
+      },
+      "description": "Enable/disable tracing(globally or for a specific trace id) or dump info about trace ids. This command requires named parameters (each parameter is ginven in the format param\\_name=param\\_value).",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trace",
+          "description": "Display global tracing mode and all trace destinations"
+        },
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trace mode=off",
+          "description": "Turn off global tracing"
+        },
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi trace id=tid2 mode=on",
+          "description": "Turn on tracing for destination id tid2"
+        }
+      ]
+    },
+    {
+      "name": "tracer:start",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "the name of the tracing instance."
+        },
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "the destination uri for this instance."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "used to filter the traffic received by the sender. This parameter should be an array that can contain multiple filters in the _condition=value_ format. Possible values for the _condition_ argument are: caller, callee, ip. The _condition_ parameter can consist of multiple different filters. In order to satisfy the overall condition and send traffic to the desired destination, all conditions have to be satisfied. If this parameter is missing all traffic is forwarded to the destination. The filter is applied for any incoming request"
+        },
+        {
+          "name": "scope",
+          "type": "string",
+          "required": true,
+          "description": "the scope to engage the tracing for. The format received by this parameter is similar to the one received by the _trace()_ function."
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": true,
+          "description": "the type of messages you want to receive. The format received by this parameter is similar to the one received by the _trace()_ function."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Confirmation of the dynamic tracing destination creation."
+      },
+      "description": "Replaces obsolete MI command: _trace\\_start_. Creates a dynamic tracing destination based using custom filters. This function can be used to debug calls for certain destinations real-time. Dynamic destinations are not restart persistent!",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\topensips-cli -x mi tracer:start id=ip\\_filter uri=hep:10.0.0.1:9060 filter=ip=127.0.0.1",
+          "description": "MI FIFO Command to start tracing calls from IP 127.0.0.1 to HEP destination 10.0.0.1:9060"
+        },
+        {
+          "language": "opensips",
+          "code": "\t\topensips-cli -x mi tracer:start id=alice\\_bob uri=hep:10.0.0.1:9060 filter=caller=Alice filter=caller=Bob",
+          "description": "MI FIFO Command to start tracing calls from user Alice to user Bob"
+        }
+      ]
+    },
+    {
+      "name": "tracer:stop",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "the name of the tracing instance to be stopped."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Confirmation of stopping the trace."
+      },
+      "description": "Replaces obsolete MI command: _trace\\_stop_. Stops OpenSIPS from sending traffic to a dynamic trace id created using the _trace\\_start_ command.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "opensips-cli -x mi tracer:stop alice\\_bob",
+          "description": "MI FIFO Command to stop tracing calls from user Alice to user Bob"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "Parameter to enable/disable trace (on(1)/off(0))",
+      "code": "...\nmodparam(\"tracer\", \"trace\\_on\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_local_ip` parameter",
+      "description": "The address to be used in the fields that specify the source address (protocol, ip and port) for locally generated messages. If not set, the module sets it to the address of the socket that will be used to send the message. Protocol and/or port are optional and if omitted will take the default values: udp and 5060.",
+      "code": "...\n#Resulting address: udp:10.1.1.1:5064\nmodparam(\"tracer\", \"trace\\_local\\_ip\", \"10.1.1.1:5064\")\n...\n...\n#Resulting address: tcp:10.1.1.1:5060\nmodparam(\"tracer, \"trace\\_local\\_ip\", \"tcp:10.1.1.1\")\n...\n...\n#Resulting address: tcp:10.1.1.1:5064\nmodparam(\"tracer\", \"trace\\_local\\_ip\", \"tcp:10.1.1.1:5064\")\n...\n...\n#Resulting address: udp:10.1.1.1:5060\nmodparam(\"tracer\", \"trace\\_local\\_ip\", \"10.1.1.1\")\n..."
+    },
+    {
+      "title": "Set `trace_id` parameter",
+      "description": "Specify a destination for the trace. This can be a hep id defined in proto\\_hep, a sip uri, a file, a syslog facility or a database url and a table. All parameters inside \\_trace\\_id\\_ must be separated by \\_;\\_, excepting the last one. The parameters are given in key-value format, the possible keys being \\_uri\\_ for HEP and SIP IDs and \\_uri\\_ and \\_table\\_ for databases. The format is \\_\\[id\\_name\\]key1=value1;key2=value2;\\_. HEP id's **MUST** be defined in proto\\_hep in order to be able to use them here.",
+      "code": "...\n/*DB trace id*/\nmodparam(\"tracer\", \"trace\\_id\",\n\"[tid]\nuri=mysql://xxxx:xxxx@10.10.10.10/opensips;\ntable=new\\_sip\\_trace;\")\n/* hep trace id with the hep id defined in proto\\_hep; check proto\\_hep docs\n * for more information */\nmodparam(\"proto\\_hep\", \"hep\\_id\",  \"[hid]10.10.10.10\")\nmodparam(\"tracer\", \"trace\\_id\", \"[tid]uri=hep:hid\")\n/*sip trace id*/\nmodparam(\"tracer\", \"trace\\_id\",\n\"[tid]uri=sip:10.10.10.11:5060\")\n/* notice that they all have the same name\n * meaning that calling trace(\"tid\",...)\n * will do sql, sip and hep tracing */\n/*file trace id*/\nmodparam(\"tracer\", \"trace\\_id\",\n\"[tid]uri=file:/path/to/file\")\n/*syslog trace id at error (level -1)*/\nmodparam(\"tracer\", \"trace\\_id\",\n\"[tid]uri=syslog:local0:-1\")\n..."
+    },
+    {
+      "title": "Set `syslog_default_facility` parameter",
+      "description": "When \\_syslog\\_ tracing is used, this parameter specifies the log facility to write traces to.",
+      "code": "...\nmodparam(\"tracer\", \"syslog\\_default\\_facility\", \"LOG\\_DAEMON\")\n..."
+    },
+    {
+      "title": "Set `syslog_default_level` parameter",
+      "description": "When \\_syslog\\_ tracing is used, this parameter specifies the level to write traces to.",
+      "code": "...\nmodparam(\"tracer\", \"syslog\\_default\\_level\", 2) # NOTICE\n..."
+    },
+    {
+      "title": "Set `file_mode` parameter",
+      "description": "When \\_file\\_ tracing is used, this parameter specifies the permissions to be used to create the trace files. It follows the UNIX conventions.",
+      "code": "...\nmodparam(\"tracer\", \"file\\_mode\", 0644)\n..."
+    },
+    {
+      "title": "`trace()` usage",
+      "description": "Store or replicate current processed SIP message, transaction / dialog or B2B session. It is stored in the form prior applying chages made to it. The traced\\_user\\_avp parameter is now an argument to trace() function. Since version 2.2, this function also catches internally generated replies in stateless mode(sl\\_send\\_reply(...)).",
+      "code": "...\n/* see declaration of tid in trace\\_id section */\n\t$var(trace\\_id) = \"tid\";\n\t$var(user) = \"osip\\_user@opensips.org\";\n\n...\n/* Example 1: how to trace a dialog sip and xlog */\n\tif (has\\_totag()) {\n\t\tmatch\\_dialog();\n\t} else {\n\t\tif (is\\_method(\"INVITE\") {\n\t\t\ttrace($var(trace\\_id), \"d\", \"sip|xlog\", $var(user));\n\t\t}\n\t}\n...\n/* Example 2: how to trace initial INVITE and BYE, sip and rest */\n\tif (has\\_totag()) {\n\t\tif (is\\_method(\"BYE\")) {\n\t\t\ttrace($var(trace\\_id), \"m\", \"sip|rest\", $var(user));\n\t\t}\n\t} else {\n\t\tif (is\\_method(\"INVITE\")) {\n\t\t\ttrace($var(trace\\_id), \"m\", \"sip|rest\", $var(user));\n\t\t}\n\t}\n\n...\n/* Example 3: trace initial INVITE transaction's only xlog and rest, no sip */\n\tif (!has\\_totag()) {\n\t\tif (is\\_method(\"INVITE\")) {\n\t\t\ttrace($var(trace\\_id), \"t\", \"xlog|rest\", $var(user));\n\t\t}\n\t}\n...\n/* Example 4: stateless transaction aware mode!*/\n/* tm module must not be loaded */\n\tif (is\\_method(\"REGISTER\")) {\n\t\ttrace($var(trace\\_id), \"t\", \"xlog|rest\", $var(user));\n\t\tif (!www\\_authorize(\"\", \"subscriber\")) {\n\t\t\t/* tracer will also catch the 401 generated by www\\_challenge() */\n\t\t\twww\\_challenge(\"\", \"auth\");\n\t\t}\n\t}\n..."
+    }
+  ]
+}

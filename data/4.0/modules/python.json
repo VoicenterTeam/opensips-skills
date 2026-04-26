@@ -1,0 +1,98 @@
+{
+  "id": "module-python-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "python Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/python.html",
+  "content_markdown": "This module can be used to efficiently run Python code directly from the OpenSIPS script, without executing the _python_ interpreter.\n\nThe module provides the means to load a python module and run its functions. Each function has to receive the SIP message as parameter, and optionally some extra arguments passed from the script.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:37:57.329Z",
+  "module_name": "python",
+  "overview": "This module can be used to efficiently run Python code directly from the OpenSIPS script, without executing the _python_ interpreter.\n\nThe module provides the means to load a python module and run its functions. Each function has to receive the SIP message as parameter, and optionally some extra arguments passed from the script.",
+  "how_it_works": "In order to run Python functions, one has to load the module that contains them, by specifying the script name using the _script\\_name_ parameter. The module has to contain the following components:\n\n*   A class that contains all the methods that can be invoked from the script.\n    \n*   A method within the class that is called when a SIP child is created. The method should receive an integer parameter, which represents the rank of the child, and must return 0 or positive in case the function was executed successfully, or negative otherwise. The name of this method is specified by the _child\\_init\\_method_ parameter.\n    \n*   A global function that initializes the Python module and returns an object from the class whose functions will be invoked by the script. The name of the global function is indicated by the _mod\\_init\\_method_ parameter.\n    \nA minimal example of a Python script that satisfies these requirements is:\n\n\tdef mod\\_init():\n\t\treturn SIPMsg()\n\n\tclass SIPMsg:\n        def child\\_init(self, rank):\n\t        return 0\n\t\t\n\nA function from the object returned above can be executed from the script using the _python\\_exec()_ script function. The python method has to receive the following parameters:\n\n*   The SIP message, that has the structure detailed below\n    \n*   Optionally, a string passed from the script\n    \nThe SIP message received as parameter by the function has the following fields and methods:\n\n*   _Type_ - the type of the message, either _SIP\\_REQUEST_ or _SIP\\_REPLY_\n    \n*   _Method_ - the method of the message\n    \n*   _Status_ - the status of the message, available only for replies\n    \n*   _RURI_ - the R-URI of the message, available only for requests\n    \n*   _src\\_address_ - the (IP, port) tuple representing source address of the message\n    \n*   _dst\\_address_ - the (IP, port) tuple representing the destination address (OpenSIPS address) of the message\n    \n*   _copy()_ - copies the current SIP message in a new object\n    \n*   _rewrite\\_ruri()_ - changes the R-URI of the message; available only for requests\n    \n*   _set\\_dst\\_uri()_ - sets the destination URI of the message; available only for requests\n    \n*   _getHeader()_ - returns the header of a message\n    \n*   _call\\_function()_ - calls built-in script function or function exported by other module\n    \n*   _get\\_pseudoVar(name)_ - returns the value of the the pseudo-variable specified by the _name_ as Unicode string.\n    \n*   _set\\_pseudoVar(name, value)_ - sets pseudo-variable using Unicode string _value_.",
+  "dependencies_required": [
+    {
+      "name": "python-dev",
+      "type": "library",
+      "reason": "provides the Python bindings",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "script_name",
+      "type": "string",
+      "default_value": "/usr/local/etc/opensips/handler.py",
+      "description": "The script that contains the Python module.",
+      "example_value": "/usr/local/bin/opensips_handler.py",
+      "example_code": "modparam(\"python\", \"script\\_name\", \"/usr/local/bin/opensips\\_handler.py\")"
+    },
+    {
+      "name": "mod_init_function",
+      "type": "string",
+      "default_value": "mod_init",
+      "description": "The method used to initialize the Python module and return the object.",
+      "example_value": "module_initializer",
+      "example_code": "modparam(\"python\", \"mod\\_init\\_function\", \"module\\_initializer\")"
+    },
+    {
+      "name": "child_init_method",
+      "type": "string",
+      "default_value": "child_init",
+      "description": "The method called for each child process.",
+      "example_value": "child_initializer",
+      "example_code": "modparam(\"python\", \"child\\_init\\_method\", \"child\\_initializer\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "python_exec",
+      "signature": "python_exec(method_name [, extra_args])",
+      "parameters": [
+        {
+          "name": "method_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the method called"
+        },
+        {
+          "name": "extra_args",
+          "type": "string",
+          "required": false,
+          "description": "extra arguments that can be passed from the script to the python function"
+        }
+      ],
+      "return_type": "",
+      "description": "This function is used to execute a method from the Python module loaded.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": []
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `script_name` parameter",
+      "description": "Sets the script that contains the Python module.",
+      "code": "...\nmodparam(\"python\", \"script_name\", \"/usr/local/bin/opensips_handler.py\")\n..."
+    },
+    {
+      "title": "Set `mod_init_function` parameter",
+      "description": "Sets the method used to initialize the Python module and return the object.",
+      "code": "...\nmodparam(\"python\", \"mod_init_function\", \"module_initializer\")\n..."
+    },
+    {
+      "title": "Set `child_init_method` parameter",
+      "description": "Sets the method called for each child process.",
+      "code": "...\nmodparam(\"python\", \"child_init_method\", \"child_initializer\")\n..."
+    }
+  ]
+}

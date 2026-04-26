@@ -1,0 +1,84 @@
+{
+  "id": "module-event_sqs-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "event_sqs Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/event_sqs.html",
+  "content_markdown": "The event_sqs module is an implementation of an Amazon SQS producer. It serves as a transport backend for the Event Interface and also provides a stand-alone connector to be used from the OpenSIPS script in order to publish messages to SQS queues.\n\n[https://aws.amazon.com/sqs/](https://aws.amazon.com/sqs/)",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:23:52.304Z",
+  "module_name": "event_sqs",
+  "overview": "The event_sqs module is an implementation of an Amazon SQS producer. It serves as a transport backend for the Event Interface and also provides a stand-alone connector to be used from the OpenSIPS script in order to publish messages to SQS queues.\n\n[https://aws.amazon.com/sqs/](https://aws.amazon.com/sqs/)",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "AWS SDK for C++",
+      "type": "library",
+      "reason": "Must be installed before running OpenSIPS with this module loaded",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "localstack"
+  ],
+  "exported_parameters": [
+    {
+      "name": "queue_url",
+      "type": "string",
+      "description": "This parameter specifies the configuration for an SQS queue that can be used to publish messages directly from the script, using the sqs_publish_message() function or to send messages using raise_event function.\n\nThe format of the parameter is: [ID]sqs_url, where ID is an identifier for this SQS queue instance and sqs_url is the full url of the queue.\n\nThe queue_url contains:\n\n*   _endpoint_\n    \n*   _region_",
+      "example_value": "[q1]https://sqs.us-west-2.amazonaws.com/123456789012/Queue1",
+      "example_code": "modparam(\"event_sqs\", \"queue_url\",\n\t  \"[q1]https://sqs.us-west-2.amazonaws.com/123456789012/Queue1\")\n\nmodparam(\"event_sqs\", \"queue_url\",\n\t  \"[q2]http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/Queue2\")",
+      "notes": "This parameter can be set multiple times."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "sqs_publish_message",
+      "signature": "sqs_publish_message(queue_id, message)",
+      "parameters": [
+        {
+          "name": "queue_id",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the SQS queue. Must be one of the IDs defined through the `queue_url` modparam."
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "required": true,
+          "description": "The payload of the message to publish."
+        }
+      ],
+      "return_type": "int",
+      "description": "Publishes a message to an SQS queue. As the actual send operation is done asynchronously, this function does not block and returns immediately after queuing the message for sending.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$var(msg) = \"Hello, this is a message to SQS!\";\nsqs_publish_message(\"q1\", $var(msg));",
+          "description": "sqs_publish_message() function usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Event-Driven Messaging with Event Interface",
+      "description": "OpenSIPS' event interface can be utilized to send messages to SQS by subscribing to an event and raising it when needed.\n\nSteps:\n\n*   _Event Subscription:_\n    \n    First, register the event subscription in your OpenSIPS configuration file within the `startup_route`:\n    \n*   _Event Subscription via CLI:_\n    \n    After starting OpenSIPS, you can subscribe to the event from another terminal using the OpenSIPS CLI:\n    \n*   _Raise the Event and Send Message:_\n    \n    Finally, to send a message, raise the subscribed event with the desired message content:",
+      "code": "subscribe_event(\"MY_EVENT\",\n\t\"sqs:http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/Queue2\");\n\nopensips-cli -x mi event_subscribe MY_EVENT \\\\\n\t  sqs:http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/Queue2\n\nopensips-cli -x mi raise_event MY_EVENT 'OpenSIPS Message'"
+    }
+  ]
+}

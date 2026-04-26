@@ -1,0 +1,196 @@
+{
+  "id": "module-auth_web3-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "auth_web3 Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/auth_web3.html",
+  "content_markdown": "The auth_web3 module provides Web3-based authentication for OpenSIPS, enabling SIP authentication through blockchain technology and ENS (Ethereum Name Service) resolution. This module integrates with the Oasis Sapphire blockchain network to verify SIP digest authentication responses and resolve ENS names to wallet addresses.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:43:23.745Z",
+  "module_name": "auth_web3",
+  "overview": "The auth_web3 module provides Web3-based authentication for OpenSIPS, enabling SIP authentication through blockchain technology and ENS (Ethereum Name Service) resolution. This module integrates with the Oasis Sapphire blockchain network to verify SIP digest authentication responses and resolve ENS names to wallet addresses.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libcurl",
+      "type": "library",
+      "reason": "For HTTP RPC calls to blockchain networks",
+      "optional": false
+    },
+    {
+      "name": "OpenSSL",
+      "type": "library",
+      "reason": "For cryptographic operations",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "authentication_rpc_url",
+      "type": "string",
+      "default_value": "None (must be configured)",
+      "description": "RPC URL for the blockchain network (e.g., Oasis Sapphire testnet or mainnet). This parameter specifies the endpoint for blockchain communication.",
+      "example_value": "https://testnet.sapphire.oasis.dev",
+      "example_code": "modparam(\"auth_web3\", \"authentication_rpc_url\", \"https://testnet.sapphire.oasis.dev\")"
+    },
+    {
+      "name": "authentication_contract_address",
+      "type": "string",
+      "default_value": "None (must be configured)",
+      "description": "Address of the smart contract that handles authentication verification. This contract must implement the authenticateUser function for digest verification.",
+      "example_value": "0xE773BB79689379d32Ad1Db839868b6756B493aea",
+      "example_code": "modparam(\"auth_web3\", \"authentication_contract_address\", \"0xE773BB79689379d32Ad1Db839868b6756B493aea\")"
+    },
+    {
+      "name": "ens_rpc_url",
+      "type": "string",
+      "default_value": "None (must be configured)",
+      "description": "RPC URL for the Ethereum network used for ENS resolution. This should point to an Ethereum mainnet RPC endpoint for ENS name resolution.",
+      "example_value": "https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY",
+      "example_code": "modparam(\"auth_web3\", \"ens_rpc_url\", \"https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY\")"
+    },
+    {
+      "name": "ens_registry_address",
+      "type": "string",
+      "default_value": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e (ENS Registry)",
+      "description": "Address of the ENS registry contract on Ethereum mainnet. This is used for resolving ENS names to wallet addresses.",
+      "example_value": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "example_code": "modparam(\"auth_web3\", \"ens_registry_address\", \"0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e\")"
+    },
+    {
+      "name": "contract_debug_mode",
+      "type": "integer",
+      "default_value": "0 (disabled)",
+      "description": "Enable debug logging for blockchain contract interactions. When enabled, detailed logs are generated for debugging purposes.",
+      "example_value": "1",
+      "example_code": "modparam(\"auth_web3\", \"contract_debug_mode\", 1)"
+    },
+    {
+      "name": "rpc_timeout",
+      "type": "integer",
+      "default_value": "10 seconds",
+      "description": "Timeout in seconds for blockchain RPC calls. This parameter controls how long to wait for blockchain responses.",
+      "example_value": "15",
+      "example_code": "modparam(\"auth_web3\", \"rpc_timeout\", 15)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "web3_www_authenticate",
+      "signature": "web3_www_authenticate(realm, method)",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": true,
+          "description": "Authentication realm (usually the domain name)"
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": false,
+          "description": "SIP method (REGISTER, INVITE, etc.). If not provided, uses the actual SIP method from the request"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "AUTHORIZED - Authentication successful"
+        },
+        {
+          "value": "-1",
+          "condition": "ERROR - Authentication failed or error occurred"
+        }
+      ],
+      "description": "Performs Web3-based authentication for WWW-Authenticate challenges. Verifies SIP digest authentication through blockchain contracts and ENS resolution.\n\nThis function extracts digest parameters from the Authorization header, resolves ENS names to wallet addresses, and verifies the digest response on the blockchain.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# REGISTER authentication\nif (is_method(\"REGISTER\")) {\n    if (!$hdr(Authorization)) {\n        www_challenge(\"$td\", \"0\");\n        exit;\n    }\n    if (web3_www_authenticate(\"$td\", \"REGISTER\")) {\n        # Authentication successful\n        save(\"location\");\n        exit;\n    } else {\n        send_reply(401, \"Unauthorized\");\n        exit;\n    }\n}",
+          "description": "REGISTER authentication",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "www_challenge"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "web3_proxy_authenticate",
+      "signature": "web3_proxy_authenticate(realm, method)",
+      "parameters": [
+        {
+          "name": "realm",
+          "type": "string",
+          "required": true,
+          "description": "Authentication realm (usually the domain name)"
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": false,
+          "description": "SIP method (REGISTER, INVITE, etc.). If not provided, uses the actual SIP method from the request"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "AUTHORIZED - Authentication successful"
+        },
+        {
+          "value": "-1",
+          "condition": "ERROR - Authentication failed or error occurred"
+        }
+      ],
+      "description": "Performs Web3-based authentication for Proxy-Authenticate challenges. Similar to web3_www_authenticate but for proxy authentication scenarios.\n\nThis function works identically to web3_www_authenticate but is designed for proxy authentication flows where Proxy-Authorization headers are used.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# INVITE authentication with proxy auth\nif (is_method(\"INVITE\")) {\n    if (!$hdr(Authorization)) {\n        www_challenge(\"$fd\", \"0\");\n        exit;\n    }\n    if (web3_proxy_authenticate(\"$fd\", \"INVITE\")) {\n        # Authentication successful\n    } else {\n        send_reply(407, \"Proxy Authentication Required\");\n        exit;\n    }\n}",
+          "description": "INVITE authentication with proxy auth",
+          "context": "REQUEST_ROUTE"
+        }
+      ],
+      "related_functions": [
+        "proxy_challenge"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Single Network Mode (Fallback)",
+      "description": "When web3_ens_rpc_url is not configured, all blockchain operations use the same RPC endpoint specified in web3_authentication_rpc_url. This mode is suitable when both ENS and authentication contracts are deployed on the same network.",
+      "code": "# Single network configuration\nmodparam(\"auth_web3\", \"web3_authentication_rpc_url\", \"https://ethereum-sepolia-rpc.publicnode.com\")\nmodparam(\"auth_web3\", \"web3_authentication_contract_address\", \"0xYourContract\")\n# ens_rpc_url not set - will use authentication_rpc_url for ENS"
+    },
+    {
+      "title": "Dual Network Mode",
+      "description": "When web3_ens_rpc_url is configured, ENS resolution queries use the specified Ethereum RPC endpoint while authentication queries use the Oasis Sapphire RPC endpoint. This is the recommended production configuration.",
+      "code": "# Dual network configuration\n# Authentication on Oasis Sapphire\nmodparam(\"auth_web3\", \"web3_authentication_rpc_url\", \"https://testnet.sapphire.oasis.dev\")\nmodparam(\"auth_web3\", \"web3_authentication_contract_address\", \"0xYourOasisContract\")\n\n# ENS resolution on Ethereum\nmodparam(\"auth_web3\", \"web3_ens_rpc_url\", \"https://eth.drpc.org\")\nmodparam(\"auth_web3\", \"web3_ens_registry_address\", \"0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e\")"
+    },
+    {
+      "title": "Production Setup",
+      "description": "Production deployments typically use Ethereum mainnet for ENS and Oasis Sapphire mainnet for authentication:",
+      "code": "loadmodule \"auth_web3.so\"\n\n# Oasis Sapphire Mainnet\nmodparam(\"auth_web3\", \"web3_authentication_rpc_url\", \"https://sapphire.oasis.io\")\nmodparam(\"auth_web3\", \"web3_authentication_contract_address\", \"0xYourProductionContract\")\n\n# Ethereum Mainnet for ENS\nmodparam(\"auth_web3\", \"web3_ens_rpc_url\", \"https://eth.drpc.org\")\nmodparam(\"auth_web3\", \"web3_ens_registry_address\", \"0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e\")\n\n# Optional: Enable debug logging\nmodparam(\"auth_web3\", \"web3_contract_debug_mode\", 0)"
+    },
+    {
+      "title": "Testing Setup",
+      "description": "For testing and development, use Sepolia testnet for ENS and Oasis Sapphire testnet for authentication:",
+      "code": "loadmodule \"auth_web3.so\"\n\n# Oasis Sapphire Testnet\nmodparam(\"auth_web3\", \"web3_authentication_rpc_url\", \"https://testnet.sapphire.oasis.dev\")\nmodparam(\"auth_web3\", \"web3_authentication_contract_address\", \"0xYourTestContract\")\n\n# Ethereum Sepolia for ENS\nmodparam(\"auth_web3\", \"web3_ens_rpc_url\", \"https://ethereum-sepolia-rpc.publicnode.com\")\nmodparam(\"auth_web3\", \"web3_ens_registry_address\", \"0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e\")\n\n# Enable debug logging for testing\nmodparam(\"auth_web3\", \"web3_contract_debug_mode\", 1)"
+    }
+  ]
+}

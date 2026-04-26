@@ -1,0 +1,522 @@
+{
+  "id": "module-mathops-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mathops Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mathops.html",
+  "content_markdown": "The mathops module provides a series of functions which enable various floating point operations at OpenSIPS script level.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:36:42.325Z",
+  "module_name": "mathops",
+  "overview": "The mathops module provides a series of functions which enable various floating point operations at OpenSIPS script level.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "decimal_digits",
+      "type": "integer",
+      "default_value": "6",
+      "description": "The precision of the results returned by all the module functions. The higher the “decimal\\_digits” value, the more decimal digits the results will have.",
+      "example_value": "10",
+      "example_code": "modparam(\"mathops\", \"decimal\\_digits\", 10)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "math_eval",
+      "signature": "math_eval(expression, result_var)",
+      "parameters": [
+        {
+          "name": "expression",
+          "type": "string",
+          "required": true,
+          "description": "a mathematical expression.",
+          "valid_values": [
+            "Nested parentheses",
+            "addition (+)",
+            "subtraction/negation (-)",
+            "multiplication (*)",
+            "division (/)",
+            "exponentiation (^)",
+            "modulus (%)",
+            "abs",
+            "acos",
+            "asin",
+            "atan",
+            "ceil",
+            "cos",
+            "cosh",
+            "exp",
+            "floor",
+            "ln",
+            "log",
+            "sin",
+            "sinh",
+            "sqrt",
+            "tan",
+            "tanh"
+          ]
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "The function evaluates a given expression and writes the result in the output pseudo-variable. Evaluation uses tinyexpr (see https://github.com/codeplea/tinyexpr). Currently allowed syntax for specifying an expression: Nested parentheses, addition (+), subtraction/negation (-), multiplication (*), division (/), exponentiation (^) and modulus (%) with the normal operator precedence (the one exception being that exponentiation is evaluated left-to-right), C math functions: abs (calls to fabs), acos, asin, atan, ceil, cos, cosh, exp, floor, ln (calls to log), log (calls to log10), sin, sinh, sqrt, tan, tanh.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Compute some random math expression\n\n$avp(1) = \"3.141592\";\n$avp(2) = \"2.71828\";\n$avp(3) = \"123.45678\";\n\nif (math_eval(\"$avp(1) * ($avp(3) - ($avp(1) - $avp(2))) / $avp(3)\", $avp(result))) {\n\txlog(\"Result of expression: $avp(result)\\n\");\n} else {\n\txlog(\"Math eval failed!\\n\");\n}\n\n...",
+          "description": "math_eval usage"
+        }
+      ]
+    },
+    {
+      "name": "math_rpn",
+      "signature": "math_rpn(expression, result_var)",
+      "parameters": [
+        {
+          "name": "expression",
+          "type": "string",
+          "required": true,
+          "description": "a RPN expression.",
+          "valid_values": [
+            "+",
+            "-",
+            "/",
+            "*",
+            "mod",
+            "pow",
+            "neg",
+            "exp",
+            "ln",
+            "log10",
+            "abs",
+            "sqrt",
+            "cbrt",
+            "floor",
+            "ceil",
+            "round",
+            "nearbyint",
+            "trunc",
+            "e",
+            "pi",
+            "drop",
+            "dup",
+            "swap"
+          ]
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "The function evaluates a given RPN expression and writes the result in the output variable. The expression is specified in Reverse Polish Notation. Values are pushed onto a stack, while operations are executed on that stack. The following operations are supported: binary operators: + - / * mod pow, unary functions: neg exp ln log10 abs sqrt cbrt floor ceil round nearbyint trunc, constants: e pi, stack manipulations commands: drop dup swap.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$avp(1) = \"3\";\n\nif (math_rpn(\"1 $avp(1) swap swap dup drop / exp ln 1 swap /\", $avp(result))) {\n\txlog(\"Result of expression: $avp(result)\\n\");\n} else {\n\txlog(\"RPN eval failed!\\n\");\n}\n\n/* This example RPN script will push 1 then 3 onto the stack, then do a couple no-ops\n(exchange the two values twice, duplicate one of them then drop the duplicate),\ncompute the division of 1 by 3, then do another no-op (exponentiation then logarithm), and\nfinally compute 1 divided by the result, giving 3 as the result. */",
+          "description": "math_rpn usage"
+        }
+      ]
+    },
+    {
+      "name": "math_trunc",
+      "signature": "math_trunc(number, result_var)",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "Number to be truncated."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "Truncation of a number towards zero. This means that trunc(3.7) = 3.0 and trunc(-2.9) = -2.0.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_trunc($avp(1), $avp(result))) {\n\txlog(\"Truncate result: $avp(result)\\n\");\n} else {\n\txlog(\"Truncate failed!\\n\");\n}\n...",
+          "description": "math_trunc usage"
+        }
+      ]
+    },
+    {
+      "name": "math_floor",
+      "signature": "math_floor(number, result_var)",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "Number to be truncated."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "Truncates a number, always towards -infinity. This means that floor(3.7) = 3.0 and floor(-2.9) = -3.0",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_floor($avp(1), $avp(result))) {\n\txlog(\"Floor result: $avp(result)\\n\");\n} else {\n\txlog(\"Floor operation failed!\\n\");\n}\n...",
+          "description": "math_floor usage"
+        }
+      ]
+    },
+    {
+      "name": "math_ceil",
+      "signature": "math_ceil(number, result_var)",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "Number to be truncated."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "Truncates a number, always towards +infinity. This means that ceil(3.2) = 4.0 and ceil(-2.9) = -2.0",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_ceil($avp(1), $avp(result))) {\n\txlog(\"Ceil result: $avp(result)\\n\");\n} else {\n\txlog(\"Ceil operation failed!\\n\");\n}\n...",
+          "description": "math_ceil usage"
+        }
+      ]
+    },
+    {
+      "name": "math_round",
+      "signature": "math_round(number, result_var[, decimals])",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "Number to be rounded."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        },
+        {
+          "name": "decimals",
+          "type": "int",
+          "required": false,
+          "description": "further improves the precision of the rounding."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "The round function returns the nearest integer, and tie-breaking is done away from zero. Examples: round(1.2) = 1.0, round(0.5) = 1.0, round(-0.5) = -1.0. By default, the function returns an integer. An additional parameter controls the number of decimal digits of the initial number which will be kept. The rounding will then be done using the remaining decimal digits, and the result will be a float value, represented as a string.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Rounding PI\n\n$avp(1) = \"3.141492\";\n\nif (math_round($avp(1), $avp(result))) {\n\n\t# result should be: 3\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n\n...\n\nif (math_round($avp(1), $avp(result), 4)) {\n\n\t# result should be: \"3.1415\"\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n...",
+          "description": "math_round usage"
+        }
+      ]
+    },
+    {
+      "name": "math_round_sf",
+      "signature": "math_round_sf(number, result_var, figures)",
+      "parameters": [
+        {
+          "name": "number",
+          "type": "string",
+          "required": true,
+          "description": "Number to be rounded."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the evaluation."
+        },
+        {
+          "name": "figures",
+          "type": "int",
+          "required": true,
+          "description": "further improves the precision of the rounding."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "To give a simple explanation, rounding to N significant figures is done by first obtaining the number resulted from keeping N significant figures (0 padded if necessary), then adjusting it if the N+1'th digit is greater or equal to 5. Some examples: round_sf(17892.987, 1) = 20000, round_sf(17892.987, 2) = 18000, round_sf(17892.987, 3) = 17900, round_sf(17892.987, 4) = 17890, round_sf(17892.987, 5) = 17893, round_sf(17892.987, 6) = 17893.0, round_sf(17892.987, 7) = 17892.99",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Rounding PI\n\n$avp(1) = \"3.141492\";\n\nif (math_round_sf($avp(1), $avp(result), 4)) {\n\n\t# result should be: \"3.141\"\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n\n...",
+          "description": "math_round_sf usage"
+        }
+      ]
+    },
+    {
+      "name": "math_compare",
+      "signature": "math_compare(exp1, exp2, result_var)",
+      "parameters": [
+        {
+          "name": "exp1",
+          "type": "string",
+          "required": true,
+          "description": "First expression to be evaluated and used for comparison."
+        },
+        {
+          "name": "exp2",
+          "type": "string",
+          "required": true,
+          "description": "Second expression to be evaluated and used for comparison."
+        },
+        {
+          "name": "result_var",
+          "type": "var",
+          "required": true,
+          "description": "variable which will hold the result of the comparison."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success"
+        },
+        {
+          "value": "-1",
+          "condition": "failure"
+        }
+      ],
+      "description": "Compare exp1 with exp2 and returns the comparison result in the result_var. Standard comparison return codes used : If exp1 > exp2, result_var = 1. Else if exp2 > exp1, result_var = -1, else (in case they are equal), 0 is populated in the result_var",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "LOCAL_ROUTE",
+        "STARTUP_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Rounding PI\n\n$var(exp1) = \"1 + 8\";\n$var(exp2) = \"7/2\";\n\nif (math_compare($var(exp1), $var(exp2), $var(result))) {\n\n\t# $var(result) will be 1, since 9 > 3.5\n}\n\n...",
+          "description": "math_compare usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the decimal_digits module parameter",
+      "description": "Sets the decimal_digits module parameter.",
+      "code": "modparam(\"mathops\", \"decimal_digits\", 10)"
+    },
+    {
+      "title": "`math_eval` usage",
+      "description": "Computes a random math expression.",
+      "code": "...\n# Compute some random math expression\n\n$avp(1) = \"3.141592\";\n$avp(2) = \"2.71828\";\n$avp(3) = \"123.45678\";\n\nif (math_eval(\"$avp(1) * ($avp(3) - ($avp(1) - $avp(2))) / $avp(3)\", $avp(result))) {\n\txlog(\"Result of expression: $avp(result)\\n\");\n} else {\n\txlog(\"Math eval failed!\\n\");\n}\n\n..."
+    },
+    {
+      "title": "`math_rpn` usage",
+      "description": "Evaluates a Reverse Polish Notation (RPN) expression.",
+      "code": "$avp(1) = \"3\";\n\nif (math_rpn(\"1 $avp(1) swap swap dup drop / exp ln 1 swap /\", $avp(result))) {\n\txlog(\"Result of expression: $avp(result)\\n\");\n} else {\n\txlog(\"RPN eval failed!\\n\");\n}\n\n/* This example RPN script will push 1 then 3 onto the stack, then do a couple no-ops\n(exchange the two values twice, duplicate one of them then drop the duplicate),\ncompute the division of 1 by 3, then do another no-op (exponentiation then logarithm), and\nfinally compute 1 divided by the result, giving 3 as the result. */"
+    },
+    {
+      "title": "`math_trunc` usage",
+      "description": "Truncates a random number.",
+      "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_trunc($avp(1), $avp(result))) {\n\txlog(\"Truncate result: $avp(result)\\n\");\n} else {\n\txlog(\"Truncate failed!\\n\");\n}\n..."
+    },
+    {
+      "title": "`math_floor` usage",
+      "description": "Truncates a random number.",
+      "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_floor($avp(1), $avp(result))) {\n\txlog(\"Floor result: $avp(result)\\n\");\n} else {\n\txlog(\"Floor operation failed!\\n\");\n}\n..."
+    },
+    {
+      "title": "`math_ceil` usage",
+      "description": "Truncates a random number.",
+      "code": "...\n# Truncate a random number\n\n$avp(1) = \"3.141492\";\n\nif (math_ceil($avp(1), $avp(result))) {\n\txlog(\"Ceil result: $avp(result)\\n\");\n} else {\n\txlog(\"Ceil operation failed!\\n\");\n}\n..."
+    },
+    {
+      "title": "`math_round` usage",
+      "description": "Rounds PI.",
+      "code": "...\n# Rounding PI\n\n$avp(1) = \"3.141492\";\n\nif (math_round($avp(1), $avp(result))) {\n\n\t# result should be: 3\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n\n...\n\nif (math_round($avp(1), $avp(result), 4)) {\n\n\t# result should be: \"3.1415\"\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n..."
+    },
+    {
+      "title": "`math_round_sf` usage",
+      "description": "Rounds PI.",
+      "code": "...\n# Rounding PI\n\n$avp(1) = \"3.141492\";\n\nif (math_round_sf($avp(1), $avp(result), 4)) {\n\n\t# result should be: \"3.141\"\n\txlog(\"Round result: $avp(result)\\n\");\n} else {\n\txlog(\"Round operation failed!\\n\");\n}\n\n..."
+    },
+    {
+      "title": "`math_compare` usage",
+      "description": "Compares two expressions.",
+      "code": "...\n# Rounding PI\n\n$var(exp1) = \"1 + 8\";\n$var(exp2) = \"7/2\";\n\nif (math_compare($var(exp1), $var(exp2), $var(result))) {\n\n\t# $var(result) will be 1, since 9 > 3.5\n}\n\n..."
+    }
+  ]
+}

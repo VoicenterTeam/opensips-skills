@@ -1,0 +1,128 @@
+{
+  "id": "module-mmgeoip-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "mmgeoip Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/mmgeoip.html",
+  "content_markdown": "This module is a lightweight wrapper for the MaxMind GeoIP API. It adds IP address-to-location lookup capability to OpenSIPS scripts.\n\nLookups are executed against the freely-available GeoLite City database; and the non-free GeoIP City database is drop-in compatible. All lookup fields provided by the API are accessible by the script. Visit the [_MaxMind website_](https://dev.maxmind.com/geoip/) for more information on the location databases.\n\nThe module is compatible with both legacy GeoIP and the newer GeoIP2 APIs and databases.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:39:02.171Z",
+  "module_name": "mmgeoip",
+  "overview": "This module is a lightweight wrapper for the MaxMind GeoIP API. It adds IP address-to-location lookup capability to OpenSIPS scripts.\n\nLookups are executed against the freely-available GeoLite City database; and the non-free GeoIP City database is drop-in compatible. All lookup fields provided by the API are accessible by the script. Visit the [_MaxMind website_](https://dev.maxmind.com/geoip/) for more information on the location databases.\n\nThe module is compatible with both legacy GeoIP and the newer GeoIP2 APIs and databases.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libGeoIP",
+      "type": "library",
+      "reason": "for the legacy GeoIP API and database",
+      "optional": false
+    },
+    {
+      "name": "libmaxminddb",
+      "type": "library",
+      "reason": "for the GeoIP2 API and database",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "mmgeoip_city_db_path",
+      "type": "string",
+      "description": "Path to either a GeoLite or GeoIP City database file.\n\n_Mandatory parameter._",
+      "example_value": "/usr/share/GeoIP/GeoLiteCity.dat",
+      "example_code": "...\nmodparam(\"mmgeoip\", \"mmgeoip\\_city\\_db\\_path\",\n  \"/usr/share/GeoIP/GeoLiteCity.dat\")\n..."
+    },
+    {
+      "name": "cache_type",
+      "type": "string",
+      "default_value": "MMAP_CACHE",
+      "description": "Databse memory caching options. The following options are available:\n\n*   _STANDARD_ - Read database from file system; least memory used;\n    \n*   _MMAP\\_CACHE_ - Load database into mmap allocated memory;\n    \n    _WARNING: this option will cause a segmentation fault if database file is changed at runtime!_\n    \n*   _MEM\\_CACHE\\_CHECK_ - Load database into memory; this mode checks for database updates; if database was modified, the file will be reloaded after 60 seconds; it will be slower than _MMAP\\_CACHE_ but it will allow reloads;",
+      "possible_values": [
+        "STANDARD",
+        "MMAP_CACHE",
+        "MEM_CACHE_CHECK"
+      ],
+      "example_value": "MEM_CACHE_CHECK",
+      "example_code": "...\nmodparam(\"mmgeoip\", \"cache\\_type\",\"MEM\\_CACHE\\_CHECK\")\n...",
+      "notes": "NOTE: If libmaxminddb is used, this parameter will be ignored as the library only supports loading the database into mmap allocated memory."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "mmg_lookup",
+      "signature": "mmg_lookup([fields,]src,dst)",
+      "parameters": [
+        {
+          "name": "fields",
+          "type": "string",
+          "required": false,
+          "description": "a list of elements delimited by one of these separators: ':', '|', ',', '/' or ' '(space). Accepts the following tokens: _lat_ - Latitude, _lon_ - Longitude, _cont_ - Continent, _cc_ - Country Code, _reg_ - Region, _city_ - City, _pc_ - Postal Code, _dma_ - DMA Code, _ac_ - Area Code, only available in the legacy GeoIP database, _tz_ - Time Zone. When using the GeoIP2 library, each token from the list given in the `fields` parameter can be provided as a path to a specific key in the data structure associated with an IP. Thus, the token format is '_key_name_._key_name_[_.key_name_]*'. If a key's value is an array, instead of a subkey name, an index should be provided in order to select the appropriate value. Example tokens: '_country.names.en_', '_continent.names.en_ ', '_subdivisions.0.iso_code_'. For more details about the available fields in the database and the key names that should be used to retrieve them, check the MaxMind GeoIP2 documentation.",
+          "valid_values": [
+            "lat",
+            "lon",
+            "cont",
+            "cc",
+            "reg",
+            "city",
+            "pc",
+            "dma",
+            "ac",
+            "tz"
+          ]
+        },
+        {
+          "name": "src",
+          "type": "string",
+          "required": true,
+          "description": "IP address"
+        },
+        {
+          "name": "dst",
+          "type": "var",
+          "required": true,
+          "description": "AVP to return the information associated with the IP in."
+        }
+      ],
+      "return_type": "int",
+      "description": "Looks up information specified by `field` associated with the IP address `src`. The resulting data is loaded in _reverse_ order into the `dst` AVP.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "ERROR_ROUTE",
+        "LOCAL_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif(mmg\\_lookup(\"lon:lat\",$si,$avp(lat\\_lon))) {\n  xlog(\"L\\_INFO\",\"Source IP latitude:$(avp(lat\\_lon)[0])\\\\n\");\n  xlog(\"L\\_INFO\",\"Source IP longitude:$(avp(lat\\_lon)[1])\\\\n\");\n};\n...\n# fields format only supported for GeoIP2\nif(mmg\\_lookup(\"continent.names.en:country.iso\\_code,\",$si,$avp(geodata))) {\n  xlog(\"L\\_INFO\",\"Source IP country code:$(avp(geodata)[0])\\\\n\");\n  xlog(\"L\\_INFO\",\"Source IP continent:$(avp(geodata)[1])\\\\n\");\n};\n...",
+          "description": "`mmg_lookup` usage"
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set “mmgeoip\\_city\\_db\\_path” parameter",
+      "description": "Sets the path to the GeoLite or GeoIP City database file.",
+      "code": "...\nmodparam(\"mmgeoip\", \"mmgeoip\\_city\\_db\\_path\",\n  \"/usr/share/GeoIP/GeoLiteCity.dat\")\n..."
+    },
+    {
+      "title": "Set “cache\\_type” parameter",
+      "description": "Sets the database memory caching option.",
+      "code": "...\nmodparam(\"mmgeoip\", \"cache\\_type\",\"MEM\\_CACHE\\_CHECK\")\n..."
+    },
+    {
+      "title": "`mmg_lookup` usage",
+      "description": "Demonstrates looking up IP address information including longitude, latitude, and GeoIP2 specific fields.",
+      "code": "...\nif(mmg\\_lookup(\"lon:lat\",$si,$avp(lat\\_lon))) {\n  xlog(\"L\\_INFO\",\"Source IP latitude:$(avp(lat\\_lon)\\[0\\])\\\\n\");\n  xlog(\"L\\_INFO\",\"Source IP longitude:$(avp(lat\\_lon)\\[1\\])\\\\n\");\n};\n...\n# fields format only supported for GeoIP2\nif(mmg\\_lookup(\"continent.names.en:country.iso\\_code,\",$si,$avp(geodata))) {\n  xlog(\"L\\_INFO\",\"Source IP country code:$(avp(geodata)\\[0\\])\\\\n\");\n  xlog(\"L\\_INFO\",\"Source IP continent:$(avp(geodata)\\[1\\])\\\\n\");\n};\n..."
+    }
+  ]
+}

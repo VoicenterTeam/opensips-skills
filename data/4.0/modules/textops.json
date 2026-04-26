@@ -1,0 +1,493 @@
+{
+  "id": "module-textops-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "textops Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/textops.html",
+  "content_markdown": "The module implements text based operations over the SIP message processed by OpenSIPS. SIP is a text based protocol and the module provides a large set of very useful functions to manipulate the message at text level, e.g., regular expression search and replace, Perl-like substitutions, etc.\n\nNote: all SIP-aware functions like _insert_hf_, _append_hf_ or _codec_ operations have been moved to the _sipmsgops_ module.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:33:46.401Z",
+  "module_name": "textops",
+  "overview": "The module implements text based operations over the SIP message processed by OpenSIPS. SIP is a text based protocol and the module provides a large set of very useful functions to manipulate the message at text level, e.g., regular expression search and replace, Perl-like substitutions, etc.\n\nNote: all SIP-aware functions like _insert_hf_, _append_hf_ or _codec_ operations have been moved to the _sipmsgops_ module.",
+  "how_it_works": null,
+  "dependencies_required": [],
+  "dependencies_optional": [],
+  "exported_parameters": [],
+  "exported_functions": [
+    {
+      "name": "search",
+      "signature": "search(re)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Searches for the re in the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( search(\"\\[Ss\\]\\[Ii\\]\\[Pp\\]\") ) { /\\*....\\*/ };",
+          "description": "search usage"
+        }
+      ]
+    },
+    {
+      "name": "search_body",
+      "signature": "search_body(re)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Searches for the re in the body of the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( search\\_body(\"\\[Ss\\]\\[Ii\\]\\[Pp\\]\") ) { /\\*....\\*/ };",
+          "description": "search_body usage"
+        }
+      ]
+    },
+    {
+      "name": "search_append",
+      "signature": "search_append(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": "String to be appended."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Searches for the first match of re and appends txt after it.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "search\\_append(\"\\[Oo\\]pen\\[Ss\\]er\", \" SIP Proxy\");",
+          "description": "search_append usage"
+        }
+      ]
+    },
+    {
+      "name": "search_append_body",
+      "signature": "search_append_body(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": "String to be appended."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Searches for the first match of re in the body of the message and appends txt after it.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "search\\_append\\_body(\"\\[Oo\\]pen\\[Ss\\]er\", \" SIP Proxy\");",
+          "description": "search_append_body usage"
+        }
+      ]
+    },
+    {
+      "name": "replace",
+      "signature": "replace(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Replaces the first occurrence of re with txt.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "replace(\"opensips\", \"Open SIP Server\");",
+          "description": "replace usage"
+        }
+      ]
+    },
+    {
+      "name": "replace_body",
+      "signature": "replace_body(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replaces the first occurrence of re in the body of the message with txt.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "replace_body(\"opensips\", \"Open SIP Server\");",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "replace_all",
+      "signature": "replace_all(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replaces all occurrence of re with txt.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "replace_all(\"opensips\", \"Open SIP Server\");",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "replace_body_all",
+      "signature": "replace_body_all(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replaces all occurrence of re in the body of the message with txt. Matching is done on a per-line basis.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "replace_body_all(\"opensips\", \"Open SIP Server\");",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "replace_body_atonce",
+      "signature": "replace_body_atonce(re, txt)",
+      "parameters": [
+        {
+          "name": "re",
+          "type": "string",
+          "required": true,
+          "description": "Regular expression."
+        },
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": ""
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replaces all occurrence of re in the body of the message with txt. Matching is done over the whole body.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# strip the whole body from the message:\nif(has_body() && replace_body_atonce(\"^.+$\", \"\"))\n        remove_hf(\"Content-Type\");",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "subst",
+      "signature": "subst('/re/repl/flags')",
+      "parameters": [
+        {
+          "name": "'/re/repl/flags'",
+          "type": "string",
+          "required": true,
+          "description": "sed like regular expression. flags can be a combination of i (case insensitive), g (global) or s (match newline don't treat it as end of line). 're' - is regular expression 'repl' - is replacement string - may contain pseudo-variables 'flags' - substitution flags (i - ignore case, g - global)"
+        }
+      ],
+      "return_type": "",
+      "return_values": [],
+      "description": "Replaces re with repl (sed or perl like).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "# replace the uri in to: with the message uri (just an example)\nif ( subst('/^To:(.*)sip:[^@]*@[a-zA-Z0-9.]+(.*)$/t:\\1\\u\\2/ig') ) {};\n\n# replace the uri in to: with the value of avp sip_address (just an example)\nif ( subst('/^To:(.*)sip:[^@]*@[a-zA-Z0-9.]+(.*)$/t:\\1$avp(sip_address)\\2/ig') ) {};",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "subst_uri",
+      "signature": "subst_uri('/re/repl/flags')",
+      "parameters": [
+        {
+          "name": "'/re/repl/flags'",
+          "type": "string",
+          "required": true,
+          "description": "sed like regular expression. flags can be a combination of i (case insensitive), g (global) or s (match newline don't treat it as end of line). 're' - is regular expression 'repl' - is replacement string - may contain pseudo-variables 'flags' - substitution flags (i - ignore case, g - global)"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Runs the re substitution on the message uri (like subst but works only on the uri)",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# adds 3463 prefix to numeric uris, and save the original uri (\\\\0 match)\n# as a parameter: orig\\_uri (just an example)\nif (subst\\_uri('/^sip:(\\[0-9\\]+)@(.)\\*)$/sip:3463\\\\1@\\\\2;orig\\_uri=\\\\0/i')){$\n\n# adds the avp 'uri\\_prefix' as prefix to numeric uris, and save the original\n# uri (\\\\0 match) as a parameter: orig\\_uri (just an example)\nif (subst\\_uri('/^sip:(\\[0-9\\]+)@(.)\\*)$/sip:$avp(uri\\_prefix)\\\\1@\\\\2;orig\\_uri=\\\\0/i')){$\n\n...",
+          "description": "adds 3463 prefix to numeric uris, and save the original uri (\\\\0 match) as a parameter: orig\\_uri (just an example) / adds the avp 'uri\\_prefix' as prefix to numeric uris, and save the original uri (\\\\0 match) as a parameter: orig\\_uri (just an example)"
+        }
+      ],
+      "related_functions": [
+        "subst"
+      ]
+    },
+    {
+      "name": "subst_user",
+      "signature": "subst_user('/re/repl/flags')",
+      "parameters": [
+        {
+          "name": "'/re/repl/flags'",
+          "type": "string",
+          "required": true,
+          "description": "sed like regular expression. flags can be a combination of i (case insensitive), g (global) or s (match newline don't treat it as end of line). 're' - is regular expression 'repl' - is replacement string - may contain pseudo-variables 'flags' - substitution flags (i - ignore case, g - global)"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Runs the re substitution on the message uri (like subst_uri but works only on the user portion of the uri)",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# adds 3463 prefix to uris ending with 3642 (just an example)\nif (subst\\_user('/3642$/36423463/')){$\n...\n# adds avp 'user\\_prefix' as prefix to username in r-uri ending with 3642\nif (subst\\_user('/(.)\\*)3642$/$avp(user\\_prefix)\\\\13642/')){$\n\n...",
+          "description": "adds 3463 prefix to uris ending with 3642 (just an example) / adds avp 'user\\_prefix' as prefix to username in r-uri ending with 3642"
+        }
+      ],
+      "related_functions": [
+        "subst_uri"
+      ]
+    },
+    {
+      "name": "subst_body",
+      "signature": "subst_body('/re/repl/flags')",
+      "parameters": [
+        {
+          "name": "'/re/repl/flags'",
+          "type": "string",
+          "required": true,
+          "description": "sed like regular expression. flags can be a combination of i (case insensitive), g (global) or s (match newline don't treat it as end of line). 're' - is regular expression 'repl' - is replacement string - may contain pseudo-variables 'flags' - substitution flags (i - ignore case, g - global)"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Replaces re with repl (sed or perl like) in the body of the message.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (subst\\_body(\"/^o=(\\[^ \\]\\*) /o=$fU /\"))\n\txlog(\"successfully prepared an \"o\" line update!\\\\n\");\n\n...",
+          "description": "successfully prepared an \"o\" line update!"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "`search` usage",
+      "description": "Searches for the re in the message.",
+      "code": "...\nif ( search(\"[Ss][Ii][Pp]\") ) { /*....*/ };\n..."
+    },
+    {
+      "title": "`search_body` usage",
+      "description": "Searches for the re in the body of the message.",
+      "code": "...\nif ( search_body(\"[Ss][Ii][Pp]\") ) { /*....*/ };\n..."
+    },
+    {
+      "title": "`search_append` usage",
+      "description": "Searches for the first match of re and appends txt after it.",
+      "code": "...\nsearch_append(\"[Oo]pen[Ss]er\", \" SIP Proxy\");\n..."
+    },
+    {
+      "title": "`search_append_body` usage",
+      "description": "Searches for the first match of re in the body of the message and appends txt after it.",
+      "code": "...\nsearch_append_body(\"[Oo]pen[Ss]er\", \" SIP Proxy\");\n..."
+    },
+    {
+      "title": "`replace` usage",
+      "description": "Replaces the first occurrence of re with txt.",
+      "code": "...\nreplace(\"opensips\", \"Open SIP Server\");\n..."
+    },
+    {
+      "title": "`replace_body` usage",
+      "description": "Replaces the first occurrence of re in the body of the message with txt.",
+      "code": "...\nreplace_body(\"opensips\", \"Open SIP Server\");\n..."
+    },
+    {
+      "title": "`replace_all` usage",
+      "description": "Replaces all occurrence of re with txt.",
+      "code": "...\nreplace_all(\"opensips\", \"Open SIP Server\");\n..."
+    },
+    {
+      "title": "`replace_body_all` usage",
+      "description": "Replaces all occurrence of re in the body of the message with txt. Matching is done on a per-line basis.",
+      "code": "...\nreplace_body_all(\"opensips\", \"Open SIP Server\");\n..."
+    },
+    {
+      "title": "`replace_body_atonce` usage",
+      "description": "Replaces all occurrence of re in the body of the message with txt. Matching is done over the whole body.",
+      "code": "...\n# strip the whole body from the message:\nif(has_body() && replace_body_atonce(\"^.+$\", \"\"))\n\tremove_hf(\"Content-Type\"); \n..."
+    },
+    {
+      "title": "`subst` usage",
+      "description": "Replaces re with repl (sed or perl like).",
+      "code": "...\n# replace the uri in to: with the message uri (just an example)\nif ( subst('/^To:(.*)sip:[^@]*@[a-zA-Z0-9.]+(.*)$/t:\\1\\u\\2/ig') ) {};\n\n# replace the uri in to: with the value of avp sip_address (just an example)\nif ( subst('/^To:(.*)sip:[^@]*@[a-zA-Z0-9.]+(.*)$/t:\\1$avp(sip_address)\\2/ig') ) {};\n\n..."
+    },
+    {
+      "title": "`subst_uri` usage",
+      "description": "Runs the re substitution on the message uri (like subst but works only on the uri).",
+      "code": "...\n# adds 3463 prefix to numeric uris, and save the original uri (\\0 match)\n# as a parameter: orig_uri (just an example)\nif (subst_uri('/^sip:([0-9]+)@(.*)$/sip:3463\\1@\\2;orig_uri=\\0/i')){$\n\n# adds the avp 'uri_prefix' as prefix to numeric uris, and save the original\n# uri (\\0 match) as a parameter: orig_uri (just an example)\nif (subst_uri('/^sip:([0-9]+)@(.*)$/sip:$avp(uri_prefix)\\1@\\2;orig_uri=\\0/i')){$\n\n..."
+    },
+    {
+      "title": "`subst` usage",
+      "description": "Runs the re substitution on the message uri (like subst_uri but works only on the user portion of the uri).",
+      "code": "...\n# adds 3463 prefix to uris ending with 3642 (just an example)\nif (subst_user('/3642$/36423463/')){$\n...\n# adds avp 'user_prefix' as prefix to username in r-uri ending with 3642\nif (subst_user('/(.*)3642$/$avp(user_prefix)\\13642/')){$\n\n..."
+    },
+    {
+      "title": "`subst_body` usage",
+      "description": "Replaces re with repl (sed or perl like) in the body of the message.",
+      "code": "...\nif (subst_body(\"/^o=([^ ]*) /o=$fU /\"))\n\txlog(\"successfully prepared an \"o\" line update!\\n\");\n\n..."
+    }
+  ]
+}

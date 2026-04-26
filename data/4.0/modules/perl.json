@@ -1,0 +1,158 @@
+{
+  "id": "module-perl-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "perl Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/perl.html",
+  "content_markdown": "The time needed when writing a new OpenSIPS module unfortunately is quite high, while the options provided by the configuration file are limited to the features implemented in the modules.\n\nWith this Perl module, you can easily implement your own OpenSIPS extensions in Perl. This allows for simple access to the full world of CPAN modules. SIP URI rewriting could be implemented based on regular expressions; accessing arbitrary data backends, e.g. LDAP or Berkeley DB files, is now extremely simple.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:38:40.363Z",
+  "module_name": "perl",
+  "overview": "The time needed when writing a new OpenSIPS module unfortunately is quite high, while the options provided by the configuration file are limited to the features implemented in the modules.\n\nWith this Perl module, you can easily implement your own OpenSIPS extensions in Perl. This allows for simple access to the full world of CPAN modules. SIP URI rewriting could be implemented based on regular expressions; accessing arbitrary data backends, e.g. LDAP or Berkeley DB files, is now extremely simple.",
+  "how_it_works": "The Perl module has two interfaces: The perl side, and the OpenSIPS side. Once a Perl function is defined and loaded via the module parameters (see below), it may be called in OpenSIPS's configuration at an arbitary point. E.g., you could write a function \"ldap_alias\" in Perl, and then execute\n\n...\nif (perl_exec(\"ldap_alias\")) {\n\t...\n}\t\n...\n\njust as you would have done with the current alias_db module.\n\nThe functions you can use are listed in the [exported_functions](#exported_functions \"1.6.�Exported Functions\") section below.\n\nOn the Perl side, there are a number of functions that let you read and modify the current SIP message, such as the RURI or the message flags. An introduction to the Perl interface and the full reference documentation can be found below.",
+  "dependencies_required": [
+    {
+      "name": "sl",
+      "type": "module",
+      "reason": "needed for sending replies uppon fatal errors",
+      "optional": false
+    },
+    {
+      "name": "Perl 5.8.x or later",
+      "type": "library",
+      "reason": "required for the module to compile and run",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "Net::LDAP",
+    "IPC::Shareable"
+  ],
+  "exported_parameters": [
+    {
+      "name": "filename",
+      "type": "string",
+      "description": "This is the file name of your script. This may be set once only, but it may include an arbitary number of functions and “use” as many Perl module as necessary.",
+      "example_value": "/home/john/opensips/myperl.pl",
+      "example_code": "...\nmodparam(\"perl\", \"filename\", \"/home/john/opensips/myperl.pl\")\n...",
+      "notes": "May not be empty!"
+    },
+    {
+      "name": "modpath",
+      "type": "string",
+      "description": "The path to the Perl modules included (OpenSIPS.pm et.al). It is not absolutely crucial to set this path, as you _may_ install the Modules in Perl's standard path, or update the “%INC” variable from within your script. Using this module parameter is the standard behavior, though.",
+      "example_value": "/usr/local/lib/opensips/perl/",
+      "example_code": "...\nmodparam(\"perl\", \"modpath\", \"/usr/local/lib/opensips/perl/\")\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "perl_exec_simple",
+      "signature": "perl_exec_simple(func, [param])",
+      "parameters": [
+        {
+          "name": "func",
+          "type": "string",
+          "required": true,
+          "description": "The function to be called."
+        },
+        {
+          "name": "param",
+          "type": "string",
+          "required": false,
+          "description": "An arbitrary string passed as a parameter."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "the perl function was successfully called"
+        },
+        {
+          "value": "-1",
+          "condition": "an internal error occured"
+        }
+      ],
+      "description": "Calls a perl function _without_ passing it the current SIP message. May be used for very simple simple requests that do not have to fiddle with the message themselves, but rather return information values about the environment.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ($rm==\"INVITE\") {\n\tperl_exec_simple(\"dosomething\", \"on invite messages\");\n};",
+          "description": "perl_exec_simple() usage"
+        }
+      ]
+    },
+    {
+      "name": "perl_exec",
+      "signature": "perl_exec(func, [param])",
+      "parameters": [
+        {
+          "name": "func",
+          "type": "string",
+          "required": true,
+          "description": "The function to be called."
+        },
+        {
+          "name": "param",
+          "type": "string",
+          "required": false,
+          "description": "An arbitrary string passed as a parameter."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "value returned by the perl function",
+          "condition": "default"
+        }
+      ],
+      "description": "Calls a perl function _with_ passing it the current SIP message. The SIP message is reflected by a Perl module that gives you access to the information in the current SIP message (OpenSIPS::Message).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (perl_exec(\"ldapalias\")) {\n\t...\n};",
+          "description": "perl_exec() usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `filename` parameter",
+      "description": "This is the file name of your script. This may be set once only, but it may include an arbitary number of functions and “use” as many Perl module as necessary. May not be empty!",
+      "code": "...\nmodparam(\"perl\", \"filename\", \"/home/john/opensips/myperl.pl\")\n..."
+    },
+    {
+      "title": "Set `modpath` parameter",
+      "description": "The path to the Perl modules included (OpenSIPS.pm et.al). It is not absolutely crucial to set this path, as you may install the Modules in Perl's standard path, or update the “%INC” variable from within your script. Using this module parameter is the standard behavior, though.",
+      "code": "...\nmodparam(\"perl\", \"modpath\", \"/usr/local/lib/opensips/perl/\")\n..."
+    },
+    {
+      "title": "`perl_exec_simple()` usage",
+      "description": "Calls a perl function without passing it the current SIP message. May be used for very simple simple requests that do not have to fiddle with the message themselves, but rather return information values about the environment.",
+      "code": "...\nif ($rm==\"INVITE\") {\n\tperl_exec_simple(\"dosomething\", \"on invite messages\");\n};\n..."
+    },
+    {
+      "title": "`perl_exec()` usage",
+      "description": "Calls a perl function with passing it the current SIP message. The SIP message is reflected by a Perl module that gives you access to the information in the current SIP message (OpenSIPS::Message).",
+      "code": "...\nif (perl_exec(\"ldapalias\")) {\n\t...\n};\n..."
+    }
+  ]
+}

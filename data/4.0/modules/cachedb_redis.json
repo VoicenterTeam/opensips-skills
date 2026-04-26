@@ -1,0 +1,340 @@
+{
+  "id": "module-cachedb_redis-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "cachedb_redis Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/cachedb_redis.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with a Redis server. It uses hiredis client library to connect to either a single Redis server instance, or to a Redis Server inside a Redis Cluster. It uses the Key-Value interface exported from the core.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:18:49.562Z",
+  "module_name": "cachedb_redis",
+  "overview": "This module is an implementation of a cache system designed to work with a Redis server. It uses hiredis client library to connect to either a single Redis server instance, or to a Redis Server inside a Redis Cluster. It uses the Key-Value interface exported from the core.",
+  "how_it_works": "Starting with OpenSIPS 3.6, the cachedb_redis module implements the column-oriented cacheDB API functions. This makes it a suitable cacheDB storage in scenarios such as user location federation and full-sharing, which require this API to be available.\n\nThe implementation makes use of RedisJSON and RediSearch -- these relatively new features are available in Redis Stack Server, instead of the usual Redis Server (Redis OSS project). More documentation is available on the Redis website.\n\nOpenSIPS will auto-detect availability of the RedisJSON support when necessary and log the appropriate messages.\n\nWhen connecting to a Redis Cluster, the module automatically detects cluster mode and manages the full slot-to-node topology at runtime. No extra configuration is needed beyond the standard cachedb_url parameter.\n\n### 1.4.1. Topology Discovery\n\nAt startup, the module probes the Redis server using the CLUSTER SHARDS command (available in Redis 7.0+). If the server does not support this command, it falls back to CLUSTER SLOTS (available in Redis 3.0+). If neither command succeeds, the connection is treated as a single-instance (non-cluster) connection.\n\nThe discovered topology is stored internally in an O(1) slot lookup table (16384 slots), mapping each slot directly to its owning master node.\n\n### 1.4.2. Automatic Topology Refresh\n\nThe module automatically refreshes the cluster topology at runtime when any of the following events occur:\n\n* A MOVED redirection is received from a cluster node (indicating a permanent slot migration).\n* A connection failure (NULL reply) occurs and the node cannot be reconnected.\n* A query targets a slot with no known owner, suggesting the topology is stale.\n* An operator triggers a manual refresh via the redis_cluster_refresh MI command.\n\nAutomatic refreshes are rate-limited to at most once per second to avoid excessive load on the cluster. The MI-triggered refresh bypasses this rate limit.\n\n### 1.4.3. MOVED Redirection\n\nThe module transparently handles Redis Cluster MOVED redirections:\n\n* MOVED — indicates a permanent slot migration. The module updates its slot map, redirects the query to the new node, and triggers a topology refresh so all future queries go directly to the correct node.\n\nIf a redirection points to a node that is not yet known, the module dynamically creates a new node entry, establishes a connection, and retries the query.\n\n### 1.4.4. Hash Tags\n\nThe module supports Redis Cluster hash tags, which allow related keys to be co-located on the same cluster node. If a key contains a {...} substring, only the content between the first { and the next } is used for hash slot calculation. For example, the keys {user1000}.profile and {user1000}.settings will always land on the same node, enabling multi-key operations.\n\nIf the braces are empty ({}) or there is no closing brace, the entire key is hashed as usual.",
+  "dependencies_required": [
+    {
+      "name": "hiredis",
+      "type": "library",
+      "reason": "The following libraries or applications must be installed before running OpenSIPS with this module loaded: On the latest Debian based distributions, hiredis can be installed by running 'apt-get install libhiredis-dev' Alternatively, if hiredis is not available on your OS repos, hiredis can be downloaded from: https://github.com/antirez/hiredis . Download the archive, extract sources, run make,sudo make install. If TLS connections are enabled via the use_tls modparam, hiredis needs to be compiled with TLS support.",
+      "optional": false
+    },
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "If a use_tls is defined, the tls_mgm and tls_openssl modules will need to be loaded as well",
+      "optional": true
+    },
+    {
+      "name": "tls_openssl",
+      "type": "module",
+      "reason": "If a use_tls is defined, the tls_mgm and tls_openssl modules will need to be loaded as well",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The URLs of the server groups that OpenSIPS will connect to in order to use, from script, the cache_store(), cache_fetch(), etc. operations. It may be set more than once. The prefix part of the URL will be the identifier that will be used from the script.",
+      "scope": "global",
+      "example_value": "redis:group1://localhost:6379/",
+      "example_code": "# single-instance URLs (Redis Server or Redis Cluster)\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:group1://localhost:6379/\")\nmodparam(\"cachedb_redis\", \"cachedb_url\", \"redis:cluster1://random_url:8888/\")\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\n\t\"redis:ha://localhost,host_a:6380,host_b:6381,host_c/\")",
+      "notes": "The module supports three authentication modes based on the URL format: Classic Redis (< 6.0) with requirepass, Redis 6+ ACL with per-user credentials, and Non-authenticated Redis. Starting with this version, the module supports connecting to a local Redis instance via a Unix domain socket instead of TCP. Unix socket connections are always treated as single-instance mode (no Redis Cluster support over Unix sockets). Unix socket cannot be combined with multiple hosts (failover). TLS is not applicable to Unix socket connections."
+    },
+    {
+      "name": "connect_timeout",
+      "type": "integer",
+      "default_value": "5000 ms",
+      "description": "This parameter specifies how many milliseconds OpenSIPS should wait for connecting to a Redis node.",
+      "scope": "global",
+      "example_value": "1000",
+      "example_code": "# wait 1 second for Redis to connect\nmodparam(\"cachedb_redis\", \"connect_timeout\",1000)"
+    },
+    {
+      "name": "query_timeout",
+      "type": "integer",
+      "default_value": "5000 ms",
+      "description": "This parameter specifies how many milliseconds OpenSIPS should wait for a query response from a Redis node.",
+      "scope": "global",
+      "example_value": "1000",
+      "example_code": "# wait 1 second for Redis queries\nmodparam(\"cachedb_redis\", \"query_timeout\",1000)"
+    },
+    {
+      "name": "shutdown_on_error",
+      "type": "integer",
+      "default_value": "0",
+      "description": "By setting this parameter to 1, OpenSIPS will abort startup if the initial connection to Redis is not possible. Runtime reconnect behavior is unaffected by this parameter, and is always enabled.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "# abort OpenSIPS startup if Redis is down\nmodparam(\"cachedb_redis\", \"shutdown_on_error\", 1)",
+      "notes": "Runtime reconnect behavior is unaffected by this parameter, and is always enabled."
+    },
+    {
+      "name": "lazy_connect",
+      "type": "integer",
+      "default_value": "0",
+      "description": "By setting this parameter to 1, OpenSIPS will defer establishing Redis connections until the first cache operation is actually performed by each worker process. This prevents idle worker processes (those that never use Redis) from holding open sockets, which avoids sockets getting stuck in CLOSE_WAIT state when Redis is restarted.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "# defer Redis connections until first use\nmodparam(\"cachedb_redis\", \"lazy_connect\", 1)",
+      "notes": "When this parameter is enabled, the shutdown_on_error parameter has no effect, since no connection is attempted at startup time."
+    },
+    {
+      "name": "use_tls",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Setting this parameter will allow you to use TLS for Redis connections. In order to enable TLS for a specific connection, you can use the \"tls_domain=_dom_name_\" URL parameter in the cachedb_url of this module (or other modules that use the CacheDB interface). This should be placed at the end of the URL after the '?' character.\n\nWhen using this parameter, you must also ensure that tls_mgm is loaded and properly configured. Refer to the tls_mgm module for additional info regarding TLS client domains.\n\nNote that TLS is supported by Redis starting with version 6.0. Also, it is an optional feature enabled at compile time and might not be included in the standard Redis packages available for your OS.",
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "...\nmodparam(\"tls_mgm\", \"client_domain\", \"redis\")\nmodparam(\"tls_mgm\", \"certificate\", \"[redis]/etc/pki/tls/certs/redis.pem\")\nmodparam(\"tls_mgm\", \"private_key\", \"[redis]/etc/pki/tls/private/redis.key\")\nmodparam(\"tls_mgm\", \"ca_list\",     \"[redis]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"cachedb_redis\", \"use_tls\", 1)\nmodparam(\"cachedb_redis\", \"cachedb_url\",\"redis:tls_group://localhost:6379/?tls_domain=redis\")\n..."
+    },
+    {
+      "name": "ftsearch_index_name",
+      "type": "string",
+      "default_value": "idx:usrloc",
+      "description": "Only relevant with RedisJSON and RediSearch server-side support.\n\nA global index name to be used for all internal JSON full-text search operations. Future extensions may add, e.g., a connection-level index name setting.",
+      "scope": "global",
+      "example_value": "ix::usrloc",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_index_name\", \"ix::usrloc\")"
+    },
+    {
+      "name": "ftsearch_json_prefix",
+      "type": "string",
+      "default_value": "usrloc:",
+      "description": "Only relevant with RedisJSON and RediSearch server-side support.\n\nA key naming prefix for all internally-created Redis JSON objects (e.g. created with JSON.SET or JSON.MSET).",
+      "scope": "global",
+      "example_value": "userlocation:",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_json_prefix\", \"userlocation:\")"
+    },
+    {
+      "name": "ftsearch_max_results",
+      "type": "integer",
+      "default_value": "10000",
+      "description": "Only relevant with RedisJSON and RediSearch server-side support.\n\nThe maximum number of results returned by each internally-triggered FT.SEARCH JSON lookup query.",
+      "scope": "global",
+      "example_value": "100",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_max_results\", 100)"
+    },
+    {
+      "name": "redis_keepalive",
+      "type": "integer",
+      "default_value": "10",
+      "description": "TCP keepalive interval in seconds for Redis connections. When set to a positive value, the kernel sends TCP probes on idle connections to detect dead peers (e.g. due to NAT/firewall idle timeout or network partition). This allows the next query to fail immediately instead of waiting for the full query timeout, enabling faster recovery via the existing retry loop.\n\nSet to 0 to disable TCP keepalive. Recommended to keep enabled for production deployments to prevent silent connection death.",
+      "scope": "global",
+      "example_value": "15",
+      "example_code": "...\n# set TCP keepalive interval to 15 seconds\nmodparam(\"cachedb_redis\", \"redis_keepalive\", 15)\n\n# disable TCP keepalive\nmodparam(\"cachedb_redis\", \"redis_keepalive\", 0)\n..."
+    },
+    {
+      "name": "ftsearch_json_mset_expire",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "Only relevant with RedisJSON and RediSearch server-side support. A Redis EXPIRE timer to set/refresh on the JSON key after each JSON.MSET operation (create the JSON or add/remove subkeys), in seconds. A value of 0 disables the EXPIRE queries completely.",
+      "example_value": "7200",
+      "example_code": "modparam(\"cachedb_redis\", \"ftsearch_json_mset_expire\", 7200)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "redis_cluster_info",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "if specified, only connections belonging to this group will be listed (e.g. \"local\" from a \"redis:local://...\" URL). If omitted, all Redis connections are listed."
+        }
+      ],
+      "return_value": {
+        "type": "JSON array",
+        "description": "A JSON array of connection objects.",
+        "structure": {
+          "group": "the connection group name",
+          "url": "the original cachedb_url",
+          "mode": "\"cluster\" or \"single\"",
+          "cluster_command": "\"SHARDS\" or \"SLOTS\", depending on which Redis command is used for topology discovery (cluster mode only)",
+          "topology_refreshes": "number of topology refreshes performed on this connection",
+          "last_topology_refresh": "UNIX timestamp of the last topology refresh",
+          "nodes": "array of cluster node objects, each containing: ip, port, status (\"connected\"/\"disconnected\"), slots_assigned (cluster mode only), queries, errors, moved, last_activity (seconds since last successful query, -1 if never queried)",
+          "total_slots_mapped": "total number of slots with an assigned node (should be 16384 for a healthy cluster) (cluster mode only)"
+        }
+      },
+      "description": "Displays detailed information about all Redis connections managed by the module, including cluster topology, per-node connection status, slot assignments, and per-node query counters.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_cluster_info",
+          "description": "list all Redis connections"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_cluster_info group=local",
+          "description": "list only the \"local\" group"
+        }
+      ]
+    },
+    {
+      "name": "redis_cluster_refresh",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "if specified, only the connection belonging to this group will be refreshed. If omitted, all cluster connections are refreshed."
+        }
+      ],
+      "return_value": {
+        "type": "JSON array",
+        "description": "A JSON array of objects, one per connection.",
+        "structure": {
+          "group": "the connection group name",
+          "status": "\"ok\", \"error\", or \"skipped (not cluster mode)\""
+        }
+      },
+      "description": "Forces an immediate topology refresh on Redis Cluster connections. This bypasses the normal once-per-second rate limit and queries the cluster for its current slot-to-node mapping. Useful after manual cluster rebalancing or node additions/removals. For non-cluster (single instance) connections, the command returns a \"skipped (not cluster mode)\" status.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_cluster_refresh",
+          "description": "refresh all cluster connections"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_cluster_refresh group=local",
+          "description": "refresh only the \"local\" group"
+        }
+      ]
+    },
+    {
+      "name": "redis_ping_nodes",
+      "parameters": [
+        {
+          "name": "group",
+          "type": "string",
+          "required": false,
+          "description": "if specified, only nodes belonging to this group will be pinged. If omitted, all Redis connections are pinged."
+        }
+      ],
+      "return_value": {
+        "type": "JSON array",
+        "description": "A JSON array of connection objects.",
+        "structure": {
+          "group": "the connection group name",
+          "nodes": "array of node objects, each containing: ip, port, status (\"reachable\", \"unreachable\", or \"disconnected\"), latency_us (round-trip time in microseconds, -1 if not reachable)"
+        }
+      },
+      "description": "Sends a PING command to each Redis node and reports per-node reachability status with round-trip latency. Useful for on-demand health checks without waiting for the next query.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_ping_nodes",
+          "description": "ping all Redis nodes"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi redis_ping_nodes group=local",
+          "description": "ping only the \"local\" group"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [
+    {
+      "name": "redis_queries",
+      "type": "counter",
+      "description": "Total number of successful Redis queries executed across all connections and processes."
+    },
+    {
+      "name": "redis_queries_failed",
+      "type": "counter",
+      "description": "Total number of failed Redis queries (NULL replies from hiredis or Redis error responses other than MOVED)."
+    },
+    {
+      "name": "redis_moved",
+      "type": "counter",
+      "description": "Total number of MOVED redirections received from Redis Cluster nodes. A MOVED response indicates a permanent slot migration - the module updates its slot map and retries the query on the correct node."
+    },
+    {
+      "name": "redis_topology_refreshes",
+      "type": "counter",
+      "description": "Total number of cluster topology refreshes performed (via CLUSTER SHARDS or CLUSTER SLOTS). This counter increments both for automatic refreshes (triggered by MOVED responses or unreachable nodes) and manual refreshes (triggered via the redis_cluster_refresh MI command)."
+    }
+  ],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Set `cachedb_url` parameter",
+      "code": "...\n# single-instance URLs (Redis Server or Redis Cluster)\nmodparam(\"cachedb\\_redis\", \"cachedb\\_url\", \"redis:group1://localhost:6379/\")\nmodparam(\"cachedb\\_redis\", \"cachedb\\_url\", \"redis:cluster1://random\\_url:8888/\")\n\n# multi-instance URL (will perform circular **failover** on each query)\nmodparam(\"cachedb\\_redis\", \"cachedb\\_url\",\n\t\"redis:ha://localhost,host\\_a:6380,host\\_b:6381,host\\_c/\")\n..."
+    },
+    {
+      "title": "Use Redis servers",
+      "description": "Use Redis servers",
+      "code": "...\ncache\\_store(\"redis:group1\", \"key\", \"$ru value\");\ncache\\_fetch(\"redis:cluster1\", \"key\", $avp(10));\ncache\\_remove(\"redis:cluster1\", \"key\");\n..."
+    },
+    {
+      "title": "Set `connect_timeout` parameter",
+      "description": "Set `connect_timeout` parameter",
+      "code": "...\n# wait 1 second for Redis to connect\nmodparam(\"cachedb\\_redis\", \"connect\\_timeout\",1000)\n..."
+    },
+    {
+      "title": "Set `query_timeout` parameter",
+      "description": "Set `query_timeout` parameter",
+      "code": "...\n# wait 1 second for Redis queries\nmodparam(\"cachedb\\_redis\", \"query\\_timeout\",1000)\n..."
+    },
+    {
+      "title": "Set the `shutdown_on_error` parameter",
+      "description": "Set the `shutdown_on_error` parameter",
+      "code": "...\n# abort OpenSIPS startup if Redis is down\nmodparam(\"cachedb\\_redis\", \"shutdown\\_on\\_error\", 1)\n..."
+    },
+    {
+      "title": "Set the `lazy_connect` parameter",
+      "description": "Set the `lazy_connect` parameter",
+      "code": "...\n# defer Redis connections until first use\nmodparam(\"cachedb\\_redis\", \"lazy\\_connect\", 1)\n..."
+    },
+    {
+      "title": "Set the `use_tls` parameter",
+      "description": "Set the `use_tls` parameter",
+      "code": "...\nmodparam(\"tls\\_mgm\", \"client\\_domain\", \"redis\")\nmodparam(\"tls\\_mgm\", \"certificate\", \"\\[redis\\]/etc/pki/tls/certs/redis.pem\")\nmodparam(\"tls\\_mgm\", \"private\\_key\", \"\\[redis\\]/etc/pki/tls/private/redis.key\")\nmodparam(\"tls\\_mgm\", \"ca\\_list\",     \"\\[redis\\]/etc/pki/tls/certs/ca.pem\")\n...\nmodparam(\"cachedb\\_redis\", \"use\\_tls\", 1)\nmodparam(\"cachedb\\_redis\", \"cachedb\\_url\",\"redis:tls\\_group://localhost:6379/?tls\\_domain=redis\")\n..."
+    },
+    {
+      "title": "Set the `ftsearch_index_name` parameter",
+      "description": "Set the `ftsearch_index_name` parameter",
+      "code": "modparam(\"cachedb\\_redis\", \"ftsearch\\_index\\_name\", \"ix::usrloc\")"
+    },
+    {
+      "title": "Set the `ftsearch_json_prefix` parameter",
+      "description": "Set the `ftsearch_json_prefix` parameter",
+      "code": "modparam(\"cachedb\\_redis\", \"ftsearch\\_json\\_prefix\", \"userlocation:\")"
+    },
+    {
+      "title": "Set the `ftsearch_max_results` parameter",
+      "description": "Set the `ftsearch_max_results` parameter",
+      "code": "modparam(\"cachedb\\_redis\", \"ftsearch\\_max\\_results\", 100)"
+    },
+    {
+      "title": "Set `redis_keepalive` parameter",
+      "description": "Set `redis_keepalive` parameter",
+      "code": "...\n# set TCP keepalive interval to 15 seconds\nmodparam(\"cachedb\\_redis\", \"redis\\_keepalive\", 15)\n\n# disable TCP keepalive\nmodparam(\"cachedb\\_redis\", \"redis\\_keepalive\", 0)\n..."
+    },
+    {
+      "title": "Set the `ftsearch_json_mset_expire` parameter",
+      "description": "Set the `ftsearch_json_mset_expire` parameter",
+      "code": "modparam(\"cachedb\\_redis\", \"ftsearch\\_json\\_mset\\_expire\", 7200)"
+    },
+    {
+      "title": "Redis Raw Query Examples",
+      "description": "Redis Raw Query Examples",
+      "code": "...\n\t$var(my\\_hash) = \"my\\_hash\\_name\";\n\t$var(my\\_key) = \"my\\_key\\_name\";\n\t$var(my\\_value) = \"my\\_key\\_value\";\n\tcache\\_raw\\_query(\"redis\",\"HSET $var(my\\_hash) $var(my\\_key) $var(my\\_value)\");\n\tcache\\_raw\\_query(\"redis\",\"HGET $var(my\\_hash) $var(my\\_key)\",\"$avp(result)\");\n\txlog(\"We have fetched $avp(result) \\\\n\");\n...\n\t$var(my\\_hash) = \"my\\_hash\\_name\";\n\t$var(my\\_key1) = \"my\\_key1\\_name\";\n\t$var(my\\_key2) = \"my\\_key2\\_name\";\n\t$var(my\\_value1) = \"my\\_key1\\_value\";\n\t$var(my\\_value2) = \"my\\_key2\\_value\";\n\tcache\\_raw\\_query(\"redis\",\"HSET $var(my\\_hash) $var(my\\_key1) $var(my\\_value1)\");\n\tcache\\_raw\\_query(\"redis\",\"HSET $var(my\\_hash) $var(my\\_key2) $var(my\\_value2)\");\n\tcache\\_raw\\_query(\"redis\",\"HGETALL $var(my\\_hash)\",\"$avp(result)\");\n\n\t$var(it) = 0;\n\twhile ($(avp(result)\\[$var(it)\\]) != NULL) {\n\t\txlog(\"Multiple key reply: - we have fetched $(avp(result)\\[$var(it)\\]) \\\\n\");\n\t\t$var(it) = $var(it) + 1;\n\t}\n..."
+    }
+  ]
+}

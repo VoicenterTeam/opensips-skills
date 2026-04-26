@@ -1,0 +1,540 @@
+{
+  "id": "module-nathelper-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "nathelper Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/nathelper.html",
+  "content_markdown": "This is a module to help with NAT traversal. In particular, it helps symmetric UAs that don't advertise they are symmetric and are not able to determine their public address. fix\\_nated\\_contact rewrites Contact header field with request's source address:port pair. fix\\_nated\\_sdp adds the active direction indication to SDP (flag 0x01) and updates source IP address too (flag 0x02).\n\nSince version 2.2, stateful ping(only SIP Pings) for nathelper is available. This allows you to remove contacts from usrloc location table when _max\\_pings\\_lost_ pings are not responded to, each ping having a response timeout of _ping\\_threshold_ seconds. In order to have this functionality, contacts must have _remove\\_on\\_timeout\\_bflag_ flag set when inserted into the location table.\n\nWorks with multipart messages that contain an SDP part, but not with multi-layered multipart messages.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T13:38:17.187Z",
+  "module_name": "nathelper",
+  "overview": "This is a module to help with NAT traversal. In particular, it helps symmetric UAs that don't advertise they are symmetric and are not able to determine their public address. fix\\_nated\\_contact rewrites Contact header field with request's source address:port pair. fix\\_nated\\_sdp adds the active direction indication to SDP (flag 0x01) and updates source IP address too (flag 0x02).\n\nSince version 2.2, stateful ping(only SIP Pings) for nathelper is available. This allows you to remove contacts from usrloc location table when _max\\_pings\\_lost_ pings are not responded to, each ping having a response timeout of _ping\\_threshold_ seconds. In order to have this functionality, contacts must have _remove\\_on\\_timeout\\_bflag_ flag set when inserted into the location table.\n\nWorks with multipart messages that contain an SDP part, but not with multi-layered multipart messages.",
+  "how_it_works": "Currently, the nathelper module supports two types of NAT pings:\n\n*   _UDP package_ - 4 bytes (zero filled) UDP packages are sent to the contact address.\n\n    *   _Advantages:_ low bandwitdh traffic, easy to generate by OpenSIPS;\n\n    *   _Disadvantages:_ unidirectional traffic through NAT (inbound - from outside to inside); As many NATs do update the bind timeout only on outbound traffic, the bind may expire and closed.\n\n\n*   _SIP request_ - a stateless SIP request is sent to the contact address.\n\n    *   _Advantages:_ bidirectional traffic through NAT, since each PING request from OpenSIPS (inbound traffic) will force the SIP client to generate a SIP reply (outbound traffic) - the NAT bind will be surely kept open. Since version 2.2, one can also choose to remove contacts from the location table if a certain threshold is detected.\n\n    *   _Disadvantages:_ higher bandwitdh traffic, more expensive (as time) to generate by OpenSIPS;",
+  "dependencies_required": [
+    {
+      "name": "usrloc",
+      "type": "module",
+      "reason": "only if the NATed contacts are to be pinged",
+      "optional": true
+    },
+    {
+      "name": "clusterer",
+      "type": "module",
+      "reason": "only if \"cluster_id\" option is enabled",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "natping_interval",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Period of time in seconds between sending the NAT pings to all currently registered UAs to keep their NAT bindings alive. Value of 0 disables this functionality.",
+      "example_value": "10",
+      "example_code": "modparam(\"nathelper\", \"natping_interval\", 10)",
+      "notes": "Enabling the NAT pinging functionality will force the module to bind itself to USRLOC module."
+    },
+    {
+      "name": "ping_nated_only",
+      "type": "integer",
+      "default_value": "0",
+      "description": "If this variable is set then only contacts that have “behind_NAT” flag in user location database set will get ping.",
+      "example_value": "1",
+      "example_code": "modparam(\"nathelper\", \"ping_nated_only\", 1)"
+    },
+    {
+      "name": "natping_partitions",
+      "type": "integer",
+      "default_value": "1",
+      "description": "How many partitions/chunks to be used for sending the pingings. One partition means sending all pingings together. Two partitions means to send half pings and second half at a time.",
+      "valid_range_max": 8,
+      "example_value": "4",
+      "example_code": "modparam(\"nathelper\", \"natping_partitions\", 4)"
+    },
+    {
+      "name": "natping_socket",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "Spoof the natping's source-ip to this address. Works only for IPv4.",
+      "example_value": "\"192.168.1.1:5006\"",
+      "example_code": "modparam(\"nathelper\", \"natping_socket\", \"192.168.1.1:5006\")"
+    },
+    {
+      "name": "received_avp",
+      "type": "str",
+      "default_value": "\"NULL\" (disabled)",
+      "description": "The name of the Attribute-Value-Pair (AVP) used to store the URI containing the received IP, port and protocol. The URI is created by the fix_nated_register() function and this data may then be also picked up by the registrar module, which will attach a \"Received=\" attribute to the registration. Do not forget to change the value of corresponding parameter in the registrar module whenever you change the value of this parameter.",
+      "example_value": "\"$avp(received)\"",
+      "example_code": "modparam(\"nathelper\", \"received_avp\", \"$avp(received)\")",
+      "notes": "You must set this parameter if you use fix_nated_register(). Additionally, if you are using registrar, you must also set its symmetric received_avp module parameter to the same value."
+    },
+    {
+      "name": "force_socket",
+      "type": "string",
+      "default_value": "“NULL”",
+      "description": "Sending socket to be used for pinging contacts without local socket information (the local socket information may be lost during a restart or contact replication). If no one specified, OpenSIPS will choose the first listening interface matching the destination protocol and AF family.",
+      "example_value": "localhost:33333",
+      "example_code": "modparam(\"nathelper\", \"force\\_socket\", \"localhost:33333\")"
+    },
+    {
+      "name": "sipping_bflag",
+      "type": "string",
+      "default_value": "NULL (disabled)",
+      "description": "What branch flag should be used by the module to identify NATed contacts for which it should perform NAT ping via a SIP request instead if dummy UDP package.",
+      "example_value": "SIPPING\\_ENABLE",
+      "example_code": "modparam(\"nathelper\", \"sipping\\_bflag\", \"SIPPING\\_ENABLE\")"
+    },
+    {
+      "name": "remove_on_timeout_bflag",
+      "type": "string",
+      "default_value": "NULL (disabled)",
+      "description": "What branch flag to be used in order to activate usrloc contact removal when the ping_threshold is exceeded.",
+      "example_value": "SIPPING\\_RTO",
+      "example_code": "modparam(\"nathelper\", \"remove\\_on\\_timeout\\_bflag\", \"SIPPING\\_RTO\")"
+    },
+    {
+      "name": "sipping_latency_flag",
+      "type": "string",
+      "default_value": "NULL (disabled)",
+      "description": "The branch flag which will be used in order to enable contact pinging latency computation and reporting via the usrloc E\\_UL\\_LATENCY\\_UPDATE event.",
+      "example_value": "SIPPING\\_CALC\\_LATENCY",
+      "example_code": "modparam(\"nathelper\", \"sipping\\_latency\\_flag\", \"SIPPING\\_CALC\\_LATENCY\")"
+    },
+    {
+      "name": "sipping_ignore_rpl_codes",
+      "type": "CSV string",
+      "default_value": "\"NULL\" (all reply status codes are accepted)",
+      "description": "A comma-separated list of SIP reply status codes to contact pings which are to be discarded. This may be useful for \"full-sharing\" user location topologies, where the location nodes are not directly facing the UAs, hence the intermediary SIP component may generate replies to offline contact ping attempts (e.g. 408 - Request Timeout) -- such ping replies should be ignored.",
+      "example_value": "408, 480, 404",
+      "example_code": "modparam(\"nathelper\", \"sipping\\_ignore\\_rpl\\_codes\", \"408, 480, 404\")"
+    },
+    {
+      "name": "sipping_from",
+      "type": "string",
+      "default_value": "“NULL”",
+      "description": "The parameter sets the SIP URI to be used in generating the SIP requests for NAT ping purposes. To enable the SIP request pinging feature, you have to set this parameter. The SIP request pinging will be used only for requests marked so.",
+      "example_value": "sip:pinger@siphub.net",
+      "example_code": "modparam(\"nathelper\", \"sipping\\_from\", \"sip:pinger@siphub.net\")"
+    },
+    {
+      "name": "sipping_method",
+      "type": "string",
+      "default_value": "“OPTIONS”",
+      "description": "The parameter sets the SIP method to be used in generating the SIP requests for NAT ping purposes.",
+      "example_value": "INFO",
+      "example_code": "modparam(\"nathelper\", \"sipping\\_method\", \"INFO\")"
+    },
+    {
+      "name": "nortpproxy_str",
+      "type": "string",
+      "default_value": "“a=nortpproxy:yes\\r\\n”",
+      "description": "The parameter sets the SDP attribute used by nathelper to mark the packet SDP informations have already been mangled.\n\nIf empty string, no marker will be added or checked.",
+      "example_value": "a=sdpmangled:yes\\r\\n",
+      "example_code": "modparam(\"nathelper\", \"nortpproxy\\_str\", \"a=sdpmangled:yes\\r\\n\")",
+      "notes": "The string must be a complete SDP line, including the EOH (\\r\\n)."
+    },
+    {
+      "name": "natping_tcp",
+      "type": "integer",
+      "default_value": "0 (not set)",
+      "description": "If the flag is set, TCP/TLS clients will also be pinged with SIP OPTIONS messages.",
+      "example_value": "1",
+      "example_code": "modparam(\"nathelper\", \"natping\\_tcp\", 1)"
+    },
+    {
+      "name": "oldip_skip",
+      "type": "string",
+      "default_value": "0 (not set)",
+      "description": "Parameter which specifies whether old media ip and old origin ip shall be put in the sdp body. The parameter has two values : 'o' (\"a=oldoip\" field shall be skipped) and 'c' (\"a=oldcip\" field shall be skipped).",
+      "possible_values": [
+        "o",
+        "c"
+      ],
+      "example_value": "oc",
+      "example_code": "modparam(\"nathelper\", \"oldip\\_skip\", \"oc\")"
+    },
+    {
+      "name": "ping_threshold",
+      "type": "int",
+      "default_value": "3 (seconds)",
+      "description": "If a contact does not respond in _ping\\_threshold_ seconds since the ping has been sent, the contact shall be removed after [max\\_pings\\_lost](#param_max_pings_lost \"1.4.17.�max_pings_lost (int)\") unresponded pings.",
+      "example_value": "10",
+      "example_code": "modparam(\"nathelper\", \"ping\\_threshold\", 10)"
+    },
+    {
+      "name": "max_pings_lost",
+      "type": "int",
+      "default_value": "3 (pings)",
+      "description": "Number of unresponded pings after which the contact shall be removed from the location table.",
+      "example_value": "5",
+      "example_code": "modparam(\"nathelper\", \"max\\_pings\\_lost\", 5)"
+    },
+    {
+      "name": "cluster_id",
+      "type": "integer",
+      "default_value": "0 (none)",
+      "description": "The ID of the cluster the module is part of. The clustering support is used by the nathelper module for controlling the pinging process. When part of a cluster of multiple nodes, the nodes can agree upon which node is the one responsible for pinging.\n\nThe clustering with sharing tag support may be used to control which node in the cluster will perform the pinging/probing to the contacts. See the [cluster\\_sharing\\_tag](#param_cluster_sharing_tag \"1.4.19.�cluster_sharing_tag (string)\") option.\n\nFor more info on how to define and populate a cluster (with OpenSIPS nodes) see the \"clusterer\" module.",
+      "example_value": "9",
+      "example_code": "# Be part of cluster ID 9\nmodparam(\"nathelper\", \"cluster\\_id\", 9)"
+    },
+    {
+      "name": "cluster_sharing_tag",
+      "type": "string",
+      "default_value": "empty (none)",
+      "description": "The name of the sharing tag (as defined per clusterer modules) to control which node is responsible for perform pinging of the contacts. If defined, only the node with active status of this tag will perform the pinging.\n\nThe [cluster\\_id](#param_cluster_id \"1.4.18.�cluster_id (integer)\") must be defined for this option to work.\n\nThis is an optional parameter. If not set, all the nodes in the cluster will individually do the pinging.",
+      "example_value": "vip",
+      "example_code": "# only the node with the active \"vip\" sharing tag will perform pinging\nmodparam(\"nathelper\", \"cluster\\_id\", 9)\nmodparam(\"nathelper\", \"cluster\\_sharing\\_tag\", \"vip\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "fix_nated_contact",
+      "signature": "fix_nated_contact([uri_params [, flags]])",
+      "parameters": [
+        {
+          "name": "uri_params",
+          "type": "string",
+          "required": false,
+          "description": "If a list of URI parameter is provided, it will be added to the modified contact"
+        },
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "CSV list of flags",
+          "valid_values": [
+            "preserve-uri"
+          ]
+        }
+      ],
+      "return_type": "void",
+      "description": "Rewrites the URI Contact HF to contain request's source address:port. If a list of URI parameter is provided, it will be added to the modified contact;\n\n_IMPORTANT NOTE:_ Changes made by this function shall not be seen in the async resume route. So make sure you call it in all the resume routes where you need the contact fixed.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (search(\"User-Agent: Cisco ATA.*\") {\n    fix\\_nated\\_contact(\";ata=cisco\", \"preserve-uri\");\n} else {\n    fix\\_nated\\_contact();\n}\n...",
+          "description": "`fix_nated_contact` usage"
+        }
+      ],
+      "related_functions": [
+        "restore_nated_ruri()"
+      ]
+    },
+    {
+      "name": "fix_nated_sdp",
+      "signature": "fix_nated_sdp(flags [, ip_address [, sdp_fields]])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": true,
+          "description": "the value may be a CSV of the following flags",
+          "valid_values": [
+            "add-dir-active",
+            "rewrite-media-ip",
+            "add-no-rtpproxy",
+            "rewrite-origin-ip",
+            "rewrite-null-ips"
+          ]
+        },
+        {
+          "name": "ip_address",
+          "type": "string",
+          "required": false,
+          "description": "IP to be used for rewriting SDP. If not specified, the received signalling IP will be used. NOTE: For the IP to be used, you need to use 0x02 or 0x08 flags, otherwise it will have no effect."
+        },
+        {
+          "name": "sdp_fields",
+          "type": "string",
+          "required": false,
+          "description": "SDP field(s) to be appended to SDP. Note: Each SDP field must be preceded by \"\\r\\n\"."
+        }
+      ],
+      "return_type": "void",
+      "description": "Alters the SDP information in orer to facilitate NAT traversal. What changes to be performed may be controled via the “flags” parameter. Since version 1.12 the name of the old ip fields are \"a=oldoip\" for old origin ip and \"a=oldcip\" for old meda ip.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Add \"a=direction:active\" SDP line\n# Rewrite media IP (c= line)\n# Add extra \"a=x-attr1\" SDP line\n# Add extra \"a=x-attr2\" SDP line\nif (search(\"User-Agent: Cisco ATA.*\")\n    {fix\\_nated\\_sdp(3,,\"\\r\\na=x-attr1\\r\\na=x-attr2\");};\n...",
+          "description": "`fix_nated_sdp` usage"
+        }
+      ]
+    },
+    {
+      "name": "add_rcv_param",
+      "signature": "add_rcv_param([flag])",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "int",
+          "required": false,
+          "description": "flags to indicate if the parameter should be added to Contact URI or Contact header. If the flag is non-zero, the parameter will be added to the Contact URI. If not used or equal to zero, the parameter will go to the Contact header."
+        }
+      ],
+      "return_type": "void",
+      "description": "Add received parameter to Contact header fields or Contact URI. The parameter will contain URI created from the source IP, port, and protocol of the packet containing the SIP message. The parameter can be then processed by another registrar, this is useful, for example, when replicating register messages using t\\_replicate function to another registrar.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nadd\\_rcv\\_param(); # add the parameter to the Contact header\n....\nadd\\_rcv\\_param(1); # add the parameter to the Contact URI\n...",
+          "description": "`add_rcv_paramer` usage"
+        }
+      ]
+    },
+    {
+      "name": "fix_nated_register",
+      "signature": "fix_nated_register()",
+      "parameters": [],
+      "return_type": "void",
+      "description": "The function creates a URI consisting of the source IP, port and protocol and stores it in the [received\\_avp](#param_received_avp \"1.4.5.�received_avp (str)\") AVP. The URI will be appended as \"received\" parameter to Contact in 200 OK and may also be stored in the user location database if the same AVP is also configured for the [registrar](registrar) module.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nfix\\_nated\\_register();\n...",
+          "description": "`fix_nated_register` usage"
+        }
+      ]
+    },
+    {
+      "name": "nat_uac_test",
+      "signature": "nat_uac_test(flags)",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": true,
+          "description": "comma-separated list of checks to be performed",
+          "valid_values": [
+            "private-contact",
+            "diff-ip-src-via",
+            "private-via",
+            "private-sdp",
+            "diff-port-src-via",
+            "diff-ip-src-contact",
+            "diff-port-src-contact",
+            "carrier-grade-nat"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if any of the tests passed"
+        }
+      ],
+      "description": "Determines whether the received SIP message originated behind a NAT, using one or more pre-defined checks.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "ONREPLY_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# check for private Contact or SDP media IP addresses\nif (nat\\_uac\\_test(\"private-contact,private-sdp\"))\n\txlog(\"SIP message is NAT'ed (Call-ID: $ci)\\n\");\n...",
+          "description": "`nat_uac_test` usage"
+        }
+      ]
+    },
+    {
+      "name": "restore_nated_ruri",
+      "signature": "restore_nated_ruri()",
+      "parameters": [],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "-1",
+          "condition": "on error or if \"org\" does not exist in R-URI"
+        },
+        {
+          "value": "1",
+          "condition": "on success (after removing \"org\" from R-URI, storing the resulting R-URI into D-URI, decoding the original host:port from \"org\", and rewriting R-URI host:port with the decoded value)"
+        }
+      ],
+      "description": "Restores the original R-URI host:port from the \"org\" URI parameter generated by `fix_nated_contact(\"...\", \"preserve-uri\")`.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [],
+      "related_functions": [
+        "fix_nated_contact"
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "nathelper:enable_ping",
+      "parameters": [
+        {
+          "name": "status",
+          "type": "integer",
+          "required": false,
+          "description": "if not provided the function returns the current natping status. Otherwise, enables natping if parameter value greater than 0 or disables natping if parameter value is 0."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "The current natping status."
+      },
+      "description": "Replaces obsolete MI command: _nh\\_enable\\_ping_. Gets or sets the natpinging status.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "$ opensips-cli -x mi nathelper:enable\\_ping\nStatus:: 1\n$\n$ opensips-cli -x mi nathelper:enable\\_ping 0\n$\n$ opensips-cli -x mi nathelper:enable\\_ping\nStatus:: 0\n$",
+          "description": "Usage example showing getting and setting the natping status."
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `natping_interval` parameter",
+      "description": "Set `natping_interval` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"natping\\_interval\", 10)\n..."
+    },
+    {
+      "title": "Set `ping_nated_only` parameter",
+      "description": "Set `ping_nated_only` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"ping\\_nated\\_only\", 1)\n..."
+    },
+    {
+      "title": "Set `natping_partitions` parameter",
+      "description": "Set `natping_partitions` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"natping\\_partitions\", 4)\n..."
+    },
+    {
+      "title": "Set `natping_socket` parameter",
+      "description": "Set `natping_socket` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"natping\\_socket\", \"192.168.1.1:5006\")\n..."
+    },
+    {
+      "title": "Set `received_avp` parameter",
+      "description": "Set `received_avp` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"received\\_avp\", \"$avp(received)\")\n..."
+    },
+    {
+      "title": "Set `force_socket` parameter",
+      "description": "Set `force_socket` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"force\\_socket\", \"localhost:33333\")\n..."
+    },
+    {
+      "title": "Set `sipping_bflag` parameter",
+      "description": "Set `sipping_bflag` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"sipping\\_bflag\", \"SIPPING\\_ENABLE\")\n..."
+    },
+    {
+      "title": "Set `remove_on_timeout_bflag` parameter",
+      "description": "Set `remove_on_timeout_bflag` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"remove\\_on\\_timeout\\_bflag\", \"SIPPING\\_RTO\")\n..."
+    },
+    {
+      "title": "Set `sipping_latency_flag` parameter",
+      "description": "Set `sipping_latency_flag` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"sipping\\_latency\\_flag\", \"SIPPING\\_CALC\\_LATENCY\")\n..."
+    },
+    {
+      "title": "Set `sipping_ignore_rpl_codes` parameter",
+      "description": "Set `sipping_ignore_rpl_codes` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"sipping\\_ignore\\_rpl\\_codes\", \"408, 480, 404\")\n..."
+    },
+    {
+      "title": "Set `sipping_from` parameter",
+      "description": "Set `sipping_from` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"sipping\\_from\", \"sip:pinger@siphub.net\")\n..."
+    },
+    {
+      "title": "Set `sipping_method` parameter",
+      "description": "Set `sipping_method` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"sipping\\_method\", \"INFO\")\n..."
+    },
+    {
+      "title": "Set `nortpproxy_str` parameter",
+      "description": "Set `nortpproxy_str` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"nortpproxy\\_str\", \"a=sdpmangled:yes\\\\r\\\\n\")\n..."
+    },
+    {
+      "title": "Set `natping_tcp` parameter",
+      "description": "Set `natping_tcp` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"natping\\_tcp\", 1)\n..."
+    },
+    {
+      "title": "Set `oldip_skip` parameter",
+      "description": "Set `oldip_skip` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"oldip\\_skip\", \"oc\")\n..."
+    },
+    {
+      "title": "Set `ping_threshold` parameter",
+      "description": "Set `ping_threshold` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"ping\\_threshold\", 10)\n..."
+    },
+    {
+      "title": "Set `max_pings_lost` parameter",
+      "description": "Set `max_pings_lost` parameter",
+      "code": "...\nmodparam(\"nathelper\", \"max\\_pings\\_lost\", 5)\n..."
+    },
+    {
+      "title": "Set `cluster_id` parameter",
+      "description": "Set `cluster_id` parameter",
+      "code": "...\n# Be part of cluster ID 9\nmodparam(\"nathelper\", \"cluster\\_id\", 9)\n..."
+    },
+    {
+      "title": "Set `cluster_sharing_tag` parameter",
+      "description": "Set `cluster_sharing_tag` parameter",
+      "code": "...\n# only the node with the active \"vip\" sharing tag will perform pinging\nmodparam(\"nathelper\", \"cluster\\_id\", 9)\nmodparam(\"nathelper\", \"cluster\\_sharing\\_tag\", \"vip\")\n..."
+    },
+    {
+      "title": "`fix_nated_contact` usage",
+      "description": "`fix_nated_contact` usage",
+      "code": "...\nif (search(\"User-Agent: Cisco ATA.*\") {\n    fix\\_nated\\_contact(\";ata=cisco\", \"preserve-uri\");\n} else {\n    fix\\_nated\\_contact();\n}\n..."
+    },
+    {
+      "title": "`fix_nated_sdp` usage",
+      "description": "`fix_nated_sdp` usage",
+      "code": "...\n# Add \"a=direction:active\" SDP line\n# Rewrite media IP (c= line)\n# Add extra \"a=x-attr1\" SDP line\n# Add extra \"a=x-attr2\" SDP line\nif (search(\"User-Agent: Cisco ATA.*\")\n    {fix\\_nated\\_sdp(3,,\"\\\\r\\\\na=x-attr1\\\\r\\\\na=x-attr2\");};\n..."
+    },
+    {
+      "title": "`add_rcv_paramer` usage",
+      "description": "`add_rcv_paramer` usage",
+      "code": "...\nadd\\_rcv\\_param(); # add the parameter to the Contact header\n....\nadd\\_rcv\\_param(1); # add the parameter to the Contact URI\n..."
+    },
+    {
+      "title": "`fix_nated_register` usage",
+      "description": "`fix_nated_register` usage",
+      "code": "...\nfix\\_nated\\_register();\n..."
+    },
+    {
+      "title": "`nat_uac_test` usage",
+      "description": "`nat_uac_test` usage",
+      "code": "...\n# check for private Contact or SDP media IP addresses\nif (nat\\_uac\\_test(\"private-contact,private-sdp\"))\n\txlog(\"SIP message is NAT'ed (Call-ID: $ci)\\\\n\");\n..."
+    },
+    {
+      "title": "`nathelper:enable_ping` usage",
+      "description": "`nathelper:enable_ping` usage",
+      "code": "...\n$ opensips-cli -x mi nathelper:enable\\_ping\nStatus:: 1\n$\n$ opensips-cli -x mi nathelper:enable\\_ping 0\n$\n$ opensips-cli -x mi nathelper:enable\\_ping\nStatus:: 0\n$\n..."
+    }
+  ]
+}

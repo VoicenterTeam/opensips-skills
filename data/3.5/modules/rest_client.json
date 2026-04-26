@@ -1,0 +1,525 @@
+{
+  "id": "module-rest_client-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "rest_client Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/rest_client.html",
+  "content_markdown": "The _rest_client_ module provides a means of interacting with an HTTP server by doing RESTful queries, such as GET, POST and PUT.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:31:45.918Z",
+  "module_name": "rest_client",
+  "overview": "The _rest_client_ module provides a means of interacting with an HTTP server by doing RESTful queries, such as GET, POST and PUT.",
+  "how_it_works": "Unless specified otherwise by the server through a \"Connection: close\" indication, the module will keep and reuse the TCP connections it creates as much as possible, regardless if the script writer performs blocking or asynchronous HTTP requests. These connections are not shared among OpenSIPS workers — each worker maintains its own set of connections.",
+  "dependencies_required": [
+    {
+      "name": "libcurl",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "curl_timeout",
+      "type": "integer",
+      "default_value": "20",
+      "description": "The maximum allowed time for any HTTP(S) transfer to complete. This interval is inclusive of the initial connect time window, hence the value of this parameter must be greater than or equal to connection_timeout.",
+      "example_value": "10",
+      "example_code": "modparam(\"rest_client\", \"curl_timeout\", 10)"
+    },
+    {
+      "name": "connection_timeout",
+      "type": "integer",
+      "default_value": "20",
+      "description": "The maximum allowed time to establish a connection with the server.",
+      "example_value": "4",
+      "example_code": "modparam(\"rest_client\", \"connection_timeout\", 4)"
+    },
+    {
+      "name": "connect_poll_interval",
+      "type": "integer",
+      "default_value": "20",
+      "description": "Only relevant with async requests. Allows complete control over how quickly we want to detect libcurl's completed blocking TCP/TLS handshakes, so the async transfers can be put in the background. A lower connect_poll_interval may speed up all async HTTP transfers, but will also increase CPU usage.",
+      "example_value": "2",
+      "example_code": "modparam(\"rest_client\", \"connect_poll_interval\", 2)"
+    },
+    {
+      "name": "max_async_transfers",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Maximum number of asynchronous HTTP transfers a single OpenSIPS worker is allowed to run simultaneously. As long as this threshold is reached for a worker, all new async transfers it attempts to perform will be done in a blocking manner, with appropriate logging warnings.",
+      "example_value": "300",
+      "example_code": "modparam(\"rest_client\", \"max_async_transfers\", 300)"
+    },
+    {
+      "name": "max_transfer_size",
+      "type": "integer",
+      "default_value": "10240",
+      "description": "The maximum allowed size of a single transfer (download). Reaching this limit during a transfer will cause the transfer to stop immediately, returning error -10 at script level. A value of 0 will disable the check.",
+      "example_value": "64",
+      "example_code": "modparam(\"rest_client\", \"max_transfer_size\", 64)"
+    },
+    {
+      "name": "ssl_verifypeer",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Set this to 0 in order to disable the verification of the remote peer's certificate. Verification is done using a default bundle of CA certificates which come with libcurl.",
+      "example_value": "0",
+      "example_code": "modparam(\"rest\\_client\", \"ssl\\_verifypeer\", 0)"
+    },
+    {
+      "name": "ssl_verifyhost",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Set this to 0 in order to disable the verification that the remote peer actually corresponds to the server listed in the certificate.",
+      "example_value": "0",
+      "example_code": "modparam(\"rest\\_client\", \"ssl\\_verifyhost\", 0)"
+    },
+    {
+      "name": "ssl_capath",
+      "type": "string",
+      "description": "An optional path for CA certificates to be used for host verifications.",
+      "example_value": "/home/opensips/ca\\_certificates",
+      "example_code": "modparam(\"rest\\_client\", \"ssl\\_capath\", \"/home/opensips/ca\\_certificates\")"
+    },
+    {
+      "name": "curl_http_version",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Use a specific HTTP version for all requests.",
+      "possible_values": [
+        "0 (default) - use whatever is deemed fit by libcurl",
+        "1 - enforce HTTP 1.0 requests",
+        "2 - enforce HTTP 1.1 requests",
+        "3 - attempt HTTP 2 requests. Fall back to HTTP 1.1 if HTTP 2 cannot be negotiated with the server. Requires libcurl 7.33.0+.",
+        "4 - attempt HTTP 2 over TLS (HTTPS) only. Fall back to HTTP 1.1 if HTTP 2 cannot be negotiated with the HTTPS server. For clear text HTTP servers, use HTTP 1.1. Requires libcurl 7.47.0+.",
+        "5 - Issue non-TLS HTTP requests using HTTP 2 without HTTP 1.1 Upgrade. It requires prior knowledge that the server supports HTTP 2 straight away. HTTPS requests will still do HTTP/2 the standard way with negotiated protocol version in the TLS handshake. Requires libcurl 7.49.0+."
+      ],
+      "example_value": "3",
+      "example_code": "modparam(\"rest\\_client\", \"curl\\_http\\_version\", 3)"
+    },
+    {
+      "name": "enable_expect_100",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Include a \"Expect: 100-continue\" HTTP header field whenever the body size of a POST or PUT request exceeds 1024 bytes. Once enabled, the timeout for waiting for a \"100 Continue\" reply from the server is 1 second, after which the body upload will begin.",
+      "example_value": "true",
+      "example_code": "modparam(\"rest\\_client\", \"enable\\_expect\\_100\", true)"
+    },
+    {
+      "name": "no_concurrent_connects",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Set to true in order to only allow one OpenSIPS worker to connect to a given URL hostname at a time. While a worker is connecting, all other workers will receive error code -4 (already connecting) when attempting to perform any rest_client operation to the same hostname, regardless if the operation is sync or async. For sync transfers, the scope of the worker process serialization extends to the entire cURL transfer (TCP connect + upload + download), as all three phases take place within a single cURL library call. This parameter may be useful in order to prevent system outages caused by concurrent blocking of all OpenSIPS workers on a failed (hanging) HTTP service, with no more free workers being left to process incoming SIP packets.",
+      "example_value": "true",
+      "example_code": "modparam(\"rest\\_client\", \"no\\_concurrent\\_connects\", true)"
+    },
+    {
+      "name": "curl_conn_lifetime",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Only relevant when no_concurrent_connects is enabled. By setting this parameter, script developers can leverage the connection reusage capabilities of libcURL and entirely skip the \"no concurrent transfers\" logic on a given SIP worker, should that worker already be known to have a TCP connection to the target URL hostname (established by a previous rest_xxx() function call). The parameter denotes the lifetime, in seconds, of TCP connections kept within libcURL for reusage, a setting which is often operating system dependant, and which may also be affected by enabling/disabling keepalives. Consult your operating system's and/or libcurl's documentation for further information on the max lifetime of your cURL TCP connections.",
+      "example_value": "1800",
+      "example_code": "modparam(\"rest\\_client\", \"curl\\_conn\\_lifetime\", 1800)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "rest_get",
+      "signature": "rest_get(url, body_pv, [ctype_pv], [retcode_pv])",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "required": true,
+          "description": "The URL to query."
+        },
+        {
+          "name": "body_pv",
+          "type": "var",
+          "required": true,
+          "description": "output variable which will hold the body of the HTTP response."
+        },
+        {
+          "name": "ctype_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will contain the value of the \"Content-Type:\" header of the response."
+        },
+        {
+          "name": "retcode_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will retain the status code of the HTTP response. A **0** status code value means no HTTP reply arrived at all."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Connection Refused."
+        },
+        {
+          "value": "-2",
+          "condition": "Connection Timeout (the connection_timeout was exceeded before a TCP connection could be established)"
+        },
+        {
+          "value": "-3",
+          "condition": "Transfer Timeout (the curl_timeout was exceeded before the last byte was received). The _retcode_pv_ may be set to 200 or 0, depending whether a 200 OK was received or not. If it was, the _body_pv_ will contain partially downloaded data, use at your own risk! (we recommend you only use this data for logging / debugging purposes)"
+        },
+        {
+          "value": "-4",
+          "condition": "Already Connecting (another OpenSIPS worker is already connecting to this URL hostname. Consult no_concurrent_connects for more info)."
+        },
+        {
+          "value": "-10",
+          "condition": "Internal Error (out of memory, unexpected libcurl error, etc.)"
+        }
+      ],
+      "description": "Perform a blocking HTTP GET on the given _url_ and return a representation of the resource.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Example of querying a REST service to get the credit of an account\n$var(rc) = rest_get(\"https://getcredit.org/?account=$fU\",\n                    $var(credit),\n                    $var(ct),\n                    $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest_get() failed with $var(rc), acc=$fU\\n\");\n\tsend_reply(500, \"Server Internal Error\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"L_INFO\", \"rest_get() rcode=$var(rcode), acc=$fU\\n\");\n\tsend_reply(403, \"Forbidden\");\n\texit;\n}\n...",
+          "description": "Example of querying a REST service to get the credit of an account"
+        }
+      ]
+    },
+    {
+      "name": "rest_post",
+      "signature": "rest_post(url, send_body, [send_ctype], recv_body_pv, [recv_ctype_pv], [retcode_pv])",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "required": true,
+          "description": "The URL to query."
+        },
+        {
+          "name": "send_body",
+          "type": "string",
+          "required": true,
+          "description": "The request body. Note that the _send_body_ parameter can also accept a format-string but it cannot be larger than 1024 bytes. For larger messages, you must build them in a pseudo-variable and pass it to the function."
+        },
+        {
+          "name": "send_ctype",
+          "type": "string",
+          "required": false,
+          "default": "application/x-www-form-urlencoded",
+          "description": "The MIME Content-Type header for the request."
+        },
+        {
+          "name": "recv_body_pv",
+          "type": "var",
+          "required": true,
+          "description": "output variable which will hold the body of the HTTP response."
+        },
+        {
+          "name": "recv_ctype_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will contain the value of the \"Content-Type\" header of the response"
+        },
+        {
+          "name": "retcode_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will retain the status code of the HTTP response. A **0** status code value means no HTTP reply arrived at all."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Connection Refused."
+        },
+        {
+          "value": "-2",
+          "condition": "Connection Timeout (the connection_timeout was exceeded before a TCP connection could be established)"
+        },
+        {
+          "value": "-3",
+          "condition": "Transfer Timeout (the curl_timeout was exceeded before the last byte was received). The _retcode_pv_ may be set to 200 or 0, depending whether a 200 OK was received or not. If it was, the _body_pv_ will contain partially downloaded data, use at your own risk! (we recommend you only use this data for logging / debugging purposes)"
+        },
+        {
+          "value": "-4",
+          "condition": "Already Connecting (another OpenSIPS worker is already connecting to this URL hostname. Consult no_concurrent_connects for more info)."
+        },
+        {
+          "value": "-10",
+          "condition": "Internal Error (out of memory, unexpected libcurl error, etc.)"
+        }
+      ],
+      "description": "Perform a blocking HTTP POST on the given _url_. Note that the _send_body_ parameter can also accept a format-string but it cannot be larger than 1024 bytes. For larger messages, you must build them in a pseudo-variable and pass it to the function.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Creating a resource using a RESTful service with an HTTP POST request\n$var(rc) = rest_post(\"https://myserver.org/register_user\",\n                     $fU, , $var(body), $var(ct), $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest_post() failed with $var(rc), user=$fU\\n\");\n\tsend_reply(500, \"Server Internal Error 1\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"rest_post() rcode=$var(rcode), user=$fU\\n\");\n\tsend_reply(500, \"Server Internal Error 2\");\n\texit;\n}\n...",
+          "description": "Creating a resource using a RESTful service with an HTTP POST request"
+        }
+      ]
+    },
+    {
+      "name": "rest_put",
+      "signature": "rest_put(url, send_body, [send_ctype], recv_body_pv[, [recv_ctype_pv][, [retcode_pv]]])",
+      "parameters": [
+        {
+          "name": "url",
+          "type": "string",
+          "required": true,
+          "description": "The URL to query."
+        },
+        {
+          "name": "send_body",
+          "type": "string",
+          "required": true,
+          "description": "The request body. Similar to rest_post(), the _send_body_pv_ parameter can also accept a format-string but it cannot be larger than 1024 bytes. For larger messages, you must build them in a pseudo-variable and pass it to the function."
+        },
+        {
+          "name": "send_ctype",
+          "type": "string",
+          "required": false,
+          "default": "application/x-www-form-urlencoded",
+          "description": "The MIME Content-Type header for the request."
+        },
+        {
+          "name": "recv_body_pv",
+          "type": "var",
+          "required": true,
+          "description": "output variable which will hold the body of the HTTP response."
+        },
+        {
+          "name": "recv_ctype_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will contain the value of the \"Content-Type\" header of the response"
+        },
+        {
+          "name": "retcode_pv",
+          "type": "var",
+          "required": false,
+          "description": "output variable which will retain the status code of the HTTP response. A **0** status code value means no HTTP reply arrived at all."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "Success"
+        },
+        {
+          "value": "-1",
+          "condition": "Connection Refused."
+        },
+        {
+          "value": "-2",
+          "condition": "Connection Timeout (the connection_timeout was exceeded before a TCP connection could be established)"
+        },
+        {
+          "value": "-3",
+          "condition": "Transfer Timeout (the curl_timeout was exceeded before the last byte was received). The _retcode_pv_ may be set to 200 or 0, depending whether a 200 OK was received or not. If it was, the _body_pv_ will contain partially downloaded data, use at your own risk! (we recommend you only use this data for logging / debugging purposes)"
+        },
+        {
+          "value": "-4",
+          "condition": "Already Connecting (another OpenSIPS worker is already connecting to this URL hostname. Consult no_concurrent_connects for more info)."
+        },
+        {
+          "value": "-10",
+          "condition": "Internal Error (out of memory, unexpected libcurl error, etc.)"
+        }
+      ],
+      "description": "Perform a blocking HTTP PUT on the given _url_. Similar to rest_post(), the _send_body_pv_ parameter can also accept a format-string but it cannot be larger than 1024 bytes. For larger messages, you must build them in a pseudo-variable and pass it to the function.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Creating/Updating a resource using a RESTful service with an HTTP PUT request\n$var(rc) = rest_put(\"https://myserver.org/users/$fU\",\n                    $var(userinfo), , $var(body), $var(ct), $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest_put() failed with $var(rc), user=$fU\\n\");\n\tsend_reply(500, \"Server Internal Error 3\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"rest_put() rcode=$var(rcode), user=$fU\\n\");\n\tsend_reply(500, \"Server Internal Error 4\");\n\texit;\n}\n...",
+          "description": "Creating/Updating a resource using a RESTful service with an HTTP PUT request"
+        }
+      ],
+      "related_functions": [
+        "rest_post"
+      ]
+    },
+    {
+      "name": "rest_append_hf",
+      "signature": "rest_append_hf(txt)",
+      "parameters": [
+        {
+          "name": "txt",
+          "type": "string",
+          "required": true,
+          "description": "The contents of _txt_ should adhere to the specification for HTTP headers (ex. Field: Value)"
+        }
+      ],
+      "return_type": "integer",
+      "description": "Append _txt_ to the HTTP headers of the subsequent request. Multiple headers can be appended by making multiple calls before executing a request.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n# Example of querying a REST service requiring additional headers\n\nrest_append_hf(\"Authorization: Bearer mF_9.B5f-4.1JqM\");\n$var(rc) = rest_get(\"http://getcredit.org/?account=$fU\", $var(credit));\n...",
+          "description": "Example of querying a REST service requiring additional headers"
+        }
+      ]
+    },
+    {
+      "name": "rest_init_client_tls",
+      "signature": "rest_init_client_tls(tls_client_domain)",
+      "parameters": [
+        {
+          "name": "tls_client_domain",
+          "type": "string",
+          "required": true,
+          "description": "The name of the TLS client domain to use."
+        }
+      ],
+      "return_type": "integer",
+      "description": "Force a specific TLS domain to be used at most once, during the next GET/POST/PUT request. Refer to the tls_mgm module for additional info regarding TLS client domains. If using this function, you must also ensure that tls_mgm is loaded and properly configured.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nrest_init_client_tls(\"dom1\");\nif (!rest_get(\"https://example.com\"))\n    xlog(\"query failed\\n\");\n...",
+          "description": "Example of using a specific TLS client domain for a request"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `curl_timeout` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"curl\\_timeout\", 10)\n..."
+    },
+    {
+      "title": "Setting the `connection_timeout` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"connection\\_timeout\", 4)\n..."
+    },
+    {
+      "title": "Setting the `connect_poll_interval` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"connect\\_poll\\_interval\", 2)\n..."
+    },
+    {
+      "title": "Setting the `max_async_transfers` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"max\\_async\\_transfers\", 300)\n..."
+    },
+    {
+      "title": "Setting the `max_transfer_size` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"max\\_transfer\\_size\", 64)\n..."
+    },
+    {
+      "title": "Setting the `ssl_verifypeer` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"ssl\\_verifypeer\", 0)\n..."
+    },
+    {
+      "title": "Setting the `ssl_verifyhost` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"ssl\\_verifyhost\", 0)\n..."
+    },
+    {
+      "title": "Setting the `ssl_capath` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"ssl\\_capath\", \"/home/opensips/ca\\_certificates\")\n..."
+    },
+    {
+      "title": "Setting the `curl_http_version` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"curl\\_http\\_version\", 3)\n..."
+    },
+    {
+      "title": "Setting the `enable_expect_100` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"enable\\_expect\\_100\", true)\n..."
+    },
+    {
+      "title": "Setting the `no_concurrent_connects` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"no\\_concurrent\\_connects\", true)\n..."
+    },
+    {
+      "title": "Setting the `curl_conn_lifetime` parameter",
+      "description": "",
+      "code": "...\nmodparam(\"rest\\_client\", \"curl\\_conn\\_lifetime\", 1800)\n..."
+    },
+    {
+      "title": "`rest_get` usage",
+      "description": "",
+      "code": "...\n# Example of querying a REST service to get the credit of an account\n$var(rc) = rest\\_get(\"https://getcredit.org/?account=$fU\",\n                    $var(credit),\n                    $var(ct),\n                    $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest\\_get() failed with $var(rc), acc=$fU\\\\n\");\n\tsend\\_reply(500, \"Server Internal Error\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"L\\_INFO\", \"rest\\_get() rcode=$var(rcode), acc=$fU\\\\n\");\n\tsend\\_reply(403, \"Forbidden\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`rest_post` usage",
+      "description": "",
+      "code": "...\n# Creating a resource using a RESTful service with an HTTP POST request\n$var(rc) = rest\\_post(\"https://myserver.org/register\\_user\",\n                     $fU, , $var(body), $var(ct), $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest\\_post() failed with $var(rc), user=$fU\\\\n\");\n\tsend\\_reply(500, \"Server Internal Error 1\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"rest\\_post() rcode=$var(rcode), user=$fU\\\\n\");\n\tsend\\_reply(500, \"Server Internal Error 2\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`rest_put` usage",
+      "description": "",
+      "code": "...\n# Creating/Updating a resource using a RESTful service with an HTTP PUT request\n$var(rc) = rest\\_put(\"https://myserver.org/users/$fU\",\n                    $var(userinfo), , $var(body), $var(ct), $var(rcode));\nif ($var(rc) < 0) {\n\txlog(\"rest\\_put() failed with $var(rc), user=$fU\\\\n\");\n\tsend\\_reply(500, \"Server Internal Error 3\");\n\texit;\n}\n\nif ($var(rcode) != 200) {\n\txlog(\"rest\\_put() rcode=$var(rcode), user=$fU\\\\n\");\n\tsend\\_reply(500, \"Server Internal Error 4\");\n\texit;\n}\n..."
+    },
+    {
+      "title": "`rest_append_hf` usage",
+      "description": "",
+      "code": "...\n# Example of querying a REST service requiring additional headers\n\nrest\\_append\\_hf(\"Authorization: Bearer mF\\_9.B5f-4.1JqM\");\n$var(rc) = rest\\_get(\"http://getcredit.org/?account=$fU\", $var(credit));\n...\n\t\t\n"
+    },
+    {
+      "title": "`rest_init_client_tls` usage",
+      "description": "",
+      "code": "...\nrest\\_init\\_client\\_tls(\"dom1\");\nif (!rest\\_get(\"https://example.com\"))\n    xlog(\"query failed\\\\n\");\n...\n\t\t\n"
+    },
+    {
+      "title": "`async rest_get` usage",
+      "description": "",
+      "code": "route {\n\t...\n\tasync(rest\\_get(\"http://getcredit.org/?account=$fU\",\n\t               $var(credit), , $var(rcode)), resume);\n}\n\nroute \\[resume\\] {\n\t$var(rc) = $rc;\n\tif ($var(rc) < 0) {\n\t\txlog(\"async rest\\_get() failed with $var(rc), acc=$fU\\\\n\");\n\t\tsend\\_reply(500, \"Server Internal Error\");\n\t\texit;\n\t}\n\n\tif ($var(rcode) != 200) {\n\t\txlog(\"L\\_INFO\", \"async rest\\_get() rcode=$var(rcode), acc=$fU\\\\n\");\n\t\tsend\\_reply(403, \"Forbidden\");\n\t\texit;\n\t}\n\n\t...\n}"
+    },
+    {
+      "title": "`async rest_post` usage",
+      "description": "",
+      "code": "route {\n\t...\n\tasync(rest\\_post(\"http://myserver.org/register\\_user\",\n\t                $fU, , $var(body), $var(ct), $var(rcode)), resume);\n}\n\nroute \\[resume\\] {\n\t$var(rc) = $rc;\n\tif ($var(rc) < 0) {\n\t\txlog(\"async rest\\_post() failed with $var(rc), user=$fU\\\\n\");\n\t\tsend\\_reply(500, \"Server Internal Error 1\");\n\t\texit;\n\t}\n\tif ($var(rcode) != 200) {\n\t\txlog(\"async rest\\_post() rcode=$var(rcode), user=$fU\\\\n\");\n\t\tsend\\_reply(500, \"Server Internal Error 2\");\n\t\texit;\n\t}\n\n\t...\n}"
+    },
+    {
+      "title": "`async rest_put` usage",
+      "description": "",
+      "code": "route {\n\t...\n\tasync(rest\\_put(\"http://myserver.org/users/$fU\", $var(userinfo), ,\n\t               $var(body), $var(ct), $var(rcode)), resume);\n}\n\nroute \\[resume\\] {\n\t$var(rc) = $rc;\n\tif ($var(rc) < 0) {\n\t\txlog(\"async rest\\_put() failed with $var(rc), user=$fU\\\\n\");\n\t\tsend\\_reply(500, \"Server Internal Error 3\");\n\t\texit;\n\t}\n\tif ($var(rcode) != 200) {\n\t\txlog(\"async rest\\_put() rcode=$var(rcode), user=$fU\\\\n\");\n\t\tsend\\_reply(500, \"Server Internal Error 4\");\n\t\texit;\n\t}\n\n\t...\n}"
+    },
+    {
+      "title": "`rest.escape` usage",
+      "description": "",
+      "code": "...\n# This example would produce log entry: \"Output: call%40example.com%26safe%3Dfalse\"\n$var(tmp) = \"call@example.com&safe=false\";\nxlog(\"Output: $(var(tmp){rest.escape})\\\\n\");\n\n# Encode call ID before transmission:\n$var(rc) = rest\\_get(\"https://call-info.org/?id=$(ci{rest.escape})\", $var(body\\_pv));\n...\n                \n"
+    },
+    {
+      "title": "`rest.unescape` usage",
+      "description": "",
+      "code": "...\n# This example would produce log entry: \"Output: 1+1=2!\"\n$var(tmp) = \"1%2B1%3D2%21\";\nxlog(\"Output: $(var(tmp){rest.unescape})\\\\n\");\n\n# This example would produce log entry: \"OpenSIPs, tastes better with every SIP!\"\n$var(tmp) = \"OpenSIPs%2C%20tastes%20better%20with%20every%20SIP%21\";\nxlog(\"$(var(tmp){rest.unescape})\\\\n\");\n...\n                \n"
+    }
+  ]
+}

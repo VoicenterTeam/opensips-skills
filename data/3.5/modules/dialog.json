@@ -1,0 +1,2444 @@
+{
+  "id": "module-dialog-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "dialog Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/dialog.html",
+  "content_markdown": "The dialog module provides dialog awareness to the OpenSIPS proxy. Its functionality is to keep trace of the current dialogs, to offer information about them (like how many dialogs are active).\n\nAside tracking, the dialog module offers functionalities like flags and attributes per dialog (persistent data across dialog), dialog profiling and dialog termination (on timeout base or external triggered).\n\nThe module, via an internal API, also provide the foundation to build on top of it more complex dialog-based functionalities via other OpenSIPS modules.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T13:08:52.274Z",
+  "module_name": "dialog",
+  "overview": "The dialog module provides dialog awareness to the OpenSIPS proxy. Its functionality is to keep trace of the current dialogs, to offer information about them (like how many dialogs are active).\n\nAside tracking, the dialog module offers functionalities like flags and attributes per dialog (persistent data across dialog), dialog profiling and dialog termination (on timeout base or external triggered).\n\nThe module, via an internal API, also provide the foundation to build on top of it more complex dialog-based functionalities via other OpenSIPS modules.",
+  "how_it_works": "To create the dialog associated with an initial request, you must call the create\\_dialog() function, with or without parameter.\n\nThe dialog is automatically terminated when a “BYE” is received. In case of no “BYE”, the dialog lifetime is controlled via the default timeout (see “default\\_timeout” - default\\_timeout) and custom timeout (see “$DLG\\_timeout” - $DLG\\_timeout).\n\nOnce terminated, the in-memory dialog may be destroyed right away or, depending on the “delete\\_delay” - delete\\_delay) setting, it may be kept for a while in memory, in a read-only state (no action, no changes, nothing). This delaying may be used to help with the routing of late in-dialog request that may be received after the dialog terminted (like late BYE's due retransmissions, cross BYE requests, auth'ed BYE request, slow ACK on re-INVITEs, etc).",
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction module",
+      "optional": false
+    },
+    {
+      "name": "RR",
+      "type": "module",
+      "reason": "Record-Route module, if Dialog ID matching is used in non Topo Hiding cases",
+      "optional": true
+    },
+    {
+      "name": "clusterer",
+      "type": "module",
+      "reason": "if replication_cluster parameter is set (contact replication via clusterer module)",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "enable_stats",
+      "type": "integer",
+      "default_value": "1 (enabled)",
+      "description": "If the statistics support should be enabled or not. Via statistic variables, the module provide information about the dialog processing. Set it to zero to disable or to non-zero to enable it.",
+      "example_value": "0",
+      "example_code": "modparam(\"dialog\", \"enable\\_stats\", 0)"
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "4096",
+      "description": "The size of the hash table internally used to keep the dialogs. A larger table is much faster but consumes more memory. The hash size must be a power of 2 number.",
+      "example_value": "1024",
+      "example_code": "modparam(\"dialog\", \"hash\\_size\", 1024)",
+      "notes": "IMPORTANT: If dialogs' information should be stored in a database, a constant hash\\_size should be used, otherwise the restored process will not take place. If you really want to modify the hash\\_size you must delete all table's rows before restarting OpenSIPS."
+    },
+    {
+      "name": "log_profile_hash_size",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The size of the hash table internally used to store profile->dialog associations. A larger table can provide more parallel operations but consumes more memory. The hash size is provided as the base 2 logarithm(e.g. log\\_profile\\_hash\\_size =4 means the table has 2^4 entries).",
+      "example_value": "5",
+      "example_code": "modparam(\"dialog\", \"log\\_profile\\_hash\\_size\", 5) #set a table size of 32"
+    },
+    {
+      "name": "rr_param",
+      "type": "string",
+      "default_value": "did",
+      "description": "Name of the Record-Route parameter to be added with the dialog cookie. It is used for fast dialog matching of the sequential requests.",
+      "example_value": "xyz",
+      "example_code": "modparam(\"dialog\", \"rr\\_param\", \"xyz\")"
+    },
+    {
+      "name": "default_timeout",
+      "type": "integer",
+      "default_value": "43200 (12 hours)",
+      "description": "The default dialog timeout (in seconds) if no custom one is set.",
+      "example_value": "21600",
+      "example_code": "modparam(\"dialog\", \"default\\_timeout\", 21600)"
+    },
+    {
+      "name": "dlg_extra_hdrs",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "A string containing the extra headers (full format, with EOH) to be added in the requests generated by the module (like BYEs).",
+      "example_value": "\"Hint: credit expired\\r\\n\"",
+      "example_code": "modparam(\"dialog\", \"dlg_extra_hdrs\", \"Hint: credit expired\\r\\n\")"
+    },
+    {
+      "name": "dlg_match_mode",
+      "type": "integer",
+      "default_value": "1 (DID_FALLBACK)",
+      "description": "How the seqential requests should be matched against the known dialogs. The modes are a combination between matching based on a cookie (DID) stored as cookie in Record-Route header and the matching based on SIP elements (as in RFC3261).",
+      "possible_values": [
+        "0 - DID_ONLY",
+        "1 - DID_FALLBACK",
+        "2 - DID_NONE"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"dialog\", \"dlg_match_mode\", 0)",
+      "notes": "NOTE that if you have call looping on your OpenSIPS server (passing more than once through the same OpenSIPS instance), it is strongly suggested to use only DID_ONLY mode, as the SIP based matching will have an undefined behavior - from SIP perspective, a sequential dialog will match all the loops of the call, as the Call-ID, To and From TAGs are the same."
+    },
+    {
+      "name": "delete_delay",
+      "type": "integer",
+      "default_value": "0",
+      "description": "The interval (seconds) to delay a dialog deletion / removal from memory AFTER its termination. Once terminated, the dialog will be kept in a read only state (no action, no changes), but it will still be able to match and route late in-dialog requests.",
+      "scope": "global",
+      "example_value": "10",
+      "example_code": "modparam(\"dialog\", \"delete_delay\", 10)",
+      "notes": "This global value may be per-call changed via the DLG_del_delay “$DLG_del_delay” ([$DLG_del_delay](#pv_DLG_del_delay \"1.10.9. $DLG_del_delay\")) script variable."
+    },
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensips:opensipsrw@localhost/opensips",
+      "description": "If you want to store the information about the dialogs in a database a database url must be specified.",
+      "example_value": "\"dbdriver://username:password@dbhost/dbname\"",
+      "example_code": "modparam(\"dialog\", \"db_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "db_mode",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Describe how to push into the DB the dialogs' information from memory.",
+      "possible_values": [
+        "0 - NO_DB",
+        "1 - REALTIME",
+        "2 - DELAYED",
+        "3 - SHUTDOWN"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"dialog\", \"db_mode\", 1)"
+    },
+    {
+      "name": "db_update_period",
+      "type": "integer",
+      "default_value": "60",
+      "description": "The interval (seconds) at which to update dialogs' information if you chose to store the dialogs' info at a given interval. A too short interval will generate intensive database operations, a too large one will not notice short dialogs.",
+      "example_value": "120",
+      "example_code": "modparam(\"dialog\", \"db_update_period\", 120)"
+    },
+    {
+      "name": "options_ping_interval",
+      "type": "integer",
+      "default_value": "30",
+      "description": "The interval (seconds) at which OpenSIPS will generate in-dialog OPTIONS pings for one or both of the involved parties.",
+      "example_value": "20",
+      "example_code": "modparam(\"dialog\", \"options_ping_interval\", 20)"
+    },
+    {
+      "name": "reinvite_ping_interval",
+      "type": "integer",
+      "default_value": "300",
+      "description": "The interval (seconds) at which OpenSIPS will generate in-dialog Re-INVITE pings for one or both of the involved parties.",
+      "example_value": "600",
+      "example_code": "modparam(\"dialog\", \"reinvite_ping_interval\", 600)",
+      "notes": "Important: the ping timeout detection is performed every time this interval ticks, not when the re-INVITE transaction times out! Consequently, please make sure that the timeouts for re-INVITE transactions (e.g. the \"fr_timeout\" modparam of the \"tm\" module or its $T_fr_timeout variable) are always lower than the value of this parameter! Failing to ensure this ordering of timeouts may possibly lead to re-INVITE pings never ending a disconnected dialog due to pings getting retried before getting a chance to properly time out."
+    },
+    {
+      "name": "table_name",
+      "type": "string",
+      "default_value": "dialog",
+      "description": "If you want to store the information about the dialogs in a database a table name must be specified.",
+      "example_value": "my_dialog",
+      "example_code": "modparam(\"dialog\", \"table_name\", \"my_dialog\")"
+    },
+    {
+      "name": "call_id_column",
+      "type": "string",
+      "default_value": "callid",
+      "description": "The column's name in the database to store the dialogs' callid.",
+      "example_value": "callid_c_name",
+      "example_code": "modparam(\"dialog\", \"call_id_column\", \"callid_c_name\")"
+    },
+    {
+      "name": "from_uri_column",
+      "type": "string",
+      "default_value": "from_uri",
+      "description": "The column's name in the database to store the caller's sip address.",
+      "example_value": "from_uri_c_name",
+      "example_code": "modparam(\"dialog\", \"from_uri_column\", \"from_uri_c_name\")"
+    },
+    {
+      "name": "from_tag_column",
+      "type": "string",
+      "default_value": "from_tag",
+      "description": "The column's name in the database to store the From tag from the Invite request.",
+      "example_value": "from_tag_c_name",
+      "example_code": "modparam(\"dialog\", \"from_tag_column\", \"from_tag_c_name\")"
+    },
+    {
+      "name": "to_uri_column",
+      "type": "string",
+      "default_value": "to_uri",
+      "description": "The column's name in the database to store the calee's sip address.",
+      "example_value": "to_uri_c_name",
+      "example_code": "modparam(\"dialog\", \"to_uri_column\", \"to_uri_c_name\")"
+    },
+    {
+      "name": "to_tag_column",
+      "type": "string",
+      "default_value": "to_tag",
+      "description": "The column's name in the database to store the To tag from the 200 OK response to the Invite request, if present.",
+      "example_value": "to_tag_c_name",
+      "example_code": "modparam(\"dialog\", \"to_tag_column\", \"to_tag_c_name\")"
+    },
+    {
+      "name": "from_cseq_column",
+      "type": "string",
+      "default_value": "caller_cseq",
+      "description": "The column's name in the database to store the cseq from caller side.",
+      "example_value": "from_cseq_c_name",
+      "example_code": "modparam(\"dialog\", \"from_cseq_column\", \"from_cseq_c_name\")"
+    },
+    {
+      "name": "to_cseq_column",
+      "type": "string",
+      "default_value": "callee_cseq",
+      "description": "The column's name in the database to store the cseq from callee side.",
+      "example_value": "to_cseq_c_name",
+      "example_code": "modparam(\"dialog\", \"to\\_cseq\\_column\", \"to\\_cseq\\_c\\_name\")"
+    },
+    {
+      "name": "from_route_column",
+      "type": "string",
+      "default_value": "caller_route_set",
+      "description": "The column's name in the database to store the route records from caller side (proxy to caller).",
+      "example_value": "from_route_c_name",
+      "example_code": "modparam(\"dialog\", \"from\\_route\\_column\", \"from\\_route\\_c\\_name\")"
+    },
+    {
+      "name": "to_route_column",
+      "type": "string",
+      "default_value": "callee_route_set",
+      "description": "The column's name in the database to store the route records from callee side (proxy to callee).",
+      "example_value": "to_route_c_name",
+      "example_code": "modparam(\"dialog\", \"to\\_route\\_column\", \"to\\_route\\_c\\_name\")"
+    },
+    {
+      "name": "from_contact_column",
+      "type": "string",
+      "default_value": "caller_contact",
+      "description": "The column's name in the database to store the caller's contact uri.",
+      "example_value": "from_contact_c_name",
+      "example_code": "modparam(\"dialog\", \"from\\_contact\\_column\", \"from\\_contact\\_c\\_name\")"
+    },
+    {
+      "name": "to_contact_column",
+      "type": "string",
+      "default_value": "callee_contact",
+      "description": "The column's name in the database to store the callee's contact uri.",
+      "example_value": "to_contact_c_name",
+      "example_code": "modparam(\"dialog\", \"to\\_contact\\_column\", \"to\\_contact\\_c\\_name\")"
+    },
+    {
+      "name": "from_sock_column",
+      "type": "string",
+      "default_value": "caller_sock",
+      "description": "The column's name in the database to store the information about the local interface receiving the traffic from caller.",
+      "example_value": "from_sock_c_name",
+      "example_code": "modparam(\"dialog\", \"from\\_sock\\_column\", \"from\\_sock\\_c\\_name\")"
+    },
+    {
+      "name": "to_sock_column",
+      "type": "string",
+      "default_value": "callee_sock",
+      "description": "The column's name in the database to store information about the local interface receiving the traffic from callee.",
+      "example_value": "to_sock_c_name",
+      "example_code": "modparam(\"dialog\", \"to\\_sock\\_column\", \"to\\_sock\\_c\\_name\")"
+    },
+    {
+      "name": "dlg_id_column",
+      "type": "string",
+      "default_value": "dlg_id",
+      "description": "The column's name in the database to store the dialogs' id information.",
+      "example_value": "dlg_id_c_name",
+      "example_code": "modparam(\"dialog\", \"dlg\\_id\\_column\", \"dlg\\_id\\_c\\_name\")"
+    },
+    {
+      "name": "state_column",
+      "type": "string",
+      "default_value": "state",
+      "description": "The column's name in the database to store the dialogs' state information.",
+      "example_value": "state_c_name",
+      "example_code": "modparam(\"dialog\", \"state\\_column\", \"state\\_c\\_name\")"
+    },
+    {
+      "name": "start_time_column",
+      "type": "string",
+      "default_value": "start_time",
+      "description": "The column's name in the database to store the dialogs' start time information.",
+      "example_value": "start_time_c_name",
+      "example_code": "modparam(\"dialog\", \"start\\_time\\_column\", \"start\\_time\\_c\\_name\")"
+    },
+    {
+      "name": "timeout_column",
+      "type": "string",
+      "default_value": "timeout",
+      "description": "The column's name in the database to store the dialogs' timeout.",
+      "example_value": "timeout_c_name",
+      "example_code": "modparam(\"dialog\", \"timeout_column\", \"timeout_c_name\")"
+    },
+    {
+      "name": "profiles_column",
+      "type": "string",
+      "default_value": "profiles",
+      "description": "The column's name in the database to store the dialogs' profiles.",
+      "example_value": "profiles_c_name",
+      "example_code": "modparam(\"dialog\", \"profiles_column\", \"profiles_c_name\")"
+    },
+    {
+      "name": "vars_column",
+      "type": "string",
+      "default_value": "vars",
+      "description": "The column's name in the database to store the dialogs' vars.",
+      "example_value": "vars_c_name",
+      "example_code": "modparam(\"dialog\", \"vars_column\", \"vars_c_name\")"
+    },
+    {
+      "name": "sflags_column",
+      "type": "string",
+      "default_value": "script_flags",
+      "description": "The column's name in the database to store the dialogs' script flags.",
+      "example_value": "sflags_c_name",
+      "example_code": "modparam(\"dialog\", \"sflags_column\", \"sflags_c_name\")"
+    },
+    {
+      "name": "mflags_column",
+      "type": "string",
+      "default_value": "module_flags",
+      "description": "The column's name in the database to store the dialogs' module flags.",
+      "example_value": "mflags_c_name",
+      "example_code": "modparam(\"dialog\", \"mflags_column\", \"mflags_c_name\")"
+    },
+    {
+      "name": "flags_column",
+      "type": "string",
+      "default_value": "flags",
+      "description": "The column's name in the database to store the dialogs' flags.",
+      "example_code": "modparam(\"dialog\", \"flags\\_column\", \"flags\\_c\\_name\")"
+    },
+    {
+      "name": "profiles_with_value",
+      "type": "string",
+      "default_value": "empty",
+      "description": "List of names (alphanumerical/-/\\_) for profiles with values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.",
+      "example_code": "modparam(\"dialog\", \"profiles\\_with\\_value\", \"callerCC; gatewayCC; clientChannels/s; codecUsed/b;\")"
+    },
+    {
+      "name": "profiles_no_value",
+      "type": "string",
+      "default_value": "empty",
+      "description": "List of names (alphanumerical/-/\\_) for profiles without values. Flags _/b_ or _/s_ allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.",
+      "example_code": "modparam(\"dialog\", \"profiles\\_no\\_value\", \"inbound ; outbound ; shared/s; repl/b;\")"
+    },
+    {
+      "name": "db_flush_vals_profiles",
+      "type": "integer",
+      "default_value": "empty",
+      "description": "Pushes dialog values, profiles and flags into the database along with other dialog state information (see db\\_mode 1 and 2).",
+      "example_code": "modparam(\"dialog\", \"db\\_flush\\_vals\\_profiles\", 1)"
+    },
+    {
+      "name": "timer_bulk_del_no",
+      "type": "integer",
+      "default_value": "1",
+      "description": "The number of dialogs that should be attempted to be deleted at the same time ( a single query ) from the DB back-end.",
+      "example_code": "modparam(\"dialog\", \"timer\\_bulk\\_del\\_no\", 10)"
+    },
+    {
+      "name": "race_condition_timeout",
+      "type": "integer",
+      "default_value": "5",
+      "description": "If dialog is created using the 'E' flag, and a SIP Race condition happens, then the dialog will be terminated after 'race_condition_timeout' seconds. Currently, the only supported race conditions are (200OK vs CANCEL) and (early BYE vs 200OK)",
+      "scope": "global",
+      "example_value": "1",
+      "example_code": "modparam(\"dialog\", \"race_condition_timeout\", 1)"
+    },
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "default_value": "empty",
+      "description": "Enables distributed dialog profiles and specifies the backend that should be used by the CacheDB interface.",
+      "scope": "global",
+      "example_value": "redis://127.0.0.1:6379",
+      "example_code": "modparam(\"dialog\", \"cachedb_url\", \"redis://127.0.0.1:6379\")"
+    },
+    {
+      "name": "profile_value_prefix",
+      "type": "string",
+      "default_value": "dlg_val_",
+      "description": "Specifies what prefix should be added to the profiles with value when they are inserted into CacheDB backed. This is only used when distributed profiles are enabled.",
+      "scope": "global",
+      "example_value": "dlgv_",
+      "example_code": "modparam(\"dialog\", \"profile_value_prefix\", \"dlgv_\")"
+    },
+    {
+      "name": "profile_no_value_prefix",
+      "type": "string",
+      "default_value": "dlg_noval_",
+      "description": "Specifies what prefix should be added to the profiles without value when they are inserted into CacheDB backed. This is only used when distributed profiles are enabled.",
+      "scope": "global",
+      "example_value": "dlgnv_",
+      "example_code": "modparam(\"dialog\", \"profile_no_value_prefix\", \"dlgnv_\")"
+    },
+    {
+      "name": "profile_size_prefix",
+      "type": "string",
+      "default_value": "dlg_size_",
+      "description": "Specifies what prefix should be added to the entity that holds the profiles with value size in CacheDB backed. This is only used when distributed profiles are enabled.",
+      "scope": "global",
+      "example_value": "dlgs_",
+      "example_code": "modparam(\"dialog\", \"profile_size_prefix\", \"dlgs_\")"
+    },
+    {
+      "name": "profile_timeout",
+      "type": "integer",
+      "default_value": "86400",
+      "description": "Specifies how long a dialog profile should be kept in the CacheDB until it expires. This is only used when distributed profiles are enabled.",
+      "example_value": "43200",
+      "example_code": "modparam(\"dialog\", \"profile\\_timeout\", 43200)"
+    },
+    {
+      "name": "dialog_replication_cluster",
+      "type": "integer",
+      "default_value": "0 (no replication)",
+      "description": "Specifies the cluster ID for dialog replication using the _clusterer_ module. This enables sending and receiving all the dialog-related events (creation, update and deletion) in the cluster. This OpenSIPS cluster exposes the **\"dialog-dlg-repl\"** capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have _at least one node_ marked with the **\"seed\"** value as the _clusterer.flags_ column/property in order to be fully functional. Consult the [clusterer - Capabilities](clusterer#capabilities) chapter for more details.",
+      "example_value": "1",
+      "example_code": "modparam(\"dialog\", \"dialog\\_replication\\_cluster\", 1)"
+    },
+    {
+      "name": "profile_replication_cluster",
+      "type": "integer",
+      "default_value": "0 (no replication)",
+      "description": "Specifies the cluster ID for profile replication using the _clusterer_ module. This enables sending and receiving the profile information (value, dialog count) in the cluster.",
+      "example_value": "1",
+      "example_code": "modparam(\"dialog\", \"profile\\_replication\\_cluster\", 1)"
+    },
+    {
+      "name": "replicate_profiles_buffer",
+      "type": "string",
+      "default_value": "1400 bytes",
+      "description": "Used to specify the length of the buffer used by the binary replication, in bytes. Usually this should be big enough to hold as much data as possible, but small enough to avoid UDP fragmentation. The recommended value is the smallest MTU between all the replication instances.",
+      "example_value": "500",
+      "example_code": "modparam(\"dialog\", \"replicate\\_profiles\\_buffer\", 500)"
+    },
+    {
+      "name": "replicate_profiles_check",
+      "type": "string",
+      "default_value": "10 s",
+      "description": "Timer in seconds, used to specify how often the module should check whether old, replicated profiles values are obsolete and should be removed. should replicate its profiles to the other instances.",
+      "example_value": "100",
+      "example_code": "modparam(\"dialog\", \"replicate\\_profiles\\_check\", 100)"
+    },
+    {
+      "name": "replicate_profiles_timer",
+      "type": "string",
+      "default_value": "200 ms.",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its profiles to the other instances.",
+      "example_value": "100",
+      "example_code": "modparam(\"dialog\", \"replicate_profiles_timer\", 100)"
+    },
+    {
+      "name": "replicate_profiles_expire",
+      "type": "string",
+      "default_value": "10 s.",
+      "description": "Timer in seconds, used to specify when the profiles counters received from a different instance should no longer be taken into account. This is used to prevent obsolete values, in case an instance stops replicating its counters.",
+      "example_value": "10",
+      "example_code": "modparam(\"dialog\", \"replicate_profiles_expire\", 10)"
+    },
+    {
+      "name": "cluster_auto_sync",
+      "type": "string",
+      "default_value": "1 (enabled).",
+      "description": "Specifies whether to automatically issue a sync request (for dialogs marked with a sharing tag in backup state) when a node becomes reachable. A value of _1_ means enabled and _0_ disabled.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "0",
+      "example_code": "modparam(\"dialog\", \"cluster_auto_sync\", 0)"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "create_dialog",
+      "signature": "create_dialog([flags])",
+      "parameters": [
+        {
+          "name": "flags",
+          "type": "string",
+          "required": false,
+          "description": "Specifies special behavior to be done for the current dialog. Multiple string flags can be used at the same time.",
+          "valid_values": [
+            "B",
+            "P",
+            "p",
+            "R",
+            "r",
+            "E"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the dialog was successfully created or if the dialog was previously created"
+        }
+      ],
+      "description": "The function creats the dialog for the currently processed request. The request must be an initial request. Optionally,the function also receives a string parameter, which specifies special behavior to be done for the current dialog.\n\nNOTE: both RE-INVITE and OPTIONS pinging cannot be enabled at the same time for a single dialog leg. If both flags (\"_PR_\" or \"_pr_\") are provided only RE-INVITE pinging will be used.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\ncreate_dialog();\n...\n#ping caller\ncreate_dialog(\"P\");\n...\n#ping caller and callee\ncreate_dialog(\"Pp\");\n\n#bye on timeout\ncreate_dialog(\"B\");\n...",
+          "description": "create_dialog() usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "match_dialog",
+      "signature": "match_dialog([dlg_match_mode])",
+      "parameters": [
+        {
+          "name": "dlg_match_mode",
+          "type": "string",
+          "required": false,
+          "description": "A specific matching mode may be enforced by specifying the optional \"dlg_match_mode\" parameter.",
+          "valid_values": [
+            "DID_ONLY",
+            "DID_FALLBACK",
+            "DID_NONE"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if a dialog exists for the request"
+        }
+      ],
+      "description": "This function is to be used to match a sequential (in-dialog) request to an ongoing dialog.\n\nBy default, dialog matching is performed according to the dlg_match_mode module parameter. A specific matching mode may be enforced by specifying the optional \"dlg_match_mode\" parameter. Possible values for this parameter are \"DID_ONLY\", \"DID_FALLBACK\" and \"DID_NONE\".\n\nAs sequential requests are automatically matched to the dialog when doing \"loose_route()\" from script, this function is intended to: (A) control the place in your script where the dialog matching is done and (B) to cope with bogus sequential requests that do not have Route headers, so they are not handled by loose_route().",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n    if (has_totag()) {\n        loose_route();\n\n        # example 1: match according to dlg_match_mode\n        if ($DLG_status == NULL && !match_dialog())\n            xlog(\"cannot match request to a dialog\\n\");\n\n        # example 2: override dlg_match_mode\n        if ($DLG_status == NULL && !match_dialog(\"DID_FALLBACK\"))\n            xlog(\"cannot match request to a dialog\\n\");\n    }\n...",
+          "description": "match_dialog() usage"
+        }
+      ],
+      "related_functions": [
+        "loose_route"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "validate_dialog",
+      "signature": "validate_dialog()",
+      "parameters": [],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if a dialog exists for the request and if the request is valid (according to dialog data)"
+        },
+        {
+          "value": "-1",
+          "condition": "invalid cseq"
+        },
+        {
+          "value": "-2",
+          "condition": "invalid remote target"
+        },
+        {
+          "value": "-3",
+          "condition": "invalid route set"
+        },
+        {
+          "value": "-4",
+          "condition": "other errors ( parsing, no dlg, etc )"
+        }
+      ],
+      "description": "The function checks the current received requests against the dialog (internal data) it belongs to. Performing several tests, the function will help to detect the bogus injected in-dialog requests (like malicious BYEs).\n\nThe performed tests are related to CSEQ sequence checking and routing information checking (contact and route set).",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n    if (has_totag()) {\n        loose_route();\n        if ($DLG_status!=NULL && !validate_dialog() ) {\n            xlog(\" in-dialog bogus request \\n\");\n        } else {\n            xlog(\" in-dialog valid request - $DLG_dir !\\n\");\n        }\n    }\n...",
+          "description": "validate_dialog() usage"
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "fix_route_dialog",
+      "signature": "fix_route_dialog()",
+      "parameters": [],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "The function forces an in dialog SIP message to contain the ruri, route headers and dst_uri, as specified by the internal data of the dialog it belongs to. The function will prevent the existence of bogus injected in-dialog requests ( like malicious BYEs )",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n    if (has_totag()) {\n        loose_route();\n        if ($DLG_status!=NULL)\n            if (!validate_dialog())\n                fix_route_dialog();\n    }\n...",
+          "description": "fix_route_dialog() usage"
+        }
+      ],
+      "related_functions": [
+        "validate_dialog"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "get_dialog_info",
+      "signature": "get_dialog_info(attr,avp,key,key_val,no_dlgs)",
+      "parameters": [
+        {
+          "name": "attr",
+          "type": "string",
+          "required": true,
+          "description": "the name of the dialog variable (from the found dialog) to be returned"
+        },
+        {
+          "name": "avp",
+          "type": "var",
+          "required": true,
+          "description": "an avp where to store the values of the \"attr\" dialog variable. Since the function checks through all dialogs, this needs to be an actual AVP in order to support pushing values from all matched dialogs."
+        },
+        {
+          "name": "key",
+          "type": "string",
+          "required": true,
+          "description": "name of a dialog variable to be used a search key (when looking after the target dialog)"
+        },
+        {
+          "name": "key_val",
+          "type": "var",
+          "required": true,
+          "description": "the value of the dialog variable that is used as key in searching the target dialog."
+        },
+        {
+          "name": "no_dlgs",
+          "type": "var",
+          "required": true,
+          "description": "the total number of dialogs containing the key variable"
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if dialogs are found and values written"
+        },
+        {
+          "value": "negative error code",
+          "condition": "otherwise nothing is written in \"avp\""
+        }
+      ],
+      "description": "The function extracts a dialog value from another dialog. It first searches through all existing (ongoing) dialogs for all dialogs that have a dialog variable named \"key\" with the value \"key_val\" (so a dialog where $dlg_val(key)==\"key_val\"). If found, it returns the value of the dialog variable \"attr\" from all the founds dialog in the \"avp\" pseudo-variable, otherwise nothing is written in \"avp\", and a negative error code is returned.\n\nNOTE: the function does not require to be called in the context of a dialog - you can use it whenever / whereever for searching for other dialogs.",
+      "usage_context": [
+        "ALL ROUTES"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif ( get_dialog_info(\"callee\",$avp(callee_array),\"caller\",$fu,$var(dlg_no)) ) {\n\txlog(\"caller $fu has $var(dlg_no) other ongoing calls, talking with :\");\t\n\t$var(it) = 0;\n\twhile ($var(it) < $var(dlg_no)) {\n\t\t$var(current_callee) = $(avp(callee_array)[$var(it)]);\n\t\txlog(\" $var(current_callee) \");\n\t\t$var(it) = $var(it) + 1;\n\t}\n\n\txlog(\"\\n\");\n}\n\n# create dialog for current call and place the caller and callee attributes\ncreate_dialog();\n$dlg_val(caller) = $fu;\n$dlg_val(callee) = $ru;\n...",
+          "description": "get_dialog_info usage"
+        }
+      ],
+      "related_functions": [
+        "create_dialog"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "get_dialog_vals",
+      "signature": "get_dialog_vals(names,vals,callid)",
+      "parameters": [
+        {
+          "name": "names",
+          "type": "var",
+          "required": true,
+          "description": "an AVP variable to hold all the names of the variables from the found dialog."
+        },
+        {
+          "name": "vals",
+          "type": "var",
+          "required": true,
+          "description": "an AVP variable to hold all the values of the variables from the found dialog."
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of a dialog to be searched (and have the variables fetched)."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if dialog variables are found and returned"
+        },
+        {
+          "value": "false",
+          "condition": "if dialog is not found or error occurs"
+        }
+      ],
+      "description": "The function fetches all the dialog variables of another dialog. It first searches through all existing (ongoing) dialogs based on the given SIP CallID. If found, it returns all the dialog variables as two parallel arrays of names and values (using the given variables \"names\" and \"vals\"). As these variables have to hold arrays, they must be AVPs.\n\nNOTE: the function does not require to be called in the context of a dialog - you can use it whenever / whereever for searching for other dialogs.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( get_dialog_vals($avp(d_names),$avp(d_vals),$var(callid)) ) {\n\txlog(\"the call $var(callid) has the variables:\\n);\n\t$var(i) = 0;\n\twhile ( $(avp(d_names)[$var(i)])!=NULL ) {\n\t\txlog(\"var $var(i) is $(avp(d_names)[$var(i)])='$(avp(d_vals)[$var(i)])'\\n\");\n\t\t$var(i) = $var(i) + 1;\n\t}\n}",
+          "description": "Example 1.59. `get_dialog_vals` usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "get_dialogs_by_val",
+      "signature": "get_dialogs_by_val(name,value,out_avp,out_dlg_no)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the dialog variable used for the lookup"
+        },
+        {
+          "name": "value",
+          "type": "var",
+          "required": true,
+          "description": "the value of the above dialog val"
+        },
+        {
+          "name": "out_avp",
+          "type": "var",
+          "required": true,
+          "description": "the AVP which will be populated will the dialog JSONs for all the matched calls"
+        },
+        {
+          "name": "out_dlg_no",
+          "type": "var",
+          "required": true,
+          "description": "the out var which will contain the total number of matched dialogs"
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if dialogs are found"
+        },
+        {
+          "value": "false",
+          "condition": "if no dialogs found or error"
+        }
+      ],
+      "description": "The function looks up through the whole dialog table for dialogs containing a $dlg_val with the provided name and value, and returns all the $DLG_ctx_json variables for the matched dialogs, storing them in the provided out_avp. The total number of matched dialogs is returned in the out_dlgs_no variable\n\nNOTE: the function does not require to be called in the context of a dialog - you can use it whenever / whereever for searching for other dialogs.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( get_dialogs_by_val(\"caller\",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {\n\txlog(\"Caller $fU has $avp(dlg_no) other calls \\n);\n\t$var(i) = 0;\n\twhile ( $(avp(dlg_jsons)[$var(i)])!=NULL ) {\n\t\t$json(dlg_info) := $(avp(dlg_jsons)[$var(i)]); \n\t\t# fetch any info for the above call and process it\n\t\t$var(i) = $var(i) + 1;\n\t}\n}",
+          "description": "Example 1.60. `get_dialog_vals` usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "get_dialogs_by_profile",
+      "signature": "get_dialogs_by_profile(name,value,out_avp,out_dlg_no)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the dialog profile used for the lookup"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "the value of the above dialog profile ( optional )"
+        },
+        {
+          "name": "out_avp",
+          "type": "var",
+          "required": true,
+          "description": "the AVP which will be populated will the dialog JSONs for all the matched calls"
+        },
+        {
+          "name": "out_dlg_no",
+          "type": "var",
+          "required": true,
+          "description": "the out var which will contain the total number of matched dialogs"
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if dialogs are found"
+        },
+        {
+          "value": "false",
+          "condition": "if no dialogs found or error"
+        }
+      ],
+      "description": "The function looks up through the whole dialog table for dialogs configured to be within the provided dialog profile name, and optionally with the provided profile value. The function returns all the $DLG_ctx_json variables for the matched dialogs, storing them in the provided out_avp. The total number of matched dialogs is returned in the out_dlgs_no variable\n\nNOTE: the function does not require to be called in the context of a dialog - you can use it whenever / whereever for searching for other dialogs.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if ( get_dialogs_by_profile(\"caller\",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {\n\txlog(\"Caller $fU has $avp(dlg_no) other calls \\n);\n\t$var(i) = 0;\n\twhile ( $(avp(dlg_jsons)[$var(i)])!=NULL ) {\n\t\t$json(dlg_info) := $(avp(dlg_jsons)[$var(i)]); \n\t\t# fetch any info for the above call and process it\n\t\t$var(i) = $var(i) + 1;\n\t}\n}",
+          "description": "Example 1.61. `get_dialog_vals` usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "load_dialog_ctx",
+      "signature": "load_dialog_ctx( dialog [, id_type])",
+      "parameters": [
+        {
+          "name": "dialog",
+          "type": "string",
+          "required": true,
+          "description": "the identifier of the dialog to be loaded, it may be a SIP Call-ID or a Dialog ID."
+        },
+        {
+          "name": "id_type",
+          "type": "string",
+          "required": false,
+          "default": "callid",
+          "description": "what kind of dialog identified was used in the first parameter. It can be callid (SIP Call-ID) or did (internal Dialog ID). By default callid will be assumed.",
+          "valid_values": [
+            "callid",
+            "did"
+          ]
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if the dialog context was successfully loaded"
+        },
+        {
+          "value": "false",
+          "condition": "if loading failed"
+        }
+      ],
+      "description": "The function loads and switches to the context of the given dialog. The context of a dialog is given by the dialog flags, variables, profiles and any other value/state related to the dialog. By switching to the context of another dialog, you will see at the script level, by default, all the data from the new dialog.\n\nNOTE: you cannot perform a new load until doing an unload - no nested loadings are possible.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (load_dialog_ctx(\"$var(callid)\")) {\n\txlog(\"The dialog '$var(callid)' already has a duration \"\n\t     \"of $DLG_lifetime seconds\\n\");\n\tif (is_in_profile(\"inboundCall\"))\n\t\txlog(\"this dialog is an inbound call\\n\");\n\tunload_dialog_ctx();\n}",
+          "description": "Example 1.62. `load_dialog_ctx` usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "unload_dialog_ctx"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "unload_dialog_ctx",
+      "signature": "unload_dialog_ctx()",
+      "parameters": [],
+      "return_type": "void",
+      "return_values": [],
+      "description": "The function off-loads the loaded context of another dialog, exposing whatever dialog context was present before doing the load.\n\nNOTE: you MUST perform from script an explicit unload for each load you did, otherwise the loaded dialog will remain hanged for ever.",
+      "usage_context": [
+        "ANY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if (load_dialog_ctx(\"$var(callid)\")) {\n\txlog(\"The dialog '$var(callid)' already has a duration \"\n\t     \"of $DLG_lifetime seconds\\n\");\n\tif (is_in_profile(\"inboundCall\"))\n\t\txlog(\"this dialog is an inbound call\\n\");\n\tunload_dialog_ctx();\n}",
+          "description": "For usage example, see the load_dialog_ctx()",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "load_dialog_ctx"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "set_dlg_profile",
+      "signature": "set_dlg_profile(profile, [value], [clear_values])",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to be added to."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to define the belonging of the dialog to the profile - note that the profile must support values."
+        },
+        {
+          "name": "clear_values",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "if set to true (1), all values of the profile will be cleared before setting the given value."
+        }
+      ],
+      "return_type": "null",
+      "description": "Inserts the current dialog into a profile. Note that if the profile does not support values, this will be silently discarded. A dialog may be inserted in the same profile multiple times.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nset_dlg_profile(\"inboundCall\");\n\n# Set a new value (all other values are kept intact)\nset_dlg_profile(\"caller\", $fu);\n\n# Set a new value while removing all previous values\nset_dlg_profile(\"caller\", $fu, true);\n...",
+          "description": "set_dlg_profile usage"
+        }
+      ]
+    },
+    {
+      "name": "unset_dlg_profile",
+      "signature": "unset_dlg_profile(profile, [value])",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to be removed from."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to define the belonging of the dialog to the profile - note that the profile must support values.\n\nNEW in 3.4: for profiles with value, by omitting this parameter you can now clear all values of the given profile."
+        }
+      ],
+      "return_type": "null",
+      "description": "Removes the current dialog from a profile.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nunset_dlg_profile(\"inboundCall\");\nunset_dlg_profile(\"caller\", $fu);\n...\n# Remove all values in a profile\nunset_dlg_profile(\"caller\");\n...",
+          "description": "unset_dlg_profile usage"
+        }
+      ]
+    },
+    {
+      "name": "is_in_profile",
+      "signature": "is_in_profile(profile,[value])",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to be checked against."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to toughen the check."
+        }
+      ],
+      "return_type": "null",
+      "description": "Checks if the current dialog belongs to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - if the dialog was inserted into the profile for a specific value. If no value is passed, only simply belonging of the dialog to the profile is checked. Note that if the profile does not support values, this will be silently discarded.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_in_profile(\"inboundCall\")) {\n\tlog(\"this request belongs to a inbound call\\n\");\n}\n...\nif (is_in_profile(\"caller\",\"XX\")) {\n\tlog(\"this request belongs to a call of user XX\\n\");\n}\n...",
+          "description": "is_in_profile usage"
+        }
+      ]
+    },
+    {
+      "name": "get_profile_size",
+      "signature": "get_profile_size(profile,[value],size)",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to get the size for."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to toughen the check."
+        },
+        {
+          "name": "size",
+          "type": "var",
+          "required": true,
+          "description": "an AVP or script variable to return the profile size in."
+        }
+      ],
+      "return_type": "null",
+      "description": "Returns the number of dialogs belonging to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - how many dialogs were inserted into the profile with a specific value. If not value is passed, only simply belonging of the dialog to the profile is checked. Note that the profile does not supports values, this will be silently discarded.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "modparam(\"dialog\", \"profiles_no_value\", \"inboundCalls\")\nmodparam(\"dialog\", \"profiles_with_value\", \"caller\")\n...\nget_profile_size(\"inboundCalls\",,$var(size));\nxlog(\"inboundCalls: $var(size)\\n\");\n...\nget_profile_size(\"caller\", $fu, $var(size));\nxlog(\"currently, the user $fu has $var(size) active outgoing calls\\n\");\n...",
+          "description": "get_profile_size usage"
+        }
+      ]
+    },
+    {
+      "name": "set_dlg_flag",
+      "signature": "set_dlg_flag(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "string",
+          "required": true,
+          "description": "The flag name."
+        }
+      ],
+      "return_type": "null",
+      "description": "Sets the dialog flag named flag to true. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nset_dlg_flag(\"MY_DLG_FLAG\");\n...",
+          "description": "set_dlg_flag usage"
+        }
+      ]
+    },
+    {
+      "name": "test_and_set_dlg_flag",
+      "signature": "test_and_set_dlg_flag(flag, value)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "string",
+          "required": true,
+          "description": "The flag name."
+        },
+        {
+          "name": "value",
+          "type": "int",
+          "required": true,
+          "description": "The value should be 0 (false) or 1 (true).",
+          "valid_values": [
+            "0",
+            "1"
+          ]
+        }
+      ],
+      "return_type": "int",
+      "description": "Atomically checks if the dialog flag named flag is equal to value. If true, changes the value with the opposite one. This operation is done under the dialog lock.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\ntest_and_set_dlg_flag(\"MY_DLG_FLAG\", 0);\n...",
+          "description": "test_and_set_dlg_flag usage"
+        }
+      ]
+    },
+    {
+      "name": "reset_dlg_flag",
+      "signature": "reset_dlg_flag(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "string",
+          "required": true,
+          "description": "The flag name."
+        }
+      ],
+      "return_type": "int",
+      "description": "Resets the dialog flag named flag to false. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nreset_dlg_flag(\"MY_DLG_FLAG\");\n...",
+          "description": "reset_dlg_flag usage"
+        }
+      ]
+    },
+    {
+      "name": "is_dlg_flag_set",
+      "signature": "is_dlg_flag_set(flag)",
+      "parameters": [
+        {
+          "name": "flag",
+          "type": "string",
+          "required": true,
+          "description": "The flag name."
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Returns true if the dialog flag named flag is set. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_dlg_flag_set(\"MY_DLG_FLAG\")) {\n\txlog(\"dialog flag MY_DLG_FLAG is set\\n\");\n}\n...",
+          "description": "is_dlg_flag_set usage"
+        }
+      ]
+    },
+    {
+      "name": "store_dlg_value",
+      "signature": "store_dlg_value(name,val)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name under which the value is attached."
+        },
+        {
+          "name": "val",
+          "type": "var",
+          "required": true,
+          "description": "The variable containing the value to attach."
+        }
+      ],
+      "return_type": "int",
+      "description": "Attaches to the dialog the value from the variable val under the name name. The values attached to dialogs are dialog persistent and they can be accessed (read and write) for all requests belonging to the dialog.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).\n\nSame functionality may be obtain by assigning a value to pseudo variable $dlg_val(name).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nstore_dlg_value(\"inv_src_ip\",$si);\nstore_dlg_value(\"account type\",$var(account));\n# or\n$dlg_val(account_type) = \"prepaid\";\n...",
+          "description": "store_dlg_value usage"
+        }
+      ]
+    },
+    {
+      "name": "fetch_dlg_value",
+      "signature": "fetch_dlg_value(name,val)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the attribute to fetch."
+        },
+        {
+          "name": "val",
+          "type": "var",
+          "required": true,
+          "description": "The variable to store the fetched value."
+        }
+      ],
+      "return_type": "int",
+      "description": "Fetches from the dialog the value of attribute named name. The values attached to dialogs are dialog persistent and they can be accessed (read and write) for all requests belonging to the dialog.\n\nNOTE: the dialog must be created before using this function (use create_dialog() function before).\n\nSame functionality may be obtain by reading the pseudo variable $dlg_val(name).",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nfetch_dlg_value(\"inv_src_ip\",$avp(2));\nfetch_dlg_value(\"account type\",$var(account));\n# or\n$var(account) = $dlg_val(account_type);\n...",
+          "description": "fetch_dlg_value usage"
+        }
+      ]
+    },
+    {
+      "name": "set_dlg_sharing_tag",
+      "signature": "set_dlg_sharing_tag(tag_name)",
+      "parameters": [
+        {
+          "name": "tag_name",
+          "type": "string",
+          "required": true,
+          "description": "The tag name."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "Marks the current dialog with the sharing tag _tag_name_. From this point on, actions like in-dialog pinging, BYEs on timeout etc. will depend on the tag state(no action in \"backup\" state, normal operation in \"active\" state).\n\nFor more details see the [Dialog clustering](#dialog-clustering \"1.4.�Dialog clustering\") chapter.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "set_dlg_sharing_tag(\"vip1\");",
+          "description": "set_dlg_sharing_tag() usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "dlg_on_answer",
+      "signature": "dlg_on_answer([route_name])",
+      "parameters": [
+        {
+          "name": "route_name",
+          "type": "string",
+          "required": false,
+          "description": "the name of the script route to be executed."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "The function arms a script route to be executed when the current dialog will be later answered. When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one).\n\nYou must use this function AFTER creating the dialog and before the dialog being answered.\n\nIf the parameter is missing, the function does a reset of any route previously set; there will be no triggering.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "create_dialog();\ndlg_on_answer(\"dlg_answered\");\n...\nroute[dlg_answered] {\n\txlog(\"The dialog $DLG_did was answered\\n\");\n}",
+          "description": "dlg_on_answer() usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "dlg_on_timeout",
+      "signature": "dlg_on_timeout([route_name])",
+      "parameters": [
+        {
+          "name": "route_name",
+          "type": "string",
+          "required": false,
+          "description": "the name of the script route to be executed."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "The function arms a script route to be executed when (and if) the current dialog will timeout (as duration). When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one)\n\nWhen the route is executed, the dialog is not yet terminated, just its lifetime reached the set limit. In the timeout route you can increase the dialog expiration timeout (and the dialog will continue) or you can let the dialog to be terminated (after the end of this route).\n\nYou must use this function AFTER creating the dialog and before the dialog being answered.\n\nYou must use this function AFTER creating the dialog and before the dialog being answered.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "create_dialog();\n$DLG_timeout=120;\ndlg_on_timeout(\"dlg_timeout\");\n...\nroute[dlg_timeout] {\n\txlog(\"The dialog $DLG_did timed out\\n\");\n\tif (_some_prolongation_condition)\n\t\t$DLG_timeout = 60; # give it 1 min more\n}",
+          "description": "dlg_on_timeout() usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "dlg_on_hangup",
+      "signature": "dlg_on_hangup([route_name])",
+      "parameters": [
+        {
+          "name": "route_name",
+          "type": "string",
+          "required": false,
+          "description": "the name of the script route to be executed."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "The function arms a script route to be executed when the current dialog will be terminated. When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one). Note that the dialog will be already terminated and there is nothing you can do about it besides reading data from its context.\n\nYou must use this function AFTER creating the dialog and before the dialog being answered.\n\nIf the parameter is missing, the function does a reset of any route previously set; there will be no triggering.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "BRANCH_ROUTE",
+        "REPLY_ROUTE",
+        "FAILURE_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "create_dialog();\ndlg_on_hangup(\"dlg_hangup\");\n...\nroute[dlg_hangup] {\n\txlog(\"The dialog $DLG_did terminated after $DLG_lifetime secs\\n\");\n}",
+          "description": "dlg_on_hangup() usage",
+          "context": ""
+        }
+      ],
+      "related_functions": [],
+      "deprecated": false
+    },
+    {
+      "name": "dlg_send_sequential",
+      "signature": "dlg_send_sequential(method, leg, [, body] [, content-type] [, headers])",
+      "parameters": [
+        {
+          "name": "method",
+          "type": "string",
+          "required": true,
+          "description": "the method of the request sent."
+        },
+        {
+          "name": "leg",
+          "type": "string",
+          "required": true,
+          "description": "the leg where the request is sent. Must be either _caller_ or _callee_.",
+          "valid_values": [
+            "caller",
+            "callee"
+          ]
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "an optional body sent in the request. If missing, no body is sent."
+        },
+        {
+          "name": "content-type",
+          "type": "string",
+          "required": false,
+          "description": "the content type of the body sent. Make sure you specify this every time you send a request with a body, otherwise there are high changes that your UAC will reject the request."
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "additional headers attached to the request sent."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [],
+      "description": "Used to send an in-dialog request towards one if the dialog's legs. The function assumes that is runs inside a dialog context - if you are running it from a different context (such as an event_route), make sure you first load the dialog context using the [load_dialog_ctx()](#func_load_dialog_ctx \"1.7.9.� load_dialog_ctx( dialog [, id_type])\") function.",
+      "usage_context": [
+        "ANY ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "event_route[E_RTPPROXY_DTMF] {\n    if (load_dialog_ctx(\"$param(id)\", \"did\")) {\n        if ($param(stream) == 0) {\n            $var(direction) = \"callee\";\n        } else {\n            $var(direction) = \"caller\";\n        }\n        dlg_send_sequential($var(direction), \"INFO\",\n                \"Signal=$param(digit)\\nDuration=160\",\n                \"application/dtmf-relay\");\n        unload_dialog_ctx();\n    }\n}",
+          "description": "dlg_send_sequential() usage to convert DTMF codes",
+          "context": ""
+        }
+      ],
+      "related_functions": [
+        "load_dialog_ctx"
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "dlg_list",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": false,
+          "description": "callid if a single dialog to be listed."
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "required": false,
+          "description": "fromtag (as per initial request) of the dialog to be listed. entry (cannot be present without the callid parameter)"
+        },
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "offset where the dialog listing should start."
+        },
+        {
+          "name": "counter",
+          "type": "integer",
+          "required": false,
+          "description": "how many dialogs should be listed (starting from the offset)"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "List of dialogs and their descriptions."
+      },
+      "description": "Lists the description of the dialogs (calls). If no parameter is given, all dialogs will be listed. If a dialog identifier is passed as parameter (callid and fromtag), only that dialog will be listed. If a index and conter parameter is passed, it will list only a number of \"counter\" dialogs starting with index (as offset) - this is used to get only section of dialogs.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_list",
+          "description": "list all ongoing dialogs"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_list callid=abcdrssfrs122444@192.168.1.1 from_tag=AAdfeEFF33",
+          "description": "list the dialog by callid and From TAG"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_list index=40 counter=10",
+          "description": "list 10 dialogs, starting from the position 40 (in the list of all ongoing dialogs)"
+        }
+      ]
+    },
+    {
+      "name": "dlg_list_ctx",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": false,
+          "description": "callid if a single dialog to be listed."
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "required": false,
+          "description": "fromtag (as per initial request) of the dialog to be listed. entry (cannot be present without the callid parameter)"
+        },
+        {
+          "name": "index",
+          "type": "integer",
+          "required": false,
+          "description": "offset where the dialog listing should start."
+        },
+        {
+          "name": "counter",
+          "type": "integer",
+          "required": false,
+          "description": "how many dialogs should be listed (starting from the offset)"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "List of dialogs with their descriptions, associated context, and values."
+      },
+      "description": "The same as the “dlg_list” but including in the dialog description the associated context from modules sitting on top of the dialog module. This function also prints the dialog's values. In case of binary values, the non-printable chars are represented in hex (e.g. \\x00)",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_list_ctx",
+          "description": "List all ongoing dialogs with context"
+        }
+      ]
+    },
+    {
+      "name": "dlg_end_dlg",
+      "parameters": [
+        {
+          "name": "dialog_id",
+          "type": "string",
+          "required": true,
+          "description": "this is an identifier of the dialog - it can be either (1) the unique ID of the dialog (as provided by dlg_list), either (2) the SIP Call-ID of the dialog."
+        },
+        {
+          "name": "extra_hdrs",
+          "type": "string",
+          "required": false,
+          "description": "string containg the extra headers (full format) to be added to the BYE requests."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "Terminates an ongoing dialog. If dialog is established, BYEs are sent in both directions. If dialog is in unconfirmed or early state, a CANCEL will be sent to the callee side, that will trigger a 487 from the callee, which, when relayed, will also end the dialog on the caller's side.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_end_dlg 6ae.4b38d013",
+          "description": "terminate the dialog via the internal Dialog-ID"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_end_dlg Y2IwYjQ2YmE2ZDg5MWVkNDNkZGIwZjAzNGM1ZDY",
+          "description": "terminate the dialog via its SIP Call-ID"
+        }
+      ]
+    },
+    {
+      "name": "profile_get_size",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to get the value for."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to toughen the check;"
+        }
+      ],
+      "return_value": {
+        "type": "integer",
+        "description": "The number of dialogs belonging to the profile."
+      },
+      "description": "Returns the number of dialogs belonging to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - how many dialogs were inserted into the profile with a specific value. If not value is passed, only simply belonging of the dialog to the profile is checked. Note that the profile does not supports values, this will be silently discarded.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi profile_get_size inboundCalls",
+          "description": "Get the size of the inboundCalls profile"
+        }
+      ]
+    },
+    {
+      "name": "profile_list_dlgs",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to list the dialog for."
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "string value to toughen the check;"
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "List of dialogs belonging to the specified profile."
+      },
+      "description": "Lists all the dialogs belonging to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - list only the dialogs that were inserted into the profile with that specific value. If not value is passed, all dialogs belonging to the profile will be listed. Note that the profile does not supports values, this will be silently discarded. Also, when using shared profiles using the CacheDB interface, this command will only display the local dialogs.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi profile_list_dlgs inboundCalls",
+          "description": "List dialogs for the inboundCalls profile"
+        }
+      ]
+    },
+    {
+      "name": "profile_get_values",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile to list the dialog for."
+        }
+      ],
+      "return_value": {
+        "type": "array",
+        "description": "List of values belonging to the profile along with their count, or a total count if values are not supported."
+      },
+      "description": "Lists all the values belonging to a profile along with their count. If the profile does not support values a total count will be returned. Note that this function does not work for shared profiles over the CacheDB interface.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi profile_get_values inboundCalls",
+          "description": "List values and counts for the inboundCalls profile"
+        }
+      ]
+    },
+    {
+      "name": "profile_end_dlgs",
+      "parameters": [
+        {
+          "name": "profile",
+          "type": "string",
+          "required": true,
+          "description": "name of the profile that will have its dialogs termianted"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "if the profile supports values terminate only the dialogs with the specified value"
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "Terminate all ongoing dialogs from a specified profile, on a single dialog it performs the same operations as the command dlg_end_dlg",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi profile_end_dlgs inboundCalls",
+          "description": "Terminate all dialogs in the inboundCalls profile"
+        }
+      ]
+    },
+    {
+      "name": "dlg_db_sync",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "Will load all the information about the dialogs from the database in the OpenSIPS internal memory. If a dialog is already found in memory and has the same/an older state, it will be updated with the values from DB. Otherwise, the newer in-memory version will not be changed.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_db_sync",
+          "description": "Sync dialogs from database"
+        }
+      ]
+    },
+    {
+      "name": "dlg_cluster_sync",
+      "parameters": [
+        {
+          "name": "sharing_tag",
+          "type": "string",
+          "required": true,
+          "description": "name of the sharing tag that dialogs have to be marked with in order to be synced"
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "This command will only take effect if dialog replication is enabled. Fully synchronize the dialog information in memory from a suitable donor node within the dialog_replication_cluster. Dialogs that already exist in memory which are not reconfirmed through syncing will be discarded. A sharing tag can be specified in order to sync only dialogs marked with that sharing tag.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_cluster_sync vip1",
+          "description": "Sync dialogs for sharing tag vip1"
+        }
+      ]
+    },
+    {
+      "name": "dlg_restore_db",
+      "parameters": [],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "Restores the dialog table after a potential desynchronization event. The table is truncated, then populated with CONFIRMED dialogs from memory.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_restore_db",
+          "description": "Restore dialog table from memory"
+        }
+      ]
+    },
+    {
+      "name": "list_all_profiles",
+      "parameters": [],
+      "return_value": {
+        "type": "array",
+        "description": "List of dialog profiles and whether they have an associated value (1 or 0)."
+      },
+      "description": "Lists all the dialog profiles, along with 1 or 0 if the given profile has/does not have an associated value.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi list_all_profiles",
+          "description": "List all dialog profiles"
+        }
+      ]
+    },
+    {
+      "name": "dlg_push_var",
+      "parameters": [
+        {
+          "name": "dlg_val_name",
+          "type": "string",
+          "required": true,
+          "description": "name of the dialog value that needs to be inserted/updated"
+        },
+        {
+          "name": "dlg_val_value",
+          "type": "string",
+          "required": true,
+          "description": "value to be inserted/updated"
+        },
+        {
+          "name": "DID",
+          "type": "string",
+          "required": true,
+          "description": "dialog identifier. Can be either the $DLG_did or the actual Call-ID. Can be multiple."
+        }
+      ],
+      "return_value": {
+        "type": "string",
+        "description": "Success or error status."
+      },
+      "description": "Push or update a dialog value for the given list of dialog IDs / Call-IDs.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_push_var var_name var_value DID1 [ DID2 DID3 ...  DIDN ]",
+          "description": "Push or update a dialog value for multiple dialog IDs"
+        }
+      ]
+    },
+    {
+      "name": "dlg_send_sequential",
+      "parameters": [
+        {
+          "name": "callid",
+          "type": "string",
+          "required": true,
+          "description": "the callid of the dialog you need to trigger the sequential message for."
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "required": false,
+          "description": "the method used for the sequential message. Default value is INVITE."
+        },
+        {
+          "name": "mode",
+          "type": "string",
+          "required": false,
+          "description": "can be used to tune the behavior of the sequential message. Possible values for the mode are: caller, callee, challenge, challenge-caller, challenge-callee"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "can be used to specify a body for the initial sequential message. Possible values for the body parameter are: none, inbound, outbound, custom:CONTENT_TYPE:BODY"
+        },
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "can be used to specify some headers for the initial sequential message."
+        }
+      ],
+      "return_value": {
+        "type": "object",
+        "description": "Returns the status code and reason of the last reply received for either the challenge or normal mode."
+      },
+      "description": "Sends a sequential request within an ongoing dialog. This functions runs asynchronously and returns the status code and reason of the last reply received for either the challenge or normal mode.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_send_sequential \\\n\t\t\t\tcallid=5291231-testing@127.0.0.1",
+          "description": "Send a sequential request"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_send_sequential \\\n\t\t\t\tcallid=5291231-testing@127.0.0.1 \\\n\t\t\t\tmode=challenge \\\n\t\t\t\tbody=inbound",
+          "description": "Trigger media re-negotiation"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_send_sequential \\\n\t\t\t\tcallid=5291231-testing@127.0.0.1 \\\n\t\t\t\tmode=challenge-callee \\\n\t\t\t\tbody=outbound \\\n\t\t\t\tmethod=UPDATE",
+          "description": "UPDATE the callee's remote Contact after a server failover"
+        },
+        {
+          "language": "bash",
+          "code": "opensips-cli -x mi dlg_send_sequential \\\n\t\t\t\tcallid=usR8FlGOSMfCTAIHebHCOQ.. \\\n\t\t\t\tmethod=REFER \\\n\t\t\t\tbody=none \\\n\t\t\t\tmode=callee \\\n\t\t\t\theaders='Refer-To: sip:user@domain:50060'",
+          "description": "Send REFER to the callee, and add Refer-To header"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [
+    {
+      "name": "active_dialogs",
+      "type": "gauge",
+      "description": "Returns the number of current active dialogs (may be confirmed or not)."
+    },
+    {
+      "name": "early_dialogs",
+      "type": "gauge",
+      "description": "Returns the number of early dialogs."
+    },
+    {
+      "name": "processed_dialogs",
+      "type": "counter",
+      "description": "Returns the total number of processed dialogs (terminated, expired or active) from the startup."
+    },
+    {
+      "name": "expired_dialogs",
+      "type": "counter",
+      "description": "Returns the total number of expired dialogs from the startup."
+    },
+    {
+      "name": "failed_dialogs",
+      "type": "counter",
+      "description": "Returns the number of failed dialogs ( dialogs were never established due to whatever reasons - internal error, negative reply, cancelled, etc )"
+    },
+    {
+      "name": "create_sent",
+      "type": "counter",
+      "description": "Returns the number of replicated dialog **create** requests send to other OpenSIPS instances."
+    },
+    {
+      "name": "update_sent",
+      "type": "counter",
+      "description": "Returns the number of replicated dialog **update** requests send to other OpenSIPS instances."
+    },
+    {
+      "name": "delete_sent",
+      "type": "counter",
+      "description": "Returns the number of replicated dialog **delete** requests send to other OpenSIPS instances."
+    },
+    {
+      "name": "create_recv",
+      "type": "counter",
+      "description": "Returns the number of dialog **create** events received from other OpenSIPS instances."
+    },
+    {
+      "name": "update_recv",
+      "type": "counter",
+      "description": "Returns the number of dialog **update** events received from other OpenSIPS instances."
+    },
+    {
+      "name": "delete_recv",
+      "type": "counter",
+      "description": "Returns the number of dialog **delete** events received from other OpenSIPS instances."
+    }
+  ],
+  "exported_events": [
+    {
+      "name": "E_DLG_STATE_CHANGED",
+      "description": "This event is raised when the dialog state is changed.",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "description": "the hex representation of the dialog id."
+        },
+        {
+          "name": "db_id",
+          "type": "integer",
+          "description": "the integer representation of the dialog id, as it is stored in the database dlg_id field."
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "the callid."
+        },
+        {
+          "name": "from_tag",
+          "type": "string",
+          "description": "the From tag."
+        },
+        {
+          "name": "to_tag",
+          "type": "string",
+          "description": "the To tag."
+        },
+        {
+          "name": "old_state",
+          "type": "string",
+          "description": "the old state of the dialog."
+        },
+        {
+          "name": "new_state",
+          "type": "string",
+          "description": "the new state of the dialog."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [
+    {
+      "name": "$DLG_count",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Returns the number of current active dialogs (may be confirmed or not)."
+    },
+    {
+      "name": "$DLG_status",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "sequential requests",
+      "description": "Returns the status of the dialog corresponding to the processed sequential request. This PV will be available only for sequential requests, after doing loose_route().",
+      "possible_values": [
+        "NULL",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    },
+    {
+      "name": "$DLG_lifetime",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "sequential requests",
+      "description": "Returns the duration (in seconds) of the dialog corresponding to the processed sequential request. The duration is calculated from the dialog confirmation and the current moment. This PV will be available only for sequential requests, after doing loose_route(). NULL will be returned if there is no dialog for the request."
+    },
+    {
+      "name": "$DLG_flags",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "sequential requests",
+      "description": "Returns the dialog flags (as a list of flag names separted by space) of the dialog corresponding to the processed sequential request. This PV will be available only for sequential requests, after doing loose_route(). NULL will be returned if there is no dialog for the request."
+    },
+    {
+      "name": "$DLG_dir",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "sequential requests",
+      "description": "Returns the direction of the request in dialog (as \"upstream\" string if the request is generated by callee or \"downstream\" string if the request is generated by caller) - to be used for sequential request. This PV will be available only for sequential requests (not for replies), after doing loose_route(). NULL will be returned if there is no dialog for the request.",
+      "possible_values": [
+        "upstream",
+        "downstream",
+        "NULL"
+      ]
+    },
+    {
+      "name": "$DLG_did",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "sequential requests",
+      "description": "Returns the id of the dialog corresponding to the processed sequential request. The output format is a string identical to the one returned by the dlg_list MI function. This PV will be available only for sequential requests, after doing loose_route(). NULL will be returned if there is no dialog for the request."
+    },
+    {
+      "name": "$DLG_end_reason",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Returns the reason for the dialog termination. It can be one of the following : * Upstream BYE - Callee has sent a BYE * Downstream BYE - Caller has sent a BYE * Lifetime Timeout - Dialog lifetime expired * MI Termination - Dialog ended via the MI interface * Ping Timeout - Dialog ended because no reply to option pings * ReINVITE Ping Timeout - Dialog ended because no reply to reinvite pings * RTPProxy Timeout - Media timeout signaled by RTPProxy * SIP Race Condition - SIP Race Condition occurred NULL will be returned if there is no dialog for the request, or if the dialog is not ended in the current context.",
+      "possible_values": [
+        "Upstream BYE",
+        "Downstream BYE",
+        "Lifetime Timeout",
+        "MI Termination",
+        "Ping Timeout",
+        "ReINVITE Ping Timeout",
+        "RTPProxy Timeout",
+        "SIP Race Condition",
+        "NULL"
+      ]
+    },
+    {
+      "name": "$DLG_timeout",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "initial requests, sequential requests",
+      "description": "Used to set the dialog lifetime (in seconds). When read, the variable returns the number of seconds until the dialog expires and is destroyed. Note that reading the variable is only possible after the dialog is created (for initial requests) or after doing loose_route() (for sequential requests). Important notice: using this variable with a REALTIME db_mode is very inefficient, because every time the dialog value is changed, a database update is done. NULL will be returned if there is no dialog for the request, otherwise the number of seconds until the dialog expiration."
+    },
+    {
+      "name": "$DLG_del_delay",
+      "type": "integer",
+      "readable": true,
+      "writable": true,
+      "scope": "context of a dialog",
+      "description": "Used to set the dialog deletion delay (in seconds) for the current dialog (in a per-call manner). When read, the variable returns the number of seconds that were set for the call or the default value ( see the “delete_delay” - [delete_delay](#param_delete_delay \"1.6.8.�delete_delay (integer)\")) module param) for the delete delaying. The variable must be used when the context of a dialog is available in script."
+    },
+    {
+      "name": "$DLG_json",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The variable is read-only and exposes a JSON variable containing all the information that the dlg_list MI function contains NULL will be returned if there is no dialog for the request, otherwise the JSON will be returned."
+    },
+    {
+      "name": "$DLG_ctx_json",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "The variable is read-only and exposes a JSON variable containing all the information that the dlg_list_ctx MI function contains ( on top of $DLG_json, this will expose the full list of dialog vars and profile links for the current dialog ) NULL will be returned if there is no dialog for the request, otherwise the JSON will be returned."
+    },
+    {
+      "name": "$dlg_val(name)",
+      "type": "string, integer",
+      "readable": true,
+      "writable": true,
+      "scope": "sequential requests",
+      "description": "This is a read/write variable that allows access to the dialog attribute named name. It can hold a string or integer value. This PV will be available only for sequential requests, after doing loose_route(). NULL will be returned if there is no dialog for the request."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set enable_stats parameter",
+      "description": "If the statistics support should be enabled or not. Via statistic variables, the module provide information about the dialog processing. Set it to zero to disable or to non-zero to enable it.",
+      "code": "...\nmodparam(\"dialog\", \"enable_stats\", 0)\n..."
+    },
+    {
+      "title": "Set hash_size parameter",
+      "description": "The size of the hash table internally used to keep the dialogs. A larger table is much faster but consumes more memory. The hash size must be a power of 2 number.\n\nIMPORTANT: If dialogs' information should be stored in a database, a constant hash_size should be used, otherwise the restored process will not take place. If you really want to modify the hash_size you must delete all table's rows before restarting OpenSIPS.",
+      "code": "...\nmodparam(\"dialog\", \"hash_size\", 1024)\n..."
+    },
+    {
+      "title": "Set hash_size parameter",
+      "description": "The size of the hash table internally used to store profile->dialog associations. A larger table can provide more parallel operations but consumes more memory. The hash size is provided as the base 2 logarithm(e.g. log_profile_hash_size =4 means the table has 2^4 entries).",
+      "code": "...\nmodparam(\"dialog\", \"log_profile_hash_size\", 5) #set a table size of 32\n..."
+    },
+    {
+      "title": "Set rr_param parameter",
+      "description": "Name of the Record-Route parameter to be added with the dialog cookie. It is used for fast dialog matching of the sequential requests.",
+      "code": "...\nmodparam(\"dialog\", \"rr_param\", \"xyz\")\n..."
+    },
+    {
+      "title": "Set default_timeout parameter",
+      "description": "The default dialog timeout (in seconds) if no custom one is set.",
+      "code": "...\nmodparam(\"dialog\", \"default_timeout\", 21600)\n..."
+    },
+    {
+      "title": "Set dlf_extra_hdrs parameter",
+      "description": "A string containing the extra headers (full format, with EOH) to be added in the requests generated by the module (like BYEs).",
+      "code": "...\nmodparam(\"dialog\", \"dlg_extra_hdrs\", \"Hint: credit expired\\r\\n\")\n..."
+    },
+    {
+      "title": "Set dlg_match_mode parameter",
+      "description": "How the seqential requests should be matched against the known dialogs. The modes are a combination between matching based on a cookie (DID) stored as cookie in Record-Route header and the matching based on SIP elements (as in RFC3261).\n\nThe supported modes are:\n\n*   0 - DID_ONLY - the match is done exclusively based on DID;\n    \n*   1 - DID_FALLBACK - the match is first tried based on DID and if not present, it will fallback to SIP matching;\n    \n*   2 - DID_NONE - the match is done exclusively based on SIP elements; no DID information is added in RR.\n\nDefault value is “1 (DID_FALLBACK)”.\n\nNOTE that if you have call looping on your OpenSIPS server (passing more than once through the same OpenSIPS instance), it is strongly suggested to use only DID_ONLY mode, as the SIP based matching will have an undefined behavior - from SIP perspective, a sequential dialog will match all the loops of the call, as the Call-ID, To and From TAGs are the same.",
+      "code": "...\nmodparam(\"dialog\", \"dlg_match_mode\", 0)\n..."
+    },
+    {
+      "title": "Set delete_delay parameter",
+      "description": "The interval (seconds) to delay a dialog deletion / removal from memory AFTER its termination. Once terminated, the dialog will be kept in a read only state (no action, no changes), but it will still be able to match and route late in-dialog requests.\n\nThis global value may be per-call changed via the DLG_del_delay “$DLG_del_delay” ($DLG_del_delay) script variable.",
+      "code": "...\nmodparam(\"dialog\", \"delete_delay\", 10)\n..."
+    },
+    {
+      "title": "Set db_url parameter",
+      "description": "If you want to store the information about the dialogs in a database a database url must be specified.",
+      "code": "...\nmodparam(\"dialog\", \"db_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Set db_mode parameter",
+      "description": "Describe how to push into the DB the dialogs' information from memory.\n\nThe supported modes are:\n\n*   0 - NO_DB - the memory content is not flushed into DB;\n    \n*   1 - REALTIME - any dialog information changes will be reflected into the database immediately.\n    \n*   2 - DELAYED - the dialog information changes will be flushed into the DB periodically, based on a timer routine.\n    \n*   3 - SHUTDOWN - the dialog information will be flushed into DB only at shutdown - no runtime updates.",
+      "code": "...\nmodparam(\"dialog\", \"db_mode\", 1)\n..."
+    },
+    {
+      "title": "Set db_update_period parameter",
+      "description": "The interval (seconds) at which to update dialogs' information if you chose to store the dialogs' info at a given interval. A too short interval will generate intensive database operations, a too large one will not notice short dialogs.",
+      "code": "...\nmodparam(\"dialog\", \"db_update_period\", 120)\n..."
+    },
+    {
+      "title": "Set options_ping_interval parameter",
+      "description": "The interval (seconds) at which OpenSIPS will generate in-dialog OPTIONS pings for one or both of the involved parties.",
+      "code": "...\nmodparam(\"dialog\", \"options_ping_interval\", 20)\n..."
+    },
+    {
+      "title": "Set reinvite_ping_interval parameter",
+      "description": "The interval (seconds) at which OpenSIPS will generate in-dialog Re-INVITE pings for one or both of the involved parties.\n\nImportant: the ping timeout detection is performed every time this interval ticks, not when the re-INVITE transaction times out! Consequently, please make sure that the timeouts for re-INVITE transactions (e.g. the \"fr_timeout\" modparam of the \"tm\" module or its $T_fr_timeout variable) are always lower than the value of this parameter! Failing to ensure this ordering of timeouts may possibly lead to re-INVITE pings never ending a disconnected dialog due to pings getting retried before getting a chance to properly time out.",
+      "code": "...\nmodparam(\"dialog\", \"reinvite_ping_interval\", 600)\n..."
+    },
+    {
+      "title": "Set table_name parameter",
+      "description": "If you want to store the information about the dialogs in a database a table name must be specified.",
+      "code": "...\nmodparam(\"dialog\", \"table_name\", \"my_dialog\")\n..."
+    },
+    {
+      "title": "Set call_id_column parameter",
+      "description": "The column's name in the database to store the dialogs' callid.",
+      "code": "...\nmodparam(\"dialog\", \"call_id_column\", \"callid_c_name\")\n..."
+    },
+    {
+      "title": "Set from_uri_column parameter",
+      "description": "The column's name in the database to store the caller's sip address.",
+      "code": "...\nmodparam(\"dialog\", \"from_uri_column\", \"from_uri_c_name\")\n..."
+    },
+    {
+      "title": "Set from_tag_column parameter",
+      "description": "The column's name in the database to store the From tag from the Invite request.",
+      "code": "...\nmodparam(\"dialog\", \"from_tag_column\", \"from_tag_c_name\")\n..."
+    },
+    {
+      "title": "Set to_uri_column parameter",
+      "description": "The column's name in the database to store the calee's sip address.",
+      "code": "...\nmodparam(\"dialog\", \"to_uri_column\", \"to_uri_c_name\")\n..."
+    },
+    {
+      "title": "Set to_tag_column parameter",
+      "description": "The column's name in the database to store the To tag from the 200 OK response to the Invite request, if present.",
+      "code": "...\nmodparam(\"dialog\", \"to_tag_column\", \"to_tag_c_name\")\n..."
+    },
+    {
+      "title": "Set from_cseq_column parameter",
+      "description": "The column's name in the database to store the cseq from caller side.",
+      "code": "...\nmodparam(\"dialog\", \"from_cseq_column\", \"from_cseq_c_name\")\n..."
+    },
+    {
+      "title": "Set to_cseq_column parameter",
+      "description": "The column's name in the database to store the cseq from callee side.",
+      "code": "...\nmodparam(\"dialog\", \"to_cseq_column\", \"to_cseq_c_name\")\n..."
+    },
+    {
+      "title": "Set from_route_column parameter",
+      "description": "The column's name in the database to store the route records from caller side (proxy to caller).",
+      "code": "...\nmodparam(\"dialog\", \"from_route_column\", \"from_route_c_name\")\n..."
+    },
+    {
+      "title": "Set to_route_column parameter",
+      "description": "The column's name in the database to store the route records from callee side (proxy to callee).",
+      "code": "...\nmodparam(\"dialog\", \"to_route_column\", \"to_route_c_name\")\n..."
+    },
+    {
+      "title": "Set from_contact_column parameter",
+      "description": "The column's name in the database to store the caller's contact uri.",
+      "code": "...\nmodparam(\"dialog\", \"from_contact_column\", \"from_contact_c_name\")\n..."
+    },
+    {
+      "title": "Set to_contact_column parameter",
+      "description": "The column's name in the database to store the callee's contact uri.",
+      "code": "...\nmodparam(\"dialog\", \"to_contact_column\", \"to_contact_c_name\")\n..."
+    },
+    {
+      "title": "Set from_sock_column parameter",
+      "description": "The column's name in the database to store the information about the local interface receiving the traffic from caller.",
+      "code": "...\nmodparam(\"dialog\", \"from_sock_column\", \"from_sock_c_name\")\n..."
+    },
+    {
+      "title": "Set to_sock_column parameter",
+      "description": "The column's name in the database to store information about the local interface receiving the traffic from callee.",
+      "code": "...\nmodparam(\"dialog\", \"to_sock_column\", \"to_sock_c_name\")\n..."
+    },
+    {
+      "title": "Set dlg_id_column parameter",
+      "description": "The column's name in the database to store the dialogs' id information.",
+      "code": "...\nmodparam(\"dialog\", \"dlg_id_column\", \"dlg_id_c_name\")\n..."
+    },
+    {
+      "title": "Set state_column parameter",
+      "description": "The column's name in the database to store the dialogs' state information.",
+      "code": "...\nmodparam(\"dialog\", \"state_column\", \"state_c_name\")\n..."
+    },
+    {
+      "title": "Set start_time_column parameter",
+      "description": "The column's name in the database to store the dialogs' start time information.",
+      "code": "...\nmodparam(\"dialog\", \"start_time_column\", \"start_time_c_name\")\n..."
+    },
+    {
+      "title": "Set timeout_column parameter",
+      "description": "The column's name in the database to store the dialogs' timeout.",
+      "code": "...\nmodparam(\"dialog\", \"timeout_column\", \"timeout_c_name\")\n..."
+    },
+    {
+      "title": "Set profiles_column parameter",
+      "description": "The column's name in the database to store the dialogs' profiles.",
+      "code": "...\nmodparam(\"dialog\", \"profiles_column\", \"profiles_c_name\")\n..."
+    },
+    {
+      "title": "Set vars_column parameter",
+      "description": "The column's name in the database to store the dialogs' vars.",
+      "code": "...\nmodparam(\"dialog\", \"vars_column\", \"vars_c_name\")\n..."
+    },
+    {
+      "title": "Set sflags_column parameter",
+      "description": "The column's name in the database to store the dialogs' script flags.",
+      "code": "...\nmodparam(\"dialog\", \"sflags_column\", \"sflags_c_name\")\n..."
+    },
+    {
+      "title": "Set mflags_column parameter",
+      "description": "The column's name in the database to store the dialogs' module flags.",
+      "code": "...\nmodparam(\"dialog\", \"mflags_column\", \"mflags_c_name\")\n..."
+    },
+    {
+      "title": "Set flags_column parameter",
+      "description": "The column's name in the database to store the dialogs' flags.",
+      "code": "...\nmodparam(\"dialog\", \"flags_column\", \"flags_c_name\")\n..."
+    },
+    {
+      "title": "Set profiles_with_value parameter",
+      "description": "List of names (alphanumerical/-/_) for profiles with values. Flags /b or /s allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.",
+      "code": "...\nmodparam(\"dialog\", \"profiles_with_value\", \"callerCC; gatewayCC; clientChannels/s; codecUsed/b;\")\n..."
+    },
+    {
+      "title": "Set profiles_no_value parameter",
+      "description": "List of names (alphanumerical/-/_) for profiles without values. Flags /b or /s allow sharing profiles between OpenSIPS instances using the clusterer module or a CacheDB backend, respectively.",
+      "code": "...\nmodparam(\"dialog\", \"profiles_no_value\", \"inbound ; outbound ; shared/s; repl/b;\")\n..."
+    },
+    {
+      "title": "Set db_flush_vals_profiles parameter",
+      "description": "Pushes dialog values, profiles and flags into the database along with other dialog state information (see db_mode 1 and 2).",
+      "code": "...\nmodparam(\"dialog\", \"db_flush_vals_profiles\", 1)\n..."
+    },
+    {
+      "title": "Set timer_bulk_del_no parameter",
+      "description": "The number of dialogs that should be attempted to be deleted at the same time ( a single query ) from the DB back-end.",
+      "code": "...\nmodparam(\"dialog\", \"timer_bulk_del_no\", 10)\n..."
+    },
+    {
+      "title": "Set race_condition_timeout parameter",
+      "description": "If dialog is created using the 'E' flag, and a SIP Race condition happens, then the dialog will be terminated after 'race_condition_timeout' seconds. Currently, the only supported race conditions are (200OK vs CANCEL) and (early BYE vs 200OK)",
+      "code": "...\nmodparam(\"dialog\", \"race_condition_timeout\", 1)\n..."
+    },
+    {
+      "title": "Set cachedb_url parameter",
+      "description": "Enables distributed dialog profiles and specifies the backend that should be used by the CacheDB interface.",
+      "code": "...\nmodparam(\"dialog\", \"cachedb_url\", \"redis://127.0.0.1:6379\")\n..."
+    },
+    {
+      "title": "Set profile_value_prefix parameter",
+      "description": "Specifies what prefix should be added to the profiles with value when they are inserted into CacheDB backed. This is only used when distributed profiles are enabled.",
+      "code": "...\nmodparam(\"dialog\", \"profile_value_prefix\", \"dlgv_\")\n..."
+    },
+    {
+      "title": "Set profile_no_value_prefix parameter",
+      "description": "Specifies what prefix should be added to the profiles without value when they are inserted into CacheDB backed. This is only used when distributed profiles are enabled.",
+      "code": "...\nmodparam(\"dialog\", \"profile_no_value_prefix\", \"dlgnv_\")\n..."
+    },
+    {
+      "title": "Set profile_size_prefix parameter",
+      "description": "Specifies what prefix should be added to the entity that holds the profiles with value size in CacheDB backed. This is only used when distributed profiles are enabled.",
+      "code": "...\nmodparam(\"dialog\", \"profile_size_prefix\", \"dlgs_\")\n..."
+    },
+    {
+      "title": "Set profile_timeout parameter",
+      "description": "Specifies how long a dialog profile should be kept in the CacheDB until it expires. This is only used when distributed profiles are enabled.",
+      "code": "...\nmodparam(\"dialog\", \"profile_timeout\", \"43200\")\n..."
+    },
+    {
+      "title": "Set dialog_replication_cluster parameter",
+      "description": "Specifies the cluster ID for dialog replication using the clusterer module. This enables sending and receiving all the dialog-related events (creation, update and deletion) in the cluster.\n\nThis OpenSIPS cluster exposes the \"dialog-dlg-repl\" capability in order to mark nodes as eligible for becoming data donors during an arbitrary sync request. Consequently, the cluster must have at least one node marked with the \"seed\" value as the clusterer.flags column/property in order to be fully functional. Consult the clusterer - Capabilities chapter for more details.",
+      "code": "...\nmodparam(\"dialog\", \"dialog_replication_cluster\", 1)\n..."
+    },
+    {
+      "title": "Set profile_replication_cluster parameter",
+      "description": "Specifies the cluster ID for profile replication using the clusterer module. This enables sending and receiving the profile information (value, dialog count) in the cluster.",
+      "code": "...\nmodparam(\"dialog\", \"profile_replication_cluster\", 1)\n..."
+    },
+    {
+      "title": "Set replicate_profiles_buffer parameter",
+      "description": "Used to specify the length of the buffer used by the binary replication, in bytes. Usually this should be big enough to hold as much data as possible, but small enough to avoid UDP fragmentation. The recommended value is the smallest MTU between all the replication instances.",
+      "code": "...\nmodparam(\"dialog\", \"replicate_profiles_buffer\", 500)\n..."
+    },
+    {
+      "title": "Set replicate_profiles_check parameter",
+      "description": "Timer in seconds, used to specify how often the module should check whether old, replicated profiles values are obsolete and should be removed. should replicate its profiles to the other instances.",
+      "code": "...\nmodparam(\"dialog\", \"replicate_profiles_check\", 100)\n..."
+    },
+    {
+      "title": "Set replicate_profiles_timer parameter",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its profiles to the other instances.",
+      "code": "...\nmodparam(\"dialog\", \"replicate_profiles_timer\", 100)\n..."
+    },
+    {
+      "title": "Set replicate_profiles_expire parameter",
+      "description": "Timer in seconds, used to specify when the profiles counters received from a different instance should no longer be taken into account. This is used to prevent obsolete values, in case an instance stops replicating its counters.",
+      "code": "...\nmodparam(\"dialog\", \"replicate_profiles_expire\", 10)\n..."
+    },
+    {
+      "title": "Set cluster_auto_sync parameter",
+      "description": "Specifies whether to automatically issue a sync request (for dialogs marked with a sharing tag in backup state) when a node becomes reachable. A value of 1 means enabled and 0 disabled.",
+      "code": "...\nmodparam(\"dialog\", \"cluster_auto_sync\", 0)\n..."
+    },
+    {
+      "title": "create_dialog() usage",
+      "description": "The function creats the dialog for the currently processed request. The request must be an initial request. Optionally,the function also receives a string parameter, which specifies special behavior to be done for the current dialog.",
+      "code": "...\ncreate_dialog();\n...\n#ping caller\ncreate_dialog(\"P\");\n...\n#ping caller and callee\ncreate_dialog(\"Pp\");\n\n#bye on timeout\ncreate_dialog(\"B\");\n..."
+    },
+    {
+      "title": "match_dialog() usage",
+      "description": "This function is to be used to match a sequential (in-dialog) request to an ongoing dialog.\n\nBy default, dialog matching is performed according to the dlg_match_mode module parameter. A specific matching mode may be enforced by specifying the optional \"dlg_match_mode\" parameter. Possible values for this parameter are \"DID_ONLY\", \"DID_FALLBACK\" and \"DID_NONE\".\n\nAs sequential requests are automatically matched to the dialog when doing \"loose_route()\" from script, this function is intended to: (A) control the place in your script where the dialog matching is done and (B) to cope with bogus sequential requests that do not have Route headers, so they are not handled by loose_route().",
+      "code": "...\n    if (has_totag()) {\n        loose_route();\n\n        # example 1: match according to dlg_match_mode\n        if ($DLG_status == NULL && !match_dialog())\n            xlog(\"cannot match request to a dialog\\n\");\n\n        # example 2: override dlg_match_mode\n        if ($DLG_status == NULL && !match_dialog(\"DID_FALLBACK\"))\n            xlog(\"cannot match request to a dialog\\n\");\n    }\n..."
+    },
+    {
+      "title": "validate_dialog() usage",
+      "description": "The function checks the current received requests against the dialog (internal data) it belongs to. Performing several tests, the function will help to detect the bogus injected in-dialog requests (like malicious BYEs).",
+      "code": "...\n    if (has_totag()) {\n        loose_route();\n        if ($DLG_status!=NULL && !validate_dialog() ) {\n            xlog(\" in-dialog bogus request \\n\");\n        } else {\n            xlog(\" in-dialog valid request - $DLG_dir !\\n\");\n        }\n    }\n..."
+    },
+    {
+      "title": "fix_route_dialog() usage",
+      "description": "The function forces an in dialog SIP message to contain the ruri, route headers and dst_uri, as specified by the internal data of the dialog it belongs to. The function will prevent the existence of bogus injected in-dialog requests ( like malicious BYEs )",
+      "code": "...\n    if (has_totag()) {\n        loose_route();\n        if ($DLG_status!=NULL)\n            if (!validate_dialog())\n                fix_route_dialog();\n    }\n..."
+    },
+    {
+      "title": "get_dialog_info usage",
+      "description": "The function extracts a dialog value from another dialog. It first searches through all existing (ongoing) dialogs for all dialogs that have a dialog variable named \"key\" with the value \"key_val\" (so a dialog where $dlg_val(key)==\"key_val\"). If found, it returns the value of the dialog variable \"attr\" from all the founds dialog in the \"avp\" pseudo-variable, otherwise nothing is written in \"avp\", and a negative error code is returned.",
+      "code": "...\nif ( get_dialog_info(\"callee\",$avp(callee_array),\"caller\",$fu,$var(dlg_no)) ) {\n\txlog(\"caller $fu has $var(dlg_no) other ongoing calls, talking with :\");\t\n\t$var(it) = 0;\n\twhile ($var(it) < $var(dlg_no)) {\n\t\t$var(current_callee) = $(avp(callee_array)[$var(it)]);\n\t\txlog(\" $var(current_callee) \");\n\t\t$var(it) = $var(it) + 1;\n\t}\n\n\txlog(\"\\n\");\n}\n\n# create dialog for current call and place the caller and callee attributes\ncreate_dialog();\n$dlg_val(caller) = $fu;\n$dlg_val(callee) = $ru;\n..."
+    },
+    {
+      "title": "get_dialog_vals usage",
+      "description": "The function fetches all the dialog variables of another dialog. It first searches through all existing (ongoing) dialogs based on the given SIP CallID. If found, it returns all the dialog variables as two parallel arrays of names and values (using the given variables \"names\" and \"vals\"). As these variables have to hold arrays, they must be AVPs.",
+      "code": "...\nif ( get_dialog_vals($avp(d_names),$avp(d_vals),$var(callid)) ) {\n\txlog(\"the call $var(callid) has the variables:\\n);\n\t$var(i) = 0;\n\twhile ( $(avp(d_names)[$var(i)])!=NULL ) {\n\t\txlog(\"var $var(i) is $(avp(d_names)[$var(i)])='$(avp(d_vals)[$var(i)])'\\n\");\n\t\t$var(i) = $var(i) + 1;\n\t}\n}\n..."
+    },
+    {
+      "title": "get_dialog_vals usage",
+      "description": "The function looks up through the whole dialog table for dialogs containing a $dlg_val with the provided name and value, and returns all the $DLG_ctx_json variables for the matched dialogs, storing them in the provided out_avp. The total number of matched dialogs is returned in the out_dlgs_no variable",
+      "code": "...\nif ( get_dialogs_by_val(\"caller\",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {\n\txlog(\"Caller $fU has $avp(dlg_no) other calls \\n);\n\t$var(i) = 0;\n\twhile ( $(avp(dlg_jsons)[$var(i)])!=NULL ) {\n\t\t$json(dlg_info) := $(avp(dlg_jsons)[$var(i)]); \n\t\t# fetch any info for the above call and process it\n\t\t$var(i) = $var(i) + 1;\n\t}\n}\n..."
+    },
+    {
+      "title": "get_dialog_vals usage",
+      "description": "The function looks up through the whole dialog table for dialogs configured to be within the provided dialog profile name, and optionally with the provided profile value. The function returns all the $DLG_ctx_json variables for the matched dialogs, storing them in the provided out_avp. The total number of matched dialogs is returned in the out_dlgs_no variable",
+      "code": "...\nif ( get_dialogs_by_profile(\"caller\",$fU,$avp(dlg_jsons),$avp(dlg_no)) ) {\n\txlog(\"Caller $fU has $avp(dlg_no) other calls \\n);\n\t$var(i) = 0;\n\twhile ( $(avp(dlg_jsons)[$var(i)])!=NULL ) {\n\t\t$json(dlg_info) := $(avp(dlg_jsons)[$var(i)]); \n\t\t# fetch any info for the above call and process it\n\t\t$var(i) = $var(i) + 1;\n\t}\n}\n..."
+    },
+    {
+      "title": "load_dialog_ctx usage",
+      "description": "The function loads and switches to the context of the given dialog. The context of a dialog is given by the dialog flags, variables, profiles and any other value/state related to the dialog. By switching to the context of another dialog, you will see at the script level, by default, all the data from the new dialog.",
+      "code": "...\nif (load_dialog_ctx(\"$var(callid)\")) {\n\txlog(\"The dialog '$var(callid)' already has a duration \"\n\t     \"of $DLG_lifetime seconds\\n\");\n\tif (is_in_profile(\"inboundCall\"))\n\t\txlog(\"this dialog is an inbound call\\n\");\n\tunload_dialog_ctx();\n}\n..."
+    },
+    {
+      "title": "set_dlg_profile usage",
+      "description": "Inserts the current dialog into a profile. Note that if the profile does not support values, this will be silently discarded. A dialog may be inserted in the same profile multiple times.",
+      "code": "...\nset_dlg_profile(\"inboundCall\");\n\n# Set a new value (all other values are kept intact)\nset_dlg_profile(\"caller\", $fu);\n\n# Set a new value while removing all previous values\nset_dlg_profile(\"caller\", $fu, true);\n..."
+    },
+    {
+      "title": "unset_dlg_profile usage",
+      "description": "Removes the current dialog from a profile.",
+      "code": "...\nunset_dlg_profile(\"inboundCall\");\nunset_dlg_profile(\"caller\", $fu);\n...\n# Remove all values in a profile\nunset_dlg_profile(\"caller\");\n..."
+    },
+    {
+      "title": "is_in_profile usage",
+      "description": "Checks if the current dialog belongs to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - if the dialog was inserted into the profile for a specific value. If no value is passed, only simply belonging of the dialog to the profile is checked. Note that if the profile does not support values, this will be silently discarded.",
+      "code": "...\nif (is_in_profile(\"inboundCall\")) {\n\tlog(\"this request belongs to a inbound call\\n\");\n}\n...\nif (is_in_profile(\"caller\",\"XX\")) {\n\tlog(\"this request belongs to a call of user XX\\n\");\n}\n..."
+    },
+    {
+      "title": "get_profile_size usage",
+      "description": "Returns the number of dialogs belonging to a profile. If the profile supports values, the check can be reinforced to take into account a specific value - how many dialogs were inserted into the profile with a specific value. If not value is passed, only simply belonging of the dialog to the profile is checked. Note that the profile does not supports values, this will be silently discarded.",
+      "code": "modparam(\"dialog\", \"profiles_no_value\", \"inboundCalls\")\nmodparam(\"dialog\", \"profiles_with_value\", \"caller\")\n...\nget_profile_size(\"inboundCalls\",,$var(size));\nxlog(\"inboundCalls: $var(size)\\n\");\n...\nget_profile_size(\"caller\", $fu, $var(size));\nxlog(\"currently, the user $fu has $var(size) active outgoing calls\\n\");\n..."
+    },
+    {
+      "title": "set_dlg_flag usage",
+      "description": "Sets the dialog flag named _flag_ to true. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.",
+      "code": "...\nset_dlg_flag(\"MY_DLG_FLAG\");\n..."
+    },
+    {
+      "title": "test_and_set_dlg_flag usage",
+      "description": "Atomically checks if the dialog flag named _flag_ is equal to _value_. If true, changes the value with the opposite one. This operation is done under the dialog lock.",
+      "code": "...\ntest_and_set_dlg_flag(\"MY_DLG_FLAG\", 0);\n..."
+    },
+    {
+      "title": "reset_dlg_flag usage",
+      "description": "Resets the dialog flag named _flag_ to false. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.",
+      "code": "...\nreset_dlg_flag(\"MY_DLG_FLAG\");\n..."
+    },
+    {
+      "title": "is_dlg_flag_set usage",
+      "description": "Returns true if the dialog flag named _flag_ is set. The dialog flags are dialog persistent and they can be accessed (set and test) for all requests belonging to the dialog.",
+      "code": "...\nif (is_dlg_flag_set(\"MY_DLG_FLAG\")) {\n\txlog(\"dialog flag MY_DLG_FLAG is set\\n\");\n}\n..."
+    },
+    {
+      "title": "store_dlg_value usage",
+      "description": "Attaches to the dialog the value from the variable _val_ under the name _name_. The values attached to dialogs are dialog persistent and they can be accessed (read and write) for all requests belonging to the dialog.",
+      "code": "...\nstore_dlg_value(\"inv_src_ip\",$si);\nstore_dlg_value(\"account type\",$var(account));\n# or\n$dlg_val(account_type) = \"prepaid\";\n..."
+    },
+    {
+      "title": "fetch_dlg_value usage",
+      "description": "Fetches from the dialog the value of attribute named _name_. The values attached to dialogs are dialog persistent and they can be accessed (read and write) for all requests belonging to the dialog.",
+      "code": "...\nfetch_dlg_value(\"inv_src_ip\",$avp(2));\nfetch_dlg_value(\"account type\",$var(account));\n# or\n$var(account) = $dlg_val(account_type);\n..."
+    },
+    {
+      "title": "set_dlg_sharing_tag usage",
+      "description": "Marks the current dialog with the sharing tag _tag_name_. From this point on, actions like in-dialog pinging, BYEs on timeout etc. will depend on the tag state(no action in \"backup\" state, normal operation in \"active\" state).",
+      "code": "...\nset_dlg_sharing_tag(\"vip1\");\n..."
+    },
+    {
+      "title": "dlg_on_answer usage",
+      "description": "The function arms a script route to be executed when the current dialog will be later answered. When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one).",
+      "code": "...\ncreate_dialog();\ndlg_on_answer(\"dlg_answered\");\n...\nroute[dlg_answered] {\n\txlog(\"The dialog $DLG_did was answered\\n\");\n}"
+    },
+    {
+      "title": "dlg_on_timeout usage",
+      "description": "The function arms a script route to be executed when (and if) the current dialog will timeout (as duration). When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one)",
+      "code": "...\ncreate_dialog();\n$DLG_timeout=120;\ndlg_on_timeout(\"dlg_timeout\");\n...\nroute[dlg_timeout] {\n\txlog(\"The dialog $DLG_did timed out\\n\");\n\tif (_some_prolongation_condition)\n\t\t$DLG_timeout = 60; # give it 1 min more\n}"
+    },
+    {
+      "title": "dlg_on_hangup usage",
+      "description": "The function arms a script route to be executed when the current dialog will be terminated. When the route will be executed, the dialog context will be exposed, but with no valid SIP message (just a phony one). Note that the dialog will be already terminated and there is nothing you can do about it besides reading data from its context.",
+      "code": "...\ncreate_dialog();\ndlg_on_hangup(\"dlg_hangup\");\n...\nroute[dlg_hangup] {\n\txlog(\"The dialog $DLG_did terminated after $DLG_lifetime secs\\n\");\n}"
+    },
+    {
+      "title": "dlg_send_sequential usage to convert DTMF codes",
+      "description": "Used to send an in-dialog request towards one if the dialog's legs. The function assumes that is runs inside a dialog context - if you are running it from a different context (such as an event_route), make sure you first load the dialog context using the load_dialog_ctx() function.",
+      "code": "...\nevent_route[E_RTPPROXY_DTMF] {\n    if (load_dialog_ctx(\"$param(id)\", \"did\")) {\n        if ($param(stream) == 0) {\n            $var(direction) = \"callee\";\n        } else {\n            $var(direction) = \"caller\";\n        }\n        dlg_send_sequential($var(direction), \"INFO\",\n                \"Signal=$param(digit)\\nDuration=160\",\n                \"application/dtmf-relay\");\n        unload_dialog_ctx();\n    }\n}\n..."
+    }
+  ]
+}

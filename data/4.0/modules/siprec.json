@@ -1,0 +1,378 @@
+{
+  "id": "module-siprec-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "siprec Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/siprec.html",
+  "content_markdown": "This module provides the means to do calls recording using an external recorder - the entity that records the call is not in the media path between the caller and callee, but it is completely separate, thus it can not affect by any means the quality of the conversation. This is done in a standardized manner, using the [SIPREC Protocol](https://tools.ietf.org/html/rfc7866), thus it can be used by any recorder that implements this protocol.\n\nSince an external server is used to record calls, there are no constraints regarding the location of the recorder, thus it can be placed arbitrary. This offers huge flexibility to your architecture configuration and various means for scaling.\n\nThe work for this module has been sponsored by the [OrecX Company](http://www.orecx.com/). This module is fully integrated with the OrecX Call Recording products.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:48:37.681Z",
+  "module_name": "siprec",
+  "overview": "This module provides the means to do calls recording using an external recorder - the entity that records the call is not in the media path between the caller and callee, but it is completely separate, thus it can not affect by any means the quality of the conversation. This is done in a standardized manner, using the [SIPREC Protocol](https://tools.ietf.org/html/rfc7866), thus it can be used by any recorder that implements this protocol.\n\nSince an external server is used to record calls, there are no constraints regarding the location of the recorder, thus it can be placed arbitrary. This offers huge flexibility to your architecture configuration and various means for scaling.\n\nThe work for this module has been sponsored by the [OrecX Company](http://www.orecx.com/). This module is fully integrated with the OrecX Call Recording products.",
+  "how_it_works": "The full architecture of a SIP Media Recording platform is documented in [RFC 7245](https://tools.ietf.org/html/rfc7245). According to this architecture, this OpenSIPS module implements a SRC (Session Recording Client) that instructs a SRS (Session Recording Server) when new calls are started, the participants of the calls and their profiles. Based on this data, the SRS can decide whether the call should be recorded or not.\n\nFrom SIP signalling perspective, the module does not change the call flow between the caller and callee. The call is established just as any other calls that are not recorded. But for each call that has _SIPREC_ engaged, a completely separate SIP session is started by the SRC (OpenSIPS) towards the SRS, using the [OpenSIPS Back-2-Back module](b2b_entities). The _INVITE_ message sent to the SRS contains a multi-part body consisting of two parts:\n\n*   _Recording SDP_ - the SDP of the Media Server that will _fork_ the RTP to the recorder.\n    \n*   _Participants Metadata_ - an XML-formatted document that contains information about the participants. The structure of the document is detailed in [RFC 7865](https://tools.ietf.org/html/rfc7865).\n    \nThe SRS can respond with negative reply, indicating that the session does not need to be recorded, or with a positive reply (200 OK), indicating in the SDP body where the media RTP should be _sent/forked_. When the call ends, the SRC must send a _BYE_ message to the SRS, indicating that the recording should be completed.\n\nFull examples of call flows can be found in [RFC 8068](https://tools.ietf.org/html/rfc8068).",
+  "dependencies_required": [
+    {
+      "name": "TM",
+      "type": "module",
+      "reason": "Transaction module.",
+      "optional": false
+    },
+    {
+      "name": "Dialog",
+      "type": "module",
+      "reason": "Dialog module for keeping track of the call.",
+      "optional": false
+    },
+    {
+      "name": "RTP_Relay",
+      "type": "module",
+      "reason": "RTP Relay module used for controlling the Media Servers that will fork the media.",
+      "optional": false
+    },
+    {
+      "name": "B2B_ENTITIES",
+      "type": "module",
+      "reason": "Back-2-Back module used for communicating with the SRS.",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "skip_failover_codes",
+      "type": "string",
+      "description": "A regular expression used to specify the codes that should prevent the module from failing over to a new SRS server.\n\nBy default any negative reply generates a failover.",
+      "example_value": "408",
+      "example_code": "# do not failover on 408 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "siprec_start_recording",
+      "signature": "siprec_start_recording(srs[, instance])",
+      "parameters": [
+        {
+          "name": "srs",
+          "type": "string",
+          "required": true,
+          "description": "a comma-separated list of SRS URIs. These URIs are used in the order specified. See siprec_srs_failover for more information."
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "required": false,
+          "description": "used to start a particular SIPREC instance. When missing, the default instance is started."
+        }
+      ],
+      "return_type": "boolean",
+      "return_values": [
+        {
+          "value": "true",
+          "condition": "if all the internal mechanisms are activated"
+        },
+        {
+          "value": "false",
+          "condition": "when an internal error is triggered and the call recording setup fails"
+        }
+      ],
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call. Note that it does not necessary mean that the call will be recorded - it just means that OpenSIPS will query instruct the SRS that a new call has started, but the SRS might decide that the recording is disabled for those participants.\n\nNote that the call recording is not started right away, but only when the callee provides an SDP as well (usually in a 200 OK, or possibly a 183 Ringing).\n\nNote if you only want to start recording when the call is established (200 OK is received), then you should call this function in the onreply route processing that 200 OK.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (!has_totag() && is_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1\";\n\t\txlog(\"Engage SIPREC call recording to $var(srs) for $ci\\n\");\n\t\tsiprec_start_recording($var(srs));\n\t}\n\t...",
+          "description": "Use `siprec_start_recording()` function with a single SRS",
+          "context": "REQUEST_ROUTE"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (!has_totag() && is_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1, sip:127.0.0.1;transport=TCP\";\n\t\txlog(\"Engage SIPREC call recording to servers $var(srs) for $ci in inbound group\\n\");\n\t\tsiprec_start_recording($var(srs), \"inbound\");\n\t}\n\t...",
+          "description": "Use `siprec_start_recording()` function with multiple SRS servers"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\t$xml(caller_xml) = \"<nameID></nameID>\";\n\t$xml(caller_xml/nameID.attr/aor) = \"sip:6024151234@10.0.0.11:5090\";\n\t$xml(caller_xml/nameID) = \"<name>test</name>\";\n\t$siprec(caller) = $xml(caller_xml/nameID);\n\tsiprec_start_recording($var(srs));\n\t...",
+          "description": "Use `siprec_start_recording()` function with custom XML values for participants"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\t$siprec(headers) = \"X-MY-CUSTOM_HDR: 1\\r\\n\";\n\tsiprec_start_recording($var(srs));\n\t...",
+          "description": "Use `siprec_start_recording()` function with custom headers"
+        },
+        {
+          "language": "opensips",
+          "code": "\t...\n\t$var(temp) = \"<callcenterID> 17</callcenterID>\";\n\t$siprec(group_custom_extension) = $var(temp);\n\t$siprec(session_custom_extension) = \"<callcenterCode>dfgh3q45gsdfty5</callcenterCode>\";\n\n\tsiprec_start_recording($var(srs));\n\t...",
+          "description": "Use `siprec_start_recording()` function with custom group and session extensions"
+        }
+      ],
+      "related_functions": [
+        "siprec_srs_failover"
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "siprec_pause_recording",
+      "signature": "siprec_pause_recording([instance])",
+      "parameters": [
+        {
+          "name": "instance",
+          "type": "string",
+          "required": false,
+          "description": "used to pause a particular SIPREC instance. When missing, the default instance is paused."
+        }
+      ],
+      "return_type": "",
+      "description": "Pauses the recording for the ongoing call. Should be called after the dialog has matched.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INVITE\")) {\n\t\tif (is_audio_on_hold())\n\t\t\tsiprec_pause_recording();\n\t}\n\t...",
+          "description": "Use `siprec_pause_recording()`"
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "siprec_resume_recording",
+      "signature": "siprec_resume_recording([instance])",
+      "parameters": [
+        {
+          "name": "instance",
+          "type": "string",
+          "required": false,
+          "description": "used to resume a particular SIPREC instance. When missing, the default instance is resumed."
+        }
+      ],
+      "return_type": "",
+      "description": "Resumes the recording for the ongoing call. Should be called after the dialog has matched.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INVITE\")) {\n\t\tif (!is_audio_on_hold())\n\t\t\tsiprec_resume_recording();\n\t}\n\t...",
+          "description": "Use `siprec_resume_recording()`"
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "siprec_stop_recording",
+      "signature": "siprec_stop_recording([instance])",
+      "parameters": [
+        {
+          "name": "instance",
+          "type": "string",
+          "required": false,
+          "description": "used to stop a particular SIPREC instance. When missing, the default instance is stopped."
+        }
+      ],
+      "return_type": "",
+      "description": "Stops the recording for the ongoing call. Should be called for SIPREC sessions that have been previously started.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INVITE\")) {\n\t\tif (is_audio_on_hold())\n\t\t\tsiprec_stop_recording();\n\t}\n\t...",
+          "description": "Use `siprec_stop_recording()`"
+        }
+      ],
+      "deprecated": false
+    },
+    {
+      "name": "siprec_send_indialog",
+      "signature": "siprec_send_indialog([hdrs[, body]])",
+      "parameters": [
+        {
+          "name": "headers",
+          "type": "string",
+          "required": false,
+          "description": "a set of headers that will be added to the generated request."
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "the body that will be added to the generated request."
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "required": false,
+          "description": "used to send a request within a particular SIPREC instance. When missing, the request is sent in to the default instance."
+        }
+      ],
+      "return_type": "",
+      "description": "Sends an arbitrary in-dialog request to the SRS.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t...\n\tif (has_totag() && is_method(\"INFO\")) {\n\t\tsiprec_send_indialog(\"Content-Type: $hdr(Content-Type)\\r\\n\", $rb);\n\t}\n\t...",
+          "description": "Use `siprec_send_indialog()`"
+        }
+      ],
+      "deprecated": false
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_SIPREC_START",
+      "description": "This event is raised when a SIPREC call is established and a call starts to be recorded.",
+      "parameters": [
+        {
+          "name": "dlg_id",
+          "type": "string",
+          "description": "dialog id (“did”) of the call being recorded;"
+        },
+        {
+          "name": "dlg_callid",
+          "type": "string",
+          "description": "Call-Id of the call being recorded;"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "Call-Id (B2B id) of the SIPREC call;"
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "SIPREC UUID of the recording call;"
+        },
+        {
+          "name": "server",
+          "type": "string",
+          "description": "the SIPREC server handing this call;"
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "description": "the SIPREC instance this event is triggered for;"
+        }
+      ]
+    },
+    {
+      "name": "E_SIPREC_STOP",
+      "description": "This event is raised when a SIPREC call is terminated.",
+      "parameters": [
+        {
+          "name": "dlg_id",
+          "type": "string",
+          "description": "dialog id (“did”) of the call being recorded;"
+        },
+        {
+          "name": "dlg_callid",
+          "type": "string",
+          "description": "Call-Id of the call being recorded;"
+        },
+        {
+          "name": "callid",
+          "type": "string",
+          "description": "Call-Id (B2B id) of the SIPREC call;"
+        },
+        {
+          "name": "session_id",
+          "type": "string",
+          "description": "SIPREC UUID of the recording call;"
+        },
+        {
+          "name": "server",
+          "type": "string",
+          "description": "the SIPREC server handing this call;"
+        },
+        {
+          "name": "instance",
+          "type": "string",
+          "description": "the SIPREC instance this event is triggered for;"
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [
+    {
+      "name": "$siprec",
+      "type": "string",
+      "readable": true,
+      "writable": true,
+      "scope": "request",
+      "description": "Used to modify/describe different siprec sessions parameters that should be taken into account by the siprec_start_recording() function.\n\nThe variable can be indexed with the instance the user wants to tune the variable for. If missing, the the default instance is being altered.\n\nThe context of this variable is only limited to the current message processed - it is not available at the transaction or dialog level.\n\nAny of this setting is optional.\n\nSettings that can be provisioned:\n\n*   group - an opaque value that will be inserted in the SIPREC body and represents the name of the group that can be used to classify calls in certain profiles. If missing, no group is added.\n    \n*   caller - an XML block containing information about the caller. If absent, the From header of the initial dialog is used to build the value.\n    \n*   callee - an XML block containing information about the callee. If absent, the To header of the initial dialog is used to build the value.\n    \n*   media - the IP that RTPProxy will be streaming media from. If absent 127.0.0.1 will be used. NOTE: media_ip has been dropped.\n    \n*   headers - extra headers that are to be added in the initial request towards the SRS. NOTE: headers must be separated by \\r\\n and must end with \\r\\n.\n    \n*   socket - listening socket that the outgoing request towards SRS should be used.\n    \n*   from_uri - the URI to appear in the From header of the dialog. Default value is the request URI. Note that this does not influence the caller information in the XML block, which is taken from the initial dialog.\n    \n*   to_uri - the URI to appear in the To header of the dialog. Default value is the request URI. Note that this does not influence the callee information in the XML block, which is taken from the initial dialog.\n    \n*   group_custom_extension - an optional XML block containing custom information to be added under the group tag. NOTE: if the group is absent this value will be ignored and not used anywhere.\n    \n*   session_custom_extension - an optional XML block containing custom information to be added under the session tag.",
+      "possible_values": [
+        "group",
+        "caller",
+        "callee",
+        "media",
+        "headers",
+        "socket",
+        "from_uri",
+        "to_uri",
+        "group_custom_extension",
+        "session_custom_extension"
+      ]
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `skip_failover_codes` parameter",
+      "description": "A regular expression used to specify the codes that should prevent the module from failing over to a new SRS server. By default any negative reply generates a failover.",
+      "code": "...\n# do not failover on 408 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408\")\n\n# do not failover on 408 or 487 reply codes\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"408|487\")\n\n# do not failover on any 3xx or 4xx reply code\nmodparam(\"siprec\", \"skip\\_failover\\_codes\", \"\\[34\\]\\[0-9\\]\\[0-9\\]\")\n..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with a single SRS",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\tif (!has\\_totag() && is\\_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1\";\n\t\txlog(\"Engage SIPREC call recording to $var(srs) for $ci\\\\n\");\n\t\tsiprec\\_start\\_recording($var(srs));\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with multiple SRS servers",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\tif (!has\\_totag() && is\\_method(\"INVITE\")) {\n\t\t$var(srs) = \"sip:127.0.0.1, sip:127.0.0.1;transport=TCP\";\n\t\txlog(\"Engage SIPREC call recording to servers $var(srs) for $ci in inbound group\\\\n\");\n\t\tsiprec\\_start\\_recording($var(srs), \"inbound\");\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with custom XML values for participants",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\t$xml(caller\\_xml) = \"<nameID></nameID>\";\n\t$xml(caller\\_xml/nameID.attr/aor) = \"sip:6024151234@10.0.0.11:5090\";\n\t$xml(caller\\_xml/nameID) = \"<name>test</name>\";\n\t$siprec(caller) = $xml(caller\\_xml/nameID);\n\tsiprec\\_start\\_recording($var(srs));\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with custom headers",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\t$siprec(headers) = \"X-MY-CUSTOM\\_HDR: 1\\\\r\\\\n\";\n\tsiprec\\_start\\_recording($var(srs));\n\t..."
+    },
+    {
+      "title": "Use `siprec_start_recording()` function with custom group and session extensions",
+      "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+      "code": "\t...\n\t$var(temp) = \"<callcenterID> 17</callcenterID>\";\n\t$siprec(group\\_custom\\_extension) = $var(temp);\n\t$siprec(session\\_custom\\_extension) = \"<callcenterCode>dfgh3q45gsdfty5</callcenterCode>\";\n\n\tsiprec\\_start\\_recording($var(srs));\n\t..."
+    },
+    {
+      "title": "Use `siprec_pause_recording()`",
+      "description": "Pauses the recording for the ongoing call. Should be called after the dialog has matched.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INVITE\")) {\n\t\tif (is\\_audio\\_on\\_hold())\n\t\t\tsiprec\\_pause\\_recording();\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_resume_recording()`",
+      "description": "Resumes the recording for the ongoing call. Should be called after the dialog has matched.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INVITE\")) {\n\t\tif (!is\\_audio\\_on\\_hold())\n\t\t\tsiprec\\_resume\\_recording();\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_stop_recording()`",
+      "description": "Stops the recording for the ongoing call. Should be called for SIPREC sessions that have been previously started.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INVITE\")) {\n\t\tif (is\\_audio\\_on\\_hold())\n\t\t\tsiprec\\_stop\\_recording();\n\t}\n\t..."
+    },
+    {
+      "title": "Use `siprec_send_indialog()`",
+      "description": "Sends an arbitrary in-dialog request to the SRS.",
+      "code": "\t...\n\tif (has\\_totag() && is\\_method(\"INFO\")) {\n\t\tsiprec\\_send\\_indialog(\"Content-Type: $hdr(Content-Type)\\\\r\\\\n\", $rb);\n\t}\n\t..."
+    }
+  ]
+}

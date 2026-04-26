@@ -1,0 +1,139 @@
+{
+  "id": "module-cachedb_cassandra-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "cachedb_cassandra Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/cachedb_cassandra.html",
+  "content_markdown": "This module is an implementation of a cache system designed to work with Cassandra servers. It uses the Key-Value interface exported from the core.\n\nThe underlying client library is compatible with Cassandra versions 2.1+.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:04:52.479Z",
+  "module_name": "cachedb_cassandra",
+  "overview": "This module is an implementation of a cache system designed to work with Cassandra servers. It uses the Key-Value interface exported from the core.\n\nThe underlying client library is compatible with Cassandra versions 2.1+.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "libuv",
+      "type": "library",
+      "optional": false
+    },
+    {
+      "name": "cassandra-cpp-driver",
+      "type": "library",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "description": "The urls of the server groups that OpenSIPS will connect to in order to use the from script cache_store,cache_fetch, etc operations. It can be set more than one time. The prefix part of the URL will be the identifier that will be used from the script.\n\nCassandra does not support regular columns in a table that contains any counter columns so in order to use the add()/sub()/get_counter() methods in the Key-Value Interface you can specify an extra table reserved only for counters.\n\nThe database part of the URL needs to be in the format _Keyspace.Table[.CountersTable]_.",
+      "example_value": "cassandra:group1://localhost:9042/keyspace1.users.counters",
+      "example_code": "modparam(\"cachedb_cassandra\", \"cachedb_url\",\n\t\"cassandra:group1://localhost:9042/keyspace1.users.counters\")\n\n# Defining multiple contact points for a Cassandra cluster\nmodparam(\"cachedb_cassandra\", \"cachedb_url\",\n\t\"cassandra:cluster1://10.0.0.10,10.0.0.15/keyspace2.keys.counters\")"
+    },
+    {
+      "name": "connect_timeout",
+      "type": "int",
+      "default_value": "5000",
+      "description": "The timeout in ms that will be triggered in case a connection attempt fails.",
+      "example_value": "1000",
+      "example_code": "modparam(\"cachedb_cassandra\", \"connect_timeout\",1000);"
+    },
+    {
+      "name": "query_timeout",
+      "type": "int",
+      "default_value": "5000",
+      "description": "The timeout in ms that will be triggered in case a Cassandra query takes too long.",
+      "example_value": "1000",
+      "example_code": "modparam(\"cachedb_cassandra\", \"query_timeout\",1000);"
+    },
+    {
+      "name": "wr_consistency_level",
+      "type": "int",
+      "default_value": "one",
+      "description": "The consistency level desired for write operations. Options are :\n\n* _all_ - A write must be written to the commit log and memtable on all replica nodes in the cluster for that partition.\n* _each_quorum_ - Strong consistency. A write must be written to the commit log and memtable on a quorum of replica nodes in each datacenter.\n* _quorum_ - A write must be written to the commit log and memtable on a quorum of replica nodes across all datacenters.\n* _local_quorum_ - Strong consistency. A write must be written to the commit log and memtable on a quorum of replica nodes in the same datacenter as the coordinator. Avoids latency of inter-datacenter communication.\n* _one_ - A write must be written to the commit log and memtable of at least one replica node.\n* _two_ - A write must be written to the commit log and memtable of at least two replica node.\n* _three_ - A write must be written to the commit log and memtable of at least three replica node.\n* _local_one_ - A write must be sent to, and successfully acknowledged by, at least one replica node in the local datacenter.\n* _any_ - A write must be written to at least one node. If all replica nodes for the given partition key are down, the write can still succeed after a hinted handoff has been written. If all replica nodes are down at write time, an ANY write is not readable until the replica nodes for that partition have recovered.",
+      "possible_values": [
+        "all",
+        "each_quorum",
+        "quorum",
+        "local_quorum",
+        "one",
+        "two",
+        "three",
+        "local_one",
+        "any"
+      ],
+      "example_value": "each_quorum",
+      "example_code": "modparam(\"cachedb_cassandra\", \"wr_consistency_level\", \"each_quorum\");"
+    },
+    {
+      "name": "rd_consistency_level",
+      "type": "int",
+      "default_value": "one",
+      "description": "The consistency level desired for write operations. Options are :\n\n* _all_ - Returns the record after all replicas have responded. The read operation will fail if a replica does not respond.\n* _quorum_ - Returns the record after a quorum of replicas from all datacenters has responded.\n* _local_quorum_ - Returns the record after a quorum of replicas in the current datacenter as the coordinator has reported. Avoids latency of inter-datacenter communication.\n* _one_ - Returns a response from the closest replica, as determined by the snitch. By default, a read repair runs in the background to make the other replicas consistent.\n* _two_ - Returns the most recent data from two of the closest replicas.\n* _three_ - Returns the most recent data from three of the closest replicas.\n* _local_one_ - Returns a response from the closest replica in the local datacenter.\n* _serial_ - Allows reading the current (and possibly uncommitted) state of data without proposing a new addition or update. If a SERIAL read finds an uncommitted transaction in progress, it will commit the transaction as part of the read. Similar to QUORUM.\n* _local_serial_ - Same as SERIAL, but confined to the datacenter. Similar to LOCAL_QUORUM.",
+      "possible_values": [
+        "all",
+        "quorum",
+        "local_quorum",
+        "one",
+        "two",
+        "three",
+        "local_one",
+        "serial",
+        "local_serial"
+      ],
+      "example_value": "quorum",
+      "example_code": "modparam(\"cachedb_cassandra\", \"rd_consistency_level\", \"quorum\");"
+    },
+    {
+      "name": "exec_threshold",
+      "type": "int",
+      "default_value": "0 ( unlimited - no warnings )",
+      "description": "A cassandra cache query that lasts more than this threshold will trigger a warning message to the log.\n\nThis value, if set, only makes sense to be lower than the query_timeout since any query taking longer than that value will be dropped anyway.",
+      "example_value": "100000",
+      "example_code": "modparam(\"cachedb_cassandra\", \"exec_threshold\", 100000)"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Set the `cachedb_url` parameter to define Cassandra server groups and contact points.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"cachedb\\_url\",\n\t\"cassandra:group1://localhost:9042/keyspace1.users.counters\")\n\n# Defining multiple contact points for a Cassandra cluster\nmodparam(\"cachedb\\_cassandra\", \"cachedb\\_url\",\n\t\"cassandra:cluster1://10.0.0.10,10.0.0.15/keyspace2.keys.counters\")\n..."
+    },
+    {
+      "title": "Use Cassandra servers",
+      "description": "Use Cassandra servers in the script for cache operations like store, fetch, and remove.",
+      "code": "...\ncache\\_store(\"cassandra:group1\",\"key\",\"$ru value\");\ncache\\_fetch(\"cassandra:cluster1\",\"key\",$avp(10));\ncache\\_remove(\"cassandra:cluster1\",\"key\");\n..."
+    },
+    {
+      "title": "Set `connect_timeout` parameter",
+      "description": "Set the `connect_timeout` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"connect\\_timeout\",1000);\n..."
+    },
+    {
+      "title": "Set `query_timeout` parameter",
+      "description": "Set the `query_timeout` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"query\\_timeout\",1000);\n..."
+    },
+    {
+      "title": "Set `wr_consistency_level` parameter",
+      "description": "Set the `wr_consistency_level` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"wr\\_consistency\\_level\", \"each\\_quorum\");\n..."
+    },
+    {
+      "title": "Set `rd_consistency_level` parameter",
+      "description": "Set the `rd_consistency_level` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"rd\\_consistency\\_level\", \"quorum\");\n..."
+    },
+    {
+      "title": "Set `exec_threshold` parameter",
+      "description": "Set the `exec_threshold` parameter.",
+      "code": "...\nmodparam(\"cachedb\\_cassandra\", \"exec\\_threshold\", 100000)\n..."
+    }
+  ]
+}

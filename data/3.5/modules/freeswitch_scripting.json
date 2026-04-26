@@ -1,0 +1,277 @@
+{
+  "id": "module-freeswitch_scripting-3.5",
+  "document_type": "module",
+  "version": "3.5",
+  "title": "freeswitch_scripting Module",
+  "url": "https://opensips.org/html/docs/modules/3.5.x/freeswitch_scripting.html",
+  "content_markdown": "_freeswitch\\_scripting_ is a helper module that exposes full control over the FreeSWITCH ESL interface to the OpenSIPS script.\n\nIt allows the OpenSIPS script writer to subscribe to generic FreeSWITCH ESL events as well as to run arbitrary FreeSWITCH ESL commands and interpret their results. It makes use of the [freeswitch](freeswitch) module for the management of ESL connections and event subscriptions.\n\nCredits for the initial idea and working code samples providing both ESL events and commands go to Giovanni Maruzzelli <gmaruzz@opentelecom.it>.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T12:25:29.164Z",
+  "module_name": "freeswitch_scripting",
+  "overview": "_freeswitch\\_scripting_ is a helper module that exposes full control over the FreeSWITCH ESL interface to the OpenSIPS script.\n\nIt allows the OpenSIPS script writer to subscribe to generic FreeSWITCH ESL events as well as to run arbitrary FreeSWITCH ESL commands and interpret their results. It makes use of the [freeswitch](freeswitch) module for the management of ESL connections and event subscriptions.\n\nCredits for the initial idea and working code samples providing both ESL events and commands go to Giovanni Maruzzelli <gmaruzz@opentelecom.it>.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "freeswitch",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": [
+    "an SQL DB module"
+  ],
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "An SQL database URL which the module will use in order to load a set of FreeSWITCH ESL sockets and their event subscriptions.",
+      "example_value": "dbdriver://username:password@dbhost/dbname",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")"
+    },
+    {
+      "name": "db_table",
+      "type": "string",
+      "default_value": "freeswitch",
+      "description": "The SQL table name for this module.",
+      "example_value": "freeswitch\\_sockets",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_table\", \"freeswitch\\_sockets\")"
+    },
+    {
+      "name": "db_col_username",
+      "type": "string",
+      "default_value": "username",
+      "description": "The SQL column name for the \"username\" ESL connect information.",
+      "example_value": "user",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_col\\_username\", \"user\")"
+    },
+    {
+      "name": "db_col_password",
+      "type": "string",
+      "default_value": "password",
+      "description": "The SQL column name for the \"password\" ESL connect information.",
+      "example_value": "pass",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_col\\_password\", \"pass\")"
+    },
+    {
+      "name": "db_col_ip",
+      "type": "string",
+      "default_value": "ip",
+      "description": "The SQL column name for the \"ip\" ESL connect information.",
+      "example_value": "ip\\_addr",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_col\\_ip\", \"ip\\_addr\")"
+    },
+    {
+      "name": "db_col_port",
+      "type": "string",
+      "default_value": "port",
+      "description": "The SQL column name for the \"port\" ESL connect information.",
+      "example_value": "tcp\\_port",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_col\\_port\", \"tcp\\_port\")"
+    },
+    {
+      "name": "db_col_events",
+      "type": "string",
+      "default_value": "events\\_csv",
+      "description": "The SQL column name for the comma-separated, case-sensitive FreeSWITCH event names which OpenSIPS will subscribe to.",
+      "example_value": "fs\\_events",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"db\\_col\\_events\", \"fs\\_events\")"
+    },
+    {
+      "name": "fs_subscribe",
+      "type": "string",
+      "description": "Add a FreeSWITCH ESL URL to which OpenSIPS will connect at startup. The URL syntax includes support for specifying a list of events to subscribe to and follows this pattern: **\\[fs://\\]\\[\\[username\\]:password@\\]host\\[:port\\]\\[?event1\\[,event2\\]...\\]**",
+      "example_value": ":ClueCon@10.0.0.10?CHANNEL\\_STATE",
+      "example_code": "modparam(\"freeswitch\\_scripting\", \"fs\\_subscribe\", \":ClueCon@10.0.0.10?CHANNEL\\_STATE\")\nmodparam(\"freeswitch\\_scripting\", \"fs\\_subscribe\", \":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND\\_JOB\")",
+      "notes": "This parameter can be set multiple times."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "freeswitch_esl",
+      "signature": "freeswitch_esl(command, freeswitch_url[, response_var])",
+      "parameters": [
+        {
+          "name": "command",
+          "type": "string",
+          "required": true,
+          "description": "the ESL command string to execute."
+        },
+        {
+          "name": "freeswitch_url",
+          "type": "string",
+          "required": true,
+          "description": "the ESL interface to connect to. The syntax is: [fs://][[username]:password@]host[:port][?event1[,event2]...]. The \"?events\" part of the URL will be silently discarded."
+        },
+        {
+          "name": "response_var",
+          "type": "var",
+          "required": false,
+          "description": "a variable which will hold the text result of the ESL command."
+        }
+      ],
+      "return_type": "integer",
+      "return_values": [
+        {
+          "value": "1",
+          "condition": "success - the ESL command executed successfully and any output variables were successfully written to. Note that this does not say anything about the nature of the ESL answer (it may well be a \"-ERR\" type of response)"
+        },
+        {
+          "value": "-1",
+          "condition": "failure - internal error or the ESL command failed to execute"
+        }
+      ],
+      "description": "Run an arbitrary command on an arbitrary FreeSWITCH ESL socket. The socket need not necessarily be defined in the database or through fs_subscribe. However, if this is the case, then the \"password\" part of the URL becomes mandatory.\n\nThe current OpenSIPS worker will block until an answer from FreeSWITCH arrives. The timeout for this operation can be controlled via the esl_cmd_timeout parameter of the freeswitch connection manager module.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\t# ESL socket 10.0.0.10 is defined in the database (password \"ClueCon\")\n\t$var(rc) = freeswitch\\_esl(\"bgapi originate {origination\\_uuid=123456789}user/1010 9386\\\\njob-uuid: foobar\", \"10.0.0.10\", \"$var(response)\");\n\tif ($var(rc) < 0) {\n\t\txlog(\"failed to execute ESL command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n...\n\t# ESL socket 10.0.0.10 is new, we must specify a password\n\t$var(rc) = freeswitch\\_esl(\"bgapi originate {origination\\_uuid=123456789}user/1010 9386\\\\njob-uuid: foobar\", \":ClueCon@10.0.0.10\", $var(response));\n\tif ($var(rc) < 0) {\n\t\txlog(\"failed to execute ESL command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n...",
+          "description": "_freeswitch_esl()_ usage",
+          "context": "any route"
+        }
+      ],
+      "related_functions": [
+        "fs_subscribe"
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "fs_subscribe",
+      "parameters": [
+        {
+          "name": "freeswitch_url",
+          "type": "string",
+          "required": true,
+          "description": "the ESL interface to connect to. The syntax is: [fs://][[username]:password@]host[:port][?event1[,event2]...]. The \"?events\" part of the URL will be silently discarded."
+        },
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "the name of the event to subscribe to"
+        },
+        {
+          "name": "...",
+          "type": "string",
+          "required": false,
+          "description": "(other events)"
+        }
+      ],
+      "description": "Ensures that the given FreeSWITCH ESL socket is subscribed to the given list of events. In case an event cannot be subscribed to, the freeswitch driver will periodically retry to subscribe to it until an fs_unsubscribe MI command for the respective event is issued.",
+      "examples": []
+    },
+    {
+      "name": "fs_unsubscribe",
+      "parameters": [
+        {
+          "name": "freeswitch_url",
+          "type": "string",
+          "required": true,
+          "description": "the ESL interface to search for. The syntax is: [fs://][[username]:password@]host[:port][?event1[,event2]...]. The \"?events\" part of the URL will be silently discarded."
+        },
+        {
+          "name": "event",
+          "type": "string",
+          "required": true,
+          "description": "the name of the event to unsubscribe from"
+        },
+        {
+          "name": "...",
+          "type": "string",
+          "required": false,
+          "description": "(other events)"
+        }
+      ],
+      "description": "Ensures that the given FreeSWITCH ESL socket is unsubscribed from the given list of events.",
+      "examples": []
+    },
+    {
+      "name": "fs_list",
+      "parameters": [],
+      "description": "Displays the current set of FreeSWITCH ESL sockets and the list of events that the module is subscribed to for each socket.",
+      "examples": []
+    },
+    {
+      "name": "fs_reload",
+      "parameters": [],
+      "description": "Replaces the current set* of FreeSWITCH ESL sockets along with their respective events with the current data (ESL sockets and their events) found in the \"freeswitch\" table.\n* this includes any sockets/events provisioned through fs_subscribe, MI fs_subscribe commands or previous DB data set.",
+      "examples": []
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [
+    {
+      "name": "E_FREESWITCH",
+      "description": "This event is raised when OpenSIPS receives an ESL event notification from a socket that the \"freeswitch_scripting\" module is subscribed to.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "description": "the name of the event"
+        },
+        {
+          "name": "sender",
+          "type": "string",
+          "description": "the FreeSWITCH sender IP address"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "description": "the full JSON-encoded body of the event, as sent by FreeSWITCH. Use the json module ($json variable) to easily interpret it."
+        }
+      ]
+    }
+  ],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting the `db_url` parameter",
+      "description": "Setting the `db_url` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_url\", \"dbdriver://username:password@dbhost/dbname\")\n..."
+    },
+    {
+      "title": "Setting the `db_table` parameter",
+      "description": "Setting the `db_table` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_table\", \"freeswitch\\_sockets\")\n..."
+    },
+    {
+      "title": "Setting the `db_col_username` parameter",
+      "description": "Setting the `db_col_username` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_col\\_username\", \"user\")\n..."
+    },
+    {
+      "title": "Setting the `db_col_password` parameter",
+      "description": "Setting the `db_col_password` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_col\\_password\", \"pass\")\n..."
+    },
+    {
+      "title": "Setting the `db_col_ip` parameter",
+      "description": "Setting the `db_col_ip` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_col\\_ip\", \"ip\\_addr\")\n..."
+    },
+    {
+      "title": "Setting the `db_col_port` parameter",
+      "description": "Setting the `db_col_port` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_col\\_port\", \"tcp\\_port\")\n..."
+    },
+    {
+      "title": "Setting the `db_col_events` parameter",
+      "description": "Setting the `db_col_events` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"db\\_col\\_events\", \"fs\\_events\")\n..."
+    },
+    {
+      "title": "Setting the `fs_subscribe` parameter",
+      "description": "Setting the `fs_subscribe` parameter",
+      "code": "...\nmodparam(\"freeswitch\\_scripting\", \"fs\\_subscribe\", \":ClueCon@10.0.0.10?CHANNEL\\_STATE\")\nmodparam(\"freeswitch\\_scripting\", \"fs\\_subscribe\", \":ClueCon@10.0.0.11:8021?DTMF,BACKGROUND\\_JOB\")\n..."
+    },
+    {
+      "title": "`_freeswitch_esl()_` usage",
+      "description": "`_freeswitch_esl()_` usage",
+      "code": "...\n\t# ESL socket 10.0.0.10 is defined in the database (password \"ClueCon\")\n\t$var(rc) = freeswitch\\_esl(\"bgapi originate {origination\\_uuid=123456789}user/1010 9386\\\\njob-uuid: foobar\", \"10.0.0.10\", \"$var(response)\");\n\tif ($var(rc) < 0) {\n\t\txlog(\"failed to execute ESL command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n...\n\t# ESL socket 10.0.0.10 is new, we must specify a password\n\t$var(rc) = freeswitch\\_esl(\"bgapi originate {origination\\_uuid=123456789}user/1010 9386\\\\njob-uuid: foobar\", \":ClueCon@10.0.0.10\", $var(response));\n\tif ($var(rc) < 0) {\n\t\txlog(\"failed to execute ESL command ($var(rc))\\\\n\");\n\t\treturn -1;\n\t}\n..."
+    }
+  ]
+}

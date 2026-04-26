@@ -1,0 +1,29 @@
+{
+  "id": "module-db_perlvdb-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "db_perlvdb Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/db_perlvdb.html",
+  "content_markdown": "The Perl Virtual Database (VDB) provides a virtualization framework for OpenSIPS's database access. It does not handle a particular database engine itself but lets the user relay database requests to arbitrary Perl functions.\n\nThis module cannot be used \"out of the box\". The user has to supply functionality dedicated to the client module. See below for options.\n\nThe module can be used in all current OpenSIPS modules that need database access. Relaying of insert, update, query and delete operations is supported.\n\nModules can be configured to use the db\\_url\\_parameter:\n\nmodparam(\"acc\", \"db\\_url\", \"perlvdb:OpenSIPS::VDB::Adapter::AccountingSIPtrace\")\n\nThis configuration options tells acc module that it should use the db\\_perlvdb module which will in turn use the Perl class OpenSIPS::VDB::Adapter::AccountingSIPtrace to relay the database requests.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:02:13.119Z",
+  "module_name": "db_perlvdb",
+  "overview": "The Perl Virtual Database (VDB) provides a virtualization framework for OpenSIPS's database access. It does not handle a particular database engine itself but lets the user relay database requests to arbitrary Perl functions.\n\nThis module cannot be used \"out of the box\". The user has to supply functionality dedicated to the client module. See below for options.\n\nThe module can be used in all current OpenSIPS modules that need database access. Relaying of insert, update, query and delete operations is supported.\n\nModules can be configured to use the db\\_url\\_parameter:\n\nmodparam(\"acc\", \"db\\_url\", \"perlvdb:OpenSIPS::VDB::Adapter::AccountingSIPtrace\")\n\nThis configuration options tells acc module that it should use the db\\_perlvdb module which will in turn use the Perl class OpenSIPS::VDB::Adapter::AccountingSIPtrace to relay the database requests.",
+  "how_it_works": "OpenSIPS uses a database API for requests of numerous different types of data. Four primary operations are supported:\n\n*   query\n    \n*   insert\n    \n*   update\n    \n*   delete\n    \nThis module relays these database requests to user implemented Perl functions.\n\nA client module has to be configured to use the db\\_perlvdb module in conjunction with a Perl class to provide the functions. The configured class needs to inherit from the base class `OpenSIPS::VDB`.\n\nDerived classes have to implement the necessary functions \"query\", \"insert\", \"update\" and/or \"delete\". The client module specifies the necessary functions. To find out which functions are called from a module, its processes may be evaluated with the `OpenSIPS::VDB::Adapter::Describe` class which will log incoming requests (without actually providing any real functionality).\n\nWhile users can directly implement their desired functionality in a class derived from OpenSIPS::VDB, it is advisable to split the implementation into an Adapter that transforms the relational structured parameters into pure Perl function arguments, and add a virtual table (VTab) to provide the relaying to an underlying technology.",
+  "dependencies_required": [
+    {
+      "name": "perl",
+      "type": "module",
+      "reason": "Must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [],
+  "exported_functions": [],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": []
+}

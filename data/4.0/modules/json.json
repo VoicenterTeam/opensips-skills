@@ -1,0 +1,220 @@
+{
+  "id": "module-json-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "json Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/json.html",
+  "content_markdown": "This module introduces a new type of variable that provides both serialization and de-serialization from JSON format.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:30:09.433Z",
+  "module_name": "json",
+  "overview": "This module introduces a new type of variable that provides both serialization and de-serialization from JSON format.",
+  "how_it_works": "The variable provides ways to access objects and arrays to add,replace or delete values from the script.\nThe correct approach is to consider a json object as a hashtable ( you can put (key;value) pairs, and you can delete and get values by key) and a json array as an array ( you can append, delete and replace values).\nSince the JSON format can have objects inside other objects you can have multiple nested hashtables or arrays and you can access these using paths.",
+  "dependencies_required": [
+    {
+      "name": "libjson",
+      "type": "library",
+      "reason": "The libjson C library can be downloaded from: http://oss.metaparadigm.com/json-c/",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "enable_long_quoting",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Enable this parameter if your input JSONs contain signed integers which do not fit into 4 bytes (e.g. larger than 2147483647, etc.). If the parameter is enabled, 4-byte integers will continue to be returned as integers, while larger values will be returned as strings, in order to avoid the integer overflow.",
+      "example_value": "true",
+      "example_code": "...\nmodparam(\"json\", \"enable\\_long\\_quoting\", true)\n...\n# normalize the \"gateway\\_id\" int/string value to be always a string\n$var(gateway\\_id) = \"\" + $json(body/gateway\\_id);\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "json_link",
+      "signature": "json_link($json(dest_id), $json(source_id))",
+      "parameters": [
+        {
+          "name": "$json(dest_id)",
+          "type": "json",
+          "required": true,
+          "description": "Destination json object"
+        },
+        {
+          "name": "$json(source_id)",
+          "type": "json",
+          "required": true,
+          "description": "Source json object"
+        }
+      ],
+      "return_type": "",
+      "description": "This function can be used to link json objects together. This will work simillar to setting a value to an object, the only difference is that the second object is not copied, only a reference is created.\n\nChanges to any of the objects will be visible in both of them.\n\nYou can use this method either to create references so each time you access the field you don't have to go through the full path (for speed efficiency and shorter code), or if you have an object that must be added to many other objects and you don't want to copy it each time (space and speed efficiency).\n\nYou can think of this object exactly as a reference in an object-oriented language. Modifying fields referenced by the variable will cause modifications in all the objects, BUT modifying the variable itsef will not cause any changes to other objects.\n\nWARNING: You should be careful when using references. If you accidentally create a circular reference and try to get the value from the object you will crash OPENSIPS.",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$json(b) := \"[{},{}]\";\n\njson_link($json(stub), $json(b[0]));\n\n$json(stub/ana) = \"are\"; #add to the stub\n$json(stub/ar) := \"[]\";\n$json(stub/ar[]) = 1;\n$json(stub/ar[]) = 2;\n$json(stub/ar[]) = 3;\n\n$json(b[0]/ar[0]) = NULL; # delete from the original object\n\nxlog(\"\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n\");\n\n/*Output:\n\nTest link :\n{ \"ana\": \"are\", \"ar\": [ 2, 3 ] }\n[ { \"ana\": \"are\", \"ar\": [ 2, 3 ] }, { }, { } ]\n\n*/\n\n$json(stub) = NULL; #delete the stub, no change will happen to the source\n\n\nxlog(\"\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n\");\n\n/* Output:\n\nTest link :\n<null>\n[ { \"ana\": \"are\", \"ar\": [ 2, 3 ] }, { }, { } ]\n\n*/",
+          "description": "Creating a reference"
+        },
+        {
+          "language": "opensips",
+          "code": "$json(b) := \"[1]\";\n\n/* NEVER do this, it is meant only to show where problems might occur  */\njson_link($json(b[0]), $json(b)); # replace 1 with a reference to b\n\nxlog(\"\\nTest link :\\n$json(stub)\\n$json(b)\\n\\n\");\n\n/* this will cause OPENSIPS to crash because it will continuously try\n to get b, then b[0], then b ... */",
+          "description": "[LOGICAL ERROR] Creating a circular reference"
+        }
+      ]
+    },
+    {
+      "name": "json_merge",
+      "signature": "json_merge(main_json_var,patch_json_var,output_var))",
+      "parameters": [
+        {
+          "name": "main_json_var",
+          "type": "string",
+          "required": true,
+          "description": "Main json variable"
+        },
+        {
+          "name": "patch_json_var",
+          "type": "string",
+          "required": true,
+          "description": "Patch json variable"
+        },
+        {
+          "name": "output_var",
+          "type": "string",
+          "required": true,
+          "description": "Output variable"
+        }
+      ],
+      "return_type": "",
+      "description": "The function can be used to patch merge patch_json_var into main_json_var and the output will be populated into the output_var",
+      "usage_context": [],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "$json(val1) := \"{}\";\n$json(val1/test1) = \"test_val1\";\n$json(val1/common_val) = \"val_from1\";\n\n$json(val2) := \"{}\";\n$json(val2/test2) = \"test_val2\";\n$json(val1/common_val) = \"val_from2\";\n\njson_merge($json(val1),$json(val2),$var(merged_json));\nxlog(\"we merged and got $var(merged_json) \\n\");\n# will print : \n# we merged and got {\"test1\":\"test_val1\",\"common_val\":\"val_from2\",\"test2\":\"test_val2\"}",
+          "description": "Using json_merge"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$json(id)",
+      "type": "string, integer, object, array, boolean, null",
+      "readable": true,
+      "writable": true,
+      "scope": "process",
+      "description": "The `json` variable provides methods to access fields in json objects and indexes in json arrays.\n\n#### 1.4.1.1.�Variable lifetime\n\nThe json variables will be available to the process that created them from the moment they were initialized. They will not reset per message or per transaction. If you want to use the on a per message basis you should initialize them each time.\n\n#### 1.4.1.2.�Accessing the $json(id) variable\n\nThe grammar that describes the id is:\n\nid = name(identifier)*\n\nidentifier = key | index\n\nkey = /string | /$var\n\nindex = [integer] | [$var] | []\n\nThe \"[]\" index represents appending to the array. It should only be used when trying to set a value and not when trying to get one.\n\nNegative indexes can be used to access an array starting from the end. So \"[-1]\" signifies the last element.\n\nIMPORTANT: The id strictly complies to this grammar. You should be careful when using spaces because they will NOT be ignored. This was done to allow keys that contain spaces.\n\nVariables can be used as indexes or keys. Variables that will be used as indexes must contain integer values. Variables that will be used as keys should contain string values.\n\nTrying to get a value from a non-existing path (key or value) will return the NULL value and notice messages will be placed in the log describing the value of the json and the path used.\n\nTrying to replace or insert a value in a non-existing path will cause an error in setting the value and notice messages will be printed in the log describing the value of the json and the path used\n\n**Example�1.2.�Accessing the $json variable**\n\n...\n$json(obj1/key) = \"value\"; #replace or insert the (key,value)\n\t\t\t   #pair into the json object;\n\t\t\t   \n$json(matrix1[1][2]) = 1;  #replace the element at index 2 in the element\n\t\t\t   #at index 1 in an array\n\nxlog(\"$json(name/key1[0][-1]/key2)\"); # a more complex example\n\n...\n\n  \n\n**Example�1.3.�Iterating through an array using variables**\n\n...\n\n$json(ar1) := \"[1,2,3,4]\";\n\n$var(i) = 0;\n\nwhile( $json(ar1[$var(i)]) )\n{\n\n\t#print each value\n\txlog(\"Found:[$json(ar1[$var(i)])]\\n\");\n\n\t#increment each value\n\t$json(ar1[$var(i)])  = $json(ar1[$var(i)]) + 1 ;\n\n\t$var(i) = $var(i) + 1;\n\n}\n\n\n...\n\n  \n\n#### 1.4.1.3.�Traversal\n\nDynamic traversal of a JSON object or array is possible by using a for each statement, similarly to the indexed pseudo variables iteration. However, note that indexing the $json variable is not supported in any other statements (this refers to indexing the entire variable and not to the indexes accepted in the grammar of the _id_).\n\nIn order to explicitly iterate over a JSON object keys or values, you can use the _.keys_ or _.values_ suffix for the path specified in the _id_.\n\n**Example�1.4.�iteration over $json object keys**\n\n...\n$json(foo) := \"{\\\"a\\\": 1, \\\"b\\\": 2, \\\"c\\\": 3}\";\nfor ($var(k) in $(json(foo.keys)[*]))\n    xlog(\"$var(k) \");\n...\n\n  \n\n**Example�1.5.�iteration over $json object values**\n\n...\n$json(foo) := \"{\\\"a\\\": 1, \\\"b\\\": 2, \\\"c\\\": 3}\";\nfor ($var(v) in $(json(foo.values)[*]))\n    xlog(\"$var(v) \");\n\n# equivalent to:\n\n$json(foo) := \"{\\\"a\\\": 1, \\\"b\\\": 2, \\\"c\\\": 3}\";\nfor ($var(v) in $(json(foo)[*]))\n    xlog(\"$var(v) \");\n...\n\n  \n\n**Example�1.6.�iteration over $json array values**\n\n...\n$json(foo) := \"[1, 2, 3]\";\nfor ($var(v) in $(json(foo)[*]))\n    xlog(\"$var(v) \");\n...\n\n  \n\n#### 1.4.1.4.� Returned values from $json(id)\n\nIf the value specified by the id is an integer it will be returned as an integer value.\n\nIf the value specified by the id is a string it will be returned as a string.\n\nIf the value specified by the id is any other type of json ( null, boolean, object, array ) the serialized version of the object will be returned as a string value. Using this and the \":=\" operator you can duplicate json objects and put them in other json objects ( for string or integer you may use the \"=\" operator).\n\nIf the id does not exist a NULL value will be returned.\n\n#### 1.4.1.5.� Operators for the $json(id) variable\n\nThere are 2 operators available for this variable.\n\n##### 1.4.1.5.1.� The \"=\" operator\n\nThis will cause the value to be taken as is and be added to the json object ( e.g. string value or integer value ).\n\nSetting a value to NULL will cause it to be deleted.\n\n**Example�1.7.�Appending integers to arrays**\n\n...\n$json(array1[]) = 1;\n...\n\t\t\n  \n\n**Example�1.8.�Deleting the last element in an array**\n\n...\n$json(array1[-1]) = NULL;\n...\n\t\t\n  \n\n**Example�1.9.�Adding a string value to a json object**\n\n...\n$json(object1/some_key) = \"some_value\";\n...\n\t\t\n  \n\n##### 1.4.1.5.2.� The \":=\" operator\n\nThis will cause the value to be taken and interpreted as a json object ( e.g. this operator should be used to parse json inputs ).\n\n**Example�1.10.�Initializing an array**\n\n...\n$json(array1) := \"[]\";\n...\n\t\t\n  \n\n**Example�1.11.�Setting a boolean or null value**\n\n...\n$json(array1[]) := \"null\";\n$json(array1[]) := \"true\";\n$json(array1[]) := \"false\";\n...\n\t\t\n  \n\n**Example�1.12.�Adding a json to another json**\n\n...\n\n$json(array) := \"[1,2,3]\";\n$json(object) := \"{}\";\n$json(object/array) := $json(array) ;\n...\n\n  "
+    },
+    {
+      "name": "$json_pretty(id)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "process",
+      "description": "The `json_pretty` variable has the same purpose as the [$json](#pv_json \"1.4.1.�$json(id)\") variable, but prints the JSON object in a pretty format, adding spaces and tabs to make the output more readable."
+    },
+    {
+      "name": "$json_compact(id)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "process",
+      "description": "The `json_compact` variable has the same purpose as the [$json](#pv_json \"1.4.1.�$json(id)\") variable, but prints the JSON object in a more compact form, without formatting spaces."
+    },
+    {
+      "name": "$json_compact_noescape(id)",
+      "type": "string",
+      "readable": true,
+      "writable": false,
+      "scope": "process",
+      "description": "The `json_compact_noescape` variable has the same purpose as the [$json_compact](#pv_json_compact \"1.4.3.�$json_compact(id)\") variable, printing the JSON object in the compact form, but without escaping the slashes.\n\n_NOTICE:_ due to the libjson-c library limitations, this variable only skips the slashes escaping starting with version _0.13_ - older versions of the library make the variable behave just like the [$json_compact](#pv_json_compact \"1.4.3.�$json_compact(id)\") variable.\n\n**Example�1.13.�Difference between json_compact and json_compact_noescape**\n\n...\n$json(obj) := \"{}\";\n$json(obj/path) = \"/path/to/some/file\";\nxlog(\"The json is: $json_compact(obj)\\n\");\n# will print:\n# The json is: {\"path\":\"\\/path\\/to\\/some\\/file\"}\n\nxlog(\"The json no escape is: $json_compact_noescape(obj)\\n\");\n# will print:\n# The json no escape is: {\"path\":\"/path/to/some/file\"}\n..."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `enable_long_quoting` parameter",
+      "description": "Set `enable_long_quoting` parameter",
+      "code": "...\nmodparam(\"json\", \"enable\\_long\\_quoting\", true)\n...\n# normalize the \"gateway\\_id\" int/string value to be always a string\n$var(gateway\\_id) = \"\" + $json(body/gateway\\_id);\n..."
+    },
+    {
+      "title": "Accessing the $json variable",
+      "description": "Accessing the $json variable",
+      "code": "...\n$json(obj1/key) = \"value\"; #replace or insert the (key,value)\n\t\t\t   #pair into the json object;\n\t\t\t   \n$json(matrix1\\[1\\]\\[2\\]) = 1;  #replace the element at index 2 in the element\n\t\t\t   #at index 1 in an array\n\nxlog(\"$json(name/key1\\[0\\]\\[-1\\]/key2)\"); # a more complex example\n\n..."
+    },
+    {
+      "title": "Iterating through an array using variables",
+      "description": "Iterating through an array using variables",
+      "code": "...\n\n$json(ar1) := \"\\[1,2,3,4\\]\";\n\n$var(i) = 0;\n\nwhile( $json(ar1\\[$var(i)\\]) )\n{\n\n\t#print each value\n\txlog(\"Found:\\[$json(ar1\\[$var(i)\\])\\]\\n\");\n\n\t#increment each value\n\t$json(ar1\\[$var(i)\\])  = $json(ar1\\[$var(i)\\]) + 1 ;\n\n\t$var(i) = $var(i) + 1;\n\n}\n\n\n..."
+    },
+    {
+      "title": "iteration over $json object keys",
+      "description": "iteration over $json object keys",
+      "code": "...\n$json(foo) := \"{\\\\\"a\\\\\": 1, \\\\\"b\\\\\": 2, \\\\\"c\\\\\": 3}\";\nfor ($var(k) in $(json(foo.keys)\\[\\*\\]))\n    xlog(\"$var(k) \");\n..."
+    },
+    {
+      "title": "iteration over $json object values",
+      "description": "iteration over $json object values",
+      "code": "...\n$json(foo) := \"{\\\\\"a\\\\\": 1, \\\\\"b\\\\\": 2, \\\\\"c\\\\\": 3}\";\nfor ($var(v) in $(json(foo.values)\\[\\*\\]))\n    xlog(\"$var(v) \");\n\n# equivalent to:\n\n$json(foo) := \"{\\\\\"a\\\\\": 1, \\\\\"b\\\\\": 2, \\\\\"c\\\\\": 3}\";\nfor ($var(v) in $(json(foo)\\[\\*\\]))\n    xlog(\"$var(v) \");\n..."
+    },
+    {
+      "title": "iteration over $json array values",
+      "description": "iteration over $json array values",
+      "code": "...\n$json(foo) := \"\\[1, 2, 3\\]\";\nfor ($var(v) in $(json(foo)\\[\\*\\]))\n    xlog(\"$var(v) \");\n..."
+    },
+    {
+      "title": "Appending integers to arrays",
+      "description": "Appending integers to arrays",
+      "code": "...\n$json(array1\\[\\]) = 1;\n..."
+    },
+    {
+      "title": "Deleting the last element in an array",
+      "description": "Deleting the last element in an array",
+      "code": "...\n$json(array1\\[-1\\]) = NULL;\n..."
+    },
+    {
+      "title": "Adding a string value to a json object",
+      "description": "Adding a string value to a json object",
+      "code": "...\n$json(object1/some\\_key) = \"some\\_value\";\n..."
+    },
+    {
+      "title": "Initializing an array",
+      "description": "Initializing an array",
+      "code": "...\n$json(array1) := \"\\[\\]\";\n..."
+    },
+    {
+      "title": "Setting a boolean or null value",
+      "description": "Setting a boolean or null value",
+      "code": "...\n$json(array1\\[\\]) := \"null\";\n$json(array1\\[\\]) := \"true\";\n$json(array1\\[\\]) := \"false\";\n..."
+    },
+    {
+      "title": "Adding a json to another json",
+      "description": "Adding a json to another json",
+      "code": "...\n\n$json(array) := \"\\[1,2,3\\]\";\n$json(object) := \"{}\";\n$json(object/array) := $json(array) ;\n..."
+    },
+    {
+      "title": "Difference between json_compact and json_compact_noescape",
+      "description": "Difference between json_compact and json_compact_noescape",
+      "code": "...\n$json(obj) := \"{}\";\n$json(obj/path) = \"/path/to/some/file\";\nxlog(\"The json is: $json\\_compact(obj)\\n\");\n# will print:\n# The json is: {\"path\":\"\\\\/path\\\\/to\\\\/some\\\\/file\"}\n\nxlog(\"The json no escape is: $json\\_compact\\_noescape(obj)\\n\");\n# will print:\n# The json no escape is: {\"path\":\"/path/to/some/file\"}\n..."
+    },
+    {
+      "title": "Creating a reference",
+      "description": "Creating a reference",
+      "code": "...\n\n$json(b) := \"\\[{},{},{}\\]\";\n\njson\\_link($json(stub), $json(b\\[0\\]));\n\n$json(stub/ana) = \"are\"; #add to the stub\n$json(stub/ar) := \"\\[\\]\";\n$json(stub/ar\\[\\]) = 1;\n$json(stub/ar\\[\\]) = 2;\n$json(stub/ar\\[\\]) = 3;\n\n$json(b\\[0\\]/ar\\[0\\]) = NULL; # delete from the original object\n\nxlog(\"\\\\nTest link :\\\\n$json(stub)\\\\n$json(b)\\\\n\\\\n\");\n\n/*Output:\n\nTest link :\n{ \"ana\": \"are\", \"ar\": \\[ 2, 3 \\] }\n\\[ { \"ana\": \"are\", \"ar\": \\[ 2, 3 \\] }, { }, { } \\]\n\n*/\n\n$json(stub) = NULL; #delete the stub, no change will happen to the source\n\n\nxlog(\"\\\\nTest link :\\\\n$json(stub)\\\\n$json(b)\\\\n\\\\n\");\n\n/* Output:\n\nTest link :\n<null>\n\\[ { \"ana\": \"are\", \"ar\": \\[ 2, 3 \\] }, { }, { } \\]\n\n*/\n\n\n\n..."
+    },
+    {
+      "title": "[LOGICAL ERROR] Creating a circular reference",
+      "description": "[LOGICAL ERROR] Creating a circular reference",
+      "code": "...\n\n$json(b) := \"\\[1\\]\";\n\n/* NEVER do this, it is meant only to show where problems might occur  */\njson\\_link($json(b\\[0\\]), $json(b)); # replace 1 with a reference to b\n\nxlog(\"\\\\nTest link :\\\\n$json(stub)\\\\n$json(b)\\\\n\\\\n\");\n\n/* this will cause OPENSIPS to crash because it will continuously try\n to get b, then b\\[0\\], then b ... */\n\n\n..."
+    },
+    {
+      "title": "Using json_merge",
+      "description": "Using json_merge",
+      "code": "...\n\n$json(val1) := \"{}\";\n$json(val1/test1) = \"test\\_val1\";\n$json(val1/common\\_val) = \"val\\_from1\";\n\n$json(val2) := \"{}\";\n$json(val2/test2) = \"test\\_val2\";\n$json(val1/common\\_val) = \"val\\_from2\";\n\njson\\_merge($json(val1),$json(val2),$var(merged\\_json));\nxlog(\"we merged and got $var(merged\\_json) \\\\n\");\n# will print : \n# we merged and got {\"test1\":\"test\\_val1\",\"common\\_val\":\"val\\_from2\",\"test2\":\"test\\_val2\"} \n\t\t\t"
+    }
+  ]
+}

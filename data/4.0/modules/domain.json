@@ -1,0 +1,234 @@
+{
+  "id": "module-domain-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "domain Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/domain.html",
+  "content_markdown": "Domain module implements checks that based on domain table determine if a host part of an URI is “local” or not. A “local” domain is one that the proxy is responsible for.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:48:17.186Z",
+  "module_name": "domain",
+  "overview": "Domain module implements checks that based on domain table determine if a host part of an URI is “local” or not. A “local” domain is one that the proxy is responsible for.",
+  "how_it_works": "Domain module operates in caching or non-caching mode depending on value of module parameter _`db_mode`_. In caching mode domain module reads the contents of domain table into cache memory when the module is loaded. After that domain table is re-read only when module is given domain:reload MI command. Any changes in domain table must thus be followed by “domain:reload” command in order to reflect them in module behavior. In non-caching mode domain module always queries domain table in the database.\n\nCaching is implemented using a hash table. The size of the hash table is given by HASH_SIZE constant defined in domain_mod.h. Its “factory default” value is 128.",
+  "dependencies_required": [
+    {
+      "name": "database",
+      "type": "module",
+      "reason": "Any database module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "db_url",
+      "type": "string",
+      "default_value": "mysql://opensipsro:opensipsro@localhost/opensips",
+      "description": "This is URL of the database to be used.",
+      "example_code": "modparam(\"domain\", \"db\\_url\", \"mysql://ser:pass@db\\_host/ser\")"
+    },
+    {
+      "name": "db_mode",
+      "type": "integer",
+      "default_value": "0 (non-caching)",
+      "description": "Database mode: 0 means non-caching, 1 means caching.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_code": "modparam(\"domain\", \"db\\_mode\", 1)   # Use caching"
+    },
+    {
+      "name": "domain_table",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of table containing names of local domains that the proxy is responsible for. Local users must have in their sip uri a host part that is equal to one of these domains.",
+      "example_code": "modparam(\"domain\", \"domain\\_table\", \"new\\_name\")"
+    },
+    {
+      "name": "domain_col",
+      "type": "string",
+      "default_value": "domain",
+      "description": "Name of column containing domains in domain table.",
+      "example_code": "modparam(\"domain\", \"domain\\_col\", \"domain\\_name\")"
+    },
+    {
+      "name": "attrs_col",
+      "type": "string",
+      "default_value": "attrs",
+      "description": "Name of column containing attributes in domain table.",
+      "example_code": "modparam(\"domain\", \"attrs\\_col\", \"attributes\")"
+    },
+    {
+      "name": "subdomain_col",
+      "type": "string",
+      "default_value": "accept_subdomain",
+      "description": "Name of the \"accept_subdomain\" column in the domain table. A positive value for the column means the domain accepts subdomains. A 0 value means it does not.",
+      "example_code": "modparam(\"domain\", \"subdomain\\_col\", \"has\\_subdomain\")"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "is_from_local",
+      "signature": "is_from_local([attrs_var])",
+      "parameters": [
+        {
+          "name": "attrs_var",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable that will be populated with the attributes from the database"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "Checks based on domain table if host part of From header uri is one of the local domains that the proxy is responsible for. The argument is optional and if present it should contain a writable variable that will be populated with the attributes from the database.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_from_local()) {\n\t...\n};\n...\nif (is_from_local($var(attrs))) {\n\txlog(\"Domain attributes are $var(attrs)\\n\");\n\t...\n};\n...",
+          "description": "is_from_local usage"
+        }
+      ]
+    },
+    {
+      "name": "is_uri_host_local",
+      "signature": "is_uri_host_local([attrs_var])",
+      "parameters": [
+        {
+          "name": "attrs_var",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable that will be populated with the attributes from the database"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "If called from route or failure route block, checks based on domain table if host part of Request-URI is one of the local domains that the proxy is responsible for. If called from branch route, the test is made on host part of URI of first branch, which thus must have been appended to the transaction before is_uri_host_local() is called. The argument is optional and if present it should contain a writable variable that will be populated with the attributes from the database.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_uri_host_local()) {\n\t...\n};\n...\nif (is_uri_host_local($var(attrs))) {\n\txlog(\"Domain attributes are $var(attrs)\\n\");\n\t...\n};\n...",
+          "description": "is_uri_host_local usage"
+        }
+      ]
+    },
+    {
+      "name": "is_domain_local",
+      "signature": "is_domain_local(domain, [attrs_var])",
+      "parameters": [
+        {
+          "name": "domain",
+          "type": "string",
+          "required": true,
+          "description": "The domain contained in the first parameter"
+        },
+        {
+          "name": "attrs_var",
+          "type": "var",
+          "required": false,
+          "description": "a writable variable that will be populated with the attributes from the database"
+        }
+      ],
+      "return_type": "boolean",
+      "description": "This function checks if the domain contained in the first parameter is local. This function is a generalized form of the is_from_local() and is_uri_host_local() functions, being able to completely replace them and also extends them by allowing the domain to be taken from any of the above mentioned sources. The following equivalences exist: is_domain_local($rd) is same as is_uri_host_local(); is_domain_local($fd) is same as is_from_local().",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "BRANCH_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nif (is_domain_local($rd)) {\n\t...\n};\nif (is_domain_local($fd)) {\n\t...\n};\nif (is_domain_local($avp(some_avp_alias))) {\n\t...\n};\nif (is_domain_local($avp(850))) {\n\t...\n};\nif (is_domain_local($avp(some_avp))) {\n\t...\n};\nif (is_domain_local($avp(some_avp), $avp(attrs))) {\n\txlog(\"Domain attributes are $avp(attrs)\\n\");\n\t...\n};\n...",
+          "description": "is_domain_local usage"
+        }
+      ],
+      "related_functions": [
+        "is_from_local",
+        "is_uri_host_local"
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "domain:reload",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _domain\\_reload_. Causes domain module to re-read the contents of domain table into cache memory.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "\t\topensips-cli -x mi domain:reload",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    },
+    {
+      "name": "domain:dump",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _domain\\_dump_. Causes domain module to dump hash indexes and domain names in its cache memory.",
+      "examples": [
+        {
+          "language": "bash",
+          "code": "\t\topensips-cli -x mi domain:dump",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Setting db_url parameter",
+      "description": "Sets the URL of the database to be used.",
+      "code": "modparam(\"domain\", \"db\\_url\", \"mysql://ser:pass@db\\_host/ser\")"
+    },
+    {
+      "title": "db_mode example",
+      "description": "Sets the database mode to 1 (caching).",
+      "code": "modparam(\"domain\", \"db\\_mode\", 1)   # Use caching"
+    },
+    {
+      "title": "Setting domain_table parameter",
+      "description": "Sets the name of the table containing names of local domains.",
+      "code": "modparam(\"domain\", \"domain\\_table\", \"new\\_name\")"
+    },
+    {
+      "title": "Setting domain_col parameter",
+      "description": "Sets the name of the column containing domains in domain table.",
+      "code": "modparam(\"domain\", \"domain\\_col\", \"domain\\_name\")"
+    },
+    {
+      "title": "Setting attrs_col parameter",
+      "description": "Sets the name of the column containing attributes in domain table.",
+      "code": "modparam(\"domain\", \"attrs\\_col\", \"attributes\")"
+    },
+    {
+      "title": "Setting subdomain_col parameter",
+      "description": "Sets the name of the 'accept_subdomain' column in the domain table.",
+      "code": "modparam(\"domain\", \"subdomain\\_col\", \"has\\_subdomain\")"
+    },
+    {
+      "title": "is_from_local usage",
+      "description": "Checks based on domain table if host part of From header uri is one of the local domains.",
+      "code": "...\nif (is\\_from\\_local()) {\n\t...\n};\n...\nif (is\\_from\\_local($var(attrs))) {\n\txlog(\"Domain attributes are $var(attrs)\\\\n\");\n\t...\n};\n..."
+    },
+    {
+      "title": "is_uri_host_local usage",
+      "description": "Checks based on domain table if host part of Request-URI is one of the local domains.",
+      "code": "...\nif (is\\_uri\\_host\\_local()) {\n\t...\n};\n...\nif (is\\_uri\\_host\\_local($var(attrs))) {\n\txlog(\"Domain attributes are $var(attrs)\\\\n\");\n\t...\n};\n\t\t"
+    },
+    {
+      "title": "is_domain_local usage",
+      "description": "Checks if the domain contained in the first parameter is local.",
+      "code": "...\nif (is\\_domain\\_local($rd)) {\n\t...\n};\nif (is\\_domain\\_local($fd)) {\n\t...\n};\nif (is\\_domain\\_local($avp(some\\_avp\\_alias))) {\n\t...\n};\nif (is\\_domain\\_local($avp(850))) {\n\t...\n};\nif (is\\_domain\\_local($avp(some\\_avp))) {\n\t...\n};\nif (is\\_domain\\_local($avp(some\\_avp), $avp(attrs))) {\n\txlog(\"Domain attributes are $avp(attrs)\\\\n\");\n\t...\n};\n..."
+    }
+  ]
+}

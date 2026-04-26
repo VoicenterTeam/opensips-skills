@@ -1,0 +1,198 @@
+{
+  "id": "module-prometheus-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "prometheus Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/prometheus.html",
+  "content_markdown": "This module provides a HTTP interface for the [Prometheus](https://prometheus.io/) monitoring system, allowing it to fetch different statistics from OpenSIPS.\n\nIn order to use it, you have to explicitely define the statistics you want to provide by listing them in the [statistics](#param_statistics \"1.3.7.�statistics(string)\") parameter.\n\nCurrently only _counter_ and _gauge_ metrics types are supported by the module, and whether to choose one or the other for a specific statistic is dictated by the way that statistic was defined either internally, or explicitely through the _variable_ parameter of the _statistics_ module.\n\nEach exported statistic comes with a _group_ label that indicates the group it belongs to.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:46:39.858Z",
+  "module_name": "prometheus",
+  "overview": "This module provides a HTTP interface for the [Prometheus](https://prometheus.io/) monitoring system, allowing it to fetch different statistics from OpenSIPS.\n\nIn order to use it, you have to explicitely define the statistics you want to provide by listing them in the [statistics](#param_statistics \"1.3.7.�statistics(string)\") parameter.\n\nCurrently only _counter_ and _gauge_ metrics types are supported by the module, and whether to choose one or the other for a specific statistic is dictated by the way that statistic was defined either internally, or explicitely through the _variable_ parameter of the _statistics_ module.\n\nEach exported statistic comes with a _group_ label that indicates the group it belongs to.",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "httpd",
+      "type": "module",
+      "reason": "must be loaded before this module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "root",
+      "type": "string",
+      "default_value": "metrics",
+      "description": "Specifies the root metrics path Promethus uses to query the stats: http://[opensips_IP]:[opensips_httpd_port]/[root]",
+      "example_value": "prometheus",
+      "example_code": "modparam(\"prometheus\", \"root\", \"prometheus\")"
+    },
+    {
+      "name": "prefix",
+      "type": "string",
+      "default_value": "opensips",
+      "description": "Appends a prefix to each statistic exported.",
+      "example_value": "opensips_1",
+      "example_code": "modparam(\"prometheus\", \"prefix\", \"opensips\\_1\")"
+    },
+    {
+      "name": "group_prefix",
+      "type": "string",
+      "default_value": "",
+      "description": "Appends a prefix to the name of the group the statistic belongs to.",
+      "example_value": "opensips",
+      "example_code": "modparam(\"prometheus\", \"group\\_prefix\", \"opensips\")"
+    },
+    {
+      "name": "delimiter",
+      "type": "string",
+      "default_value": "_",
+      "description": "Specifies the delimiter to be used to separate prefix and group_prefix.",
+      "example_value": "-",
+      "example_code": "modparam(\"prometheus\", \"delimiter\", \"-\")"
+    },
+    {
+      "name": "group_label",
+      "type": "string",
+      "default_value": "group",
+      "description": "Specifies the label used to store the group when group_mode is 2.",
+      "example_value": "grp",
+      "example_code": "modparam(\"prometheus\", \"group\\_label\", \"grp\")"
+    },
+    {
+      "name": "group_mode",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Specifies how the group of the statistic should be provisioned to Prometheus. Available modes are: 0 - do not send the statistics groups. 1 - send the group in the name of the statstic. For example, timestamp statistic from the core group would be exported as opensips_core_timestamp. Note that the group_prefix is still attached to the group's name. 2 - send the group as a label of the statstic. The name of the label is specified by the group_label parameter.",
+      "possible_values": [
+        "0",
+        "1",
+        "2"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"prometheus\", \"group\\_mode\", 1)"
+    },
+    {
+      "name": "statistics",
+      "type": "string",
+      "default_value": "",
+      "description": "The statistics that are being exported by OpenSIPS, separated by space. The list can also contain statistics groups's names - to do that, you shall add a colon (:) at the end of the groups's name. If the all value is used, then the module will expose all available statistics - therefore any other settings of this parameter is useless; This parameter can be defined multiple times.",
+      "example_value": "active_dialogs load:",
+      "example_code": "modparam(\"prometheus\", \"statistics\", \"active\\_dialogs load:\")",
+      "notes": "This parameter can be defined multiple times."
+    },
+    {
+      "name": "labels",
+      "type": "string",
+      "default_value": "",
+      "description": "Rules that define how to convert the name of a statistic within a group to obtain the name and set of labels to be pushed in Prometheus. The format is group: regex, where group represents the group of statistics for whom the regular expression should be applied for, and regexp is a regular expression used to match the statistic's name and convert it to the desired name and labels. The regex format is /matching_expression/substitution_expression/flags. The substitution_expression resulted after the substituion should result in a string with the following format: name:labels, where name represents the name of the statistic as it will be pushed towards Prometheus, and labels the labels, expressed as key=value pairs separated by comma, as they are received by Prometheus. Note that the labels string resulted is concatenated to the other labeles as plain string - no other transformations are performed. If a statistic's name within the declared group does not match the regular, or the resulted format does not comply with the name:labels format, the statistics transformations are ignored and it shall be printed as a regular statistic, as if the rule was not even used. This parameter can be defined multiple times, even for a single group. However, if the statistic matches multiple regular expressions, only the first regular expression that matches is considered. The order they are checked is the order declared in the script.",
+      "example_value": "group: /^(.*)_(.*)$/\\1:gateway=\\\"\\2\\\"/",
+      "example_code": "modparam(\"prometheus\", \"labels\", \"group: /^(.*)_(.*)$/\\\\1:gateway=\\\\\"\\\\2\\\\\"/\")",
+      "notes": "This parameter can be defined multiple times."
+    },
+    {
+      "name": "script_route",
+      "type": "string",
+      "default_value": "",
+      "description": "Specifies the route name to be used to for adding custom prometheus information.",
+      "example_value": "my_custom_prometheus_route",
+      "example_code": "modparam(\"prometheus\", \"script\\_route\", \"my\\_custom\\_prometheus\\_route\")\nroute[my\\_custom\\_prometheus\\_route] {\n\t# \\* the returned JSON needs to contain an array of objects\n\t#   containing a header and a values field\n\t# \\* the header field to contain the custom prometheus stats header\n\t# \\* the values field is an array itself, of name/value objects\n\t#   used for individual stats publishing\n\treturn (1, '\\[{\n        \"header\": \"# TYPE opensips\\_total\\_cps gauge\",\n        \"values\": \\[\n            {\n                \"name\": \"opensips\\_total\\_cps\",\n                \"value\": 3\n            }\n        \\]\n    }, {\n        \"header\": \"# TYPE opensips\\_disabled\\_rtpengine gauge\",\n        \"values\": \\[\n            {\n                \"name\": \"opensips\\_disabled\\_rtpengine\",\n                \"value\": 0\n            }\n        \\]\n    }\\]');\n}"
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "prometheus_declare_stat",
+      "signature": "prometheus_declare_stat(name, [type], [help])",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "the name of the statistic"
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "default": "gauge",
+          "description": "the type of the statistic (i.e. counter or gauge). If missing the statistic is declared as gauge.",
+          "valid_values": [
+            "counter",
+            "gauge"
+          ]
+        },
+        {
+          "name": "help",
+          "type": "string",
+          "required": false,
+          "description": "an optional value used to describe the statistic meaning. If missing, it is not used."
+        }
+      ],
+      "return_type": "",
+      "description": "Declares a custom statistic exported to Prometheus server. It specifies its type and optionally a help string.",
+      "usage_context": [
+        "script_route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmodparam(\"prometheus\", \"script\\_route\", \"my\\_custom\\_prometheus\\_route\")\n...\nroute[my\\_custom\\_prometheus\\_route] {\n\t...\n\tprometheus\\_declare\\_stat(\"opensips\\_cps\");\n\tprometheus\\_push\\_stat(3);\n\t...\n}",
+          "description": "prometheus_declare_stat usage",
+          "context": "script_route"
+        }
+      ]
+    },
+    {
+      "name": "prometheus_push_stat",
+      "signature": "prometheus_push_stat(value, [label_name], [label_value])",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "integer",
+          "required": true,
+          "description": "the value of the statistic"
+        },
+        {
+          "name": "label_name",
+          "type": "string",
+          "required": false,
+          "description": "used to define labels for the pushed statistic. If the label_value parameter is missing, this parameter is appended to the name of the statisic - this means that it should contain the whole set of labels for the value (including curly brackets). If the label_value is provided as well, then the parameter should only contain one label's name."
+        },
+        {
+          "name": "label_value",
+          "type": "string",
+          "required": false,
+          "description": "the value that should be used for the label_name parameter label."
+        }
+      ],
+      "return_type": "",
+      "description": "Pushes a custom statistic value and optionally a set of labels to the Prometheus server.",
+      "usage_context": [
+        "script_route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\nmodparam(\"prometheus\", \"script\\_route\", \"my\\_custom\\_prometheus\\_route\")\n...\nroute[my\\_custom\\_prometheus\\_route] {\n\t...\n\tprometheus\\_declare\\_stat(\"opensips\\_cps\");\n\tprometheus\\_push\\_stat(3); # no label is being used\n\tprometheus\\_declare\\_stat(\"opensips\\_cc\");\n\t# the next two are equivalent\n\tprometheus\\_push\\_stat(10, \"{gateway=\\\"gw1\\\"}\"); # no label is being used\n\tprometheus\\_push\\_stat(10, \"gateway\", \"gw1\"); # same as the above\n\t...\n}",
+          "description": "prometheus_push_stat usage",
+          "context": "script_route"
+        }
+      ],
+      "related_functions": [
+        "prometheus_declare_stat"
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Example 1.12. Prometheus Scrape Config",
+      "description": "In order to have Prometheus query OpenSIPS for statistics, you need to tell him where to get statistics from. To do that, you should define a scarpe job in Prometheus's _scrape\\_configs_ config, indicating the IP and port you've configured the _httpd_ module to listen on (default: _0.0.0.0:8888_).",
+      "code": "scrape\\_configs:\n  - job\\_name: opensips\n\n    static\\_configs:\n    - targets: \\['localhost:8888'\\]"
+    }
+  ]
+}

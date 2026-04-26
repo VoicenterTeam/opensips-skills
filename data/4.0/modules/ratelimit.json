@@ -1,0 +1,547 @@
+{
+  "id": "module-ratelimit-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "ratelimit Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/ratelimit.html",
+  "content_markdown": "This module implements rate limiting for SIP requests. In contrast to the PIKE module this limits the flow based on a per SIP request type basis and not per source IP. The latest sources allow you to dynamically group several messages into some entities and limit the traffic based on them. The MI interface can be used to change tunables while running OpenSIPS.\n\nThis module is integrated with the OpenSIPS Key-Value Interface, providing support for distributed rate limiting using Redis or Memcached CacheDB backends. The internal limiting data will no longer be kept on each OpenSIPS instance. It will be stored in the distributed Key-Value database and queried by each instance before deciding if a SIP message should be blocked or not.\n\nTo achieve a distributed ratelimit feature, the module can also replicate its pipes counters to different OpenSIPS instances using the clusterer module. To do that, define the _pipe_replication_cluster_ parameter in your configuration script.\n\nStarting with OpenSIPS 3.2, choosing whether to replicate a pipe over CacheDB backends or bin replication is triggered by the flags specified when the pipe is created: adding the _/r_ suffix to the pipe's name will replicate through CacheDB, and adding _/b_ will replicate through bin/clusterer.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:58:40.489Z",
+  "module_name": "ratelimit",
+  "overview": "This module implements rate limiting for SIP requests. In contrast to the PIKE module this limits the flow based on a per SIP request type basis and not per source IP. The latest sources allow you to dynamically group several messages into some entities and limit the traffic based on them. The MI interface can be used to change tunables while running OpenSIPS.\n\nThis module is integrated with the OpenSIPS Key-Value Interface, providing support for distributed rate limiting using Redis or Memcached CacheDB backends. The internal limiting data will no longer be kept on each OpenSIPS instance. It will be stored in the distributed Key-Value database and queried by each instance before deciding if a SIP message should be blocked or not.\n\nTo achieve a distributed ratelimit feature, the module can also replicate its pipes counters to different OpenSIPS instances using the clusterer module. To do that, define the _pipe_replication_cluster_ parameter in your configuration script.\n\nStarting with OpenSIPS 3.2, choosing whether to replicate a pipe over CacheDB backends or bin replication is triggered by the flags specified when the pipe is created: adding the _/r_ suffix to the pipe's name will replicate through CacheDB, and adding _/b_ will replicate through bin/clusterer.",
+  "how_it_works": null,
+  "dependencies_required": null,
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "timer_interval",
+      "type": "integer",
+      "default_value": "10",
+      "description": "The timer interval in seconds when the Network and Feedback algorithms run their queries, and the other algorithms reset their counters.\n\nIMPORTANT: A too small value may lead to performance penalties due to timer process overloading.",
+      "example_value": "5",
+      "example_code": "modparam(\"ratelimit\", \"timer\\_interval\", 5)"
+    },
+    {
+      "name": "limit_per_interval",
+      "type": "integer",
+      "default_value": "0(limit per-second)",
+      "description": "This parameter configures the way that a pipe's limit is specified in the _rl\\_check_ function and only affects the Taildrop and RED algorithms. A value of 1 means that the limit is set per-_timer\\_interval_ while a value of 0 means per-second.",
+      "possible_values": [
+        "0",
+        "1"
+      ],
+      "example_value": "1",
+      "example_code": "modparam(\"ratelimit\", \"limit\\_per\\_interval\", 1)"
+    },
+    {
+      "name": "expire_time",
+      "type": "integer",
+      "default_value": "3600",
+      "description": "This parameter specifies how long a pipe should be kept in memory after it becomes idle (no more operations are performed on the pipe) until deleted.",
+      "example_value": "1800",
+      "example_code": "modparam(\"ratelimit\", \"expire\\_time\", 1800)"
+    },
+    {
+      "name": "hash_size",
+      "type": "integer",
+      "default_value": "1024",
+      "description": "The size of the hash table internally used to keep the pipes. A larger table is much faster but consumes more memory. The hash size must be a power of 2 number.",
+      "example_value": "512",
+      "example_code": "modparam(\"ratelimit\", \"hash\\_size\", 512)",
+      "notes": "The hash size must be a power of 2 number."
+    },
+    {
+      "name": "default_algorithm",
+      "type": "string",
+      "default_value": "\"TAILDROP\"",
+      "description": "Specifies which algorithm should be assumed in case it isn't explicitly specified in the _rl\\_check_ function.",
+      "example_value": "\"RED\"",
+      "example_code": "modparam(\"ratelimit\", \"default\\_algorithm\", \"RED\")"
+    },
+    {
+      "name": "cachedb_url",
+      "type": "string",
+      "default_value": "disabled",
+      "description": "Enables distributed rate limiting and specifies the backend that should be used by the CacheDB interface.",
+      "example_value": "redis://root:root@127.0.0.1/",
+      "example_code": "modparam(\"ratelimit\", \"cachedb\\_url\", \"redis://root:root@127.0.0.1/\")"
+    },
+    {
+      "name": "db_prefix",
+      "type": "string",
+      "default_value": "rl\\_pipe\\_",
+      "description": "Specifies what prefix should be added to the pipe name. This is only used when distributed rate limiting is enabled.",
+      "example_value": "ratelimit\\_",
+      "example_code": "modparam(\"ratelimit\", \"db\\_prefix\", \"ratelimit\\_\")"
+    },
+    {
+      "name": "repl_buffer_threshold",
+      "type": "string",
+      "default_value": "32767 bytes.",
+      "description": "Used to specify the length of the buffer used by the binary replication, in bytes, when a flush should be performed - the pipes gathered until then should be sent on the network. This is used to avoid using large amount of memory for pipes replication.",
+      "example_value": "500",
+      "example_code": "modparam(\"ratelimit\", \"repl\\_buffer\\_threshold\", 500)"
+    },
+    {
+      "name": "repl_timer_interval",
+      "type": "string",
+      "default_value": "200 ms.",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its counters to the other instances.",
+      "example_value": "100",
+      "example_code": "modparam(\"ratelimit\", \"repl\\_timer\\_interval\", 100)"
+    },
+    {
+      "name": "repl_timer_expire",
+      "type": "string",
+      "default_value": "10 s.",
+      "description": "Timer in seconds, used to specify when the counter received from a different instance should no longer be taken into account. This is used to prevent obsolete values, in case an instance stops replicating its counters.",
+      "example_value": "10",
+      "example_code": "modparam(\"ratelimit\", \"repl\\_timer\\_expire\", 10)"
+    },
+    {
+      "name": "pipe_replication_cluster",
+      "type": "integer",
+      "default_value": "0",
+      "description": "Specifies the cluster ID where pipes will be replicated to and received from.",
+      "example_value": "1",
+      "example_code": "modparam(\"ratelimit\", \"pipe\\_replication\\_cluster\", 1)"
+    },
+    {
+      "name": "bridge_replication",
+      "type": "boolean",
+      "default_value": "false",
+      "description": "Enable the cluster-bridge replication feature, if applicable (e.g. the current pipe_replication_cluster has at least one bridge definition to a foreign cluster).",
+      "example_value": "true",
+      "example_code": "modparam(\"ratelimit\", \"bridge\\_replication\", true)"
+    },
+    {
+      "name": "bridge_repl_timer_interval",
+      "type": "string",
+      "default_value": "500 ms",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its cluster-local counters to remote clusters, if bridged replication is in use, as long as it holds the required sharing tag(s).",
+      "example_value": "500",
+      "example_code": "modparam(\"ratelimit\", \"bridge\\_repl\\_timer\\_interval\", 500)"
+    },
+    {
+      "name": "bridge_repl_timer_expire",
+      "type": "string",
+      "default_value": "20 s",
+      "description": "Timer in seconds, used to specify when the counter received from a different cluster should no longer be taken into account. This is used to prevent obsolete values, in case an entire cluster (data center) is down and stops replicating its counters.",
+      "example_value": "20",
+      "example_code": "modparam(\"ratelimit\", \"bridge\\_repl\\_timer\\_expire\", 20)"
+    },
+    {
+      "name": "window_size",
+      "type": "int",
+      "default_value": "“10”",
+      "description": "How long the history in SBT should be in seconds.",
+      "example_value": "5",
+      "example_code": "modparam(\"ratelimit\", \"window\\_size\", 5)"
+    },
+    {
+      "name": "slot_period",
+      "type": "integer",
+      "default_value": "200",
+      "description": "Value of one slot in milliseconds. This parameter determines how granular the algorithm should be. The number of slots will be determined by window\\_size/slot\\_period.",
+      "example_value": "100",
+      "example_code": "...\nmodparam(\"ratelimit\", \"window\\_size\", 5)\n#we will have 50 slots of 100 milliseconds\nmodparam(\"ratelimit\", \"slot\\_period\", 100)\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "rl_check",
+      "signature": "rl_check(name, limit[, algorithm])",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "this is the name that identifies the pipe which should be checked. One can also specify the _/s_ suffix to indicate the pipe should be replicated over cached, or _/b_ to replicate over bin/clusterer interface."
+        },
+        {
+          "name": "limit",
+          "type": "int",
+          "required": true,
+          "description": "this specifies the threshold limit of the pipe. It is strongly related to the algorithm used. Note that the limit should be specified as per-second, not per-timer_interval."
+        },
+        {
+          "name": "algorithm",
+          "type": "string",
+          "required": false,
+          "description": "this parameter reffers to the algorithm used to check the pipe. If it is not set, the default value is used."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "error code",
+          "condition": "if the limit for the matched pipe is reached"
+        }
+      ],
+      "description": "Check the current request against the pipe identified by name and changes/updates the limit. If no pipe is found, then a new one is created with the specified limit and algorithm, if specified. If the algorithm parameter doesn't exist, the default one is used.\n\nNOTE: A pipe's algorithm cannot be dynamically changed. Only the one specified when the pipe was created will be considered.\n\nNOTE: This function increments the pipe's counter every time it is called, even if the call should be declined. Therefore If you are using ratelimit to limit only successful traffic, you need to explicitely decrease the counter for the declined calls using the _rl_dec_count()_ function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "ERROR_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\t# perform a pipe match for all INVITE methods using RED algorithm\n\tif (is_method(\"INVITE\")) {\n\t\tif (!rl_check(\"pipe_INVITE\", 100, \"RED\")) {\n\t\t\tsl_send_reply(503, \"Server Unavailable\");\n\t\t\texit;\n\t\t};\n\t};\n...\n\t# use default algorithm for each different gateway\n\t$var(limit) = 10;\n\tif (!rl_check(\"gw_$ru\", $var(limit))) {\n\t\tsl_send_reply(503, \"Server Unavailable\");\n\t\texit;\n\t};\n...\n\t# count only successful calls\n\tif (!rl_check(\"gw_$ru\", 100)) {\n\t\trl_dec_count(\"gw_$ru\");\n\t\tsl_send_reply(503, \"Server Unavailable\");\n\t\texit;\n\t};\n...",
+          "description": "Example 1.17. `rl_check` usage"
+        }
+      ],
+      "related_functions": [
+        "rl_dec_count"
+      ]
+    },
+    {
+      "name": "rl_dec_count",
+      "signature": "rl_dec_count(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "identifies the name of the pipe."
+        }
+      ],
+      "return_type": "",
+      "description": "This function decreases a counter that could have been previously increased by _rl_check_ function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "ERROR_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif (!rl_check(\"gw_$ru\", 100, \"TAILDROP\")) {\n\t\texit;\n\t} else {\n\t\trl_dec_count(\"gw_$ru\");\n\t};\n...",
+          "description": "Example 1.18. `rl_dec_count` usage"
+        }
+      ],
+      "related_functions": [
+        "rl_check"
+      ]
+    },
+    {
+      "name": "rl_reset_count",
+      "signature": "rl_reset_count(name)",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "identifies the name of the pipe."
+        }
+      ],
+      "return_type": "",
+      "description": "This function resets a counter that could have been previously increased by _rl_check_ function.",
+      "usage_context": [
+        "REQUEST_ROUTE",
+        "FAILURE_ROUTE",
+        "ONREPLY_ROUTE",
+        "BRANCH_ROUTE",
+        "ERROR_ROUTE",
+        "LOCAL_ROUTE",
+        "TIMER_ROUTE",
+        "EVENT_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\tif (!rl_check(\"gw_$ru\", 100, \"TAILDROP\")) {\n\t\texit;\n\t} else {\n\t\trl_reset_count(\"gw_$ru\");\n\t};\n...",
+          "description": "Example 1.19. `rl_reset_count` usage"
+        }
+      ],
+      "related_functions": [
+        "rl_check"
+      ]
+    },
+    {
+      "name": "rl_values",
+      "signature": "rl_values(ret_avp, regexp)",
+      "parameters": [
+        {
+          "name": "ret_avp",
+          "type": "string",
+          "required": true,
+          "description": "an AVP where the pipes' names will be stored."
+        },
+        {
+          "name": "regexp",
+          "type": "regex",
+          "required": false,
+          "description": "a regular expression used to filter the names of the pipes. If missing, all the pipes are returned."
+        }
+      ],
+      "return_type": "",
+      "description": "Returns all the available pipes' names in the _ret_avp_ output variable.",
+      "usage_context": [
+        "any route"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "...\n\trl_values($avp(values));\n\tfor ($var(pipe) in $(avp(values)[*]))\n\t\txlog(\"RATELIMIT: $var(pipe): $rl_count($var(pipe))\\n\");\n...",
+          "description": "Example 1.20. `rl_values` usage"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [
+    {
+      "name": "ratelimit:list",
+      "parameters": [
+        {
+          "name": "pipe",
+          "type": "string",
+          "required": false,
+          "description": "indicates the name of the single pipe to be listed."
+        },
+        {
+          "name": "filter",
+          "type": "string",
+          "required": false,
+          "description": "a pattern used to filter the active pipes to be listed. The filter is a shell wildcard pattern (see glob(7))."
+        },
+        {
+          "name": "filter_out",
+          "type": "string",
+          "required": false,
+          "description": "a pattern used to filter out the active pipes NOT to be listed. The filter is a shell wildcard pattern (see glob(7))."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _rl_list_.\n\nLists the parameters and variabiles in the ratelimit module.\n\nNote that you cannot combine multiple paramters when calling this function. If using parameters, only one is accepted.\n\nIf no parameter are passed to the function, all the active pipes are listed.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:list pipe=gw\\_10.0.0.1",
+          "description": ""
+        },
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:list filter=gw\\_*",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ratelimit:dump_pipe",
+      "parameters": [
+        {
+          "name": "pipe",
+          "type": "string",
+          "required": true,
+          "description": "indicates the name of the pipe."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _rl_dump_pipe_.\n\nExposes all the details about the current runtime data (specific to the pipe's algorithm) of a pipe. Currently make sense for SBT.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:dump\\_pipe gw\\_10.0.0.1",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ratelimit:reset_pipe",
+      "parameters": [
+        {
+          "name": "pipe",
+          "type": "string",
+          "required": true,
+          "description": "indicates the name of the pipe whose counter should be reset."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _rl_reset_pipe_.\n\nResets the counter of a specified pipe.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:reset\\_pipe gw\\_10.0.0.1",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ratelimit:set_pid",
+      "parameters": [
+        {
+          "name": "ki",
+          "type": "number",
+          "required": true,
+          "description": "the integral parameter."
+        },
+        {
+          "name": "kp",
+          "type": "number",
+          "required": true,
+          "description": "the proportional parameter."
+        },
+        {
+          "name": "kd",
+          "type": "number",
+          "required": true,
+          "description": "the derivative parameter."
+        }
+      ],
+      "description": "Replaces obsolete MI command: _rl_set_pid_.\n\nSets the PID Controller parameters for the Feedback Algorithm.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:set\\_pid 0.5 0.5 0.5",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "ratelimit:get_pid",
+      "parameters": [],
+      "description": "Replaces obsolete MI command: _rl_get_pid_.\n\nGets the list of in use PID Controller parameters.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi ratelimit:get\\_pid",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "name": "rl_bin_status",
+      "parameters": [],
+      "description": "Dumps each destination used for replication, as well as the timestamp of the last message received from them.",
+      "examples": [
+        {
+          "language": "opensips-cli",
+          "code": "\t\topensips-cli -x mi rl\\_bin\\_status",
+          "description": ""
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [
+    {
+      "name": "$rl_count(name)",
+      "type": "integer",
+      "readable": true,
+      "writable": false,
+      "scope": "",
+      "description": "Returns the counter of a pipe. The variable is read-only.\n\nNULL will be returned if the pipe does not exist."
+    }
+  ],
+  "configuration_examples": [
+    {
+      "title": "Set `timer_interval` parameter",
+      "description": "The timer interval in seconds when the Network and Feedback algorithms run their queries, and the other algorithms reset their counters.",
+      "code": "...\nmodparam(\"ratelimit\", \"timer\\_interval\", 5)\n..."
+    },
+    {
+      "title": "Set `limit_per_interval` parameter",
+      "description": "This parameter configures the way that a pipe's limit is specified in the _rl\\_check_ function and only affects the Taildrop and RED algorithms. A value of 1 means that the limit is set per-_timer\\_interval_ while a value of 0 means per-second.",
+      "code": "...\nmodparam(\"ratelimit\", \"limit\\_per\\_interval\", 1)\n..."
+    },
+    {
+      "title": "Set `expire_time` parameter",
+      "description": "This parameter specifies how long a pipe should be kept in memory after it becomes idle (no more operations are performed on the pipe) until deleted.",
+      "code": "...\nmodparam(\"ratelimit\", \"expire\\_time\", 1800)\n..."
+    },
+    {
+      "title": "Set `hash_size` parameter",
+      "description": "The size of the hash table internally used to keep the pipes. A larger table is much faster but consumes more memory. The hash size must be a power of 2 number.",
+      "code": "...\nmodparam(\"ratelimit\", \"hash\\_size\", 512)\n..."
+    },
+    {
+      "title": "Set `default_algorithm` parameter",
+      "description": "Specifies which algorithm should be assumed in case it isn't explicitly specified in the _rl\\_check_ function.",
+      "code": "...\nmodparam(\"ratelimit\", \"default\\_algorithm\", \"RED\")\n..."
+    },
+    {
+      "title": "Set `cachedb_url` parameter",
+      "description": "Enables distributed rate limiting and specifies the backend that should be used by the CacheDB interface.",
+      "code": "...\nmodparam(\"ratelimit\", \"cachedb\\_url\", \"redis://root:root@127.0.0.1/\")\n..."
+    },
+    {
+      "title": "Set `db_prefix` parameter",
+      "description": "Specifies what prefix should be added to the pipe name. This is only used when distributed rate limiting is enabled.",
+      "code": "...\nmodparam(\"ratelimit\", \"db\\_prefix\", \"ratelimit\\_\")\n..."
+    },
+    {
+      "title": "Set `repl_buffer_threshold` parameter",
+      "description": "Used to specify the length of the buffer used by the binary replication, in bytes, when a flush should be performed - the pipes gathered until then should be sent on the network. This is used to avoid using large amount of memory for pipes replication.",
+      "code": "...\nmodparam(\"ratelimit\", \"repl\\_buffer\\_threshold\", 500)\n..."
+    },
+    {
+      "title": "Set `repl_timer_interval` parameter",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its counters to the other instances.",
+      "code": "...\nmodparam(\"ratelimit\", \"repl\\_timer\\_interval\", 100)\n..."
+    },
+    {
+      "title": "Set `repl_timer_expire` parameter",
+      "description": "Timer in seconds, used to specify when the counter received from a different instance should no longer be taken into account. This is used to prevent obsolete values, in case an instance stops replicating its counters.",
+      "code": "...\nmodparam(\"ratelimit\", \"repl\\_timer\\_expire\", 10)\n..."
+    },
+    {
+      "title": "Set `pipe_replication_cluster` parameter",
+      "description": "Specifies the cluster ID where pipes will be replicated to and received from.",
+      "code": "...\nmodparam(\"ratelimit\", \"pipe\\_replication\\_cluster\", 1)\n..."
+    },
+    {
+      "title": "Set `bridge_replication` parameter",
+      "description": "Enable the [cluster-bridge replication](clusterer#bridge_replication) feature, if applicable (e.g. the current [pipe\\_replication\\_cluster](#param_pipe_replication_cluster \"1.7.11.�pipe_replication_cluster (integer)\") has at least one bridge definition to a foreign cluster).",
+      "code": "...\nmodparam(\"ratelimit\", \"bridge\\_replication\", true)\n..."
+    },
+    {
+      "title": "Set `bridge_repl_timer_interval` parameter",
+      "description": "Timer in milliseconds, used to specify how often the module should replicate its cluster-local counters to remote clusters, if [bridged replication](clusterer#bridge_replication) is in use, as long as it holds the required sharing tag(s).",
+      "code": "...\nmodparam(\"ratelimit\", \"bridge\\_repl\\_timer\\_interval\", 500)\n..."
+    },
+    {
+      "title": "Set `bridge_repl_timer_expire` parameter",
+      "description": "Timer in seconds, used to specify when the counter received from a different cluster should no longer be taken into account. This is used to prevent obsolete values, in case an entire cluster (data center) is down and stops replicating its counters.",
+      "code": "...\nmodparam(\"ratelimit\", \"bridge\\_repl\\_timer\\_expire\", 20)\n..."
+    },
+    {
+      "title": "Set `window_size` parameter",
+      "description": "How long the history in SBT should be in seconds.",
+      "code": "...\nmodparam(\"ratelimit\", \"window\\_size\", 5)\n..."
+    },
+    {
+      "title": "Set `slot_period` parameter",
+      "description": "Value of one slot in milliseconds. This parameter determines how granular the algorithm should be. The number of slots will be determined by window\\_size/slot\\_period.",
+      "code": "...\nmodparam(\"ratelimit\", \"window\\_size\", 5)\n#we will have 50 slots of 100 milliseconds\nmodparam(\"ratelimit\", \"slot\\_period\", 100)\n..."
+    },
+    {
+      "title": "`rl_check` usage",
+      "description": "Check the current request against the pipe identified by name and changes/updates the limit. If no pipe is found, then a new one is created with the specified limit and algorithm, if specified. If the algorithm parameter doesn't exist, the default one is used.",
+      "code": "...\n\t# perform a pipe match for all INVITE methods using RED algorithm\n\tif (is\\_method(\"INVITE\")) {\n\t\tif (!rl\\_check(\"pipe\\_INVITE\", 100, \"RED\")) {\n\t\t\tsl\\_send\\reply(503, \"Server Unavailable\");\n\t\t\texit;\n\t\t};\n\t};\n...\n\t# use default algorithm for each different gateway\n\t$var(limit) = 10;\n\tif (!rl\\_check(\"gw\\_$ru\", $var(limit))) {\n\t\tsl\\_send\\reply(503, \"Server Unavailable\");\n\t\texit;\n\t};\n...\n\t# count only successful calls\n\tif (!rl\\_check(\"gw\\_$ru\", 100)) {\n\t\trl\\_dec\\_count(\"gw\\_$ru\");\n\t\tsl\\_send\\reply(503, \"Server Unavailable\");\n\t\texit;\n\t};\n..."
+    },
+    {
+      "title": "`rl_dec_count` usage",
+      "description": "This function decreases a counter that could have been previously increased by _rl\\_check_ function.",
+      "code": "...\n\tif (!rl\\_check(\"gw\\_$ru\", 100, \"TAILDROP\")) {\n\t\texit;\n\t} else {\n\t\trl\\_dec\\_count(\"gw\\_$ru\");\n\t};\n..."
+    },
+    {
+      "title": "`rl_reset_count` usage",
+      "description": "This function resets a counter that could have been previously increased by _rl\\_check_ function.",
+      "code": "...\n\tif (!rl\\_check(\"gw\\_$ru\", 100, \"TAILDROP\")) {\n\t\texit;\n\t} else {\n\t\trl\\_reset\\_count(\"gw\\_$ru\");\n\t};\n..."
+    },
+    {
+      "title": "`rl_values` usage",
+      "description": "Returns all the available pipes' names in the _ret\\_avp_ output variable.",
+      "code": "...\n\trl\\_values($avp(values));\n\tfor ($var(pipe) in $(avp(values)\\[\\*\\]))\n\t\txlog(\"RATELIMIT: $var(pipe): $rl\\_count($var(pipe))\\\\n\");\n..."
+    }
+  ]
+}

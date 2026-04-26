@@ -1,0 +1,142 @@
+{
+  "id": "module-proto_msrp-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "proto_msrp Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/proto_msrp.html",
+  "content_markdown": "The **proto\\_msrp** module provides the MSRP protocol stack, meaning the network read/wite (plain and TLS), message parsing and assembling, transactional layer and the basic signalling operations.\n\nOnce loaded, you will be able to define MSRP listeners in your script, by adding its IP, and optionally the listening port, in your configuration file, similar to this example:\n\n...\nsocket=msrp:127.0.0.1:65432\nsocket=msrps:127.0.0.1:65431\n...",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T15:58:19.381Z",
+  "module_name": "proto_msrp",
+  "overview": "The **proto\\_msrp** module provides the MSRP protocol stack, meaning the network read/wite (plain and TLS), message parsing and assembling, transactional layer and the basic signalling operations.\n\nOnce loaded, you will be able to define MSRP listeners in your script, by adding its IP, and optionally the listening port, in your configuration file, similar to this example:\n\n...\nsocket=msrp:127.0.0.1:65432\nsocket=msrps:127.0.0.1:65431\n...",
+  "how_it_works": null,
+  "dependencies_required": [
+    {
+      "name": "tls_mgm",
+      "type": "module",
+      "reason": "you need to load this module if using MSRPS (secure) sockets. Via this module you will manage the SSL certificates",
+      "optional": true
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "send_timeout",
+      "type": "integer",
+      "default_value": "100 ms",
+      "description": "Time in milliseconds after a MSRP connection will be closed if it is not available for blocking writing in this interval (and OpenSIPS wants to send something on it).",
+      "example_value": "200",
+      "example_code": "modparam(\"proto\\_msrp\", \"send\\_timeout\", 200)"
+    },
+    {
+      "name": "max_msg_chunks",
+      "type": "integer",
+      "default_value": "4",
+      "description": "The maximum number of chunks that a SIP message is expected to arrive via MSRP. If a packet is received more fragmented than this, the connection is dropped (either the connection is very overloaded and this leads to high fragmentation - or we are the victim of an ongoing attack where the attacker is sending the traffic very fragmented in order to decrease our performance).",
+      "example_value": "8",
+      "example_code": "modparam(\"proto\\_msrp\", \"max\\_msg\\_chunks\", 8)"
+    },
+    {
+      "name": "tls_handshake_timeout",
+      "type": "integer",
+      "default_value": "100",
+      "description": "Sets the timeout (in milliseconds) for the SSL handshake sequence to complete. It may be necessary to increase this value when using a CPU intensive cipher for the connection to allow time for keys to be generated and processed.\n\nThe timeout is invoked during acceptance of a new connection (inbound) and during the wait period when a new session is being initiated (outbound).",
+      "example_value": "200",
+      "example_code": "param(\"proto\\_msrp\", \"tls\\_handshake\\_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "name": "cert_check_on_conn_reusage",
+      "type": "integer",
+      "default_value": "0 (disabled).",
+      "description": "This parameter turns on or off the extra checking/matching of the TLS domain (SSL certificate) when comes to reusing an existing TLS connection. Without this extra check, only IP and port of the connections will be check (in order to re-use an existing connection). With this extra check, the connection to be reused must have the same SSL certificate as the one set for the current signaling operation.\n\nThis checking is done only when comes to send SIP traffic via TLS and it is applied only against connections that were created / initiated by OpenSIPS (as TLS client). Any accepte connection (as TLS server) will automatically match (the extra test will be skipped).",
+      "example_value": "1",
+      "example_code": "modparam(\"proto\\_msrp\", \"cert\\_check\\_on\\_conn\\_reusage\", 1)"
+    },
+    {
+      "name": "trace_destination",
+      "type": "string",
+      "default_value": "none(not defined).",
+      "description": "Trace destination as defined in the tracing module. Currently the only tracing module is **proto\\_hep**. Network events such as connect, accept and connection closed events shall be traced along with errors that could appear in the process.\n\n**WARNING:** A tracing module must be loaded in order for this parameter to work. (for example **proto\\_hep**).",
+      "example_value": "hep\\_dest",
+      "example_code": "modparam(\"proto\\_hep\", \"hep\\_id\", \"\\[hep\\_dest\\]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto\\_msrp\", \"trace\\_destination\", \"hep\\_dest\")"
+    },
+    {
+      "name": "trace_on",
+      "type": "int",
+      "default_value": "0(tracing inactive).",
+      "description": "This controls whether tracing for MSRP is on or not. You still need to define [Section 1.3.5, “`trace_destination` (string)”](#trace-destination \"1.3.5.�trace_destination (string)\")in order to work, but this value will be controlled using MI function [???](#).",
+      "example_value": "1",
+      "example_code": "modparam(\"proto\\_msrp\", \"trace\\_on\", 1)"
+    },
+    {
+      "name": "trace_filter_route",
+      "type": "string",
+      "default_value": "none(no route is set).",
+      "description": "Define the name of a route in which you can filter which connections will be trace and which connections won't be. In this route you will have information regarding source and destination ips and ports for the current connection. To disable tracing for a specific connection the last call in this route must be **drop**, any other exit mode resulting in tracing the current connection ( of course you still have to define a [Section 1.3.5, “`trace_destination` (string)”](#trace-destination \"1.3.5.�trace_destination (string)\") and trace must be on at the time this connection is opened.\n\n**IMPORTANT** Filtering on ip addresses and ports can be made using **$si** and **$sp** for matching either the entity that is connecting to OpenSIPS or the entity to which OpenSIPS is connecting. The name might be misleading ( **$si** meaning the source ip if you read the docs) but in reality it is simply the socket other than the OpenSIPS socket. In order to match OpenSIPS interface (either the one that accepted the connection or the one that initiated a connection) **$socket\\_in(ip)** (ip) and **$socket\\_in(port)** (port) can be used.\n\n**WARNING:** IF [Section 1.3.6, “`trace_on` (int)”](#trace-on \"1.3.6.�trace_on (int)\") is set to 0 or tracing is deactived via the mi command [???](#) this route won't be called.",
+      "example_value": "msrp\\_filter",
+      "example_code": "modparam(\"proto\\_msrp\", \"trace\\_filter\\_route\", \"msrp\\_filter\")\n...\n/* all MSRP connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[msrp\\_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket\\_in(ip) == \"1.1.1.10\"  && $socket\\_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}"
+    }
+  ],
+  "exported_functions": [],
+  "exported_mi_functions": [
+    {
+      "name": "msrp:trace",
+      "parameters": [
+        {
+          "name": "trace_mode",
+          "type": "string",
+          "required": false,
+          "description": "set MSRP tracing on and off. This parameter can be missing and the command will show the current tracing status for this module( on or off ); Possible values: on, off"
+        }
+      ],
+      "description": "Replaces obsolete MI command: _msrp\\_trace_.",
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "\t\t\t\t:msrp:trace:_reply_fifo_file_\n\t\t\t\ttrace_mode\n\t\t\t\t_empty_line_",
+          "description": "MI FIFO Command Format"
+        }
+      ]
+    }
+  ],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `send_timeout` parameter",
+      "description": "Sets the send_timeout parameter to 200 ms.",
+      "code": "...\nmodparam(\"proto_msrp\", \"send_timeout\", 200)\n..."
+    },
+    {
+      "title": "Set `max_msg_chunks` parameter",
+      "description": "Sets the max_msg_chunks parameter to 8.",
+      "code": "...\nmodparam(\"proto_msrp\", \"max_msg_chunks\", 8)\n..."
+    },
+    {
+      "title": "Set `tls_handshake_timeout` variable",
+      "description": "Sets the tls_handshake_timeout variable to 200 milliseconds.",
+      "code": "param(\"proto_msrp\", \"tls_handshake_timeout\", 200) # number of milliseconds"
+    },
+    {
+      "title": "Set `cert_check_on_conn_reusage` parameter",
+      "description": "Enables the cert_check_on_conn_reusage parameter.",
+      "code": "...\nmodparam(\"proto_msrp\", \"cert_check_on_conn_reusage\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_destination` parameter",
+      "description": "Sets the trace_destination parameter to 'hep_dest'.",
+      "code": "...\nmodparam(\"proto_hep\", \"hep_id\", \"[hep_dest]10.0.0.2;transport=tcp;version=3\")\n\nmodparam(\"proto_msrp\", \"trace_destination\", \"hep_dest\")\n..."
+    },
+    {
+      "title": "Set `trace_on` parameter",
+      "description": "Enables tracing by setting trace_on to 1.",
+      "code": "...\nmodparam(\"proto_msrp\", \"trace_on\", 1)\n..."
+    },
+    {
+      "title": "Set `trace_filter_route` parameter",
+      "description": "Sets the trace_filter_route parameter to 'msrp_filter'.",
+      "code": "...\nmodparam(\"proto_msrp\", \"trace_filter_route\", \"msrp_filter\")\n...\n/* all MSRP connections will go through this route if tracing is activated\n * and a trace destination is defined */\nroute[msrp_filter] {\n\t...\n\t/* all connections opened from/by ip 1.1.1.1:8000 will be traced\n\t   on interface 1.1.1.10:5060(opensips listener)\n\t   all the other connections won't be */\n\t if ( $si == \"1.1.1.1\" && $sp == 8000 &&\n\t\t$socket_in(ip) == \"1.1.1.10\"  && $socket_in(port) == 5060)\n\t\texit;\n\telse\n\t\tdrop;\n}\n..."
+    }
+  ]
+}

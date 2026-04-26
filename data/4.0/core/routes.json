@@ -1,0 +1,166 @@
+{
+  "id": "route_type-script-routes-4.0",
+  "document_type": "route_type",
+  "version": "4.0",
+  "title": "Types of routes - 4.0",
+  "url": "https://www.opensips.org/Documentation/Script-Routes-4-0",
+  "content_markdown": "Pages for other versions: [devel](https://www.opensips.org/Documentation/Script-Routes-4-1 \"Types of routes - 4.1\") 4.0 [3.6](https://www.opensips.org/Documentation/Script-Routes-3-6 \"Types of routes - 3.6\") [3.4](https://www.opensips.org/Documentation/Script-Routes-3-4 \"Types of routes - 3.4\") Older versions: [3.5](https://www.opensips.org/Documentation/Script-Routes-3-5 \"Types of routes - 3.5\") [3.3](https://www.opensips.org/Documentation/Script-Routes-3-3 \"Types of routes - 3.3\") [3.2](https://www.opensips.org/Documentation/Script-Routes-3-2 \"Types of routes - 3.2\") [3.1](https://www.opensips.org/Documentation/Script-Routes-3-1 \"Types of routes - 3.1\") [3.0](https://www.opensips.org/Documentation/Script-Routes-3-0 \"Types of routes - 3.0\") [2.4](https://www.opensips.org/Documentation/Script-Routes-2-4 \"Types of routes - 2.4\") [2.3](https://www.opensips.org/Documentation/Script-Routes-2-3 \"Types of routes - 2.3\") [2.2](https://www.opensips.org/Documentation/Script-Routes-2-2 \"Types of routes - 2.2\") [2.1](https://www.opensips.org/Documentation/Script-Routes-2-1 \"Types of routes - 2.1\") [1.11](https://www.opensips.org/Documentation/Script-Routes-1-11 \"Types of routes - 1.11\") [1.10](https://www.opensips.org/Documentation/Script-Routes-1-10 \"Types of routes - ver 1.10\") [1.9](https://www.opensips.org/Documentation/Script-Routes-1-9 \"Types of routes - ver 1.9\") [1.8](https://www.opensips.org/Documentation/Script-Routes-1-8 \"Types of routes - ver 1.8\") [1.7](https://www.opensips.org/Documentation/Script-Routes-1-7 \"Types of routes - ver 1.7\") [1.6](https://www.opensips.org/Documentation/Script-Routes-1-6 \"Types of routes - ver 1.6\") [1.5](https://www.opensips.org/Documentation/Script-Routes-1-5 \"Types of routes - ver 1.5\") [1.4](https://www.opensips.org/Documentation/Script-Routes-1-4 \"Types of routes - ver 1.4\")\n\n  \n\n**Types of routes - devel**\n\n[Prev](https://www.opensips.org/Documentation/Script-CoreParameters-4-0 \"Core Parameters - 4.0\")\n\n[Next](https://www.opensips.org/Documentation/Script-Operators-4-0 \"Script Operators - devel\")\n\n---\n\n**Table of Content** ([hide](javascript:toggle\\('tocid'\\);))\n\n**OpenSIPS** routing logic uses several types of routes. Each type of route is triggered by a certain event and allows you to process a certain type of message (request or reply).\n\n---\n\n#### 1. route [🔗](#route)\n\nRequest routing block. It contains a set of actions to be taken for SIP requests.\n\n**Triggered by** : receiving an external request from the network.\n\n**Processing** : the triggering SIP request.\n\n**Type** : initially stateless, may be forced to stateful by using TM functions.\n\n**Default action** : if the request is not either forwarded nor replied, the route will simply discard the request at the end.\n\nThe main 'route' block identified by 'route{...}' or 'route\\[0\\]{...}' is executed for each SIP request.\n\nThe implicit action after execution of the main route block is to drop the SIP request. To send a reply or forward the request, explicit actions must be called inside the route block.\n\nExample of usage:\n\n    route {\n         if(is_method(\"OPTIONS\")) {\n            # send reply for each options request\n            sl_send_reply(200, \"OK\");\n            exit();\n         }\n         route(1);\n    }\n    route\\[1\\] {\n         # forward according to uri\n         forward();\n    }\n\nNote that if a 'route(X)' is called from a 'branch_route\\[Y\\]' then in 'route\\[X\\]' is just processed each separate branch instead of all branches together as occurs in main route.\n\nA route can return a set of values, that can later be retrieved from the route's calling context using the [$return](https://www.opensips.org/Documentation/Script-CoreVar-4-0#return) variable.\n\nExample of passing values:\n\n    route {\n         route(query);\n         xlog(\"Query returned id $return(0) with $return(1) values\\n\");\n    }\n    route\\[query\\] {\n         # perform a query for information and store the information in $var(id) and $var(values)\n         return(1, $var(id), $var(values));\n    }\n\nNote that the first parameter of the return is always the return code, and cannot be retrieved using the $return() variable.\n\n---\n\n#### 2. branch_route [🔗](#branch_route)\n\nRequest's branch routing block. It contains a set of actions to be taken for each branch of a SIP request.\n\n**Triggered by** : preparation a new branch (of a request); the branch is well formed, but not yet sent out.\n\n**Processing** : the SIP request (with the branch particularities, like RURI, branch flags)\n\n**Type** : stateful\n\n**Default action** : if the branch is not dropped (via \"drop\" statement), the branch will be automatically sent out.\n\nIt is executed only by TM module after it was armed via t_on_branch(\"branch_route_index\").\n\nExample of usage:\n\n    route {\n        lookup(\"location\");\n        t_on_branch(\"1\");\n        if(!t_relay()) {\n            sl_send_reply(500, \"Internal Server Error\");\n        }\n    }\n    branch_route\\[1\\] {\n        if($ru=~\"10\\.10\\.10\\.10\") {\n            # discard branches that go to 10.10.10.10\n            drop();\n        }\n    }\n\n---\n\n#### 3. failure_route [🔗](#failure_route)\n\nFailed transaction routing block. It contains a set of actions to be taken each transaction that received only negative replies (>=300) for all branches.\n\n**Triggered by** : receiving or generation(internal) of a negative reply that completes the transaction (all branches are terminated with negative replies)\n\n**Processing** : the original SIP request (that was sent out)\n\n**Type** : stateful\n\n**Default action** : if no new branch is generated or no reply is forced over, by default, the winning reply will be sent back to UAC.\n\nThe 'failure_route' is executed only by TM module after it was armed via t_on_failure(\"failure_route_index\").\n\nNote that inside the 'failure_route', the request that initiated the transaction is being processed, and not its reply.\n\nExample of usage:\n\n    route {\n        lookup(\"location\");\n        t_on_failure(\"1\");\n        if(!t_relay()) {\n            sl_send_reply(500, \"Internal Server Error\");\n        }\n    }\n    failure_route\\[1\\] {\n        if(is_method(\"INVITE\")) {\n             # call failed - relay to voice mail\n             t_relay(\"udp:voicemail.server.com:5060\");\n        }\n    }\n\n---\n\n#### 4. onreply_route [🔗](#onreply_route)\n\nReply routing block. It contains a set of actions to be taken for SIP replies.\n\n**Triggered by** : receiving of a reply from the network\n\n**Processing** : the received reply\n\n**Type** : stateful (if bound to a transaction) or stateless (if global reply route).\n\n**Default action** : if the reply is not dropped (only provisional replies can be), it will be injected and processed by the transaction engine.\n\nThere are three types of onreply routes:\n\n*   **global** - it catches all replies received by OpenSIPS and does not need any special arming (simple definition is enough) - named 'onreply_route {...}' or 'onreply_route\\[0\\] {...}'. NOTE: this route is not SIP transaction aware (the reply was not matched to the transaction), so no transactional data is available here.\n    \n*   **per request/transaction** - it catches all received replies belonging to a certain transaction and need to be armed (via \"t_on_reply()\" ) at request time, in REQUEST ROUTE - named 'onreply_route\\[N\\] {...}'.\n    \n*   **per branch** - it catches only the replies that belong to a certain branch from a transaction. It needs to be armed (also via \"t_on_reply()\" ) at request time, but in BRANCH ROUTE, when a certain outgoing branch is processed - named 'onreply_route\\[N\\] {...}'.\n\nCertain 'onreply_route' blocks can be executed by TM module for special replies. For this, the 'onreply_route' must be armed for the SIP requests whose replies should be processed within it, via t_on_reply(\"onreply_route_index\").\n\nroute {\n        seturi(\"sip:bob@opensips.org\");  # first branch\n        append_branch(\"sip:alice@opensips.org\"); # second branch\n\n        t_on_reply(\"global\"); # the \"global\" reply route\n                              # is set the whole transaction\n        t_on_branch(\"1\");\n\n        t_relay();\n}\n\nbranch_route\\[1\\] {\n        if ($rU==\"alice\")\n                t_on_reply(\"alice\"); # the \"alice\" reply route\n                                      # is set only for second branch\n}\n\nonreply_route {\n        xlog(\"OpenSIPS received a reply from $si\\n\");\n}\n\n\nonreply_route\\[alice\\] {\n        xlog(\"received reply on the branch from alice\\n\");\n}\n\nonreply_route\\[global\\] {\n        if (t_check_status(\"1\\[0-9\\]\\[0-9\\]\")) {\n                setflag(1);\n                log(\"provisional reply received\\n\");\n                if (t_check_status(\"183\"))\n                        drop;\n        }\n}\n\n---\n\n#### 5. error_route [🔗](#error_route)\n\nThe error route is executed automatically when a parsing error occurs during SIP request processing, or when a script [assert](http://www.opensips.org/Documentation/Script-CoreFunctions-4-0#toc2) fails. It allows the administrator to decide what to do in such error cases.\n\nIMPORTANT: as this is triggered ONLY for SIP request, OpenSIPS has to be able to correctly parse the first line of the SIP message. So any syntax error in the first line will NOT trigger this route (as OpenSIPS will not be able to tell if a reply or request).\n\n**Triggered by** : parsing error in \"route\"\n\n**Processing** : failed request\n\n**Type** : stateless (recommended)\n\n**Default action** : discard request.\n\nIn error_route, the following pseudo-variables are available to get access to error details:\n\n*   $(err.class) - the class of error (now is '1' for parsing errors)\n*   $(err.level) - severity level for the error\n*   $(err.info) - text describing the error\n*   $(err.rcode) - recommended reply code\n*   $(err.rreason) - recommended reply reason phrase\n\n  error_route {\n     xlog(\"--- error route class=$(err.class) level=$(err.level)\n            info=$(err.info) rcode=$(err.rcode) rreason=$(err.rreason) ---\\n\");\n     xlog(\"--- error from \\[$si:$sp\\]\\n+++++\\n$mb\\n++++\\n\");\n     sl_send_reply(\"$err.rcode\", \"$err.rreason\");\n     exit;\n  }\n\n---\n\n#### 6. local_route [🔗](#local_route)\n\nThe local route is executed automatically when a new SIP request is generated by TM, internally (no UAC side). This is a route intended to be used for message inspection, accounting and for applying last changes on the message headers. Routing and signaling functions are not allowed.\n\n**Triggered by** : TM generating a brand new request\n\n**Processing** : the new request\n\n**Type** : stateful\n\n**Default action** : send the request out\n\n  local_route {\n     if (is_method(\"INVITE\") && $ru=~\"@foreign.com\") {\n        append_hf(\"P-hint: foreign request\\r\\n\");\n        exit;\n     }\n     if (is_method(\"BYE\") ) {\n        acc_log_request(\"internally generated BYE\");\n     }\n  }\n\n---\n\n#### 7. startup_route [🔗](#startup_route)\n\nThe **startup_route** is executed only once when OpenSIPS is started and before the processing of SIP messages begins. This is useful if some initiation actions are needed, like loading some data in the cache, to ease up the future processing. Notice that this route, compared to the others is not triggered at the receipt of a message, so the functions that can be called here must not do processing on the message.\n\n**Triggered** : At startup, before the listener processes are started.\n\n**Processing** : Initializing functions.\n\n  startup_route {\n    avp_db_query(\"select gwlist where ruleid==1\",$avp(i:100));\n    cache_store(\"local\", \"rule1\", \"$avp(i:100)\");\n  }\n\n---\n\n#### 8. timer_route [🔗](#timer_route)\n\nThe **timer_route** is a route executed periodically at a configured interval of time specified next to the name (in seconds). Similar to _startup_route_, this route does not process a SIP message. Multiple timer routes (possibly at differing running intervals) are allowed.\n\n**Triggered by** : The _timer_ worker process.\n\n**Processing** : Functions that do periodic, recurring processing.\n\nNOTE: when OpenSIPS starts, each timer_route is **first executed after <interval>** seconds!\n\n  timer_route\\[gw_update, 300\\] {\n    avp_db_query(\"select gwlist where ruleid==1\",$avp(i:100));\n    $shv(i:100) =$avp(i:100);\n  }\n\n---\n\n[# event_route](#event_route)\n\n#### 9.  event_route [🔗](#event_route)\n\nThe **event_route** is used by the OpenSIPS Event Interface to execute script code when an event is triggered. The name of the route is the event that has to be handled by that route. The route itself is executed asynchronously with regards to the trigger moment.\n\n**Triggered by** : the [event_route](http://www.opensips.org/html/docs/modules/4.0.x/event_route) module when an event raised by the OpenSIPS Event Interface\n\n**Processing** : the event triggered\n\n**Type** : stateless (recommended)\n\n**Default action** : no script code is executed when the event is raised.\n\n  event_route\\[E_PIKE_BLOCKED\\] {\n    xlog(\"The E_PIKE_BLOCKED event was raised\\n\");\n  }\n\n---\n\n| | | |",
+  "category": "Core",
+  "section": "Scripting",
+  "synopsis": "OpenSIPS routing logic uses several types of routes. Each type of route is triggered by a certain event and allows you to process a certain type of message (request or reply).",
+  "keywords": [
+    "route",
+    "branch_route",
+    "failure_route",
+    "onreply_route",
+    "error_route",
+    "local_route",
+    "startup_route",
+    "timer_route",
+    "event_route"
+  ],
+  "extracted_at": "2025-02-20T00:00:00Z",
+  "route_types": [
+    {
+      "name": "route",
+      "syntax": "route{...} or route[name]{...}",
+      "description": "Request routing block. It contains a set of actions to be taken for SIP requests.",
+      "trigger_condition": "receiving an external request from the network.",
+      "available_variables": [
+        "$return"
+      ],
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n     if(is_method(\"OPTIONS\")) {\n        # send reply for each options request\n        sl_send_reply(200, \"OK\");\n        exit();\n     }\n     route(1);\n}\nroute[1] {\n     # forward according to uri\n     forward();\n}",
+          "description": "Example of usage"
+        },
+        {
+          "language": "opensips",
+          "code": "route {\n     route(query);\n     xlog(\"Query returned id $return(0) with $return(1) values\\n\");\n}\nroute[query] {\n     # perform a query for information and store the information in $var(id) and $var(values)\n     return(1, $var(id), $var(values));\n}",
+          "description": "Example of passing values"
+        }
+      ]
+    },
+    {
+      "name": "branch_route",
+      "syntax": "branch_route[name] {...}",
+      "description": "Request's branch routing block. It contains a set of actions to be taken for each branch of a SIP request.",
+      "trigger_condition": "preparation a new branch (of a request); the branch is well formed, but not yet sent out.",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n    lookup(\"location\");\n    t_on_branch(\"1\");\n    if(!t_relay()) {\n        sl_send_reply(500, \"Internal Server Error\");\n    }\n}\nbranch_route[1] {\n    if($ru=~\"10\\.10\\.10\\.10\") {\n        # discard branches that go to 10.10.10.10\n        drop();\n    }\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "failure_route",
+      "syntax": "failure_route[name] {...}",
+      "description": "Failed transaction routing block. It contains a set of actions to be taken each transaction that received only negative replies (>=300) for all branches.",
+      "trigger_condition": "receiving or generation(internal) of a negative reply that completes the transaction (all branches are terminated with negative replies)",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n    lookup(\"location\");\n    t_on_failure(\"1\");\n    if(!t_relay()) {\n        sl_send_reply(500, \"Internal Server Error\");\n    }\n}\nfailure_route[1] {\n    if(is_method(\"INVITE\")) {\n         # call failed - relay to voice mail\n         t_relay(\"udp:voicemail.server.com:5060\");\n    }\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "onreply_route",
+      "syntax": "onreply_route {...} or onreply_route[name] {...}",
+      "description": "Reply routing block. It contains a set of actions to be taken for SIP replies.",
+      "trigger_condition": "receiving of a reply from the network",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n        seturi(\"sip:bob@opensips.org\");  # first branch\n        append_branch(\"sip:alice@opensips.org\"); # second branch\n\n        t_on_reply(\"global\"); # the \"global\" reply route\n                              # is set the whole transaction\n        t_on_branch(\"1\");\n\n        t_relay();\n}\n\nbranch_route[1] {\n        if ($rU==\"alice\")\n                t_on_reply(\"alice\"); # the \"alice\" reply route\n                                      # is set only for second branch\n}\n\nonreply_route {\n        xlog(\"OpenSIPS received a reply from $si\\n\");\n}\n\n\nonreply_route[alice] {\n        xlog(\"received reply on the branch from alice\\n\");\n}\n\nonreply_route[global] {\n        if (t_check_status(\"1[0-9][0-9]\")) {\n                setflag(1);\n                log(\"provisional reply received\\n\");\n                if (t_check_status(\"183\"))\n                        drop;\n        }\n}",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "error_route",
+      "syntax": "error_route {...}",
+      "description": "The error route is executed automatically when a parsing error occurs during SIP request processing, or when a script assert fails. It allows the administrator to decide what to do in such error cases.",
+      "trigger_condition": "parsing error in \"route\"",
+      "available_variables": [
+        "$(err.class)",
+        "$(err.level)",
+        "$(err.info)",
+        "$(err.rcode)",
+        "$(err.rreason)"
+      ],
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "  error_route {\n     xlog(\"--- error route class=$(err.class) level=$(err.level)\n            info=$(err.info) rcode=$(err.rcode) rreason=$(err.rreason) ---\\n\");\n     xlog(\"--- error from [$si:$sp]\\n+++++\\n$mb\\n++++\\n\");\n     sl_send_reply(\"$err.rcode\", \"$err.rreason\");\n     exit;\n  }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "local_route",
+      "syntax": "local_route {...}",
+      "description": "The local route is executed automatically when a new SIP request is generated by TM, internally (no UAC side). This is a route intended to be used for message inspection, accounting and for applying last changes on the message headers. Routing and signaling functions are not allowed.",
+      "trigger_condition": "TM generating a brand new request",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "  local_route {\n     if (is_method(\"INVITE\") && $ru=~\"@foreign.com\") {\n        append_hf(\"P-hint: foreign request\\r\\n\");\n        exit;\n     }\n     if (is_method(\"BYE\") ) {\n        acc_log_request(\"internally generated BYE\");\n     }\n  }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "startup_route",
+      "syntax": "startup_route {...}",
+      "description": "The startup_route is executed only once when OpenSIPS is started and before the processing of SIP messages begins. This is useful if some initiation actions are needed, like loading some data in the cache, to ease up the future processing. Notice that this route, compared to the others is not triggered at the receipt of a message, so the functions that can be called here must not do processing on the message.",
+      "trigger_condition": "At startup, before the listener processes are started.",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "  startup_route {\n    avp_db_query(\"select gwlist where ruleid==1\",$avp(i:100));\n    cache_store(\"local\", \"rule1\", \"$avp(i:100)\");\n  }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "timer_route",
+      "syntax": "timer_route[name, interval] {...}",
+      "description": "The timer_route is a route executed periodically at a configured interval of time specified next to the name (in seconds). Similar to startup_route, this route does not process a SIP message. Multiple timer routes (possibly at differing running intervals) are allowed.",
+      "trigger_condition": "The timer worker process.",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "  timer_route[gw_update, 300] {\n    avp_db_query(\"select gwlist where ruleid==1\",$avp(i:100));\n    $shv(i:100) =$avp(i:100);\n  }",
+          "description": "Example of usage"
+        }
+      ]
+    },
+    {
+      "name": "event_route",
+      "syntax": "event_route[event_name] {...}",
+      "description": "The event_route is used by the OpenSIPS Event Interface to execute script code when an event is triggered. The name of the route is the event that has to be handled by that route. The route itself is executed asynchronously with regards to the trigger moment.",
+      "trigger_condition": "the event_route module when an event raised by the OpenSIPS Event Interface",
+      "can_call_routes": true,
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "  event_route[E_PIKE_BLOCKED] {\n    xlog(\"The E_PIKE_BLOCKED event was raised\\n\");\n  }",
+          "description": "Example of usage"
+        }
+      ]
+    }
+  ]
+}

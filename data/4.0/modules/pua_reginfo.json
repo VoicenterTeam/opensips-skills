@@ -1,0 +1,220 @@
+{
+  "id": "module-pua_reginfo-4.0",
+  "document_type": "module",
+  "version": "4.0",
+  "title": "pua_reginfo Module",
+  "url": "https://opensips.org/html/docs/modules/4.0.x/pua_reginfo.html",
+  "content_markdown": "This module publishes information about \"reg\"-events according to to RFC 3680. This can be used distribute the registration-info status to the subscribed watchers.",
+  "category": "Modules",
+  "extracted_at": "2026-04-25T14:26:15.447Z",
+  "module_name": "pua_reginfo",
+  "overview": "This module publishes information about \"reg\"-events according to to RFC 3680. This can be used distribute the registration-info status to the subscribed watchers.",
+  "how_it_works": "This module \"PUBLISH\"es information when a new user registers at this server (e.g. when \"save()\" is called) to users, which have subscribed for the reg-info for this user.\n\nThis module can \"SUBSCRIBE\" for information at another server, so it will receive \"NOTIFY\"-requests, when the information about a user changes.\n\nAnd finally, it can process received \"NOTIFY\" requests and it will update the local registry accordingly.\n\nUse cases for this might be:\n\n*   Keeping different Servers in Sync regarding the location database\n*   Get notified, when a user registers: A presence-server, which handles offline message storage for an account, would get notified, when the user comes online.\n*   A client could subscribe to its own registration-status, so he would get notified as soon as his account gets administratively unregistered.\n*   ...",
+  "dependencies_required": [
+    {
+      "name": "pua",
+      "type": "module",
+      "optional": false
+    },
+    {
+      "name": "usrloc",
+      "type": "module",
+      "optional": false
+    }
+  ],
+  "dependencies_optional": null,
+  "exported_parameters": [
+    {
+      "name": "default_domain",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The default domain for the registered users to be used when constructing the uri for the registrar callback.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"default_domain\", \"kamailio.org\")\n..."
+    },
+    {
+      "name": "publish_reginfo",
+      "type": "integer",
+      "default_value": "1",
+      "description": "Whether or not to generate PUBLISH requests.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"publish_reginfo\", 0)\n..."
+    },
+    {
+      "name": "outbound_proxy",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The outbound_proxy uri to be used when sending Subscribe and Publish requests.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"outbound_proxy\", \"sip:proxy@kamailio.org\")\n..."
+    },
+    {
+      "name": "server_address",
+      "type": "string",
+      "description": "The IP address of the server.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"server_address\", \"sip:reginfo@160.34.23.12\")\n..."
+    },
+    {
+      "name": "ul_domain",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The domain for for querying the usrloc-database.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"ul_domain\", \"location\")\n..."
+    },
+    {
+      "name": "ul_identities_key",
+      "type": "string",
+      "default_value": "NULL",
+      "description": "The Key, which may be used for retrieving multiple public identies for a user.",
+      "example_code": "...\nmodparam(\"pua_reginfo\", \"ul_identities_key\", \"identities\")\n...\nonreply_route[register_reply] {\n\tif (t_check_status(\"200\") && $hdr(P-Associated-URI)) {\n        ul_add_key(\"location\", \"$tU@$td\", \"identities\", \"$hdr(P-Associated-URI)\");\n        reginfo_update(\"$tU@$td\");\n\t}\n}\n\n..."
+    }
+  ],
+  "exported_functions": [
+    {
+      "name": "reginfo_handle_notify",
+      "signature": "reginfo_handle_notify(uldomain)",
+      "parameters": [
+        {
+          "name": "uldomain",
+          "type": "string",
+          "required": true,
+          "description": "The parameter has to correspond to user location table (domain) where to store the record."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [
+        {
+          "value": "2",
+          "condition": "contacts successfully updated, but no more contacts online now."
+        },
+        {
+          "value": "1",
+          "condition": "contacts successfully updated and at at least one contact still registered."
+        },
+        {
+          "value": "-1",
+          "condition": "Invalid NOTIFY or other error (see log-file)"
+        }
+      ],
+      "description": "This function processes received \"NOTIFY\"-requests and updates the local registry accordingly.\n\nThis method does not create any SIP-Response, this has to be done by the script-writer.",
+      "usage_context": [
+        "REQUEST_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "if(is_method(\"NOTIFY\")) \n\tif (reginfo_handle_notify(\"location\"))\n\t\tsend_reply(\"202\", \"Accepted\");",
+          "description": "`reginfo_handle_notify` usage",
+          "context": "REQUEST_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "reginfo_subscribe",
+      "signature": "reginfo_subscribe(uri[, expires])",
+      "parameters": [
+        {
+          "name": "uri",
+          "type": "string",
+          "required": true,
+          "description": "SIP-URI of the server, where to subscribe, may contain pseudo-variables."
+        },
+        {
+          "name": "expires",
+          "type": "integer",
+          "required": false,
+          "default": "3600",
+          "description": "Expiration date for this subscription, in seconds"
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "This function will subscribe for reginfo-information at the given server URI.",
+      "usage_context": [
+        "REPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "route {\n\tt_on_reply(\"1\");\n\tt_relay();\n}\n\nreply_route[1] {\n\tif (t_check_status(\"200\")) \n\t\treginfo_subscribe(\"$ru\");\t\t\n}",
+          "description": "`reginfo_subscribe` usage",
+          "context": "REPLY_ROUTE"
+        }
+      ]
+    },
+    {
+      "name": "reginfo_update",
+      "signature": "reginfo_update(aor)",
+      "parameters": [
+        {
+          "name": "aor",
+          "type": "string",
+          "required": true,
+          "description": "The AOR to be updated."
+        }
+      ],
+      "return_type": "int",
+      "return_values": [],
+      "description": "Explicitly update the presence status, e.g., when new information is learned. This may trigger a new NOTIFY towards subscribed entities; at least it will update the internal information for subsequent subscribe and notifies.\n\nThis is done implicitly, when a registration is updated. However, when a registration was just updated with additional information like identities, this is not triggered automatically.",
+      "usage_context": [
+        "ONREPLY_ROUTE"
+      ],
+      "examples": [
+        {
+          "language": "opensips",
+          "code": "modparam(\"pua_reginfo\", \"ul_domain\", \"location\")\nmodparam(\"pua_reginfo\", \"ul_identities_key\", \"identities\")\n...\nonreply_route[register_reply] {\n\tif (t_check_status(\"200\") && $hdr(P-Associated-URI)) {\n        ul_add_key(\"location\", \"$tU@$td\", \"identities\", \"$hdr(P-Associated-URI)\");\n        reginfo_update(\"$tU@$td\");\n\t}\n}",
+          "description": "`reginfo_subscribe` usage",
+          "context": "ONREPLY_ROUTE"
+        }
+      ]
+    }
+  ],
+  "exported_mi_functions": [],
+  "exported_statistics": [],
+  "exported_events": [],
+  "exported_pseudo_variables": [],
+  "configuration_examples": [
+    {
+      "title": "Set `default_domain` parameter",
+      "description": "Set `default_domain` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"default\\_domain\", \"kamailio.org\")\n..."
+    },
+    {
+      "title": "Set `publish_reginfo` parameter",
+      "description": "Set `publish_reginfo` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"publish\\_reginfo\", 0)\n..."
+    },
+    {
+      "title": "Set `outbound_proxy` parameter",
+      "description": "Set `outbound_proxy` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"outbound\\_proxy\", \"sip:proxy@kamailio.org\")\n..."
+    },
+    {
+      "title": "Set `server_address` parameter",
+      "description": "Set `server_address` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"server\\_address\", \"sip:reginfo@160.34.23.12\")\n..."
+    },
+    {
+      "title": "Set `ul_domain` parameter",
+      "description": "Set `ul_domain` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"ul\\_domain\", \"location\")\n..."
+    },
+    {
+      "title": "Set `ul_identities_key` parameter",
+      "description": "Set `ul_identities_key` parameter",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"ul\\_identities\\_key\", \"identities\")\n...\nonreply\\_route\\[register\\_reply\\] {\n\tif (t\\_check\\_status(\"200\") && $hdr(P-Associated-URI)) {\n        ul\\_add\\_key(\"location\", \"$tU@$td\", \"identities\", \"$hdr(P-Associated-URI)\");\n        reginfo\\_update(\"$tU@$td\");\n\t}\n}\n..."
+    },
+    {
+      "title": "`reginfo_handle_notify` usage",
+      "description": "`reginfo_handle_notify` usage",
+      "code": "...\nif(is\\_method(\"NOTIFY\")) \n\tif (reginfo\\_handle\\_notify(\"location\"))\n\t\tsend\\_reply(\"202\", \"Accepted\");\n..."
+    },
+    {
+      "title": "`reginfo_subscribe` usage",
+      "description": "`reginfo_subscribe` usage",
+      "code": "...\nroute {\n\tt\\_on\\_reply(\"1\");\n\tt\\_relay();\n}\n\nreply\\_route\\[1\\] {\n\tif (t\\_check\\_status(\"200\")) \n\t\treginfo\\_subscribe(\"$ru\");\t\t\n}\n..."
+    },
+    {
+      "title": "`reginfo_subscribe` usage",
+      "description": "`reginfo_subscribe` usage",
+      "code": "...\nmodparam(\"pua\\_reginfo\", \"ul\\_domain\", \"location\")\nmodparam(\"pua\\_reginfo\", \"ul\\_identities\\_key\", \"identities\")\n...\nonreply\\_route\\[register\\_reply\\] {\n\tif (t\\_check\\_status(\"200\") && $hdr(P-Associated-URI)) {\n        ul\\_add\\_key(\"location\", \"$tU@$td\", \"identities\", \"$hdr(P-Associated-URI)\");\n        reginfo\\_update(\"$tU@$td\");\n\t}\n}\n..."
+    }
+  ]
+}
