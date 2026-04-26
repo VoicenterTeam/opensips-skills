@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Async Schema
 
 Schema for OpenSIPS Asynchronous Statements (e.g., `async`).

@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Implementation Plan
 
 > **Purpose:** Sequenced, milestone-by-milestone build plan for the `opensips-skills` project. Each milestone is its own file in this directory, with concrete tasks, acceptance criteria, and risk notes.

@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Contributing to opensips-skills
 
 Thank you for considering a contribution. This document covers how to set up
@@ -21,7 +23,7 @@ identifiers across versions.
 ## Setting up locally
 
 ```bash
-git clone https://github.com/OpenSIPS/opensips-skills.git
+git clone https://github.com/VoicenterTeam/opensips-skills.git
 cd opensips-skills
 npm ci
 npm run validate          # exit 0 means source is clean

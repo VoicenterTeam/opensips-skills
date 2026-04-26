@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Guides Schema
 
 Schema for OpenSIPS Installation, Configuration, and Syntax Guides.

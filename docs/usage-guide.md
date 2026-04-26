@@ -1,3 +1,5 @@
+<p align="center"><img src="OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Using opensips-skills
 
 This guide shows you how to get the most out of the OpenSIPs Claude Code plugin. The plugin includes two skills; this document covers when each activates and how to phrase prompts well.
@@ -164,7 +166,7 @@ It will **not**:
 
 ## When you find a bug or want to suggest a feature
 
-- **Bug reports and feature requests**: open an issue at https://github.com/OpenSIPS/opensips-skills/issues. For trigger-reliability or guardrail issues, include the exact prompt that didn't behave as expected — that's what makes the SKILL.md changes testable.
+- **Bug reports and feature requests**: open an issue at https://github.com/VoicenterTeam/opensips-skills/issues. For trigger-reliability or guardrail issues, include the exact prompt that didn't behave as expected — that's what makes the SKILL.md changes testable.
 - **New module reference content or corrections to existing module data**: this belongs upstream at the `opensips-docs-collector` project, which extracts the source documentation that this plugin re-renders. Filing the issue there ensures the fix flows into both projects.
 - **Security review content**: the substantive security review patterns are owned by a separate security-focused authoring agent. Issues about review depth or coverage are useful here, but the implementation lives in that agent's PRs.
 

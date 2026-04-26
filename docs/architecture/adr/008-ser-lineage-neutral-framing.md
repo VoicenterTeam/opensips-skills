@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-008: Neutral framing on SER-lineage topics
 
 **Status:** Accepted

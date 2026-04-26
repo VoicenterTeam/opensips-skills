@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Markdown Reference Files for Claude Code Agent Skills: A Research Report Toward a Rendering Template Specification
 
 This report consolidates evidence from production skill repositories (`anthropics/skills`), Anthropic's official authoring guidance, the OpenSIPS upstream documentation, and the broader LLM-friendly documentation community. Every recommendation is backed by either a concrete example from a shipped skill or a documented practice. It is organized around the ten research questions and concludes with a synthesis of concrete template recommendations.

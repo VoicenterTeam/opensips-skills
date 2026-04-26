@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Maintenance
 
 Operational expectations for maintainers after v1.0.0 ships. This document

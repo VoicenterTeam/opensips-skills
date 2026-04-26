@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Rendering Templates Specification
 
 > **Purpose:** Defines the exact Markdown structure the build pipeline produces from JSON source. Companion to `data-pipeline.md`. Specifies file layouts, heading hierarchies, frontmatter usage, code block conventions, and per-element rendering rules for every document type the pipeline handles.

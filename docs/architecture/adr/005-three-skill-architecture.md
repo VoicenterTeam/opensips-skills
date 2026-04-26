@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-005: Three-skill architecture
 
 **Status:** Superseded by ADR-012

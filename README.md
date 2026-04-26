@@ -1,8 +1,10 @@
+<p align="center"><img src="docs/OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # opensips-skills
 
 > Claude Code plugin providing two coordinated Agent Skills for working with OpenSIPs.
 
-[![CI](https://github.com/OpenSIPS/opensips-skills/workflows/CI/badge.svg)](https://github.com/OpenSIPS/opensips-skills/actions)
+[![CI](https://github.com/VoicenterTeam/opensips-skills/workflows/CI/badge.svg)](https://github.com/VoicenterTeam/opensips-skills/actions)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
 ## What this is
@@ -23,7 +25,7 @@ The plugin runs inside Claude Code. The two install paths:
 
 ```bash
 # Via the Claude Code plugin marketplace (once published)
-/plugin marketplace add OpenSIPS/opensips-skills
+/plugin marketplace add VoicenterTeam/opensips-skills
 /plugin install opensips@opensips-skills
 
 # Or, locally for development

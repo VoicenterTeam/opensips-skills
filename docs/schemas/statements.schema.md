@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Statements Schema
 
 Schema for OpenSIPS Script Control Statements (e.g., `if`, `switch`, `while`).

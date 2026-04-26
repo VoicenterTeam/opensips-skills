@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Research Report: Authoring SKILL.md Files for Claude Code Agent Skills — Three Coordinated OpenSIPs Skills
 
 **Scope.** This report distills production evidence and documented best practices specifically targeted at the three problems facing the OpenSIPs skill set (`opensips-routing`, `opensips-modules`, `opensips-security-advisor`): reliable triggering, multi-skill coordination without overlap, anti-hallucination guardrails (especially against importing identifiers from sibling SIP servers in the SER/Kamailio/OpenSER lineage), and SKILL.md body structure/length. Each section ends with concrete recommendations applicable to the OpenSIPs trio.

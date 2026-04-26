@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-007: Claude Code as the sole target runtime
 
 **Status:** Accepted

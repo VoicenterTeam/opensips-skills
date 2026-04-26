@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Design — Merge `opensips-routing` and `opensips-modules` into `opensips-config`
 
 **Date:** 2026-04-25

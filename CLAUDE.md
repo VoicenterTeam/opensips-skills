@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # CLAUDE.md
 
 > **Project operating manual for Claude Code and human contributors.**

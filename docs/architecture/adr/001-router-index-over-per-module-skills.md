@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-001: Router-index pattern over per-module skills
 
 **Status:** Accepted

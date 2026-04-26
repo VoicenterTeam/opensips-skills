@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Collection State Schema
 
 Schema for the runtime state file used to track collection progress and enable recovery.

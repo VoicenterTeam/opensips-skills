@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Module Sections Schema
 
 This document defines the partial schemas used for section-based module extraction. Each schema represents a subset of the full `ModuleDocumentSchema`, enabling focused LLM extraction that avoids timeouts on large modules.

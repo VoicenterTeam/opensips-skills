@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Core Variables Schema
 
 Schema for OpenSIPS Core Script Variables (e.g., `$fu`, `$si`).

@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Module Document Schema
 
 This schema defines the structure for OpenSIPS Modules. This is the most complex schema as modules contain nested definitions for parameters, functions, MI commands, and more.

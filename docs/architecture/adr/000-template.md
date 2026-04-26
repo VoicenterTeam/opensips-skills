@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-NNN: Short decision title
 
 **Status:** Proposed | Accepted | Deprecated | Superseded by ADR-XXX

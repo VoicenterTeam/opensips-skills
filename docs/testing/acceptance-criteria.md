@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Acceptance Criteria
 
 > **Purpose:** Per-skill behavior checklists that must pass before any release. Distinct from automated tests — these are the end-to-end proofs that the project does what it claims, observed in real Claude Code sessions.

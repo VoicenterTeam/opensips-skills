@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-011: CRLF-tolerant schema hash for cross-platform stability
 
 **Status:** Accepted

@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-003: Version-isolated folders, no cross-version reasoning
 
 **Status:** Accepted

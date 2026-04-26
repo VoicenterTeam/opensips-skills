@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Release Process
 
 This document is for the maintainer publishing a release of `opensips-skills`.

@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Research Report: Production-Grade Practices for Deterministic Documentation Build Pipelines
 
 **Scope:** This report synthesizes established practice for deterministic, schema-driven documentation pipelines that transform per-version JSON source into Markdown and a consolidated index, targeting consumption by AI coding assistants (specifically Claude Code Agent Skills). Findings are drawn from tooling projects (Docusaurus, MkDocs/TechDocs, Sphinx, Redoc, tfplugindocs, Pulumi, Anthropic's `skills` repo), the Reproducible Builds project, and adjacent literatures on snapshot testing, CLI ergonomics, and search index generation.

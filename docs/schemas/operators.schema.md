@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Operators Schema
 
 Schema for OpenSIPS Script Operators (e.g., `+`, `==`, `=~`).

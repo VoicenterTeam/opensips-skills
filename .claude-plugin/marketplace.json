@@ -3,8 +3,8 @@
   "name": "opensips-skills",
   "version": "1.0.0",
   "description": "OpenSIPs Agent Skills for Claude Code: route script authoring, per-module reference, and security review for SIP server configurations.",
-  "owner": "OpenSIPS",
-  "homepage": "https://github.com/OpenSIPS/opensips-skills",
+  "owner": "VoicenterTeam",
+  "homepage": "https://github.com/VoicenterTeam/opensips-skills",
   "license": "GPL-3.0-or-later",
   "plugins": [
     {

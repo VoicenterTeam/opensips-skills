@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Golden-path demos
 
 > **Audience:** maintainers running this checklist manually before each release.

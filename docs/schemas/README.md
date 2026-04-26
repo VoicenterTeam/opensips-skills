@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Schema Definitions
 
 This directory contains the documentation for all JSON schemas used in the project. These schemas are the **Source of Truth** for the application. Any changes to the data structure must be reflected here first.

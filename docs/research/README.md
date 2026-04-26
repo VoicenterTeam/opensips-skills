@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Research Reports
 
 This directory contains the deep-research reports that informed the architectural decisions in this project. Each report was produced during the design phase, before the corresponding architecture document was written, so that decisions could be grounded in production evidence rather than first-principles guessing.

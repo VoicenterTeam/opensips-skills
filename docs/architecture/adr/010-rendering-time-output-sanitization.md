@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-010: Rendering-time output sanitization for upstream extraction artifacts
 
 **Status:** Accepted

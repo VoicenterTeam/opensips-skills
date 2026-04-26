@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Documentation Inventory
 
 This file lists every document in the archive with a one-line description. Useful for at-a-glance verification that nothing is missing, and for explaining the document set to someone new.

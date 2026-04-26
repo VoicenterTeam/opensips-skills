@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Milestone 10: Public release prep
 
 ## Goal
@@ -42,7 +44,7 @@ solution, the three skills' roles, the version-grounded approach.)
 ## Install
 
 ```bash
-/plugin marketplace add OpenSIPS/opensips-skills
+/plugin marketplace add VoicenterTeam/opensips-skills
 /plugin install opensips@opensips-skills
 ```
 

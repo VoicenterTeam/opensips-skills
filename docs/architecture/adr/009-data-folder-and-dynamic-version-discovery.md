@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-009: `data/` as source location, dynamic version discovery, and scope expansion
 
 **Status:** Accepted

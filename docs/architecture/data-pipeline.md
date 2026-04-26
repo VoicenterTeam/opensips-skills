@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Data Pipeline Specification
 
 > **Purpose:** Detailed contract between the upstream extraction project (`opensips-docs-collector`) and this plugin. Specifies what goes in, what comes out, how failures are handled, what guarantees the pipeline makes, and how it is verified.

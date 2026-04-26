@@ -1,3 +1,5 @@
+<p align="center"><img src="../../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # ADR-012: Merge routing and modules into a single `opensips-config` skill
 
 **Status:** Accepted

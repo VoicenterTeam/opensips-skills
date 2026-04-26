@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Test Strategy
 
 > **Purpose:** Defines what is tested, at what level, by what mechanism, and what failing each test indicates. Reference material for contributors and maintainers — answers "how do I add a test for X?" and "why did this CI job fail?"

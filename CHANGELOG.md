@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -38,5 +40,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Known notes for users
 - When using `npm run build -- --json`, npm prepends a banner to stdout that breaks JSON consumers. Use `npm run --silent build -- --json` or invoke `npx tsx scripts/build-references.ts --json` directly. Documented because the JSON contract requires clean stdout.
 
-[Unreleased]: https://github.com/OpenSIPS/opensips-skills/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/OpenSIPS/opensips-skills/releases/tag/v1.0.0
+[Unreleased]: https://github.com/VoicenterTeam/opensips-skills/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/VoicenterTeam/opensips-skills/releases/tag/v1.0.0

@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Consolidated Output Schema
 
 Schema for the final, merged JSON file designed for MCP consumption.

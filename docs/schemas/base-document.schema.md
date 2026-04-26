@@ -1,3 +1,5 @@
+<p align="center"><img src="../OpensipsSkillsLogo.png" alt="OpenSIPs Skills" width="240"></p>
+
 # Base Document Schema
 
 The `BaseDocument` is the parent schema that all other document types extend. It contains the common metadata required for every piece of documentation.
