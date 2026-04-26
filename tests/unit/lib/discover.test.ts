@@ -303,11 +303,10 @@ describe("readBrokenMarker", () => {
   });
 
   it("uses ./data as default when sourceRoot is undefined", () => {
-    // Reality-check against the real repo: 3.4 carries a .broken marker
-    // (committed as part of M9 to keep CI green while the upstream defect
-    // in data/3.4/core/variables.json is unfixed).
+    // Reality-check against the real repo: every committed version
+    // directory currently builds (no .broken markers in the tree). The
+    // function should return null for any real version.
     const info = readBrokenMarker(undefined, "3.4");
-    expect(info).not.toBeNull();
-    expect(info?.reason.length).toBeGreaterThan(0);
+    expect(info).toBeNull();
   });
 });

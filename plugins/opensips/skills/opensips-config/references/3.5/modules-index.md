@@ -5,6 +5,8 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 |---|---|---|
 | `ALIAS_DB` | ALIAS_DB module can be used as an alternative for user aliases via usrloc | `references/{version}/modules/ALIAS_DB.md` |
 | `XML Module` | This module exposes a script variable that provides basic parsing and manipulat… | `references/{version}/modules/XML Module.md` |
+| `aaa_diameter` | This module provides an RFC 6733 Diameter peer implementation, being able to ac… | `references/{version}/modules/aaa_diameter.md` |
+| `aaa_radius` | This module provides a Radius implementation for the AAA API from the core | `references/{version}/modules/aaa_radius.md` |
 | `acc` | The ACC module is used to account transaction information to different backends… | `references/{version}/modules/acc.md` |
 | `aka_av_diameter` | This module is an extension to the _AKA_AUTH_ module providing a Diameter AKA A… | `references/{version}/modules/aka_av_diameter.md` |
 | `auth` | This is a module that provides common functions that are needed by other authen… | `references/{version}/modules/auth.md` |
@@ -30,6 +32,7 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `carrierroute` | A module which provides routing, balancing and blacklisting capabilities | `references/{version}/modules/carrierroute.md` |
 | `cfgutils` | Useful extensions for the server configuration | `references/{version}/modules/cfgutils.md` |
 | `cgrates` | CGRateS is an open-source rating engine used for carrier-grade, multi-tenant, r… | `references/{version}/modules/cgrates.md` |
+| `clusterer` | The _clusterer_ module is used to organize multiple OpenSIPS instances into gro… | `references/{version}/modules/clusterer.md` |
 | `compression` | This module implements message compression/decompression and base64 encoding fo… | `references/{version}/modules/compression.md` |
 | `cpl_c` | cpl_c modules implements a CPL (Call Processing Language) interpreter | `references/{version}/modules/cpl_c.md` |
 | `db_berkeley` | This is a module which integrates the Berkeley DB into OpenSIPS | `references/{version}/modules/db_berkeley.md` |
@@ -44,6 +47,7 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `db_text` | The module implements a simplified database engine based on text files | `references/{version}/modules/db_text.md` |
 | `db_unixodbc` | This module allows to use the unixodbc package with OpenSIPS | `references/{version}/modules/db_unixodbc.md` |
 | `db_virtual` | A virtual DB will expose the same front DB api however, it will backed by many… | `references/{version}/modules/db_virtual.md` |
+| `dialog` | The dialog module provides dialog awareness to the OpenSIPS proxy | `references/{version}/modules/dialog.md` |
 | `dialplan` | This module implements generic string translations based on matching and replac… | `references/{version}/modules/dialplan.md` |
 | `dispatcher` | This modules implements a dispatcher for destination addresses | `references/{version}/modules/dispatcher.md` |
 | `diversion` | The module implements the Diversion extensions as per draft-levy-sip-diversion-… | `references/{version}/modules/diversion.md` |
@@ -64,26 +68,39 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `event_xmlrpc` | This module is an implementation of an XMLRPC client used to notify XMLRPC serv… | `references/{version}/modules/event_xmlrpc.md` |
 | `exec` | The Exec module enables the execution of external commands from the OpenSIPS sc… | `references/{version}/modules/exec.md` |
 | `fraud_detection` | This module provides a way to prevent some basic fraud attacks | `references/{version}/modules/fraud_detection.md` |
+| `freeswitch` | The "freeswitch" module is a C driver for the FreeSWITCH Event Socket Layer int… | `references/{version}/modules/freeswitch.md` |
+| `freeswitch_scripting` | _freeswitch_scripting_ is a helper module that exposes full control over the Fr… | `references/{version}/modules/freeswitch_scripting.md` |
 | `gflags` | gflags module (global flags) keeps a bitmap of flags in shared memory and may b… | `references/{version}/modules/gflags.md` |
 | `group` | This module provides functionalities for different methods of group membership… | `references/{version}/modules/group.md` |
+| `h350` | The OpenSIPS H350 module enables an OpenSIPS SIP proxy server to access SIP acc… | `references/{version}/modules/h350.md` |
+| `http2d` | This module provides an RFC 7540/9113 HTTP/2 server implementation with "h2" AL… | `references/{version}/modules/http2d.md` |
+| `httpd` | This module provides an HTTP transport layer for OpenSIPS | `references/{version}/modules/httpd.md` |
 | `identity` | This module adds support for SIP Identity (see RFC 4474) | `references/{version}/modules/identity.md` |
 | `imc` | This module offers support for instant message conference | `references/{version}/modules/imc.md` |
 | `jabber` | This is new version of Jabber module that integrates XODE XML parser for parsin… | `references/{version}/modules/jabber.md` |
 | `json` | This module introduces a new type of variable that provides both serialization… | `references/{version}/modules/json.md` |
+| `jsonrpc` | This module is an implementation of an JSON-RPC v2.0 client http://www.jsonrpc.… | `references/{version}/modules/jsonrpc.md` |
+| `launch_darkly` | This module implements support for the [Launch Darkly](https://launchdarkly.com… | `references/{version}/modules/launch_darkly.md` |
+| `ldap` | The LDAP module implements an LDAP search interface for OpenSIPS | `references/{version}/modules/ldap.md` |
 | `load_balancer` | The Load-Balancer module comes to provide traffic routing based on load | `references/{version}/modules/load_balancer.md` |
 | `lua` | The time needed when writing a new OpenSIPS module unfortunately is quite high,… | `references/{version}/modules/lua.md` |
 | `mangler` | This is a module to help with SDP mangling | `references/{version}/modules/mangler.md` |
 | `mathops` | The mathops module provides a series of functions which enable various floating… | `references/{version}/modules/mathops.md` |
 | `maxfwd` | The module implements all the operations regarding MaX-Forward header field, li… | `references/{version}/modules/maxfwd.md` |
 | `media_exchange` | This module provides the means to exchange media SDP between different SIP prox… | `references/{version}/modules/media_exchange.md` |
+| `mediaproxy` | Mediaproxy is an OpenSIPS module that is designed to allow automatic NAT traver… | `references/{version}/modules/mediaproxy.md` |
 | `mi_datagram` | This is a module which provides a UNIX/UDP SOCKET transport layer implementatio… | `references/{version}/modules/mi_datagram.md` |
 | `mi_fifo` | This is a module which provides a FIFO transport layer implementation for Manag… | `references/{version}/modules/mi_fifo.md` |
 | `mi_html` | This module provides a minimal web user interface for the OpenSIPS's Management… | `references/{version}/modules/mi_html.md` |
+| `mi_http` | This module provides a HTTP transport layer implementation for OpenSIPS's Manag… | `references/{version}/modules/mi_http.md` |
+| `mi_script` | This module provides multiple hooks to run Management Interface commands direct… | `references/{version}/modules/mi_script.md` |
+| `mi_xmlrpc_ng` | This module implements a xmlrpc server that handles xmlrpc requests and generat… | `references/{version}/modules/mi_xmlrpc_ng.md` |
 | `mid_registrar` | The mid_registrar is a mid-component of a SIP platform, designed to work betwee… | `references/{version}/modules/mid_registrar.md` |
 | `mmgeoip` | This module is a lightweight wrapper for the MaxMind GeoIP API | `references/{version}/modules/mmgeoip.md` |
 | `mqueue` | The mqueue module offers a generic message queue system in shared memory for in… | `references/{version}/modules/mqueue.md` |
 | `msilo` | This modules provides offline message storage for the Open SIP Server | `references/{version}/modules/msilo.md` |
 | `msrp_gateway` | This module implements a Gateway for translating between Page Mode (SIP MESSAGE… | `references/{version}/modules/msrp_gateway.md` |
+| `msrp_relay` | This modules implements a Relay for the MSRP protocol, according to the specifi… | `references/{version}/modules/msrp_relay.md` |
 | `msrp_ua` | This module implements an User Agent capable of establishing messaging sessions… | `references/{version}/modules/msrp_ua.md` |
 | `nat_traversal` | The nat_traversal module provides support for handling far-end NAT traversal fo… | `references/{version}/modules/nat_traversal.md` |
 | `nathelper` | This is a module to help with NAT traversal | `references/{version}/modules/nathelper.md` |
@@ -93,6 +110,7 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `peering` | Peering module allows SIP providers (operators or organizations) to verify from… | `references/{version}/modules/peering.md` |
 | `perl` | The time needed when writing a new OpenSIPS module unfortunately is quite high,… | `references/{version}/modules/perl.md` |
 | `permissions` | ### 1.1.1 | `references/{version}/modules/permissions.md` |
+| `pi_http` | This module provides an HTTP provisioning interface for OpenSIPS | `references/{version}/modules/pi_http.md` |
 | `pike` | The module provides a simple mechanism for DOS protection - DOS based on floods… | `references/{version}/modules/pike.md` |
 | `presence` | The modules handles PUBLISH and SUBSCRIBE messages and generates NOTIFY message… | `references/{version}/modules/presence.md` |
 | `presence_callinfo` | This module provides OpenSIPS support for shared call appearances (SCA) as defi… | `references/{version}/modules/presence_callinfo.md` |
@@ -102,6 +120,18 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `presence_reginfo` | The module enables the handling of "Event: reg" (as defined in RFC 3680) inside… | `references/{version}/modules/presence_reginfo.md` |
 | `presence_xcapdiff` | The presence_xcapdiff is an OpenSIPS module that adds support for the "xcap-dif… | `references/{version}/modules/presence_xcapdiff.md` |
 | `presence_xml` | The module does specific handling for notify-subscribe events using xml bodies | `references/{version}/modules/presence_xml.md` |
+| `prometheus` | This module provides a HTTP interface for the [Prometheus](https://prometheus.i… | `references/{version}/modules/prometheus.md` |
+| `proto_bin` | The proto_bin module is a transport module which implements Binary Interface TC… | `references/{version}/modules/proto_bin.md` |
+| `proto_bins` | This module implements a secure Binary communication protocol over TLS, to be u… | `references/{version}/modules/proto_bins.md` |
+| `proto_hep` | The **proto_hep** module is a transport module which implements hepV1 and hepV2… | `references/{version}/modules/proto_hep.md` |
+| `proto_ipsec` | The **proto_ipsec** module provides IPSec sockets for establishing secure commu… | `references/{version}/modules/proto_ipsec.md` |
+| `proto_sctp` | The **proto_sctp** module is an optional transport module (shared library) whic… | `references/{version}/modules/proto_sctp.md` |
+| `proto_smpp` | This module offers interoperability between SIP and SMPP (Short Message Peer-to… | `references/{version}/modules/proto_smpp.md` |
+| `proto_tcp` | The **proto_tcp** module is a built-in transport module which implements SIP TC… | `references/{version}/modules/proto_tcp.md` |
+| `proto_tls` | TLS, as defined in SIP RFC 3261, is a mandatory feature for proxies and can be… | `references/{version}/modules/proto_tls.md` |
+| `proto_udp` | The **proto_udp** module is a built-in transport module which exports the requi… | `references/{version}/modules/proto_udp.md` |
+| `proto_ws` | The WebSocket protocol ([RFC 6455](http://tools.ietf.org/html/rfc6455)) provide… | `references/{version}/modules/proto_ws.md` |
+| `proto_wss` | The WSS (Secure WebSocket) module provides the ability to communicate with a We… | `references/{version}/modules/proto_wss.md` |
 | `pua` | This module offer the internal support for OpenSIPS to act as a Presence User A… | `references/{version}/modules/pua.md` |
 | `pua_bla` | The pua_bla module enables Bridged Line Appearances support according to the sp… | `references/{version}/modules/pua_bla.md` |
 | `pua_dialoginfo` | The pua_dialoginfo retrieves dialog state information from the dialog module an… | `references/{version}/modules/pua_dialoginfo.md` |
@@ -112,25 +142,43 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `python` | This module can be used to efficiently run Python code directly from the OpenSI… | `references/{version}/modules/python.md` |
 | `qos` | The qos module provides a way to keep track of per dialog SDP session(s) | `references/{version}/modules/qos.md` |
 | `qrouting` | _qrouting_ is a module which sits on top of [drouting](../drouting/doc/drouting… | `references/{version}/modules/qrouting.md` |
+| `rabbitmq` | _RabbitMQ_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is an open so… | `references/{version}/modules/rabbitmq.md` |
+| `rabbitmq_consumer` | _RabbitMQ Consumer_ ([http://www.rabbitmq.com/](http://www.rabbitmq.com/)) is a… | `references/{version}/modules/rabbitmq_consumer.md` |
 | `rate_cacher` | The _rate_cacher_ module provides a means of caching and real-time querying of… | `references/{version}/modules/rate_cacher.md` |
 | `ratelimit` | This module implements rate limiting for SIP requests | `references/{version}/modules/ratelimit.md` |
 | `regex` | This module offers matching operations against regular expressions using the po… | `references/{version}/modules/regex.md` |
 | `registrar` | The module contains SIP REGISTER request processing logic, per RFC 3261 | `references/{version}/modules/registrar.md` |
+| `rest_client` | The _rest_client_ module provides a means of interacting with an HTTP server by… | `references/{version}/modules/rest_client.md` |
 | `rls` | The modules is a Resource List Server implementation following the specificatio… | `references/{version}/modules/rls.md` |
 | `rr` | The module contains record routing logic | `references/{version}/modules/rr.md` |
+| `rtp_relay` | The purpose of this module is to simplify the usage of different RTP Relays Ser… | `references/{version}/modules/rtp_relay.md` |
+| `rtpengine` | This is a module that enables media streams to be proxied via an RTP proxy | `references/{version}/modules/rtpengine.md` |
+| `rtpproxy` | This module is used by OpenSIPS to communicate with RTPProxy, a media relay pro… | `references/{version}/modules/rtpproxy.md` |
 | `script_helper` | The purpose of the Script Helper module is to simplify the scripting process in… | `references/{version}/modules/script_helper.md` |
 | `signaling` | The SIGNALING module comes as a wrapper over tm and sl modules and offers one f… | `references/{version}/modules/signaling.md` |
 | `sip_i` | This module offers the possibility of processing ISDN User Part(ISUP) messages… | `references/{version}/modules/sip_i.md` |
+| `sipcapture` | Offer a possibility to store incoming/outgoing SIP messages in database | `references/{version}/modules/sipcapture.md` |
 | `sipmsgops` | The module implements SIP based operations over the messages processed by OpenS… | `references/{version}/modules/sipmsgops.md` |
+| `siprec` | This module provides the means to do calls recording using an external recorder… | `references/{version}/modules/siprec.md` |
 | `sl` | The SL module allows OpenSIPS to act as a stateless UA server and generate repl… | `references/{version}/modules/sl.md` |
+| `sngtc` | The **Sangoma transcoding module** offers the possibility of performing voice t… | `references/{version}/modules/sngtc.md` |
+| `snmpstats` | The SNMPStats module provides an SNMP management interface to OpenSIPS | `references/{version}/modules/snmpstats.md` |
 | `speeddial` | This module provides on-server speed dial facilities | `references/{version}/modules/speeddial.md` |
 | `sql_cacher` | The sql_cacher module introduces the possibility to cache data from a SQL-based… | `references/{version}/modules/sql_cacher.md` |
 | `sqlops` | SQLops (SQL-operations) modules implements a set of script functions for generi… | `references/{version}/modules/sqlops.md` |
 | `sst` | The sst module provides a way to update the dialog expire timer based on the SI… | `references/{version}/modules/sst.md` |
+| `statistics` | The Statistics module is a wrapper over the internal statistics manager, allowi… | `references/{version}/modules/statistics.md` |
+| `status_report` | The Status/Report module is a wrapper over the internal status/report framework… | `references/{version}/modules/status_report.md` |
 | `stir_shaken` | This module adds support for implementing STIR/SHAKEN (RFC 8224, RFC 8588) Auth… | `references/{version}/modules/stir_shaken.md` |
+| `stun` | A stun server working with the same port as SIP (5060) in order to gain accurat… | `references/{version}/modules/stun.md` |
+| `tcp_mgm` | This module provides optional, SQL-based support for fine-grained management of… | `references/{version}/modules/tcp_mgm.md` |
 | `textops` | The module implements text based operations over the SIP message processed by O… | `references/{version}/modules/textops.md` |
+| `tls_mgm` | This module is a management module for TLS certificates and parameters | `references/{version}/modules/tls_mgm.md` |
+| `tls_openssl` | This module implements TLS operations using the openSSL libarary | `references/{version}/modules/tls_openssl.md` |
+| `tls_wolfssl` | This module implements TLS operations using the [_wolfSSL_](https://www.wolfssl… | `references/{version}/modules/tls_wolfssl.md` |
 | `tm` | TM module enables stateful processing of SIP transactions | `references/{version}/modules/tm.md` |
 | `topology_hiding` | This is a module which provides topology hiding capabilities | `references/{version}/modules/topology_hiding.md` |
+| `tracer` | Offer a possibility to store incoming/outgoing SIP messages in database | `references/{version}/modules/tracer.md` |
 | `uac` | UAC (User Agent Client) module provides some basic UAC functionalities like FRO… | `references/{version}/modules/uac.md` |
 | `uac_auth` | UAC AUTH (User Agent Client Authentication) module provides a common API for bu… | `references/{version}/modules/uac_auth.md` |
 | `uac_redirect` | UAC REDIRECT - User Agent Client redirection - module enhance OpenSIPS with the… | `references/{version}/modules/uac_redirect.md` |
@@ -140,6 +188,7 @@ Generated reference for OpenSIPs 3.5. This file is the module catalog for the `o
 | `uuid` | This module provides a way to generate universally unique identifiers (UUID) as… | `references/{version}/modules/uuid.md` |
 | `xcap` | The module contains several parameters and functions common to all modules usin… | `references/{version}/modules/xcap.md` |
 | `xcap_client` | The modules is an XCAP client for OpenSIPS that can be used by other modules | `references/{version}/modules/xcap_client.md` |
+| `xmpp` | This modules is a gateway between OpenSIPS and a jabber server | `references/{version}/modules/xmpp.md` |
 ## How to use this file
 
 The per-module reference file under `references/{version}/modules/{slug}.md` is the authoritative source of truth for everything that module exports. Read it before answering. Do not infer module behavior from training-data priors; the priors are unreliable across the SER lineage and across OpenSIPs versions.

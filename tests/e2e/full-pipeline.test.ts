@@ -151,7 +151,7 @@ describe("full pipeline E2E", () => {
   );
 
   it(
-    "handles --only 3.5 (no guides directory) correctly",
+    "handles --only 3.5 correctly",
     async () => {
       const code = await main([
         "--only",
@@ -173,7 +173,7 @@ describe("full pipeline E2E", () => {
       const moduleFiles = readdirSync(modulesDir).filter((f) =>
         f.endsWith(".md"),
       );
-      expect(moduleFiles).toHaveLength(137);
+      expect(moduleFiles.length).toBeGreaterThanOrEqual(186);
 
       const coreDir = join(
         tmpRoot,
@@ -185,8 +185,6 @@ describe("full pipeline E2E", () => {
       const coreFiles = readdirSync(coreDir).filter((f) => f.endsWith(".md"));
       expect(coreFiles).toHaveLength(12);
 
-      // 3.5 has no guides/ directory in the source; the orchestrator must
-      // not emit a guides output dir (or if it does, it must be empty).
       const guidesDir = join(
         tmpRoot,
         "opensips-config",
@@ -194,12 +192,11 @@ describe("full pipeline E2E", () => {
         "3.5",
         "guides",
       );
-      if (existsSync(guidesDir)) {
-        const guideFiles = readdirSync(guidesDir).filter((f) =>
-          f.endsWith(".md"),
-        );
-        expect(guideFiles).toHaveLength(0);
-      }
+      expect(existsSync(guidesDir)).toBe(true);
+      const guideFiles = readdirSync(guidesDir).filter((f) =>
+        f.endsWith(".md"),
+      );
+      expect(guideFiles.length).toBeGreaterThan(0);
 
       const consolidatedPath = join(
         tmpRoot,
@@ -213,13 +210,13 @@ describe("full pipeline E2E", () => {
     { timeout: 60_000 },
   );
 
-  it("returns exit code 0 for --only 3.4 (skipped via .broken marker)", async () => {
-    // Per M9, data/3.4/.broken signals the upstream-bug version is
-    // intentionally skipped: the orchestrator emits a "Skipping 3.4"
-    // warning on stderr and exits 0 with no files written. This replaces
-    // the previous "exit 3 on validation failure" expectation; once the
-    // upstream JSON-parse defect is fixed and the marker file deleted,
-    // 3.4 will rejoin the build dynamically (no code change).
+  it("returns exit code 0 for --only 3.4 (full build)", async () => {
+    // 3.4 was previously skipped via a .broken marker due to an upstream
+    // JSON parse defect in core/variables.json. The defect has since been
+    // repaired inline and the marker removed, so 3.4 now builds end-to-end
+    // alongside the other versions. The .broken-marker skip mechanism
+    // itself is still covered by tests/unit/lib/discover.test.ts and the
+    // synthesized-fixture test below.
     const code = await main([
       "--only",
       "3.4",
@@ -230,18 +227,19 @@ describe("full pipeline E2E", () => {
     ]);
     expect(code).toBe(0);
 
-    const stderrText = stderrSpy.mock.calls.map((c) => String(c[0])).join("");
-    expect(stderrText).toMatch(/Skipping 3\.4: marked as broken upstream/);
-
-    // No files should have been written for the skipped version.
     const modulesDir = join(
       tmpRoot,
       "opensips-config",
       "references",
       "3.4",
+      "modules",
     );
-    expect(existsSync(modulesDir)).toBe(false);
-  });
+    expect(existsSync(modulesDir)).toBe(true);
+    const moduleFiles = readdirSync(modulesDir).filter((f) =>
+      f.endsWith(".md"),
+    );
+    expect(moduleFiles.length).toBeGreaterThan(0);
+  }, { timeout: 60_000 });
 
   it("returns exit code 2 on a usage error (--quiet --verbose mutex)", async () => {
     const code = await main(["--quiet", "--verbose"]);

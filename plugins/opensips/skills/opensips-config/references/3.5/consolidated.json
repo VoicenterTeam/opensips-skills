@@ -472,6 +472,26 @@
         "path": "references/3.5/modules/nat_traversal.md",
         "source": "module:nat_traversal"
       },
+      "cluster_broadcast_req": {
+        "description": "This function has a similar behaviour to the `cluster_send_req()` function with the exception that the message is sent to all the nodes in the specified cluster.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "cluster_check_addr": {
+        "description": "This function checks whether the given IP address belongs to one of the nodes in the cluster.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "cluster_send_req": {
+        "description": "This function is used to send a generic, request-like message, containing custom data, to a specific node in a cluster, directly from the script.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "cluster_send_rpl": {
+        "description": "This function is used to send a generic, reply-like message, containing custom data, to a specific node in a cluster, directly from the script.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
       "codec_delete": {
         "description": "This function can be used to delete a codec from inside an sdp payload.",
         "path": "references/3.5/modules/sipmsgops.md",
@@ -527,6 +547,11 @@
         "path": "references/3.5/modules/auth.md",
         "source": "module:auth"
       },
+      "correlate": {
+        "description": "Send a hep message with an extra correlation id containing the two correlation given as arguments.",
+        "path": "references/3.5/modules/proto_hep.md",
+        "source": "module:proto_hep"
+      },
       "cost_based_filtering": {
         "description": "For a call originating from the provided Client ID, on a wholesale or retail quality, going to dialled_no, the function removes the Vendors ( from the vendor_csv list ) which do not pass the desired_m…",
         "path": "references/3.5/modules/rate_cacher.md",
@@ -571,6 +596,11 @@
         "description": "This function loads the carrier and stores it in an AVP.",
         "path": "references/3.5/modules/carrierroute.md",
         "source": "module:carrierroute"
+      },
+      "create_dialog": {
+        "description": "The function creats the dialog for the currently processed request.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "db_does_uri_exist": {
         "description": "Checks if the username@domain from the given URI is an existing user in a 'SUBSCRIBER' like table.",
@@ -631,6 +661,36 @@
         "description": "This function is to be used only from a branch route for setting a per-branch callee/peer specification.",
         "path": "references/3.5/modules/pua_dialoginfo.md",
         "source": "module:pua_dialoginfo"
+      },
+      "dlg_on_answer": {
+        "description": "The function arms a script route to be executed when the current dialog will be later answered.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_on_hangup": {
+        "description": "The function arms a script route to be executed when the current dialog will be terminated.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_on_timeout": {
+        "description": "The function arms a script route to be executed when (and if) the current dialog will timeout (as duration).",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_send_sequential": {
+        "description": "Used to send an in-dialog request towards one if the dialog's legs.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dm_send_answer": {
+        "description": "Send back a Diameter answer message to the interconnected peer in a non-blocking fashion, in response to its request.",
+        "path": "references/3.5/modules/aaa_diameter.md",
+        "source": "module:aaa_diameter"
+      },
+      "dm_send_request": {
+        "description": "Perform a blocking Diameter request over to the interconnected peer and return the Result-Code AVP value from the reply.",
+        "path": "references/3.5/modules/aaa_diameter.md",
+        "source": "module:aaa_diameter"
       },
       "do_accounting": {
         "description": "do_accounting() replaces all the *_flag and, *_missed_flag, cdr_flag, failed transaction_flag and the db_table_avp modparams.",
@@ -737,6 +797,16 @@
         "path": "references/3.5/modules/mangler.md",
         "source": "module:mangler"
       },
+      "end_media_session": {
+        "description": "Will call on the dispatcher to inform the media relay to end the media session.",
+        "path": "references/3.5/modules/mediaproxy.md",
+        "source": "module:mediaproxy"
+      },
+      "engage_media_proxy": {
+        "description": "Trigger the use of MediaProxy for all the dialog requests and replies that have an SDP body.",
+        "path": "references/3.5/modules/mediaproxy.md",
+        "source": "module:mediaproxy"
+      },
       "enum_query": {
         "description": "The function performs an ENUM query on a given E.164 \"number\" (or R-URI username if \"number\" is missing) and rewrites the Request-URI with the result of the query.",
         "path": "references/3.5/modules/enum.md",
@@ -762,6 +832,11 @@
         "path": "references/3.5/modules/emergency.md",
         "source": "module:emergency"
       },
+      "fetch_dlg_value": {
+        "description": "Fetches from the dialog the value of attribute named name.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "fix_contact": {
         "description": "Will replace the IP and port in the Contact header with the IP and port the SIP message was received from.",
         "path": "references/3.5/modules/nat_traversal.md",
@@ -781,6 +856,11 @@
         "description": "Alters the SDP information in orer to facilitate NAT traversal.",
         "path": "references/3.5/modules/nathelper.md",
         "source": "module:nathelper"
+      },
+      "fix_route_dialog": {
+        "description": "The function forces an in dialog SIP message to contain the ruri, route headers and dst_uri, as specified by the internal data of the dialog it belongs to.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "force_rport": {
         "description": "Force_rport() adds the rport parameter to the first Via header.",
@@ -802,6 +882,11 @@
         "path": "references/3.5/core/functions.md",
         "source": "core"
       },
+      "freeswitch_esl": {
+        "description": "Run an arbitrary command on an arbitrary FreeSWITCH ESL socket.",
+        "path": "references/3.5/modules/freeswitch_scripting.md",
+        "source": "module:freeswitch_scripting"
+      },
       "get_accurate_time": {
         "description": "Fetch the current Unix time epoch with microsecond precision.",
         "path": "references/3.5/modules/cfgutils.md",
@@ -812,6 +897,26 @@
         "path": "references/3.5/modules/rate_cacher.md",
         "source": "module:rate_cacher"
       },
+      "get_dialog_info": {
+        "description": "The function extracts a dialog value from another dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "get_dialog_vals": {
+        "description": "The function fetches all the dialog variables of another dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "get_dialogs_by_profile": {
+        "description": "The function looks up through the whole dialog table for dialogs configured to be within the provided dialog profile name, and optionally with the provided profile value.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "get_dialogs_by_val": {
+        "description": "The function looks up through the whole dialog table for dialogs containing a $dlg_val with the provided name and value, and returns all the $DLG_ctx_json variables for the matched dialogs, storing th…",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "get_dynamic_lock": {
         "description": "Acquire the dynamic lock corresponding to \"key\".",
         "path": "references/3.5/modules/cfgutils.md",
@@ -821,6 +926,11 @@
         "description": "Populates the hdr_names_avp and hdr_vals_avp AVPs with all the header names and values that match the hdr_name_glob pattern.",
         "path": "references/3.5/modules/sipmsgops.md",
         "source": "module:sipmsgops"
+      },
+      "get_profile_size": {
+        "description": "Returns the number of dialogs belonging to a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "get_redirects": {
         "description": "The function may be called only from failure routes.",
@@ -862,6 +972,26 @@
         "path": "references/3.5/modules/drouting.md",
         "source": "module:drouting"
       },
+      "h350_auth_lookup": {
+        "description": "This function performs an LDAP search query for SIP digest authentication credentials in an H.350 directory.",
+        "path": "references/3.5/modules/h350.md",
+        "source": "module:h350"
+      },
+      "h350_result_call_preferences": {
+        "description": "This function parses the callPreferenceURI attribute of an H.350 commObject, which must have been fetched through _h350_*_lookup_ or _ldap_search_.",
+        "path": "references/3.5/modules/h350.md",
+        "source": "module:h350"
+      },
+      "h350_result_service_level": {
+        "description": "_Directory services architecture for SIP_ [[H.350.4]](#H350-4 \"Directory services architecture for SIP\") defines a multi-valued LDAP attribute named SIPIdentityServiceLevel, which can be used to store…",
+        "path": "references/3.5/modules/h350.md",
+        "source": "module:h350"
+      },
+      "h350_sipuri_lookup": {
+        "description": "This function performs an LDAP search query for an H.350 commObject with a SIPIdentitySIPURI of `sip_uri`.",
+        "path": "references/3.5/modules/h350.md",
+        "source": "module:h350"
+      },
       "handle_publish": {
         "description": "The function handles PUBLISH requests.",
         "path": "references/3.5/modules/presence.md",
@@ -882,6 +1012,36 @@
         "path": "references/3.5/modules/sipmsgops.md",
         "source": "module:sipmsgops"
       },
+      "hep_del": {
+        "description": "Removes a hep chunk.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
+      "hep_get": {
+        "description": "Set a hep chunk.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
+      "hep_relay": {
+        "description": "Relay a message statefully to destination indicated in current URI.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
+      "hep_resume_sip": {
+        "description": "Break hep route execution and resume into the main request route.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
+      "hep_set": {
+        "description": "Set a hep chunk.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
+      "http2_send_response": {
+        "description": "Sends a response for the HTTP/2 request being processed.",
+        "path": "references/3.5/modules/http2d.md",
+        "source": "module:http2d"
+      },
       "i_enum_query": {
         "description": "The function performs an enum query and rewrites the Request-URI with the result of the query.",
         "path": "references/3.5/modules/enum.md",
@@ -897,6 +1057,11 @@
         "path": "references/3.5/modules/sipmsgops.md",
         "source": "module:sipmsgops"
       },
+      "ipsec_create": {
+        "description": "Creates an IPSec SA/tunnel according to the _Security-Client_ header and the AKA information received in the 401 reply.",
+        "path": "references/3.5/modules/proto_ipsec.md",
+        "source": "module:proto_ipsec"
+      },
       "is_audio_on_hold": {
         "description": "The function returns true if the SIP message has an SDP body attached and at least one audio stream in on hold.",
         "path": "references/3.5/modules/sipmsgops.md",
@@ -911,6 +1076,11 @@
         "description": "The function checks the flow direction of the request.",
         "path": "references/3.5/modules/rr.md",
         "source": "module:rr"
+      },
+      "is_dlg_flag_set": {
+        "description": "Returns true if the dialog flag named flag is set.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "is_domain_local": {
         "description": "This function checks if the domain contained in the first parameter is local.",
@@ -937,6 +1107,11 @@
         "path": "references/3.5/modules/gflags.md",
         "source": "module:gflags"
       },
+      "is_in_profile": {
+        "description": "Checks if the current dialog belongs to a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "is_ip_registered": {
         "description": "The function returns true if there is at least one contact that has been registered from the IP in the IPvar variable ( and from the optional PORTvar variable ).",
         "path": "references/3.5/modules/registrar.md",
@@ -956,6 +1131,11 @@
         "description": "Test if the host and optionally the port represent one of the addresses that OpenSIPS listens on.",
         "path": "references/3.5/core/functions.md",
         "source": "core"
+      },
+      "is_peer_verified": {
+        "description": "Returns 1 if the message is received via TLS and the peer was verified during TLS connection handshake, otherwise it returns -1",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
       },
       "is_present_hf": {
         "description": "Return true if a header field is present in message.",
@@ -1037,6 +1217,16 @@
         "path": "references/3.5/modules/json.md",
         "source": "module:json"
       },
+      "jsonrpc_notification": {
+        "description": "Does a JSON-RPC notification to the JSON-RPC server indicated in the destination parameter, but unlike jsonrpc_request(), it does not wait for a reply from the JSON-RPC server.",
+        "path": "references/3.5/modules/jsonrpc.md",
+        "source": "module:jsonrpc"
+      },
+      "jsonrpc_request": {
+        "description": "Does a JSON-RPC request to the JSON-RPC server indicated in the destination parameter, and waits for a reply from it.",
+        "path": "references/3.5/modules/jsonrpc.md",
+        "source": "module:jsonrpc"
+      },
       "jwt_db_authorize": {
         "description": "The function will read the first param ( jwt_token ), extract the tag claim and then try to authenticate it against the DB secrets for the respective profile tag.",
         "path": "references/3.5/modules/auth_jwt.md",
@@ -1092,6 +1282,36 @@
         "path": "references/3.5/modules/load_balancer.md",
         "source": "module:load_balancer"
       },
+      "ld_feature_enabled": {
+        "description": "Function to evaluate a LaunchDarkly boolean feature flag\n\nReturns 1 if the flag was found TRUE or -1 otherwise.",
+        "path": "references/3.5/modules/launch_darkly.md",
+        "source": "module:launch_darkly"
+      },
+      "ldap_filter_url_encode": {
+        "description": "This function applies the following escaping rules to string and stores the result in AVP avp_spec: * -> \\2a, ( -> \\28, ) -> \\29, \\ -> \\5c, ? -> %3F.",
+        "path": "references/3.5/modules/ldap.md",
+        "source": "module:ldap"
+      },
+      "ldap_result": {
+        "description": "This function converts LDAP attribute values into AVPs for later use in the message routing script.",
+        "path": "references/3.5/modules/ldap.md",
+        "source": "module:ldap"
+      },
+      "ldap_result_check": {
+        "description": "This function compares ldap_attr_name's value with string_to_match for equality.",
+        "path": "references/3.5/modules/ldap.md",
+        "source": "module:ldap"
+      },
+      "ldap_result_next": {
+        "description": "An LDAP search operation can return multiple LDAP entries.",
+        "path": "references/3.5/modules/ldap.md",
+        "source": "module:ldap"
+      },
+      "ldap_search": {
+        "description": "Performs an LDAP search operation using given LDAP URL and stores result internally for later retrieval by ldap_result* functions.",
+        "path": "references/3.5/modules/ldap.md",
+        "source": "module:ldap"
+      },
       "list_hdr_add_option": {
         "description": "Add a new option/token at the end of the list in the body of the given header.",
         "path": "references/3.5/modules/sipmsgops.md",
@@ -1111,6 +1331,11 @@
         "description": "Old name of the lb_start_or_next() function.",
         "path": "references/3.5/modules/load_balancer.md",
         "source": "module:load_balancer"
+      },
+      "load_dialog_ctx": {
+        "description": "The function loads and switches to the context of the given dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "log": {
         "description": "Write text message to standard error terminal or syslog.",
@@ -1146,6 +1371,11 @@
         "description": "The method stores certain parts of the current SIP request (it should be called when the request type is MESSAGE and the destination user is offline or his UA does not support MESSAGE requests).",
         "path": "references/3.5/modules/msilo.md",
         "source": "module:msilo"
+      },
+      "match_dialog": {
+        "description": "This function is to be used to match a sequential (in-dialog) request to an ongoing dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "math_ceil": {
         "description": "Truncates a number, always towards +infinity.",
@@ -1246,6 +1476,11 @@
         "description": "If no Max-Forward header is present in the received request, a header will be added having the original value equal with “max_value”.",
         "path": "references/3.5/modules/maxfwd.md",
         "source": "module:maxfwd"
+      },
+      "mi": {
+        "description": "Runs an MI command in synchronous mode, blocking until a response is available.",
+        "path": "references/3.5/modules/mi_script.md",
+        "source": "module:mi_script"
       },
       "mid_registrar_lookup": {
         "description": "Function to be called when receiving requests from the main registrar (to be routed to the end-user).",
@@ -1447,6 +1682,21 @@
         "path": "references/3.5/modules/qrouting.md",
         "source": "module:qrouting"
       },
+      "rabbitmq_publish": {
+        "description": "Sends a publish message to a RabbitMQ server.",
+        "path": "references/3.5/modules/rabbitmq.md",
+        "source": "module:rabbitmq"
+      },
+      "radius_send_acct": {
+        "description": "This function can be used from the script to make custom radius authentication request.",
+        "path": "references/3.5/modules/aaa_radius.md",
+        "source": "module:aaa_radius"
+      },
+      "radius_send_auth": {
+        "description": "This function can be used from the script to make custom radius authentication request.",
+        "path": "references/3.5/modules/aaa_radius.md",
+        "source": "module:aaa_radius"
+      },
       "raise_event": {
         "description": "Raises from script an event through OpenSIPS Event Interface.",
         "path": "references/3.5/core/functions.md",
@@ -1567,6 +1817,11 @@
         "path": "references/3.5/modules/textops.md",
         "source": "module:textops"
       },
+      "report_capture": {
+        "description": "Save the message into the database.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
       "reportospusage": {
         "description": "This function should be called after receiving a BYE message.",
         "path": "references/3.5/modules/osp.md",
@@ -1577,10 +1832,20 @@
         "path": "references/3.5/modules/osp.md",
         "source": "module:osp"
       },
+      "reset_dlg_flag": {
+        "description": "Resets the dialog flag named flag to false.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "reset_gflag": {
         "description": "Reset the bit at the position “flag” in global flags.",
         "path": "references/3.5/modules/gflags.md",
         "source": "module:gflags"
+      },
+      "reset_stat": {
+        "description": "Resets to zero the value of the statistic variable.",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
       },
       "resetbflag": {
         "description": "Reset a flag for a specific branch (unset its value).",
@@ -1596,6 +1861,31 @@
         "description": "Reset a flag for currently processed message (unset its value).",
         "path": "references/3.5/core/functions.md",
         "source": "core"
+      },
+      "rest_append_hf": {
+        "description": "Append _txt_ to the HTTP headers of the subsequent request.",
+        "path": "references/3.5/modules/rest_client.md",
+        "source": "module:rest_client"
+      },
+      "rest_get": {
+        "description": "Perform a blocking HTTP GET on the given _url_ and return a representation of the resource.",
+        "path": "references/3.5/modules/rest_client.md",
+        "source": "module:rest_client"
+      },
+      "rest_init_client_tls": {
+        "description": "Force a specific TLS domain to be used at most once, during the next GET/POST/PUT request.",
+        "path": "references/3.5/modules/rest_client.md",
+        "source": "module:rest_client"
+      },
+      "rest_post": {
+        "description": "Perform a blocking HTTP POST on the given _url_.",
+        "path": "references/3.5/modules/rest_client.md",
+        "source": "module:rest_client"
+      },
+      "rest_put": {
+        "description": "Perform a blocking HTTP PUT on the given _url_.",
+        "path": "references/3.5/modules/rest_client.md",
+        "source": "module:rest_client"
       },
       "return": {
         "description": "The return() function allows you to return any integer value from a called route() block.",
@@ -1646,6 +1936,146 @@
         "description": "Function to trigger the direct routing to a given gateway (or list of gateways).",
         "path": "references/3.5/modules/drouting.md",
         "source": "module:drouting"
+      },
+      "rtp_relay_engage": {
+        "description": "Engages the RTP Relay _engine_ for the current initial INVITE.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "rtpengine_answer": {
+        "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_block_dtmf": {
+        "description": "This function will block the DTMF media sent from one of the endpoints.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_block_media": {
+        "description": "This function will block the media sent from one of the endpoints.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_delete": {
+        "description": "Tears down the RTPEngine session for the current call.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_manage": {
+        "description": "Manage the RTPEngine session - it combines the functionality of rtpengine_offer(), rtpengine_answer() and rtpengine_delete(), detecting internally based on message type and method which one to execute…",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_offer": {
+        "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_play_dtmf": {
+        "description": "This function instructs RTP to send the DTMF code to the participant of the call.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_play_media": {
+        "description": "This function will start playing a media file to one of the endpoints.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_start_forwarding": {
+        "description": "This function will start forwarding the media to a TLS destination specified in the _tls-send-to_ parmeter of RTPEngine.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_start_recording": {
+        "description": "This function will send a signal to the RTP proxy to record the RTP stream on the RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_stop_forwarding": {
+        "description": "This function will stop forwarding of the media previously started using the _rtpengine_start_forwarding()_ function.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_stop_media": {
+        "description": "This function will stop playing a media file previously started by a `rtpengine_play_media()` call.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_stop_recording": {
+        "description": "This function will send a signal to the RTP proxy to stop recording the RTP stream on the RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_unblock_dtmf": {
+        "description": "This function will resume/unblock the DTMF media sent from one of the endpoints.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_unblock_media": {
+        "description": "This function will resume/unblock the media sent from one of the endpoints.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_use_set": {
+        "description": "Sets the ID of the RTP proxy set to be used for the next rtpengine_delete(), rtpengine_offer(), rtpengine_answer() or rtpengine_manage() command.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpproxy_all_stats": {
+        "description": "This command gathers all RTP statistics available from RTP-Proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_answer": {
+        "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_engage": {
+        "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_offer": {
+        "description": "Rewrites SDP body to ensure that media is passed through an RTP proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_start_recording": {
+        "description": "This command will send a signal to the RTP-Proxy to record the RTP stream on the RTP-Proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_stats": {
+        "description": "This command gathers call RTP statistics from RTP-Proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_stop_stream2uac": {
+        "description": "Stop streaming of announcement/prompt/MOH started previously by the respective `rtpproxy_stream2xxx`.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_stop_stream2uas": {
+        "description": "Stop streaming of announcement/prompt/MOH started previously by the respective `rtpproxy_stream2xxx`.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_stream2uac": {
+        "description": "Instruct the RTPproxy to stream prompt/announcement pre-encoded with the makeann command from the RTPproxy distribution.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_stream2uas": {
+        "description": "Instruct the RTPproxy to stream prompt/announcement pre-encoded with the makeann command from the RTPproxy distribution.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_unforce": {
+        "description": "Tears down the RTPProxy session for the current call.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
       },
       "ruri_add_param": {
         "description": "Add to RURI an URI parameter formated as \"name=value\".",
@@ -1742,6 +2172,11 @@
         "path": "references/3.5/modules/signaling.md",
         "source": "module:signaling"
       },
+      "send_smpp_message": {
+        "description": "This function is used to convert a SIP message received in the OpenSIPS script to a SMPP PDU and send it to the _smsc_name (string)_ received as parameter.",
+        "path": "references/3.5/modules/proto_smpp.md",
+        "source": "module:proto_smpp"
+      },
       "serialize_branches": {
         "description": "Takes all currently added branches for parallel forking (e.g.",
         "path": "references/3.5/core/functions.md",
@@ -1771,6 +2206,21 @@
         "description": "Sets additional deny filters.",
         "path": "references/3.5/modules/uac_redirect.md",
         "source": "module:uac_redirect"
+      },
+      "set_dlg_flag": {
+        "description": "Sets the dialog flag named flag to true.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "set_dlg_profile": {
+        "description": "Inserts the current dialog into a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "set_dlg_sharing_tag": {
+        "description": "Marks the current dialog with the sharing tag _tag_name_.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "set_gflag": {
         "description": "Set the bit at the position “flag” in global flags.",
@@ -1847,6 +2297,11 @@
         "path": "references/3.5/modules/cfgutils.md",
         "source": "module:cfgutils"
       },
+      "sip_capture": {
+        "description": "Save the message into the database.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
       "sip_to_json": {
         "description": "Returns a JSON formatted representation of the current SIP message, containing first_line , headers and body json members Useful in cases when you want to pass a generic SIP message to a SIP agnostic …",
         "path": "references/3.5/modules/sipmsgops.md",
@@ -1856,6 +2311,21 @@
         "description": "The function returns true if the SIP message is properly built according to SIP RFC3261.",
         "path": "references/3.5/modules/sipmsgops.md",
         "source": "module:sipmsgops"
+      },
+      "siprec_pause_recording": {
+        "description": "Pauses the recording for the ongoing call.",
+        "path": "references/3.5/modules/siprec.md",
+        "source": "module:siprec"
+      },
+      "siprec_resume_recording": {
+        "description": "Resumes the recording for the ongoing call.",
+        "path": "references/3.5/modules/siprec.md",
+        "source": "module:siprec"
+      },
+      "siprec_start_recording": {
+        "description": "Calling this function on an initial INVITE engages call recording to SRS(s) for that call.",
+        "path": "references/3.5/modules/siprec.md",
+        "source": "module:siprec"
       },
       "sl_reply_error": {
         "description": "Sends back an error reply describing the nature of the last internal error.",
@@ -1871,6 +2341,21 @@
         "description": "Waits \"time\" seconds.",
         "path": "references/3.5/modules/cfgutils.md",
         "source": "module:cfgutils"
+      },
+      "sngtc_callee_answer": {
+        "description": "Handles the SDP offer from 200 OK responses, intersects both offers with the capabilities of the transcoding card and creates a new transcoding session on the card **only if** necessary.",
+        "path": "references/3.5/modules/sngtc.md",
+        "source": "module:sngtc"
+      },
+      "sngtc_caller_answer": {
+        "description": "Attaches an SDP body to the caller's ACK request, so that it matches the late SDP negotiation done by the UAS.",
+        "path": "references/3.5/modules/sngtc.md",
+        "source": "module:sngtc"
+      },
+      "sngtc_offer": {
+        "description": "The function strips off the SDP offer from a SIP INVITE, thus asking for another SDP offer from the opposite endpoint (late negotiation).",
+        "path": "references/3.5/modules/sngtc.md",
+        "source": "module:sngtc"
       },
       "sql_avp_delete": {
         "description": "Deletes from DB the AVPs corresponding to the given _source_.",
@@ -1927,15 +2412,35 @@
         "path": "references/3.5/modules/sqlops.md",
         "source": "module:sqlops"
       },
+      "sr_add_report": {
+        "description": "Adds a new report/log to a Status/Report group.This must have been defined via this module too.",
+        "path": "references/3.5/modules/status_report.md",
+        "source": "module:status_report"
+      },
       "sr_check_status": {
         "description": "Function to check the status of an 'status/report' identifier.",
         "path": "references/3.5/core/functions.md",
         "source": "core"
       },
+      "sr_set_status": {
+        "description": "Sets a new status (and details) for a Status/Report group.",
+        "path": "references/3.5/modules/status_report.md",
+        "source": "module:status_report"
+      },
       "sstCheckMin": {
         "description": "Check the current Session-Expires / MIN-SE values against the sst_min_se parameter value.",
         "path": "references/3.5/modules/sst.md",
         "source": "module:sst"
+      },
+      "stat_iter_init": {
+        "description": "Re-initializes \"iter\" in order to begin iterating through all statistics belonging to the given \"group\".",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
+      },
+      "stat_iter_next": {
+        "description": "Attempts to fetch the current statistic to which \"iter\" points.",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
       },
       "stir_shaken_auth": {
         "description": "This function performs the steps of an authentication service.",
@@ -1961,6 +2466,11 @@
         "description": "This function performs the steps of an verification service.",
         "path": "references/3.5/modules/stir_shaken.md",
         "source": "module:stir_shaken"
+      },
+      "store_dlg_value": {
+        "description": "Attaches to the dialog the value from the variable val under the name name.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "stream_delete": {
         "description": "This function can be used to delete a whole stream from inside an sdp payload.",
@@ -2137,6 +2647,11 @@
         "path": "references/3.5/modules/tm.md",
         "source": "module:tm"
       },
+      "test_and_set_dlg_flag": {
+        "description": "Atomically checks if the dialog flag named flag is equal to value.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "topology_hiding": {
         "description": "By calling this function on an initial request, the modules will hide the topology, meaning that it will strip and restore all the Via, Record-Route and Route headers and it will replace the contact w…",
         "path": "references/3.5/modules/topology_hiding.md",
@@ -2146,6 +2661,11 @@
         "description": "This function is to be used to match and fix a sequential request belong to an existing topology hiding dialog.",
         "path": "references/3.5/modules/topology_hiding.md",
         "source": "module:topology_hiding"
+      },
+      "trace": {
+        "description": "This function has replaced the _sip_trace()_ in OpenSIPS 3.0.",
+        "path": "references/3.5/modules/tracer.md",
+        "source": "module:tracer"
       },
       "ts_usec_delta": {
         "description": "This function returns the absolute difference between the two given timestamps.",
@@ -2217,15 +2737,40 @@
         "path": "references/3.5/modules/usrloc.md",
         "source": "module:usrloc"
       },
+      "unload_dialog_ctx": {
+        "description": "The function off-loads the loaded context of another dialog, exposing whatever dialog context was present before doing the load.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "unset_dlg_profile": {
+        "description": "Removes the current dialog from a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
       "unuse_blacklist": {
         "description": "Disables the DNS blacklist name received as parameter.",
         "path": "references/3.5/core/functions.md",
         "source": "core"
       },
+      "update_stat": {
+        "description": "Updates the value of the statistic variable with the new value.",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
+      },
+      "update_stat_series": {
+        "description": "Updates the value of a series statistic.",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
+      },
       "use_blacklist": {
         "description": "Enables the DNS blacklist name received as parameter.",
         "path": "references/3.5/core/functions.md",
         "source": "core"
+      },
+      "use_media_proxy": {
+        "description": "Will make a call to the dispatcher and replace the IPs and ports in the SDP body with the ones returned by the media relay for each supported media stream in the SDP body.",
+        "path": "references/3.5/modules/mediaproxy.md",
+        "source": "module:mediaproxy"
       },
       "use_next_gw": {
         "description": "The function takes the next available destination (set by do_routing, as alternative destinations) and pushes it into the RURI.",
@@ -2241,6 +2786,11 @@
         "description": "Generates a new UUID.",
         "path": "references/3.5/modules/uuid.md",
         "source": "module:uuid"
+      },
+      "validate_dialog": {
+        "description": "The function checks the current received requests against the dialog (internal data) it belongs to.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "validateospheader": {
         "description": "This function validates an OSP-Token specified in the OSP-Auth-Tokenheader field of the SIP message.",
@@ -2276,6 +2826,11 @@
         "description": "Allows various debugging / runtime / critical messages to be printed as the execution of the OpenSIPS script is done.",
         "path": "references/3.5/core/functions.md",
         "source": "core"
+      },
+      "xmpp_send_message": {
+        "description": "Converts SIP messages to XMPP(jabber) messages, in order to be relayed to a XMPP(jabber) client.",
+        "path": "references/3.5/modules/xmpp.md",
+        "source": "module:xmpp"
       }
     },
     "miCommandsByName": {
@@ -2368,6 +2923,11 @@
         "description": "Causes db_berkeley module to re-read the contents of specified table (or dbenv).",
         "path": "references/3.5/modules/db_berkeley.md",
         "source": "module:db_berkeley"
+      },
+      "bins_trace": {
+        "description": "set bins tracing on and off.",
+        "path": "references/3.5/modules/proto_bins.md",
+        "source": "module:proto_bins"
       },
       "bm_enable_global": {
         "description": "Enables/disables the module.",
@@ -2499,6 +3059,61 @@
         "path": "references/3.5/modules/presence.md",
         "source": "module:presence"
       },
+      "cluster_broadcast_mi": {
+        "description": "Dispatches a given MI command to be run on all the nodes in a cluster.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "cluster_send_mi": {
+        "description": "Dispatches a given MI command to be run on a specific node in the cluster.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_list": {
+        "description": "Lists information(node id, URL, link state with that node etc.) about the other nodes in each cluster.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_list_cap": {
+        "description": "Lists the registered capabilities and their states.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_list_shtags": {
+        "description": "Lists all known sharing tags and their states.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_list_topology": {
+        "description": "Lists each cluster's topology from the local node's perspective as an adjacency list.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_reload": {
+        "description": "Reloads data from the clusterer database.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_remove_node": {
+        "description": "Removes a node from the cluster's topology.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_set_cap_status": {
+        "description": "Sets the status(Enabled/Disabled) of a capability.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_set_status": {
+        "description": "Sets the status(Enabled/Disabled) of a node.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
+      "clusterer_shtag_set_active": {
+        "description": "Set the given sharing tag to the active state.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
       "cr_activate_host": {
         "description": "This command activates the specified host, i.e.",
         "path": "references/3.5/modules/carrierroute.md",
@@ -2563,6 +3178,46 @@
         "description": "Triggers the sending of NOTIFY messages containing a feature status update to all watchers.",
         "path": "references/3.5/modules/presence_dfks.md",
         "source": "module:presence_dfks"
+      },
+      "dlg_cluster_sync": {
+        "description": "This command will only take effect if dialog replication is enabled.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_db_sync": {
+        "description": "Will load all the information about the dialogs from the database in the OpenSIPS internal memory.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_end_dlg": {
+        "description": "Terminates an ongoing dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_list": {
+        "description": "Lists the description of the dialogs (calls).",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_list_ctx": {
+        "description": "The same as the “dlg_list” but including in the dialog description the associated context from modules sitting on top of the dialog module.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_push_var": {
+        "description": "Push or update a dialog value for the given list of dialog IDs / Call-IDs.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_restore_db": {
+        "description": "Restores the dialog table after a potential desynchronization event.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "dlg_send_sequential": {
+        "description": "Sends a sequential request within an ongoing dialog.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "domain_dump": {
         "description": "Causes domain module to dump hash indexes and domain names in its cache memory.",
@@ -2664,6 +3319,26 @@
         "path": "references/3.5/modules/fraud_detection.md",
         "source": "module:fraud_detection"
       },
+      "fs_list": {
+        "description": "Displays the current set of FreeSWITCH ESL sockets and the list of events that the module is subscribed to for each socket.",
+        "path": "references/3.5/modules/freeswitch_scripting.md",
+        "source": "module:freeswitch_scripting"
+      },
+      "fs_reload": {
+        "description": "Replaces the current set* of FreeSWITCH ESL sockets along with their respective events with the current data (ESL sockets and their events) found in the \"freeswitch\" table.",
+        "path": "references/3.5/modules/freeswitch_scripting.md",
+        "source": "module:freeswitch_scripting"
+      },
+      "fs_subscribe": {
+        "description": "Ensures that the given FreeSWITCH ESL socket is subscribed to the given list of events.",
+        "path": "references/3.5/modules/freeswitch_scripting.md",
+        "source": "module:freeswitch_scripting"
+      },
+      "fs_unsubscribe": {
+        "description": "Ensures that the given FreeSWITCH ESL socket is unsubscribed from the given list of events.",
+        "path": "references/3.5/modules/freeswitch_scripting.md",
+        "source": "module:freeswitch_scripting"
+      },
       "get_config_hash": {
         "description": "Return the stored config file hash.",
         "path": "references/3.5/modules/cfgutils.md",
@@ -2678,6 +3353,11 @@
         "description": "Prints the statistics (all, group or one) realtime values.",
         "path": "references/3.5/core/mi-commands.md",
         "source": "core"
+      },
+      "httpd_list_root_path": {
+        "description": "Lists all the registered http root paths into the httpd module.",
+        "path": "references/3.5/modules/httpd.md",
+        "source": "module:httpd"
       },
       "imc_list_members": {
         "description": "Listing of the members in IM Conferencing rooms.",
@@ -2718,6 +3398,11 @@
         "description": "Gets or sets the status (enabled or disabled) of a destination.",
         "path": "references/3.5/modules/load_balancer.md",
         "source": "module:load_balancer"
+      },
+      "list_all_profiles": {
+        "description": "Lists all the dialog profiles, along with 1 or 0 if the given profile has/does not have an associated value.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "list_blacklists": {
         "description": "The command lists all the defined (static or learned) blacklists from OpenSIPS.",
@@ -2829,6 +3514,11 @@
         "path": "references/3.5/modules/nathelper.md",
         "source": "module:nathelper"
       },
+      "pi_reload_tbls_and_cmds": {
+        "description": "Reloads the layout of the provisioning interface from the framework file.",
+        "path": "references/3.5/modules/pi_http.md",
+        "source": "module:pi_http"
+      },
       "pike_list": {
         "description": "Lists the nodes in the pike tree.",
         "path": "references/3.5/modules/pike.md",
@@ -2848,6 +3538,26 @@
         "description": "Lists all the presentity records.",
         "path": "references/3.5/modules/presence.md",
         "source": "module:presence"
+      },
+      "profile_end_dlgs": {
+        "description": "Terminate all ongoing dialogs from a specified profile, on a single dialog it performs the same operations as the command dlg_end_dlg",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "profile_get_size": {
+        "description": "Returns the number of dialogs belonging to a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "profile_get_values": {
+        "description": "Lists all the values belonging to a profile along with their count.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "profile_list_dlgs": {
+        "description": "Lists all the dialogs belonging to a profile.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "ps": {
         "description": "The command will list all all OpenSIPS processes, along with type and description.",
@@ -3069,6 +3779,51 @@
         "path": "references/3.5/modules/rls.md",
         "source": "module:rls"
       },
+      "rtp_relay_list": {
+        "description": "Lists all the RTP Relay sessions engaged.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "rtp_relay_update": {
+        "description": "Updates/Re-engages the RTP relays in all ongoing RTP relay sessions.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "rtp_relay_update_callid": {
+        "description": "Updates/Re-engages the RTP relays in all ongoing RTP relay sessions.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "rtpengine_enable": {
+        "description": "Enables/disables a RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_reload": {
+        "description": "Reloads all rtpengine sets from the database.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpengine_show": {
+        "description": "Displays all the RTP proxies and their information: set and status (disabled or not, weight and recheck_ticks).",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "rtpproxy_enable": {
+        "description": "Enables/Disables a rtp proxy.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_reload": {
+        "description": "Reload rtp proxies sets from database.",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
+      "rtpproxy_show": {
+        "description": "Displays all the rtp proxies and their information: set and status (disabled or not, weight and recheck_ticks).",
+        "path": "references/3.5/modules/rtpproxy.md",
+        "source": "module:rtpproxy"
+      },
       "sca_list": {
         "description": "It lists the appearances belonging to a shared line/call.",
         "path": "references/3.5/modules/b2b_sca.md",
@@ -3098,6 +3853,11 @@
         "description": "Set the value of a shared variable ($shv(name)).",
         "path": "references/3.5/modules/cfgutils.md",
         "source": "module:cfgutils"
+      },
+      "sip_capture": {
+        "description": "Turns on/off SIP message capturing.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
       },
       "sql_cacher_reload": {
         "description": "Reloads the entire SQL table in cache or the single key (if key provided) in _full caching_ mode.",
@@ -3168,6 +3928,51 @@
         "description": "Generates and sends a local SIP request.",
         "path": "references/3.5/modules/tm.md",
         "source": "module:tm"
+      },
+      "tcp_reload": {
+        "description": "Reload all TCP paths from the _tcp_mgm_ table without disrupting ongoing traffic.",
+        "path": "references/3.5/modules/tcp_mgm.md",
+        "source": "module:tcp_mgm"
+      },
+      "tcp_trace": {
+        "description": "set tcp tracing on and off.",
+        "path": "references/3.5/modules/proto_tcp.md",
+        "source": "module:proto_tcp"
+      },
+      "teardown": {
+        "description": "Terminates the SIP dialog by the SIP Call-ID given as parameter.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "tls_list": {
+        "description": "List all domains information.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "tls_reload": {
+        "description": "Reloads the TLS domains information from the database.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "tls_trace": {
+        "description": "",
+        "path": "references/3.5/modules/proto_tls.md",
+        "source": "module:proto_tls"
+      },
+      "trace": {
+        "description": "Enable/disable tracing(globally or for a specific trace id) or dump info about trace ids.",
+        "path": "references/3.5/modules/tracer.md",
+        "source": "module:tracer"
+      },
+      "trace_start": {
+        "description": "Creates a dynamic tracing destination based using custom filters.",
+        "path": "references/3.5/modules/tracer.md",
+        "source": "module:tracer"
+      },
+      "trace_stop": {
+        "description": "Stops OpenSIPS from sending traffic to a dynamic trace id created using the trace_start command.",
+        "path": "references/3.5/modules/tracer.md",
+        "source": "module:tracer"
       },
       "ua_session_client_start": {
         "description": "This command starts a new UAC session by sending an initial INVITE.",
@@ -3254,6 +4059,16 @@
         "path": "references/3.5/core/mi-commands.md",
         "source": "core"
       },
+      "ws_trace": {
+        "description": "set ws tracing on and off.",
+        "path": "references/3.5/modules/proto_ws.md",
+        "source": "module:proto_ws"
+      },
+      "wss_trace": {
+        "description": "set wss tracing on and off.",
+        "path": "references/3.5/modules/proto_wss.md",
+        "source": "module:proto_wss"
+      },
       "xlog_level": {
         "description": "Get or set the global xlogging level in OpenSIPS processes.",
         "path": "references/3.5/core/mi-commands.md",
@@ -3271,6 +4086,19 @@
         "user_column"
       ],
       "XML Module": [
+      ],
+      "aaa_diameter": [
+        "aaa_url",
+        "answer_timeout",
+        "fd_log_level",
+        "peer_identity",
+        "realm"
+      ],
+      "aaa_radius": [
+        "fetch_all_values",
+        "radius_config",
+        "sets",
+        "syslog_name"
       ],
       "acc": [
         "aaa_url",
@@ -3572,6 +4400,34 @@
         "max_async_connections",
         "retry_timeout"
       ],
+      "clusterer": [
+        "cluster_id_col",
+        "db_mode",
+        "db_table",
+        "db_url",
+        "description_col",
+        "dispatch_jobs",
+        "enable_rerouting",
+        "enable_stats",
+        "flags_col",
+        "id_col",
+        "my_node_id",
+        "my_node_info",
+        "neighbor_node_info",
+        "no_ping_retries_col",
+        "node_id_col",
+        "node_timeout",
+        "ping_interval",
+        "ping_timeout",
+        "priority_col",
+        "seed_fallback_interval",
+        "sharing_tag",
+        "sip_addr_col",
+        "state_col",
+        "sync_packet_size",
+        "sync_timeout",
+        "url_col"
+      ],
       "compression": [
         "mc_level"
       ],
@@ -3656,6 +4512,61 @@
         "db_max_consec_retrys",
         "db_probe_time",
         "db_urls"
+      ],
+      "dialog": [
+        "cachedb_url",
+        "call_id_column",
+        "cluster_auto_sync",
+        "db_flush_vals_profiles",
+        "db_mode",
+        "db_update_period",
+        "db_url",
+        "default_timeout",
+        "delete_delay",
+        "dialog_replication_cluster",
+        "dlg_extra_hdrs",
+        "dlg_id_column",
+        "dlg_match_mode",
+        "enable_stats",
+        "flags_column",
+        "from_contact_column",
+        "from_cseq_column",
+        "from_route_column",
+        "from_sock_column",
+        "from_tag_column",
+        "from_uri_column",
+        "hash_size",
+        "log_profile_hash_size",
+        "mflags_column",
+        "options_ping_interval",
+        "profile_no_value_prefix",
+        "profile_replication_cluster",
+        "profile_size_prefix",
+        "profile_timeout",
+        "profile_value_prefix",
+        "profiles_column",
+        "profiles_no_value",
+        "profiles_with_value",
+        "race_condition_timeout",
+        "reinvite_ping_interval",
+        "replicate_profiles_buffer",
+        "replicate_profiles_check",
+        "replicate_profiles_expire",
+        "replicate_profiles_timer",
+        "rr_param",
+        "sflags_column",
+        "start_time_column",
+        "state_column",
+        "table_name",
+        "timeout_column",
+        "timer_bulk_del_no",
+        "to_contact_column",
+        "to_cseq_column",
+        "to_route_column",
+        "to_sock_column",
+        "to_tag_column",
+        "to_uri_column",
+        "vars_column"
       ],
       "dialplan": [
         "attrs_col",
@@ -3857,6 +4768,22 @@
         "totalc_thresh_warn_col",
         "use_utc_time"
       ],
+      "freeswitch": [
+        "esl_cmd_polling_itv",
+        "esl_cmd_timeout",
+        "esl_connect_timeout",
+        "event_heartbeat_interval"
+      ],
+      "freeswitch_scripting": [
+        "db_col_events",
+        "db_col_ip",
+        "db_col_password",
+        "db_col_port",
+        "db_col_username",
+        "db_table",
+        "db_url",
+        "fs_subscribe"
+      ],
       "gflags": [
         "initial"
       ],
@@ -3872,6 +4799,29 @@
         "table",
         "use_domain",
         "user_column"
+      ],
+      "h350": [
+        "base_dn",
+        "ldap_session",
+        "search_scope"
+      ],
+      "http2d": [
+        "ip",
+        "max_headers_size",
+        "port",
+        "response_timeout",
+        "tls_cert_key",
+        "tls_cert_path"
+      ],
+      "httpd": [
+        "buf_size",
+        "conn_timeout",
+        "ip",
+        "port",
+        "post_buf_size",
+        "tls_cert_file",
+        "tls_ciphers",
+        "tls_key_file"
       ],
       "identity": [
         "authCert",
@@ -3909,6 +4859,21 @@
       "json": [
         "enable_long_quoting"
       ],
+      "jsonrpc": [
+        "connect_timeout",
+        "read_timeout",
+        "write_timeout"
+      ],
+      "launch_darkly": [
+        "connect_wait",
+        "ld_log_level",
+        "re_init_interval",
+        "sdk_key"
+      ],
+      "ldap": [
+        "config_file",
+        "max_async_connections"
+      ],
       "load_balancer": [
         "cluster_id",
         "cluster_sharing_tag",
@@ -3940,6 +4905,15 @@
       ],
       "media_exchange": [
       ],
+      "mediaproxy": [
+        "disable",
+        "ice_candidate",
+        "ice_candidate_avp",
+        "media_relay_avp",
+        "mediaproxy_socket",
+        "mediaproxy_timeout",
+        "signaling_ip_avp"
+      ],
       "mi_datagram": [
         "children_count",
         "pretty_printing",
@@ -3964,6 +4938,21 @@
       "mi_html": [
         "http_method",
         "root",
+        "trace_bwlist",
+        "trace_destination"
+      ],
+      "mi_http": [
+        "root",
+        "trace_bwlist",
+        "trace_destination"
+      ],
+      "mi_script": [
+        "pretty_printing",
+        "trace_bwlist",
+        "trace_destination"
+      ],
+      "mi_xmlrpc_ng": [
+        "http_root",
         "trace_bwlist",
         "trace_destination"
       ],
@@ -4043,6 +5032,24 @@
         "hash_size",
         "message_timeout",
         "session_timeout"
+      ],
+      "msrp_relay": [
+        "auth_expires",
+        "auth_max_expires",
+        "auth_min_expires",
+        "auth_realm",
+        "auth_route",
+        "calculate_ha1",
+        "cleanup_interval",
+        "dst_host_var",
+        "dst_schema_var",
+        "hash_size",
+        "my_uri",
+        "nonce_expire",
+        "password_var",
+        "realm_var",
+        "socket_route",
+        "username_var"
       ],
       "msrp_ua": [
         "advertised_contact",
@@ -4170,6 +5177,11 @@
         "port_col",
         "proto_col"
       ],
+      "pi_http": [
+        "framework",
+        "pi_http_method",
+        "pi_http_root"
+      ],
       "pike": [
         "check_route",
         "pike_log_level",
@@ -4231,6 +5243,142 @@
         "pres_rules_auid",
         "pres_rules_filename",
         "xcap_server"
+      ],
+      "prometheus": [
+        "delimiter",
+        "group_label",
+        "group_mode",
+        "group_prefix",
+        "labels",
+        "prefix",
+        "root",
+        "script_route",
+        "script_route_avp_result",
+        "statistics"
+      ],
+      "proto_bin": [
+        "bin_async",
+        "bin_async_local_connect_timeout",
+        "bin_async_local_write_timeout",
+        "bin_async_max_postponed_chunks",
+        "bin_max_msg_chunks",
+        "bin_port",
+        "bin_send_timeout"
+      ],
+      "proto_bins": [
+        "bins_async",
+        "bins_async_handshake_timeout",
+        "bins_async_local_connect_timeout",
+        "bins_async_max_postponed_chunks",
+        "bins_handshake_timeout",
+        "bins_max_msg_chunks",
+        "bins_port",
+        "bins_send_timeout",
+        "trace_destination",
+        "trace_on"
+      ],
+      "proto_hep": [
+        "hep_async",
+        "hep_async_local_connect_timeout",
+        "hep_async_local_write_timeout",
+        "hep_async_max_postponed_chunks",
+        "hep_capture_id",
+        "hep_id",
+        "hep_max_msg_chunks",
+        "hep_port",
+        "hep_send_timeout",
+        "homer5_delim",
+        "homer5_on"
+      ],
+      "proto_ipsec": [
+        "allowed_algorithms",
+        "default_client_port",
+        "default_server_port",
+        "disable_deprecated_algorithms",
+        "max_spi",
+        "min_spi",
+        "port",
+        "temporary_timeout"
+      ],
+      "proto_sctp": [
+        "sctp_port"
+      ],
+      "proto_smpp": [
+        "db_url",
+        "dst_npi_col",
+        "dst_ton_col",
+        "ip_col",
+        "name_col",
+        "outbound_uri",
+        "password_col",
+        "port_col",
+        "session_type_col",
+        "smpp_max_msg_chunks",
+        "smpp_port",
+        "smpp_send_timeout",
+        "smpp_table",
+        "src_npi_col",
+        "src_ton_col",
+        "system_id_col",
+        "system_type_col"
+      ],
+      "proto_tcp": [
+        "tcp_async",
+        "tcp_async_local_connect_timeout",
+        "tcp_async_local_write_timeout",
+        "tcp_async_max_postponed_chunks",
+        "tcp_crlf_drop",
+        "tcp_crlf_pingpong",
+        "tcp_max_msg_chunks",
+        "tcp_parallel_handling",
+        "tcp_port",
+        "tcp_send_timeout",
+        "trace_destination",
+        "trace_filter_route",
+        "trace_on"
+      ],
+      "proto_tls": [
+        "cert_check_on_conn_reusage",
+        "listen",
+        "tls_async",
+        "tls_async_handshake_timeout",
+        "tls_async_local_connect_timeout",
+        "tls_async_max_postponed_chunks",
+        "tls_crlf_drop",
+        "tls_crlf_pingpong",
+        "tls_handshake_timeout",
+        "tls_max_msg_chunks",
+        "tls_port",
+        "tls_send_timeout",
+        "trace_destination",
+        "trace_filter_route",
+        "trace_on"
+      ],
+      "proto_udp": [
+        "udp_port"
+      ],
+      "proto_ws": [
+        "require_origin",
+        "trace_destination",
+        "trace_filter_route",
+        "trace_on",
+        "ws_max_msg_chunks",
+        "ws_port",
+        "ws_send_timeout"
+      ],
+      "proto_wss": [
+        "cert_check_on_conn_reusage",
+        "listen",
+        "require_origin",
+        "trace_destination",
+        "trace_filter_route",
+        "trace_on",
+        "wss_handshake_timeout",
+        "wss_max_msg_chunks",
+        "wss_port",
+        "wss_resource",
+        "wss_send_timeout",
+        "wss_tls_handshake_timeout"
       ],
       "pua": [
         "cluster_id",
@@ -4304,6 +5452,18 @@
         "sampling_interval",
         "table_name"
       ],
+      "rabbitmq": [
+        "connect_timeout",
+        "server_id",
+        "timeout",
+        "use_tls"
+      ],
+      "rabbitmq_consumer": [
+        "connect_timeout",
+        "connection_id",
+        "retry_timeout",
+        "use_tls"
+      ],
       "rate_cacher": [
         "clients_db_table",
         "clients_db_url",
@@ -4369,6 +5529,20 @@
         "sock_hdr_name",
         "tcp_persistent_flag"
       ],
+      "rest_client": [
+        "connect_poll_interval",
+        "connection_timeout",
+        "curl_conn_lifetime",
+        "curl_http_version",
+        "curl_timeout",
+        "enable_expect_100",
+        "max_async_transfers",
+        "max_transfer_size",
+        "no_concurrent_connects",
+        "ssl_capath",
+        "ssl_verifyhost",
+        "ssl_verifypeer"
+      ],
       "rls": [
         "clean_period",
         "contact_user",
@@ -4388,6 +5562,40 @@
         "enable_double_rr",
         "enable_socket_mismatch_warning"
       ],
+      "rtp_relay": [
+      ],
+      "rtpengine": [
+        "db_table",
+        "db_url",
+        "error_pv",
+        "extra_id_pv",
+        "notification_sock",
+        "rtpengine_disable_tout",
+        "rtpengine_retr",
+        "rtpengine_sock",
+        "rtpengine_timer_interval",
+        "rtpengine_tout",
+        "set_column",
+        "setid_avp",
+        "socket_column"
+      ],
+      "rtpproxy": [
+        "db_table",
+        "db_url",
+        "default_set",
+        "generated_sdp_media_ip",
+        "generated_sdp_port_max",
+        "generated_sdp_port_min",
+        "nortpproxy_str",
+        "rtpp_notify_socket",
+        "rtpp_socket_col",
+        "rtpproxy_autobridge",
+        "rtpproxy_disable_tout",
+        "rtpproxy_retr",
+        "rtpproxy_sock",
+        "rtpproxy_timeout",
+        "set_id_col"
+      ],
       "script_helper": [
         "create_dialog_flags",
         "sequential_route",
@@ -4401,10 +5609,41 @@
         "isup_mime_str",
         "param_subfield_separator"
       ],
+      "sipcapture": [
+        "capture_node",
+        "capture_on",
+        "db_url",
+        "hep_capture_on",
+        "hep_route",
+        "max_async_queries",
+        "promiscuous_on",
+        "raw_interface",
+        "raw_ipip_capture_on",
+        "raw_moni_bpf_on",
+        "raw_moni_capture_on",
+        "raw_sock_children",
+        "raw_socket_listen",
+        "rtcp_table_name",
+        "table_name"
+      ],
       "sipmsgops": [
+      ],
+      "siprec": [
+        "skip_failover_codes"
       ],
       "sl": [
         "enable_stats"
+      ],
+      "sngtc": [
+      ],
+      "snmpstats": [
+        "MsgQueueMajorThreshold",
+        "MsgQueueMinorThreshold",
+        "dlg_major_threshold",
+        "dlg_minor_threshold",
+        "sipEntityType",
+        "snmpCommunity",
+        "snmpgetPath"
       ],
       "speeddial": [
         "db_url",
@@ -4447,6 +5686,14 @@
         "sst_flag",
         "sst_interval"
       ],
+      "statistics": [
+        "stat_groups",
+        "stat_series_profile",
+        "variable"
+      ],
+      "status_report": [
+        "script_sr_group"
+      ],
       "stir_shaken": [
         "auth_date_freshness",
         "ca_dir",
@@ -4458,7 +5705,62 @@
         "require_date_hdr",
         "verify_date_freshness"
       ],
+      "stun": [
+        "alternate_ip",
+        "alternate_port",
+        "primary_ip",
+        "primary_port",
+        "use_listeners_as_primary"
+      ],
+      "tcp_mgm": [
+        "[column-name]_col",
+        "db_table",
+        "db_url"
+      ],
       "textops": [
+      ],
+      "tls_mgm": [
+        "ca_dir",
+        "ca_dir_col",
+        "ca_list",
+        "ca_list_col",
+        "certificate",
+        "certificate_col",
+        "cipher_list_col",
+        "ciphers_list",
+        "client_domain",
+        "client_sip_domain_avp",
+        "client_tls_domain_avp",
+        "crl_check_all",
+        "crl_check_all_col",
+        "crl_dir",
+        "crl_dir_col",
+        "db_table",
+        "db_url",
+        "dh_params",
+        "dh_params_col",
+        "domain_col",
+        "ec_curve",
+        "ec_curve_col",
+        "listen",
+        "match_ip_address",
+        "match_ip_address_col",
+        "match_sip_domain",
+        "match_sip_domain_col",
+        "private_key",
+        "private_key_col",
+        "require_cert",
+        "require_cert_col",
+        "server_domain",
+        "tls_library",
+        "tls_method",
+        "tls_method_col",
+        "verify_cert",
+        "verify_cert_col"
+      ],
+      "tls_openssl": [
+      ],
+      "tls_wolfssl": [
       ],
       "tm": [
         "T1_timer",
@@ -4495,6 +5797,14 @@
         "th_contact_encode_scheme",
         "th_passed_contact_params",
         "th_passed_contact_uri_params"
+      ],
+      "tracer": [
+        "file_mode",
+        "syslog_default_facility",
+        "syslog_default_level",
+        "trace_id",
+        "trace_local_ip",
+        "trace_on"
       ],
       "uac": [
         "force_dialog",
@@ -4592,6 +5902,15 @@
       "xcap_client": [
         "periodical_query",
         "query_period"
+      ],
+      "xmpp": [
+        "backend",
+        "outbound_proxy",
+        "sip_domain",
+        "xmpp_domain",
+        "xmpp_host",
+        "xmpp_password",
+        "xmpp_port"
       ]
     },
     "variablesByName": {
@@ -4614,6 +5933,66 @@
         "description": "the time difference elapsed between calls of bm_start_timer(name) and bm_log_timer(name).",
         "path": "references/3.5/modules/benchmark.md",
         "source": "module:benchmark"
+      },
+      "$DLG_count": {
+        "description": "Returns the number of current active dialogs (may be confirmed or not).",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_ctx_json": {
+        "description": "The variable is read-only and exposes a JSON variable containing all the information that the dlg_list_ctx MI function contains ( on top of $DLG_json, this will expose the full list of dialog vars and…",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_del_delay": {
+        "description": "Used to set the dialog deletion delay (in seconds) for the current dialog (in a per-call manner).",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_did": {
+        "description": "Returns the id of the dialog corresponding to the processed sequential request.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_dir": {
+        "description": "Returns the direction of the request in dialog (as \"upstream\" string if the request is generated by callee or \"downstream\" string if the request is generated by caller) - to be used for sequential req…",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_end_reason": {
+        "description": "Returns the reason for the dialog termination.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_flags": {
+        "description": "Returns the dialog flags (as a list of flag names separted by space) of the dialog corresponding to the processed sequential request.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_json": {
+        "description": "The variable is read-only and exposes a JSON variable containing all the information that the dlg_list MI function contains NULL will be returned if there is no dialog for the request, otherwise the J…",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_lifetime": {
+        "description": "Returns the duration (in seconds) of the dialog corresponding to the processed sequential request.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_status": {
+        "description": "Returns the status of the dialog corresponding to the processed sequential request.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$DLG_timeout": {
+        "description": "Used to set the dialog lifetime (in seconds).",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
+      },
+      "$HEPVERSION": {
+        "description": "Holds the version of the hep packet received on the interface.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
       },
       "$RANDOM": {
         "description": "Returns a random value from the [0 - 2^31) range.",
@@ -4855,6 +6234,11 @@
         "path": "references/3.5/core/variables.md",
         "source": "core"
       },
+      "$cluster.sh_tag": {
+        "description": "This is a read/write variable that allows access to the sharing tags managed by the clusterer module.",
+        "path": "references/3.5/modules/clusterer.md",
+        "source": "module:clusterer"
+      },
       "$cs": {
         "description": "reference to cseq number from cseq header",
         "path": "references/3.5/core/variables.md",
@@ -4904,6 +6288,11 @@
         "description": "reference to Diversion header \"reason\" parameter value",
         "path": "references/3.5/core/variables.md",
         "source": "core"
+      },
+      "$dlg_val(name)": {
+        "description": "This is a read/write variable that allows access to the dialog attribute named name.",
+        "path": "references/3.5/modules/dialog.md",
+        "source": "module:dialog"
       },
       "$dp": {
         "description": "reference to port of destination uri",
@@ -4980,10 +6369,25 @@
         "path": "references/3.5/core/variables.md",
         "source": "core"
       },
+      "$hep_net": {
+        "description": "Holds layer 3 and 4 information(IP addresses and ports) about the node from where the hep message was received.",
+        "path": "references/3.5/modules/sipcapture.md",
+        "source": "module:sipcapture"
+      },
       "$identity(field)": {
         "description": "This is a read-only pseudo-variable that provides access to the parsed information from the Identity header, through the following subnames:\n\n* _header_ - the entire PASSporT header;\n* _x5u_ - the val…",
         "path": "references/3.5/modules/stir_shaken.md",
         "source": "module:stir_shaken"
+      },
+      "$ipsec": {
+        "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the local IPSec endpoint.",
+        "path": "references/3.5/modules/proto_ipsec.md",
+        "source": "module:proto_ipsec"
+      },
+      "$ipsec_ue": {
+        "description": "Populated for a request that is being received over an IPSec tunnel, it contains information about the remote IPSec endpoint.",
+        "path": "references/3.5/modules/proto_ipsec.md",
+        "source": "module:proto_ipsec"
       },
       "$isup_msg_type": {
         "description": "Read-only variable, returns the ISUP message type as string.",
@@ -5215,6 +6619,36 @@
         "path": "references/3.5/core/variables.md",
         "source": "core"
       },
+      "$rtp_relay": {
+        "description": "Is used to provision the RTP back-end flags for the current peer - if used in the initial INVITE REQUEST route, it provisions the flags of the caller, whereas if used in the initial INVITE BRANCH/REPL…",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "$rtp_relay_ctx()": {
+        "description": "This variable can be used to provide information about the RTP context, information that is not associated with any of the involved peers.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "$rtp_relay_peer": {
+        "description": "This variable has the same meaning and parameters as the [$rtp_relay](#pv_rtp_relay \"1.6.1.$rtp_relay\") variable, except that it is used to provision the other UAC's flags, except the current one.",
+        "path": "references/3.5/modules/rtp_relay.md",
+        "source": "module:rtp_relay"
+      },
+      "$rtpquery": {
+        "description": "Does a Query command to the RTP proxy and returns the answer in a JSON format.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "$rtpstat": {
+        "description": "Returns the RTP statistics from the RTP proxy.",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
+      "$rtpstat(STAT)[index]": {
+        "description": "Returnes one of the pre-fined statistics listed below:\n\n* _MOS-average_ - without an index, it returns the average MOS value, expressed in an integer between 0 and 50, of all the RTP streams involved …",
+        "path": "references/3.5/modules/rtpengine.md",
+        "source": "module:rtpengine"
+      },
       "$ru": {
         "description": "reference to request's URI",
         "path": "references/3.5/core/variables.md",
@@ -5239,6 +6673,11 @@
         "description": "This variable returns the local To-tag that will be used by OpenSIPS for locally sending replies to the current SIP request.",
         "path": "references/3.5/modules/signaling.md",
         "source": "module:signaling"
+      },
+      "$siprec": {
+        "description": "Used to modify/describe different siprec sessions parameters that should be taken into account by the siprec_start_recording() function.",
+        "path": "references/3.5/modules/siprec.md",
+        "source": "module:siprec"
       },
       "$socket_in": {
         "description": "read-only variable to get the description (proto:ip:port format) of the inbound socket (used for receiving the message).",
@@ -5265,6 +6704,11 @@
         "path": "references/3.5/modules/sql_cacher.md",
         "source": "module:sql_cacher"
       },
+      "$stat": {
+        "description": "Allows \"get\" or \"reset\" operations on the given statistics.",
+        "path": "references/3.5/modules/statistics.md",
+        "source": "module:statistics"
+      },
       "$tU": {
         "description": "reference to username in URI of 'To' header",
         "path": "references/3.5/core/variables.md",
@@ -5279,6 +6723,121 @@
         "description": "returns the string formatted time according to UNIX date",
         "path": "references/3.5/core/variables.md",
         "source": "core"
+      },
+      "$tls_[peer|my]_[subject|issuer]": {
+        "description": "ASCII dump of the fields in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_cn": {
+        "description": "commonName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_country": {
+        "description": "countryName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_locality": {
+        "description": "localityName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_organization": {
+        "description": "organizationName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_state": {
+        "description": "stateOrProvinceName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_[subject|issuer]_unit": {
+        "description": "organizationalUnitName in the issuer/subject section of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_san_email": {
+        "description": "email address in the “subject alternative name” extension.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_san_hostname": {
+        "description": "hostname (DNS) in the “subject alternative name” extension.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_san_ip": {
+        "description": "ip address in the “subject alternative name” extension.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_san_uri": {
+        "description": "URI in the “subject alternative name” extension.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_serial": {
+        "description": "the serial number of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_[peer|my]_version": {
+        "description": "the version of the certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_cipher_bits": {
+        "description": "the number of cipher bits which are used on the TLS connection from which the message was received.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_cipher_info": {
+        "description": "the TLS/SSL cipher which is used on the TLS connection from which the message was received.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_description": {
+        "description": "the TLS/SSL description of the TLS connection from which the message was received.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_expired": {
+        "description": "Returns 1 if the peer's certificate is expired.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_notAfter": {
+        "description": "Returns the notAfter validity date of the peer's certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_notBefore": {
+        "description": "Returns the notBefore validity date of the peer's certificate.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_revoked": {
+        "description": "Returns 1 if the peer's certificate was revoked.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_selfsigned": {
+        "description": "Returns 1 if the peer's certificate is selfsigned.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_peer_verified": {
+        "description": "Returns 1 if the peer's certificate was successful verified.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
+      },
+      "$tls_version": {
+        "description": "the TLS/SSL version which is used on the TLS connection from which the message was received.",
+        "path": "references/3.5/modules/tls_mgm.md",
+        "source": "module:tls_mgm"
       },
       "$tn": {
         "description": "reference to display name of 'To' header",
@@ -5329,6 +6888,15 @@
       ],
       "XML Module": [
         "libxml2"
+      ],
+      "aaa_diameter": [
+        "libfdcore",
+        "libfdproto"
+      ],
+      "aaa_radius": [
+        "freeradius-client",
+        "radcli",
+        "radiusclient-ng"
       ],
       "acc": [
         "aaa module",
@@ -5427,6 +6995,10 @@
         "dialog",
         "libjson"
       ],
+      "clusterer": [
+        "database module",
+        "proto_bin"
+      ],
       "compression": [
         "zlib-dev"
       ],
@@ -5471,6 +7043,11 @@
       ],
       "db_virtual": [
         "At least one real DB module"
+      ],
+      "dialog": [
+        "RR",
+        "TM",
+        "clusterer"
       ],
       "dialplan": [
         "libpcre-dev"
@@ -5530,11 +7107,30 @@
         "dialog",
         "drouting"
       ],
+      "freeswitch": [
+      ],
+      "freeswitch_scripting": [
+        "freeswitch"
+      ],
       "gflags": [
       ],
       "group": [
         "AAA module",
         "database module"
+      ],
+      "h350": [
+        "LDAP",
+        "OpenLDAP library (libldap), libldap header files (libldap-dev)"
+      ],
+      "http2d": [
+        "libcrypto",
+        "libevent",
+        "libevent_openssl",
+        "libnghttp2",
+        "libssl"
+      ],
+      "httpd": [
+        "libmicrohttpd"
       ],
       "identity": [
         "openssl (libssl)"
@@ -5550,6 +7146,15 @@
       ],
       "json": [
         "libjson"
+      ],
+      "jsonrpc": [
+      ],
+      "launch_darkly": [
+        "ldserverapi"
+      ],
+      "ldap": [
+        "OpenLDAP library (libldap)",
+        "libldap header files (libldap-dev)"
       ],
       "load_balancer": [
         "Dialog",
@@ -5573,12 +7178,25 @@
         "Dialog",
         "TM"
       ],
+      "mediaproxy": [
+        "dialog"
+      ],
       "mi_datagram": [
       ],
       "mi_fifo": [
       ],
       "mi_html": [
         "httpd"
+      ],
+      "mi_http": [
+        "httpd"
+      ],
+      "mi_script": [
+        "proto_hep"
+      ],
+      "mi_xmlrpc_ng": [
+        "httpd",
+        "libxml2"
       ],
       "mid_registrar": [
         "event_routing",
@@ -5599,6 +7217,13 @@
       "msrp_gateway": [
         "msrp_ua",
         "tm"
+      ],
+      "msrp_relay": [
+        "libssl",
+        "libssl-dev",
+        "openssl",
+        "openssl-dev",
+        "proto_msrp"
       ],
       "msrp_ua": [
         "b2b_entities",
@@ -5650,6 +7275,10 @@
       ],
       "permissions": [
       ],
+      "pi_http": [
+        "httpd",
+        "libxml2"
+      ],
       "pike": [
       ],
       "presence": [
@@ -5685,6 +7314,44 @@
         "signaling",
         "xcap",
         "xcap_client"
+      ],
+      "prometheus": [
+        "httpd"
+      ],
+      "proto_bin": [
+      ],
+      "proto_bins": [
+        "tls_mgm",
+        "tls_openssl or tls_wolfssl"
+      ],
+      "proto_hep": [
+      ],
+      "proto_ipsec": [
+        "libmnl",
+        "proto_tcp",
+        "proto_udp",
+        "tm",
+        "usrloc"
+      ],
+      "proto_sctp": [
+      ],
+      "proto_smpp": [
+        "database"
+      ],
+      "proto_tcp": [
+      ],
+      "proto_tls": [
+        "tls_mgm",
+        "tls_openssl or tls_wolfssl"
+      ],
+      "proto_udp": [
+      ],
+      "proto_ws": [
+      ],
+      "proto_wss": [
+        "tls_mgm",
+        "tls_openssl",
+        "tls_wolfssl"
       ],
       "pua": [
         "database modules",
@@ -5732,6 +7399,14 @@
         "drouting",
         "tm"
       ],
+      "rabbitmq": [
+        "librabbitmq-dev",
+        "tls_mgm"
+      ],
+      "rabbitmq_consumer": [
+        "librabbitmq-dev",
+        "tls_mgm"
+      ],
       "rate_cacher": [
       ],
       "ratelimit": [
@@ -5744,6 +7419,9 @@
         "signaling",
         "usrloc"
       ],
+      "rest_client": [
+        "libcurl"
+      ],
       "rls": [
         "database module",
         "libxml-dev",
@@ -5755,6 +7433,16 @@
       ],
       "rr": [
       ],
+      "rtp_relay": [
+        "Dialog",
+        "RTP Relay module(s)"
+      ],
+      "rtpengine": [
+      ],
+      "rtpproxy": [
+        "database module",
+        "dialog module"
+      ],
       "script_helper": [
         "dialog"
       ],
@@ -5764,9 +7452,27 @@
       ],
       "sip_i": [
       ],
+      "sipcapture": [
+        "database module"
+      ],
       "sipmsgops": [
       ],
+      "siprec": [
+        "B2B_ENTITIES",
+        "Dialog",
+        "RTP_Relay",
+        "TM"
+      ],
       "sl": [
+      ],
+      "sngtc": [
+        "dialog",
+        "sngtc_node library",
+        "sngtc_server"
+      ],
+      "snmpstats": [
+        "Net SNMP DEV (libsnmp-dev on debian)",
+        "SNMP tools(snmp on debian)"
       ],
       "speeddial": [
         "database module (mysql, dbtext, ...)"
@@ -5781,10 +7487,32 @@
         "dialog",
         "sl"
       ],
+      "statistics": [
+      ],
+      "status_report": [
+      ],
       "stir_shaken": [
         "openssl (libssl)"
       ],
+      "stun": [
+      ],
+      "tcp_mgm": [
+        "db_xxx"
+      ],
       "textops": [
+      ],
+      "tls_mgm": [
+        "tls_openssl",
+        "tls_wolfssl"
+      ],
+      "tls_openssl": [
+        "openssl",
+        "openssl-dev"
+      ],
+      "tls_wolfssl": [
+        "autoconf",
+        "automake",
+        "libtool"
       ],
       "tm": [
         "clusterer"
@@ -5792,6 +7520,13 @@
       "topology_hiding": [
         "Dialog Module",
         "TM"
+      ],
+      "tracer": [
+        "b2b_logic",
+        "database module",
+        "dialog",
+        "proto_hep",
+        "tm"
       ],
       "uac": [
         "Dialog Module",
@@ -5825,19 +7560,23 @@
         "libcurl-dev",
         "libxml-dev",
         "xcap"
+      ],
+      "xmpp": [
+        "libexpat1-devel",
+        "tm"
       ]
     }
   },
   "schema_version": 1,
   "statistics": {
-    "totalEvents": 29,
-    "totalFunctions": 455,
-    "totalGuides": 0,
-    "totalMICommands": 196,
-    "totalModules": 137,
-    "totalParameters": 1058,
-    "totalPseudoVariables": 145,
-    "totalStatistics": 79
+    "totalEvents": 42,
+    "totalFunctions": 566,
+    "totalGuides": 3,
+    "totalMICommands": 248,
+    "totalModules": 186,
+    "totalParameters": 1464,
+    "totalPseudoVariables": 193,
+    "totalStatistics": 93
   },
   "version": "3.5"
 }
