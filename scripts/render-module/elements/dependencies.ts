@@ -198,9 +198,7 @@ export function renderDependencies(
   // Items are alphabetized; each is a backticked name with no reason.
   let optionalBlock = "";
   if (optional.length > 0) {
-    const sortedOptional = [...optional].sort((a, b) =>
-      a < b ? -1 : a > b ? 1 : 0,
-    );
+    const sortedOptional = [...optional].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
     const items = sortedOptional.map((name) => renderInlineCode(name));
     optionalBlock = renderSubSection("Optional Modules", subHeading, items);
   }

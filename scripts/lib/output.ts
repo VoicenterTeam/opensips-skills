@@ -103,14 +103,8 @@ export function emitSummary(summary: BuildSummary, ctx: OutputContext): void {
   }
   if (ctx.quiet) return;
 
-  const totalValidated = summary.versions.reduce(
-    (sum, v) => sum + v.filesValidated,
-    0,
-  );
-  const totalRendered = summary.versions.reduce(
-    (sum, v) => sum + v.filesRendered,
-    0,
-  );
+  const totalValidated = summary.versions.reduce((sum, v) => sum + v.filesValidated, 0);
+  const totalRendered = summary.versions.reduce((sum, v) => sum + v.filesRendered, 0);
   const modeNote =
     summary.mode === "dry-run"
       ? "dry-run (no files written)"
@@ -123,9 +117,10 @@ export function emitSummary(summary: BuildSummary, ctx: OutputContext): void {
   // diff against per-version output to understand why succeeded includes
   // a no-op version.
   const skipped = summary.versionsSkipped ?? 0;
-  const versionsLine = skipped > 0
-    ? `  Versions: ${summary.versionsSucceeded} succeeded (${skipped} skipped), ${summary.versionsFailed} failed`
-    : `  Versions: ${summary.versionsSucceeded} succeeded, ${summary.versionsFailed} failed`;
+  const versionsLine =
+    skipped > 0
+      ? `  Versions: ${summary.versionsSucceeded} succeeded (${skipped} skipped), ${summary.versionsFailed} failed`
+      : `  Versions: ${summary.versionsSucceeded} succeeded, ${summary.versionsFailed} failed`;
 
   const lines = [
     "",

@@ -233,17 +233,16 @@ export async function rebuildModuleIndex(
  *   those remain literal placeholders as produced by {@link renderModuleCatalogTable}.
  * @returns Complete Markdown string for `references/{version}/modules-index.md`.
  */
-export function renderModulesIndexMarkdown(
-  documents: ModuleDocument[],
-  version: string,
-): string {
+export function renderModulesIndexMarkdown(documents: ModuleDocument[], version: string): string {
   const rows = buildModuleCatalogRows(documents);
   const table = renderModuleCatalogTable(rows);
 
   const sections: string[] = [];
 
   sections.push(`# OpenSIPs module index`);
-  sections.push(`\nGenerated reference for OpenSIPs ${version}. This file is the module catalog for the \`opensips-config\` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.`);
+  sections.push(
+    `\nGenerated reference for OpenSIPs ${version}. This file is the module catalog for the \`opensips-config\` skill. It maps every module in the active reference set to its per-module reference file and provides the lookup-discipline guidance that governs how Claude uses the reference set.`,
+  );
 
   sections.push(`\n## Module index\n`);
   sections.push(table);

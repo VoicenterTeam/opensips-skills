@@ -27,12 +27,7 @@ import { fileURLToPath } from "node:url";
 import { parseCli } from "./lib/cli-parser.js";
 import { normalizeEnvironment } from "./lib/environment.js";
 import { BuildError, SchemaDriftError, UsageError } from "./lib/errors.js";
-import {
-  emitError,
-  emitProgress,
-  emitSummary,
-  type OutputContext,
-} from "./lib/output.js";
+import { emitError, emitProgress, emitSummary, type OutputContext } from "./lib/output.js";
 import {
   buildSummary,
   processVersion,

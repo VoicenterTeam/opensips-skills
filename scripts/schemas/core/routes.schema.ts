@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -31,7 +31,7 @@ const RouteTypeSchema = z.object({
 });
 
 export const RouteDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('route_type'),
+  document_type: z.literal("route_type"),
   route_types: z.array(RouteTypeSchema),
 });
 

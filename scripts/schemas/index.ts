@@ -6,22 +6,22 @@
  * regenerate the schema hash via .
  */
 
-export * from './base.schema.js';
-export * from './modules.schema.js';
-export * from './module-sections.schema.js';
-export * from './guides.schema.js';
-export * from './collection-state.schema.js';
-export * from './consolidated.schema.js';
+export * from "./base.schema.js";
+export * from "./modules.schema.js";
+export * from "./module-sections.schema.js";
+export * from "./guides.schema.js";
+export * from "./collection-state.schema.js";
+export * from "./consolidated.schema.js";
 
-export * from './core/variables.schema.js';
-export * from './core/functions.schema.js';
-export * from './core/parameters.schema.js';
-export * from './core/operators.schema.js';
-export * from './core/statements.schema.js';
-export * from './core/routes.schema.js';
-export * from './core/flags.schema.js';
-export * from './core/transformations.schema.js';
-export * from './core/async.schema.js';
-export * from './core/mi-commands.schema.js';
-export * from './core/events.schema.js';
-export * from './core/statistics.schema.js';
+export * from "./core/variables.schema.js";
+export * from "./core/functions.schema.js";
+export * from "./core/parameters.schema.js";
+export * from "./core/operators.schema.js";
+export * from "./core/statements.schema.js";
+export * from "./core/routes.schema.js";
+export * from "./core/flags.schema.js";
+export * from "./core/transformations.schema.js";
+export * from "./core/async.schema.js";
+export * from "./core/mi-commands.schema.js";
+export * from "./core/events.schema.js";
+export * from "./core/statistics.schema.js";

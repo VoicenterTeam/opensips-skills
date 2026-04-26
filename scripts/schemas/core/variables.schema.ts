@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -27,14 +27,14 @@ const VariableSubfieldSchema = z.object({
 });
 
 const CoreVariableSchema = z.object({
-  name: z.string().describe('Variable notation e.g. $si'),
+  name: z.string().describe("Variable notation e.g. $si"),
   alternate_names: z.array(z.string()).optional(),
   description: z.string(),
-  type: z.string().describe('Data type returned'),
+  type: z.string().describe("Data type returned"),
   readable: z.boolean(),
   writable: z.boolean(),
-  scope: z.string().describe('Where available (e.g. message_context)'),
-  context: z.enum(['request', 'reply', 'both']),
+  scope: z.string().describe("Where available (e.g. message_context)"),
+  context: z.enum(["request", "reply", "both"]),
   related_variables: z.array(z.string()).optional(),
   examples: z.array(CodeExampleSchema),
   notes: z.string().optional(),
@@ -44,7 +44,7 @@ const CoreVariableSchema = z.object({
 });
 
 export const CoreVariableDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('core_variable'),
+  document_type: z.literal("core_variable"),
   variables: z.array(CoreVariableSchema),
   syntax_notes: z.string().optional(),
 });

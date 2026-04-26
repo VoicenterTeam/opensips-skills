@@ -43,10 +43,7 @@ import { IOError } from "./errors.js";
  *   the underlying fs operation fails (e.g., parent directory missing,
  *   permission denied, disk full).
  */
-export async function atomicWriteFile(
-  filePath: string,
-  content: string | Buffer,
-): Promise<void> {
+export async function atomicWriteFile(filePath: string, content: string | Buffer): Promise<void> {
   try {
     await writeFileAtomic(filePath, content);
   } catch (err) {

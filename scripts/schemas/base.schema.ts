@@ -9,29 +9,29 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * DocType Enum
  * Matches the document types defined in docs/schemas/base-document.schema.md
  */
 export const DocTypeSchema = z.enum([
-  'module',
-  'core_variable',
-  'core_function',
-  'core_parameter',
-  'operator',
-  'statement',
-  'route_type',
-  'flag',
-  'transformation',
-  'async_statement',
-  'mi_command',
-  'event',
-  'statistic',
-  'installation_guide',
-  'configuration_guide',
-  'syntax_guide',
+  "module",
+  "core_variable",
+  "core_function",
+  "core_parameter",
+  "operator",
+  "statement",
+  "route_type",
+  "flag",
+  "transformation",
+  "async_statement",
+  "mi_command",
+  "event",
+  "statistic",
+  "installation_guide",
+  "configuration_guide",
+  "syntax_guide",
 ]);
 
 export type DocType = z.infer<typeof DocTypeSchema>;
@@ -41,20 +41,25 @@ export type DocType = z.infer<typeof DocTypeSchema>;
  * The foundation for all other document types.
  */
 export const BaseDocumentSchema = z.object({
-  id: z.string().describe('Unique identifier (hash of url + version). Pattern: {type}-{name}-{version}'),
-  document_type: DocTypeSchema.describe('Type from DocType enum'),
-  version: z.string().regex(/^\d+\.\d+$/).describe('OpenSIPS version (MAJOR.MINOR)'),
-  title: z.string().min(1).describe('Document title'),
-  url: z.string().url().describe('Original documentation URL'),
-  content_markdown: z.string().describe('Full content in Markdown'),
-  content_html: z.string().optional().describe('Original HTML for debugging'),
+  id: z
+    .string()
+    .describe("Unique identifier (hash of url + version). Pattern: {type}-{name}-{version}"),
+  document_type: DocTypeSchema.describe("Type from DocType enum"),
+  version: z
+    .string()
+    .regex(/^\d+\.\d+$/)
+    .describe("OpenSIPS version (MAJOR.MINOR)"),
+  title: z.string().min(1).describe("Document title"),
+  url: z.string().url().describe("Original documentation URL"),
+  content_markdown: z.string().describe("Full content in Markdown"),
+  content_html: z.string().optional().describe("Original HTML for debugging"),
   category: z.string().describe('Primary category (e.g., "Modules", "Core")'),
-  section: z.string().optional().describe('Secondary category/section'),
-  synopsis: z.string().optional().describe('Brief 2-3 sentence summary'),
-  keywords: z.array(z.string()).optional().describe('Extracted search keywords'),
-  related_documents: z.array(z.string()).optional().describe('IDs of related documents'),
-  last_updated: z.string().datetime().optional().describe('ISO Date of last upstream update'),
-  extracted_at: z.string().datetime().describe('ISO Date of extraction'),
+  section: z.string().optional().describe("Secondary category/section"),
+  synopsis: z.string().optional().describe("Brief 2-3 sentence summary"),
+  keywords: z.array(z.string()).optional().describe("Extracted search keywords"),
+  related_documents: z.array(z.string()).optional().describe("IDs of related documents"),
+  last_updated: z.string().datetime().optional().describe("ISO Date of last upstream update"),
+  extracted_at: z.string().datetime().describe("ISO Date of extraction"),
 });
 
 export type BaseDocument = z.infer<typeof BaseDocumentSchema>;

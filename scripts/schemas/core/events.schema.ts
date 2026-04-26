@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -35,7 +35,7 @@ const EventDefinitionSchema = z.object({
 });
 
 export const EventDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('event'),
+  document_type: z.literal("event"),
   events: z.array(EventDefinitionSchema),
   event_interface_types: z.array(z.string()).optional(),
 });

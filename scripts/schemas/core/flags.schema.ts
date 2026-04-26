@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -35,7 +35,7 @@ const FlagTypeSchema = z.object({
 });
 
 export const FlagDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('flag'),
+  document_type: z.literal("flag"),
   flag_types: z.array(FlagTypeSchema),
 });
 

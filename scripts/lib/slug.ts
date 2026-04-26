@@ -69,9 +69,7 @@ export function slugify(name: string): string {
  *   assertUniqueSlugs([{ name: "tm" }, { name: "registrar" }]); // ok
  *   assertUniqueSlugs([{ name: "tm" }, { name: "TM" }]);        // throws
  */
-export function assertUniqueSlugs<T extends { name: string }>(
-  items: T[],
-): void {
+export function assertUniqueSlugs<T extends { name: string }>(items: T[]): void {
   const seen = new Map<string, string>();
   for (const item of items) {
     const slug = slugify(item.name);

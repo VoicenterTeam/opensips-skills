@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -23,16 +23,16 @@ const OperatorSchema = z.object({
   symbol: z.string(),
   name: z.string(),
   category: z.string(),
-  operand_type: z.enum(['unary', 'binary', 'ternary']),
+  operand_type: z.enum(["unary", "binary", "ternary"]),
   description: z.string(),
   applicable_to: z.array(z.string()),
   precedence: z.number(),
-  associativity: z.enum(['left', 'right']),
+  associativity: z.enum(["left", "right"]),
   examples: z.array(CodeExampleSchema),
 });
 
 export const OperatorDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('operator'),
+  document_type: z.literal("operator"),
   operators: z.array(OperatorSchema),
   operator_categories: z.array(z.string()),
 });

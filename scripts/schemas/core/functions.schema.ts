@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -41,7 +41,7 @@ const CoreFunctionSchema = z.object({
 });
 
 export const CoreFunctionDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('core_function'),
+  document_type: z.literal("core_function"),
   functions: z.array(CoreFunctionSchema),
   function_categories: z.array(z.string()).optional(),
 });

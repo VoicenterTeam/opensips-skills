@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -36,7 +36,7 @@ const AsyncStatementSchema = z.object({
 });
 
 export const AsyncDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('async_statement'),
+  document_type: z.literal("async_statement"),
   statements: z.array(AsyncStatementSchema),
 });
 

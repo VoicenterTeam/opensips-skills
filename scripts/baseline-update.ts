@@ -40,22 +40,14 @@ import { updateBaseline } from "./build-consolidated/canary.js";
 import { discoverVersions } from "./lib/discover.js";
 import { posixPath } from "./lib/fs-helpers.js";
 import { validateVersion } from "./lib/validate.js";
-import {
-  ConsolidatedIndexSchema,
-  type IndexStatistics,
-} from "./types/consolidated.js";
+import { ConsolidatedIndexSchema, type IndexStatistics } from "./types/consolidated.js";
 import type { ModuleDocument } from "./schemas/modules.schema.js";
 
 /** Build script version stamped into the produced index's `generator` field. */
 const GENERATOR_VERSION = "0.1.0";
 
 /** Project-root-relative location of the committed canary baseline file. */
-const BASELINE_PATH = posixPath(
-  ".",
-  "scripts",
-  "build-consolidated",
-  ".statistics-baseline.json",
-);
+const BASELINE_PATH = posixPath(".", "scripts", "build-consolidated", ".statistics-baseline.json");
 
 /**
  * Compact stats summary for stderr logging — same shape as the orchestrator's
@@ -121,13 +113,9 @@ export async function main(argv: string[]): Promise<number> {
     const validation = validateVersion(undefined, version);
     if (!validation.ok) {
       for (const issue of validation.issues) {
-        process.stderr.write(
-          `ERROR: ${issue.file}: ${issue.kind}: ${issue.message}\n`,
-        );
+        process.stderr.write(`ERROR: ${issue.file}: ${issue.kind}: ${issue.message}\n`);
       }
-      process.stderr.write(
-        `ERROR: validation failed for ${version}; baseline not updated\n`,
-      );
+      process.stderr.write(`ERROR: validation failed for ${version}; baseline not updated\n`);
       exitCode = exitCode === 0 ? 3 : exitCode;
       continue;
     }
@@ -157,16 +145,12 @@ export async function main(argv: string[]): Promise<number> {
       await updateBaseline(index.statistics, version, BASELINE_PATH);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      process.stderr.write(
-        `ERROR: writing baseline for ${version} failed: ${msg}\n`,
-      );
+      process.stderr.write(`ERROR: writing baseline for ${version} failed: ${msg}\n`);
       exitCode = 1;
       continue;
     }
 
-    process.stderr.write(
-      `Baseline updated for ${version}: ${formatStats(index.statistics)}\n`,
-    );
+    process.stderr.write(`Baseline updated for ${version}: ${formatStats(index.statistics)}\n`);
   }
 
   return exitCode;

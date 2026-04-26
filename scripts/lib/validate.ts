@@ -104,10 +104,7 @@ const CORE_FILENAME_TO_SCHEMA: Record<string, z.ZodType> = {
  * selectSchemaForFile("modules", "tm.json");     // → ModuleDocumentSchema
  * selectSchemaForFile("core", "unknown.json");   // → null
  */
-export function selectSchemaForFile(
-  category: SourceCategory,
-  filename: string,
-): z.ZodType | null {
+export function selectSchemaForFile(category: SourceCategory, filename: string): z.ZodType | null {
   if (category === "modules") return ModuleDocumentSchema;
   if (category === "guides") return GuideDocumentSchema;
   // category === "core"
@@ -128,10 +125,7 @@ export function selectSchemaForFile(
  *   failure(s). For schema rejections every Zod issue becomes a separate
  *   `ValidationIssue` so the caller can print one error line per field.
  */
-export function validateSourceFile<T>(
-  filePath: string,
-  schema: z.ZodType<T>,
-): ValidationResult<T> {
+export function validateSourceFile<T>(filePath: string, schema: z.ZodType<T>): ValidationResult<T> {
   let raw: string;
   try {
     raw = readFileSync(filePath, "utf8");

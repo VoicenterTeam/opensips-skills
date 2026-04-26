@@ -1,0 +1,12 @@
+# Force LF line endings across the repo so Windows checkouts don't drift.
+# The build pipeline must be deterministic across OSes (CI is Linux).
+* text=auto eol=lf
+
+# Specific overrides:
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.gz binary

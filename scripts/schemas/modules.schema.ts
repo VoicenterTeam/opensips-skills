@@ -9,14 +9,14 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from './base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "./base.schema.js";
 
 // Nested Schemas
 
 const DependencySchema = z.object({
   name: z.string(),
-  type: z.enum(['module', 'library', 'application']),
+  type: z.enum(["module", "library", "application"]),
   reason: z.string().optional(),
   optional: z.boolean(),
 });
@@ -31,7 +31,7 @@ const ModuleParameterSchema = z.object({
   valid_range_max: z.number().optional(),
   scope: z.string().optional().describe('e.g., "global"'),
   example_value: z.string().optional(),
-  example_code: z.string().optional().describe('Example usage code'),
+  example_code: z.string().optional().describe("Example usage code"),
   notes: z.string().optional(),
 });
 
@@ -58,12 +58,12 @@ const CodeExampleSchema = z.object({
 
 const ModuleFunctionSchema = z.object({
   name: z.string(),
-  signature: z.string().describe('Full function signature'),
+  signature: z.string().describe("Full function signature"),
   parameters: z.array(FunctionParameterSchema),
   return_type: z.string(),
   return_values: z.array(ReturnValueSchema).optional(),
   description: z.string(),
-  usage_context: z.array(z.string()).describe('Routes where this function can be used'),
+  usage_context: z.array(z.string()).describe("Routes where this function can be used"),
   examples: z.array(CodeExampleSchema),
   related_functions: z.array(z.string()).optional(),
   deprecated: z.boolean().optional(),
@@ -92,7 +92,7 @@ const MIFunctionSchema = z.object({
 
 const StatisticSchema = z.object({
   name: z.string(),
-  type: z.enum(['counter', 'gauge', 'histogram']).optional().or(z.string()), // Flexible for extraction
+  type: z.enum(["counter", "gauge", "histogram"]).optional().or(z.string()), // Flexible for extraction
   description: z.string(),
   access_methods: z.array(z.string()).optional(),
   reset_method: z.string().optional(),
@@ -134,7 +134,7 @@ const ConfigExampleSchema = z.object({
  * Defines the structure for OpenSIPS Modules.
  */
 export const ModuleDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('module'),
+  document_type: z.literal("module"),
   module_name: z.string(),
   overview: z.string(),
   how_it_works: z.string().nullable().optional(),

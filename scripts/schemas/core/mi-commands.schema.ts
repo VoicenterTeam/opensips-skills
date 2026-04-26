@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -42,7 +42,7 @@ const MICommandSchema = z.object({
 });
 
 export const MICommandDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('mi_command'),
+  document_type: z.literal("mi_command"),
   mi_commands: z.array(MICommandSchema),
   mi_protocols: z.array(z.string()).optional(),
 });

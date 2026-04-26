@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -39,7 +39,7 @@ const TransformationSchema = z.object({
 });
 
 export const TransformationDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('transformation'),
+  document_type: z.literal("transformation"),
   transformations: z.array(TransformationSchema),
 });
 

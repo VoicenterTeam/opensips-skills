@@ -93,10 +93,7 @@ type Operator = z.infer<typeof OperatorDocumentSchema>["operators"][number];
  * //  - **Precedence:** 12\n- **Associativity:** left\n\n**Example.** Add
  * //  two numbers.\n\n```opensips\n$var(a) = 4 + 7;\n```\n"
  */
-export function renderOperator(
-  op: Operator,
-  headingLevel: 2 | 3 = 2,
-): string {
+export function renderOperator(op: Operator, headingLevel: 2 | 3 = 2): string {
   const symbol = op.symbol.trim();
   const headingText = `${renderInlineCode(symbol)} (${op.name})`;
   const heading = headingLevel === 2 ? renderH2(headingText) : renderH3(headingText);

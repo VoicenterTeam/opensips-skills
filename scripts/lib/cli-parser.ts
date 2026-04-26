@@ -50,33 +50,14 @@ export function parseCli(argv: string[]): CliOptions {
     .version(GENERATOR_VERSION, "-V, --version", "Print build script version")
     .helpOption("-h, --help", "Show this help")
     .option("--only <version>", "Build only the specified version (e.g., 3.6)")
-    .option(
-      "--only-module <slug>",
-      "With --only, build only one module plus its index",
-    )
-    .option(
-      "--dry-run",
-      "Validate and report what would be written; do not write",
-      false,
-    )
-    .option(
-      "--fail-fast",
-      "Stop at the first validation error (default: collect all)",
-      false,
-    )
+    .option("--only-module <slug>", "With --only, build only one module plus its index")
+    .option("--dry-run", "Validate and report what would be written; do not write", false)
+    .option("--fail-fast", "Stop at the first validation error (default: collect all)", false)
     .option("--verbose", "Emit per-file progress to stderr", false)
     .option("--quiet", "Suppress non-error output", false)
     .option("--json", "Emit machine-readable JSON summary to stdout", false)
-    .option(
-      "--source-root <path>",
-      "Override default source root",
-      DEFAULT_CLI_OPTIONS.sourceRoot,
-    )
-    .option(
-      "--output-root <path>",
-      "Override default output root",
-      DEFAULT_CLI_OPTIONS.outputRoot,
-    )
+    .option("--source-root <path>", "Override default source root", DEFAULT_CLI_OPTIONS.sourceRoot)
+    .option("--output-root <path>", "Override default output root", DEFAULT_CLI_OPTIONS.outputRoot)
     .option("--validate-only", "Run validation only (skip rendering)", false)
     .exitOverride()
     .configureOutput({

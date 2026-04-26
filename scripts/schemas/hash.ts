@@ -127,10 +127,11 @@ export function readCommittedHash(hashFilePath?: string): string | null {
  *   console.error(`Schema drift: computed=${result.computed} committed=${result.committed}`);
  * }
  */
-export function verifySchemaHash(opts?: {
-  rootDir?: string;
-  hashFilePath?: string;
-}): { ok: boolean; computed: string; committed: string | null } {
+export function verifySchemaHash(opts?: { rootDir?: string; hashFilePath?: string }): {
+  ok: boolean;
+  computed: string;
+  committed: string | null;
+} {
   const computed = computeSchemaHash(opts?.rootDir);
   const committed = readCommittedHash(opts?.hashFilePath);
   const ok = committed !== null && committed === computed;

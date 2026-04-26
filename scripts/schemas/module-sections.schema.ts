@@ -9,7 +9,7 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 /**
  * Module Sections Schema
@@ -26,7 +26,7 @@ import { z } from 'zod';
  */
 export const DependencySchema = z.object({
   name: z.string(),
-  type: z.enum(['module', 'library', 'application']),
+  type: z.enum(["module", "library", "application"]),
   reason: z.string().optional(),
   optional: z.boolean(),
 });
@@ -44,7 +44,7 @@ export const ModuleParameterSchema = z.object({
   valid_range_max: z.number().optional(),
   scope: z.string().optional().describe('e.g., "global"'),
   example_value: z.string().optional(),
-  example_code: z.string().optional().describe('Example usage code'),
+  example_code: z.string().optional().describe("Example usage code"),
   notes: z.string().optional(),
 });
 
@@ -83,12 +83,12 @@ export const CodeExampleSchema = z.object({
  */
 export const ModuleFunctionSchema = z.object({
   name: z.string(),
-  signature: z.string().describe('Full function signature'),
+  signature: z.string().describe("Full function signature"),
   parameters: z.array(FunctionParameterSchema),
   return_type: z.string(),
   return_values: z.array(ReturnValueSchema).optional(),
   description: z.string(),
-  usage_context: z.array(z.string()).describe('Routes where this function can be used'),
+  usage_context: z.array(z.string()).describe("Routes where this function can be used"),
   examples: z.array(CodeExampleSchema),
   related_functions: z.array(z.string()).optional(),
   deprecated: z.boolean().optional(),
@@ -129,7 +129,7 @@ export const MIFunctionSchema = z.object({
  */
 export const StatisticSchema = z.object({
   name: z.string(),
-  type: z.enum(['counter', 'gauge', 'histogram']).optional().or(z.string()),
+  type: z.enum(["counter", "gauge", "histogram"]).optional().or(z.string()),
   description: z.string(),
   access_methods: z.array(z.string()).optional(),
   reset_method: z.string().optional(),
@@ -187,11 +187,23 @@ export const ConfigExampleSchema = z.object({
  * Includes: module_name, overview, how_it_works, dependencies
  */
 export const ModuleOverviewSectionSchema = z.object({
-  module_name: z.string().describe('Exact module name'),
-  overview: z.string().describe('Module overview/synopsis'),
-  how_it_works: z.string().nullable().optional().describe('Detailed explanation of module operation'),
-  dependencies_required: z.array(DependencySchema).nullable().optional().describe('Required dependencies'),
-  dependencies_optional: z.array(z.string()).nullable().optional().describe('Optional dependencies'),
+  module_name: z.string().describe("Exact module name"),
+  overview: z.string().describe("Module overview/synopsis"),
+  how_it_works: z
+    .string()
+    .nullable()
+    .optional()
+    .describe("Detailed explanation of module operation"),
+  dependencies_required: z
+    .array(DependencySchema)
+    .nullable()
+    .optional()
+    .describe("Required dependencies"),
+  dependencies_optional: z
+    .array(z.string())
+    .nullable()
+    .optional()
+    .describe("Optional dependencies"),
 });
 
 /**
@@ -199,7 +211,7 @@ export const ModuleOverviewSectionSchema = z.object({
  * Includes: exported_parameters array
  */
 export const ModuleParametersSectionSchema = z.object({
-  exported_parameters: z.array(ModuleParameterSchema).describe('Module configuration parameters'),
+  exported_parameters: z.array(ModuleParameterSchema).describe("Module configuration parameters"),
 });
 
 /**
@@ -207,7 +219,7 @@ export const ModuleParametersSectionSchema = z.object({
  * Includes: exported_functions array
  */
 export const ModuleFunctionsSectionSchema = z.object({
-  exported_functions: z.array(ModuleFunctionSchema).describe('Exported script functions'),
+  exported_functions: z.array(ModuleFunctionSchema).describe("Exported script functions"),
 });
 
 /**
@@ -216,7 +228,9 @@ export const ModuleFunctionsSectionSchema = z.object({
  * Note: Array is required for Anthropic API compatibility (rejects empty schemas)
  */
 export const ModuleMISectionSchema = z.object({
-  exported_mi_functions: z.array(MIFunctionSchema).describe('Management Interface commands (empty if none)'),
+  exported_mi_functions: z
+    .array(MIFunctionSchema)
+    .describe("Management Interface commands (empty if none)"),
 });
 
 /**
@@ -225,7 +239,7 @@ export const ModuleMISectionSchema = z.object({
  * Note: Array is required for Anthropic API compatibility (rejects empty schemas)
  */
 export const ModuleStatisticsSectionSchema = z.object({
-  exported_statistics: z.array(StatisticSchema).describe('Runtime statistics (empty if none)'),
+  exported_statistics: z.array(StatisticSchema).describe("Runtime statistics (empty if none)"),
 });
 
 /**
@@ -234,7 +248,7 @@ export const ModuleStatisticsSectionSchema = z.object({
  * Note: Array is required for Anthropic API compatibility (rejects empty schemas)
  */
 export const ModuleEventsSectionSchema = z.object({
-  exported_events: z.array(EventSchema).describe('Module events (empty if none)'),
+  exported_events: z.array(EventSchema).describe("Module events (empty if none)"),
 });
 
 /**
@@ -243,7 +257,9 @@ export const ModuleEventsSectionSchema = z.object({
  * Note: Array is required for Anthropic API compatibility (rejects empty schemas)
  */
 export const ModulePVarsSectionSchema = z.object({
-  exported_pseudo_variables: z.array(PseudoVariableSchema).describe('Pseudo-variables (empty if none)'),
+  exported_pseudo_variables: z
+    .array(PseudoVariableSchema)
+    .describe("Pseudo-variables (empty if none)"),
 });
 
 /**
@@ -252,7 +268,9 @@ export const ModulePVarsSectionSchema = z.object({
  * Note: Array is required for Anthropic API compatibility (rejects empty schemas)
  */
 export const ModuleExamplesSectionSchema = z.object({
-  configuration_examples: z.array(ConfigExampleSchema).describe('Configuration examples (empty if none)'),
+  configuration_examples: z
+    .array(ConfigExampleSchema)
+    .describe("Configuration examples (empty if none)"),
 });
 
 // ============================================================================
@@ -265,7 +283,9 @@ export const ModuleExamplesSectionSchema = z.object({
  * Lightweight - only extracts names, not full details.
  */
 export const ParameterNamesDiscoverySchema = z.object({
-  parameter_names: z.array(z.string()).describe('List of parameter names found in the documentation, in order of appearance'),
+  parameter_names: z
+    .array(z.string())
+    .describe("List of parameter names found in the documentation, in order of appearance"),
 });
 
 /**
@@ -273,7 +293,9 @@ export const ParameterNamesDiscoverySchema = z.object({
  * Used in the discovery phase of batched function extraction.
  */
 export const FunctionNamesDiscoverySchema = z.object({
-  function_names: z.array(z.string()).describe('List of function names found in the documentation, in order of appearance'),
+  function_names: z
+    .array(z.string())
+    .describe("List of function names found in the documentation, in order of appearance"),
 });
 
 /**
@@ -281,7 +303,9 @@ export const FunctionNamesDiscoverySchema = z.object({
  * Same as ModuleParametersSectionSchema but used with targeted prompts.
  */
 export const ModuleParametersBatchSchema = z.object({
-  exported_parameters: z.array(ModuleParameterSchema).describe('Extracted parameters for this batch'),
+  exported_parameters: z
+    .array(ModuleParameterSchema)
+    .describe("Extracted parameters for this batch"),
 });
 
 /**
@@ -289,7 +313,7 @@ export const ModuleParametersBatchSchema = z.object({
  * Same as ModuleFunctionsSectionSchema but used with targeted prompts.
  */
 export const ModuleFunctionsBatchSchema = z.object({
-  exported_functions: z.array(ModuleFunctionSchema).describe('Extracted functions for this batch'),
+  exported_functions: z.array(ModuleFunctionSchema).describe("Extracted functions for this batch"),
 });
 
 // ============================================================================
@@ -334,14 +358,49 @@ export type ModuleFunctionsBatch = z.infer<typeof ModuleFunctionsBatchSchema>;
  * @description Configuration for each module section workflow.
  */
 export const MODULE_SECTIONS = [
-  { name: 'overview', schemaType: 'ModuleOverviewSectionSchema', promptKey: 'module_overview', required: true },
-  { name: 'parameters', schemaType: 'ModuleParametersSectionSchema', promptKey: 'module_parameters', required: true },
-  { name: 'functions', schemaType: 'ModuleFunctionsSectionSchema', promptKey: 'module_functions', required: true },
-  { name: 'mi', schemaType: 'ModuleMISectionSchema', promptKey: 'module_mi', required: false },
-  { name: 'statistics', schemaType: 'ModuleStatisticsSectionSchema', promptKey: 'module_statistics', required: false },
-  { name: 'events', schemaType: 'ModuleEventsSectionSchema', promptKey: 'module_events', required: false },
-  { name: 'pvars', schemaType: 'ModulePVarsSectionSchema', promptKey: 'module_pvars', required: false },
-  { name: 'examples', schemaType: 'ModuleExamplesSectionSchema', promptKey: 'module_examples', required: false },
+  {
+    name: "overview",
+    schemaType: "ModuleOverviewSectionSchema",
+    promptKey: "module_overview",
+    required: true,
+  },
+  {
+    name: "parameters",
+    schemaType: "ModuleParametersSectionSchema",
+    promptKey: "module_parameters",
+    required: true,
+  },
+  {
+    name: "functions",
+    schemaType: "ModuleFunctionsSectionSchema",
+    promptKey: "module_functions",
+    required: true,
+  },
+  { name: "mi", schemaType: "ModuleMISectionSchema", promptKey: "module_mi", required: false },
+  {
+    name: "statistics",
+    schemaType: "ModuleStatisticsSectionSchema",
+    promptKey: "module_statistics",
+    required: false,
+  },
+  {
+    name: "events",
+    schemaType: "ModuleEventsSectionSchema",
+    promptKey: "module_events",
+    required: false,
+  },
+  {
+    name: "pvars",
+    schemaType: "ModulePVarsSectionSchema",
+    promptKey: "module_pvars",
+    required: false,
+  },
+  {
+    name: "examples",
+    schemaType: "ModuleExamplesSectionSchema",
+    promptKey: "module_examples",
+    required: false,
+  },
 ] as const;
 
-export type ModuleSectionName = typeof MODULE_SECTIONS[number]['name'];
+export type ModuleSectionName = (typeof MODULE_SECTIONS)[number]["name"];

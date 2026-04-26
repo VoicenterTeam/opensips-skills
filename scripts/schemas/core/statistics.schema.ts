@@ -9,20 +9,20 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from '../base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "../base.schema.js";
 
 const StatisticDefinitionSchema = z.object({
   name: z.string(),
   module: z.string(),
-  type: z.enum(['counter', 'gauge']),
+  type: z.enum(["counter", "gauge"]),
   description: z.string(),
   access_methods: z.array(z.string()),
   reset_method: z.string().optional(),
 });
 
 export const StatisticDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.literal('statistic'),
+  document_type: z.literal("statistic"),
   statistics: z.array(StatisticDefinitionSchema),
   statistic_access_methods: z.array(z.string()).optional(),
 });

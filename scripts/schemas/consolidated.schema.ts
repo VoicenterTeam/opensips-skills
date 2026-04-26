@@ -9,21 +9,21 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { ModuleDocumentSchema } from './modules.schema.js';
-import { CoreVariableDocumentSchema } from './core/variables.schema.js';
-import { CoreFunctionDocumentSchema } from './core/functions.schema.js';
-import { CoreParameterDocumentSchema } from './core/parameters.schema.js';
-import { OperatorDocumentSchema } from './core/operators.schema.js';
-import { StatementDocumentSchema } from './core/statements.schema.js';
-import { RouteDocumentSchema } from './core/routes.schema.js';
-import { FlagDocumentSchema } from './core/flags.schema.js';
-import { TransformationDocumentSchema } from './core/transformations.schema.js';
-import { AsyncDocumentSchema } from './core/async.schema.js';
-import { MICommandDocumentSchema } from './core/mi-commands.schema.js';
-import { EventDocumentSchema } from './core/events.schema.js';
-import { StatisticDocumentSchema } from './core/statistics.schema.js';
-import { GuideDocumentSchema } from './guides.schema.js';
+import { z } from "zod";
+import { ModuleDocumentSchema } from "./modules.schema.js";
+import { CoreVariableDocumentSchema } from "./core/variables.schema.js";
+import { CoreFunctionDocumentSchema } from "./core/functions.schema.js";
+import { CoreParameterDocumentSchema } from "./core/parameters.schema.js";
+import { OperatorDocumentSchema } from "./core/operators.schema.js";
+import { StatementDocumentSchema } from "./core/statements.schema.js";
+import { RouteDocumentSchema } from "./core/routes.schema.js";
+import { FlagDocumentSchema } from "./core/flags.schema.js";
+import { TransformationDocumentSchema } from "./core/transformations.schema.js";
+import { AsyncDocumentSchema } from "./core/async.schema.js";
+import { MICommandDocumentSchema } from "./core/mi-commands.schema.js";
+import { EventDocumentSchema } from "./core/events.schema.js";
+import { StatisticDocumentSchema } from "./core/statistics.schema.js";
+import { GuideDocumentSchema } from "./guides.schema.js";
 
 const IndexEntrySchema = z.object({
   source: z.string(),
@@ -35,7 +35,7 @@ export const ConsolidatedDocumentSchema = z.object({
   version: z.string(),
   generatedAt: z.string().datetime(),
   generator: z.string(),
-  
+
   statistics: z.object({
     totalDocuments: z.number(),
     totalModules: z.number(),
@@ -47,7 +47,7 @@ export const ConsolidatedDocumentSchema = z.object({
     totalEvents: z.number(),
     totalPseudoVariables: z.number(),
   }),
-  
+
   modules: z.array(ModuleDocumentSchema),
   core: z.object({
     variables: CoreVariableDocumentSchema,
@@ -63,20 +63,20 @@ export const ConsolidatedDocumentSchema = z.object({
     events: EventDocumentSchema,
     statistics: StatisticDocumentSchema,
   }),
-  
+
   guides: z.object({
     installation: GuideDocumentSchema,
     configuration: GuideDocumentSchema,
     syntax: GuideDocumentSchema,
   }),
-  
+
   indexes: z.object({
     functionsByName: z.record(z.string(), IndexEntrySchema),
     parametersByModule: z.record(z.string(), z.array(z.string())),
     variablesByName: z.record(z.string(), IndexEntrySchema),
     miCommandsByName: z.record(z.string(), IndexEntrySchema),
   }),
-  
+
   relationships: z.object({
     moduleDependencies: z.record(z.string(), z.array(z.string())),
     relatedDocuments: z.record(z.string(), z.array(z.string())),

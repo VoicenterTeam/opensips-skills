@@ -45,10 +45,7 @@ import {
  * @param headingLevel - 2 or 3.
  * @returns A single heading line ending in `"\n"`.
  */
-function renderHeading(
-  param: ModuleParameter,
-  headingLevel: 2 | 3,
-): string {
+function renderHeading(param: ModuleParameter, headingLevel: 2 | 3): string {
   const title = `${renderInlineCode(param.name)} (${param.type})`;
   return headingLevel === 2 ? renderH2(title) : renderH3(title);
 }
@@ -160,10 +157,7 @@ function renderExample(param: ModuleParameter): string {
  * //  `fr_timeout` parameter.\n\n```opensips\nmodparam(\"tm\",
  * //  \"fr_timeout\", 10)\n```\n"
  */
-export function renderParameter(
-  param: ModuleParameter,
-  headingLevel: 2 | 3 = 3,
-): string {
+export function renderParameter(param: ModuleParameter, headingLevel: 2 | 3 = 3): string {
   const heading = renderHeading(param, headingLevel);
   const description = `${param.description}\n`;
   const defaultLine = renderDefaultValue(param);

@@ -104,10 +104,7 @@ export function discoverVersions(sourceRoot: string = DEFAULT_SOURCE_ROOT): stri
   try {
     entries = readdirSync(sourceRoot, { withFileTypes: true });
   } catch (err) {
-    throw new DiscoverError(
-      `Cannot read source root: ${describeError(err)}`,
-      sourceRoot,
-    );
+    throw new DiscoverError(`Cannot read source root: ${describeError(err)}`, sourceRoot);
   }
 
   const versions: string[] = [];
@@ -160,10 +157,7 @@ export function discoverSourceFiles(
     }
   } catch (err) {
     if (err instanceof DiscoverError) throw err;
-    throw new DiscoverError(
-      `Cannot read version directory: ${describeError(err)}`,
-      versionDir,
-    );
+    throw new DiscoverError(`Cannot read version directory: ${describeError(err)}`, versionDir);
   }
 
   return {
@@ -243,10 +237,7 @@ function readJsonChildren(versionDir: string, subdir: string): string[] {
       // Optional category — absence is allowed (per ADR-009 guides/ rule).
       return [];
     }
-    throw new DiscoverError(
-      `Cannot read category directory: ${describeError(err)}`,
-      dir,
-    );
+    throw new DiscoverError(`Cannot read category directory: ${describeError(err)}`, dir);
   }
 
   const out: string[] = [];

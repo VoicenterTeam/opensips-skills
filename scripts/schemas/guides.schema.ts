@@ -9,8 +9,8 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
-import { BaseDocumentSchema } from './base.schema.js';
+import { z } from "zod";
+import { BaseDocumentSchema } from "./base.schema.js";
 
 const CodeExampleSchema = z.object({
   language: z.string(),
@@ -51,17 +51,13 @@ const BestPracticeSchema = z.object({
 });
 
 export const GuideDocumentSchema = BaseDocumentSchema.extend({
-  document_type: z.enum([
-    'installation_guide',
-    'configuration_guide',
-    'syntax_guide',
-  ]),
-  
+  document_type: z.enum(["installation_guide", "configuration_guide", "syntax_guide"]),
+
   // Installation Specific
   installation_steps: z.array(InstallStepSchema).optional(),
   prerequisites: z.array(PrerequisiteSchema).optional(),
   troubleshooting: z.array(TroubleshootingItemSchema).optional(),
-  
+
   // Configuration Specific
   configuration_sections: z.array(ConfigSectionSchema).optional(),
   best_practices: z.array(BestPracticeSchema).optional(),

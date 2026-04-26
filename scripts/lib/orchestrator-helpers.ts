@@ -13,20 +13,12 @@ import path from "node:path";
 import { discoverVersions, DiscoverError, readBrokenMarker } from "./discover.js";
 import { BuildError, IOError } from "./errors.js";
 import { atomicWriteFile, ensureDirectory, posixPath } from "./fs-helpers.js";
-import {
-  emitProgress,
-  emitWarning,
-  type OutputContext,
-} from "./output.js";
+import { emitProgress, emitWarning, type OutputContext } from "./output.js";
 import { assertUniqueSlugs, slugify, SlugCollisionError } from "./slug.js";
 import { validateRenderedMarkdown } from "./validate-markdown.js";
 import { validateVersion, type ValidationIssue } from "./validate.js";
 import { renderModule } from "../render-module/index.js";
-import {
-  coreFileNames,
-  renderCoreDocument,
-  type CoreDocType,
-} from "../render-core/index.js";
+import { coreFileNames, renderCoreDocument, type CoreDocType } from "../render-core/index.js";
 import { guideFileNames, renderGuide } from "../render-guide/index.js";
 import { renderModulesIndexMarkdown } from "../build-module-index/index.js";
 import {
@@ -35,10 +27,7 @@ import {
   type ValidatedDocumentsForIndex,
 } from "../build-consolidated/index.js";
 import { serializeIndex } from "../build-consolidated/serialize.js";
-import {
-  checkStatisticsCanary,
-  type CanaryWarning,
-} from "../build-consolidated/canary.js";
+import { checkStatisticsCanary, type CanaryWarning } from "../build-consolidated/canary.js";
 import type { ModuleDocument } from "../schemas/modules.schema.js";
 import type { z } from "zod";
 import type { GuideDocumentSchema } from "../schemas/guides.schema.js";
@@ -47,11 +36,7 @@ import {
   type ConsolidatedIndex,
   type IndexStatistics,
 } from "../types/consolidated.js";
-import type {
-  BuildSummary,
-  CliOptions,
-  VersionResult,
-} from "../types/cli.js";
+import type { BuildSummary, CliOptions, VersionResult } from "../types/cli.js";
 
 /** Validated guide document shape inferred from the mirrored Zod schema. */
 type GuideDocument = z.infer<typeof GuideDocumentSchema>;
@@ -230,10 +215,7 @@ export async function processVersion(
   // no index build runs for the version.
   const broken = readBrokenMarker(opts.sourceRoot, version);
   if (broken) {
-    emitWarning(
-      `Skipping ${version}: marked as broken upstream. Reason: ${broken.reason}`,
-      ctx,
-    );
+    emitWarning(`Skipping ${version}: marked as broken upstream. Reason: ${broken.reason}`, ctx);
     return {
       version,
       ok: true,
@@ -255,9 +237,7 @@ export async function processVersion(
   }
 
   for (const issue of validation.issues) {
-    process.stderr.write(
-      `ERROR: ${issue.file}: ${issue.kind}: ${issue.message}\n`,
-    );
+    process.stderr.write(`ERROR: ${issue.file}: ${issue.kind}: ${issue.message}\n`);
   }
 
   const errors: VersionResult["errors"] = toErrorEntries(validation.issues);
@@ -270,12 +250,7 @@ export async function processVersion(
     // the `unknown[]` typing on `validation.documents.modules` is the
     // erasure boundary between the validate stage and us.
     const modules = validation.documents.modules as ModuleDocument[];
-    const moduleResult = await renderModulesForVersion(
-      version,
-      modules,
-      opts,
-      ctx,
-    );
+    const moduleResult = await renderModulesForVersion(version, modules, opts, ctx);
     if (moduleResult.errors.length > 0) {
       errors.push(...moduleResult.errors);
       renderOk = false;
@@ -285,12 +260,7 @@ export async function processVersion(
     // `document_type` discriminator, used to dispatch to the right
     // template in renderCoreDocument. Per ADR-012, core, modules, guides,
     // and consolidated.json all live under `opensips-config`.
-    const coreResult = await renderCoreForVersion(
-      version,
-      validation.documents.core,
-      opts,
-      ctx,
-    );
+    const coreResult = await renderCoreForVersion(version, validation.documents.core, opts, ctx);
     if (coreResult.errors.length > 0) {
       errors.push(...coreResult.errors);
       renderOk = false;
@@ -316,12 +286,7 @@ export async function processVersion(
     // under `opensips-config/references/<version>/` — the consolidated
     // module catalog table plus lookup-discipline prose. Runs after the
     // per-module renders so the output dir is already created.
-    const modulesIndexResult = await renderModulesIndexForVersion(
-      version,
-      modules,
-      opts,
-      ctx,
-    );
+    const modulesIndexResult = await renderModulesIndexForVersion(version, modules, opts, ctx);
     if (modulesIndexResult.errors.length > 0) {
       errors.push(...modulesIndexResult.errors);
       renderOk = false;
@@ -336,21 +301,12 @@ export async function processVersion(
     if (ctx.verbose) {
       const verb = opts.dryRun ? "Would render" : "Rendered";
       const dryRunSuffix = opts.dryRun ? " (dry-run)" : "";
-      emitProgress(
-        `  ${verb} ${moduleResult.filesRendered} module files${dryRunSuffix}`,
-        ctx,
-      );
-      emitProgress(
-        `  ${verb} ${coreResult.filesRendered} core files${dryRunSuffix}`,
-        ctx,
-      );
+      emitProgress(`  ${verb} ${moduleResult.filesRendered} module files${dryRunSuffix}`, ctx);
+      emitProgress(`  ${verb} ${coreResult.filesRendered} core files${dryRunSuffix}`, ctx);
       // Guides line is suppressed entirely when there are no guides — keeps
       // the verbose output uncluttered for versions without a guides/ dir.
       if (guideResult.filesRendered > 0) {
-        emitProgress(
-          `  ${verb} ${guideResult.filesRendered} guide files${dryRunSuffix}`,
-          ctx,
-        );
+        emitProgress(`  ${verb} ${guideResult.filesRendered} guide files${dryRunSuffix}`, ctx);
       }
       emitProgress(
         `  ${verb} ${modulesIndexResult.filesRendered} modules-index file${dryRunSuffix}`,
@@ -476,10 +432,7 @@ async function renderModulesForVersion(
       continue;
     }
     for (const w of validation.warnings) {
-      emitWarning(
-        `${sourcePath}:${w.line}: ${w.rule}: ${w.message}`,
-        ctx,
-      );
+      emitWarning(`${sourcePath}:${w.line}: ${w.rule}: ${w.message}`, ctx);
     }
 
     const outputPath = posixPath(
@@ -502,9 +455,7 @@ async function renderModulesForVersion(
       await atomicWriteFile(outputPath, content);
     } catch (err) {
       if (err instanceof IOError) {
-        process.stderr.write(
-          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
-        );
+        process.stderr.write(`ERROR: ${err.path}: ${err.operation}: ${err.message}\n`);
         errors.push({
           kind: "io",
           message: err.message,
@@ -612,9 +563,7 @@ async function renderCoreForVersion(
       await atomicWriteFile(outputPath, content);
     } catch (err) {
       if (err instanceof IOError) {
-        process.stderr.write(
-          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
-        );
+        process.stderr.write(`ERROR: ${err.path}: ${err.operation}: ${err.message}\n`);
         errors.push({ kind: "io", message: err.message, file: err.path });
         if (opts.failFast) break;
         continue;
@@ -708,9 +657,7 @@ async function renderGuidesForVersion(
       await atomicWriteFile(outputPath, content);
     } catch (err) {
       if (err instanceof IOError) {
-        process.stderr.write(
-          `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
-        );
+        process.stderr.write(`ERROR: ${err.path}: ${err.operation}: ${err.message}\n`);
         errors.push({ kind: "io", message: err.message, file: err.path });
         if (opts.failFast) break;
         continue;
@@ -801,9 +748,7 @@ async function renderModulesIndexForVersion(
     await atomicWriteFile(outputPath, content);
   } catch (err) {
     if (err instanceof IOError) {
-      process.stderr.write(
-        `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
-      );
+      process.stderr.write(`ERROR: ${err.path}: ${err.operation}: ${err.message}\n`);
       errors.push({ kind: "io", message: err.message, file: err.path });
       return { filesRendered: 0, errors };
     }
@@ -822,11 +767,7 @@ async function renderModulesIndexForVersion(
  * at the project root, which is the intended behaviour — the baseline file is
  * a project-wide constant, not per-build.
  */
-const BASELINE_PATH = posixPath(
-  "scripts",
-  "build-consolidated",
-  ".statistics-baseline.json",
-);
+const BASELINE_PATH = posixPath("scripts", "build-consolidated", ".statistics-baseline.json");
 
 /**
  * Internal aggregate returned by {@link buildAndWriteConsolidatedIndex}.
@@ -931,11 +872,7 @@ async function buildAndWriteConsolidatedIndex(
     guides: [...guideDocuments],
   };
 
-  const { index, warnings } = buildConsolidatedIndex(
-    version,
-    indexInput,
-    GENERATOR_VERSION,
-  );
+  const { index, warnings } = buildConsolidatedIndex(version, indexInput, GENERATOR_VERSION);
 
   // Surface each builder collision warning on stderr (no-op under
   // quiet/json modes per emitWarning's contract).
@@ -958,11 +895,7 @@ async function buildAndWriteConsolidatedIndex(
 
   // Canary check — advisory only; never causes the build to fail.
   try {
-    const canary = await checkStatisticsCanary(
-      validIndex.statistics,
-      version,
-      BASELINE_PATH,
-    );
+    const canary = await checkStatisticsCanary(validIndex.statistics, version, BASELINE_PATH);
     if (canary.firstRun) {
       // First run for this version. Tell the user once how to seed the
       // baseline; no warnings are emitted because there's nothing to
@@ -1009,9 +942,7 @@ async function buildAndWriteConsolidatedIndex(
     await atomicWriteFile(outputPath, json);
   } catch (err) {
     if (err instanceof IOError) {
-      process.stderr.write(
-        `ERROR: ${err.path}: ${err.operation}: ${err.message}\n`,
-      );
+      process.stderr.write(`ERROR: ${err.path}: ${err.operation}: ${err.message}\n`);
       errors.push({ kind: "io", message: err.message, file: err.path });
       return { built: false, errors };
     }
@@ -1019,10 +950,7 @@ async function buildAndWriteConsolidatedIndex(
   }
 
   if (ctx.verbose) {
-    emitProgress(
-      `  Built consolidated index (${formatStats(validIndex.statistics)})`,
-      ctx,
-    );
+    emitProgress(`  Built consolidated index (${formatStats(validIndex.statistics)})`, ctx);
   }
 
   return { built: true, errors };

@@ -6,11 +6,7 @@
  * rendering (H2, M4).
  */
 
-import {
-  renderH2,
-  renderH3,
-  renderInlineCode,
-} from "../../lib/markdown-builders.js";
+import { renderH2, renderH3, renderInlineCode } from "../../lib/markdown-builders.js";
 import type {
   CodeExample,
   FunctionParameter,
@@ -34,9 +30,7 @@ function renderParameter(param: FunctionParameter): string {
   const validValues = param.valid_values ?? [];
   if (validValues.length === 0) return head;
 
-  const subBullets = validValues
-    .map((v) => `  - ${renderInlineCode(v)}\n`)
-    .join("");
+  const subBullets = validValues.map((v) => `  - ${renderInlineCode(v)}\n`).join("");
   return head + subBullets;
 }
 
@@ -92,10 +86,7 @@ function renderExample(example: CodeExample): string {
  * });
  * // "### `t_relay()`\n\nForwards the request statefully.\n\n"
  */
-export function renderFunction(
-  fn: ModuleFunction,
-  headingLevel: 2 | 3 = 3,
-): string {
+export function renderFunction(fn: ModuleFunction, headingLevel: 2 | 3 = 3): string {
   const heading =
     headingLevel === 2
       ? renderH2(renderInlineCode(fn.signature))
@@ -109,9 +100,7 @@ export function renderFunction(
 
   parts.push(`${fn.description}\n\n`);
 
-  const sortedParams = [...fn.parameters].sort((a, b) =>
-    a.name.localeCompare(b.name),
-  );
+  const sortedParams = [...fn.parameters].sort((a, b) => a.name.localeCompare(b.name));
   if (sortedParams.length > 0) {
     parts.push("**Parameters:**\n\n");
     parts.push(sortedParams.map(renderParameter).join(""));
@@ -129,9 +118,7 @@ export function renderFunction(
     parts.push(`**Usable from:** ${fn.usage_context.join(", ")}\n\n`);
   }
 
-  const related = [...(fn.related_functions ?? [])].sort((a, b) =>
-    a.localeCompare(b),
-  );
+  const related = [...(fn.related_functions ?? [])].sort((a, b) => a.localeCompare(b));
   if (related.length > 0) {
     parts.push("**Related:**\n\n");
     parts.push(related.map((name) => `- ${renderInlineCode(name)}\n`).join(""));

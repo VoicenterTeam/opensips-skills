@@ -136,8 +136,7 @@ export function validateRenderedMarkdown(
   opts?: MarkdownValidationOptions,
 ): MarkdownValidationResult {
   void sourcePath; // Reserved for future per-rule context; not currently used.
-  const topLevelItemHeading =
-    opts?.topLevelItemHeading ?? DEFAULT_TOP_LEVEL_ITEM_HEADING;
+  const topLevelItemHeading = opts?.topLevelItemHeading ?? DEFAULT_TOP_LEVEL_ITEM_HEADING;
   const warnLines = opts?.warnLines ?? DEFAULT_WARN_LINES;
   const maxLines = opts?.maxLines ?? DEFAULT_MAX_LINES;
 
@@ -167,12 +166,7 @@ export function validateRenderedMarkdown(
   // starts with `### 1.1.1.`). CLAUDE.md Rule 3 forbids editing those.
   // The skip does not break Markdown rendering, so we surface it as a
   // warning rather than blocking the build.
-  checkSkippedHeadingLevels(
-    lines,
-    insideFence,
-    topLevelItemHeading,
-    warnings,
-  );
+  checkSkippedHeadingLevels(lines, insideFence, topLevelItemHeading, warnings);
 
   // Rule: no-empty-h2.
   checkEmptyH2(lines, insideFence, errors);
@@ -276,11 +270,7 @@ function findHeadings(
  * @param errors - Accumulator for hard errors (zero-H1 case).
  * @param warnings - Accumulator for the "extra H1s found" warning.
  */
-function checkSingleH1(
-  lines: string[],
-  errors: MarkdownIssue[],
-  warnings: MarkdownIssue[],
-): void {
+function checkSingleH1(lines: string[], errors: MarkdownIssue[], warnings: MarkdownIssue[]): void {
   // We deliberately ignore fenced lines for the H1 count: an H1-looking
   // line inside a code fence is not a real heading.
   const insideFence = computeInsideFence(lines);
@@ -368,11 +358,7 @@ function checkSkippedHeadingLevels(
  * @param insideFence - Mask from {@link computeInsideFence}.
  * @param errors - Accumulator to push violations into.
  */
-function checkEmptyH2(
-  lines: string[],
-  insideFence: boolean[],
-  errors: MarkdownIssue[],
-): void {
+function checkEmptyH2(lines: string[], insideFence: boolean[], errors: MarkdownIssue[]): void {
   const headings = findHeadings(lines, insideFence);
   for (let i = 0; i < headings.length; i++) {
     const h = headings[i];
@@ -413,10 +399,7 @@ function checkEmptyH2(
  * @param lines - Raw content lines.
  * @param errors - Accumulator to push violations into.
  */
-function checkUnclosedCodeFence(
-  lines: string[],
-  errors: MarkdownIssue[],
-): void {
+function checkUnclosedCodeFence(lines: string[], errors: MarkdownIssue[]): void {
   let count = 0;
   let lastFenceLine = 0;
   for (let i = 0; i < lines.length; i++) {
@@ -456,9 +439,7 @@ function checkUnclosedInlineBackticks(
     const line = lines[i] ?? "";
     // Strip out double-backtick (`` ... ``) and triple-backtick spans
     // before counting singles. The rule targets single-backtick spans.
-    const stripped = line
-      .replace(/``[^`]*``/g, "")
-      .replace(/```/g, "");
+    const stripped = line.replace(/``[^`]*``/g, "").replace(/```/g, "");
     let single = 0;
     for (const ch of stripped) {
       if (ch === "`") single++;
@@ -571,10 +552,7 @@ function checkExtraneousHtml(
  * @param lines - Raw content lines.
  * @param warnings - Accumulator to push warnings into.
  */
-function checkTrailingWhitespace(
-  lines: string[],
-  warnings: MarkdownIssue[],
-): void {
+function checkTrailingWhitespace(lines: string[], warnings: MarkdownIssue[]): void {
   const offending: number[] = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? "";
@@ -598,10 +576,7 @@ function checkTrailingWhitespace(
  * @param lines - Raw content lines.
  * @param errors - Accumulator to push violations into.
  */
-function checkExcessBlankLines(
-  lines: string[],
-  errors: MarkdownIssue[],
-): void {
+function checkExcessBlankLines(lines: string[], errors: MarkdownIssue[]): void {
   let streak = 0;
   let streakStart = 0;
   let alreadyReportedForStreak = false;

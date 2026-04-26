@@ -200,9 +200,7 @@ export interface Property {
  */
 export function renderPropertyList(properties: Property[]): string {
   if (properties.length === 0) return "";
-  return properties
-    .map((p) => `- **${p.key}:** ${p.value}\n`)
-    .join("");
+  return properties.map((p) => `- **${p.key}:** ${p.value}\n`).join("");
 }
 
 /**

@@ -130,9 +130,7 @@ export const ConsolidatedRelationshipsSchema = z.object({
 });
 
 /** Inferred type of {@link ConsolidatedRelationshipsSchema}. */
-export type ConsolidatedRelationships = z.infer<
-  typeof ConsolidatedRelationshipsSchema
->;
+export type ConsolidatedRelationships = z.infer<typeof ConsolidatedRelationshipsSchema>;
 
 /**
  * Lightweight consolidated index for a single OpenSIPs version.
@@ -201,6 +199,4 @@ export const StatisticsBaselineFileSchema = z.object({
 });
 
 /** Inferred type of {@link StatisticsBaselineFileSchema}. */
-export type StatisticsBaselineFile = z.infer<
-  typeof StatisticsBaselineFileSchema
->;
+export type StatisticsBaselineFile = z.infer<typeof StatisticsBaselineFileSchema>;

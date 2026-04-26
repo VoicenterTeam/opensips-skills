@@ -150,12 +150,7 @@ export class IOError extends BuildError {
    * @param opts.cause - Optional underlying error. Stored on
    *   `Error.cause` (ES2022; available in Node 20).
    */
-  constructor(opts: {
-    message: string;
-    operation: string;
-    path: string;
-    cause?: unknown;
-  }) {
+  constructor(opts: { message: string; operation: string; path: string; cause?: unknown }) {
     super(opts.message, opts.cause !== undefined ? { cause: opts.cause } : undefined);
     this.operation = opts.operation;
     this.path = opts.path;
@@ -206,9 +201,7 @@ export class SchemaDriftError extends BuildError {
    * @param opts.computed - Hash freshly computed from the current schema files.
    */
   constructor(opts: { expected: string | null; computed: string }) {
-    super(
-      `schema hash drift: expected ${opts.expected ?? "none"}, computed ${opts.computed}`,
-    );
+    super(`schema hash drift: expected ${opts.expected ?? "none"}, computed ${opts.computed}`);
     this.expected = opts.expected;
     this.computed = opts.computed;
   }
@@ -304,8 +297,7 @@ export function formatError(error: BuildError): string {
     case "validation": {
       const ve = error as ValidationError;
       const tail = `expected ${ve.expected}, received ${ve.received}`;
-      const detail =
-        ve.path.length > 0 ? `(at ${ve.path.join(".")}, ${tail})` : `(${tail})`;
+      const detail = ve.path.length > 0 ? `(at ${ve.path.join(".")}, ${tail})` : `(${tail})`;
       return `${ve.file}: error: ${ve.message} ${detail}`;
     }
     case "io": {

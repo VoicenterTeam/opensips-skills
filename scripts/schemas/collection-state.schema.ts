@@ -9,10 +9,10 @@
  * and docs/architecture/data-pipeline.md §5.3.
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 const PhaseStatusSchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'completed', 'failed']),
+  status: z.enum(["pending", "in_progress", "completed", "failed"]),
   completedAt: z.string().datetime().optional(),
   result: z.any().optional(),
 });
@@ -22,10 +22,10 @@ const PhaseStatusSchema = z.object({
  * Used for batched extraction of large sections (e.g., parameters, functions).
  */
 const BatchStatusSchema = z.object({
-  batchIndex: z.number().describe('Zero-based batch index'),
-  itemNames: z.array(z.string()).describe('Names of items in this batch'),
-  status: z.enum(['pending', 'in_progress', 'completed', 'failed']),
-  data: z.any().optional().describe('Cached extraction result for this batch'),
+  batchIndex: z.number().describe("Zero-based batch index"),
+  itemNames: z.array(z.string()).describe("Names of items in this batch"),
+  status: z.enum(["pending", "in_progress", "completed", "failed"]),
+  data: z.any().optional().describe("Cached extraction result for this batch"),
   error: z.string().optional(),
   completedAt: z.string().datetime().optional(),
 });
@@ -36,7 +36,7 @@ const BatchStatusSchema = z.object({
  * Extended with batch tracking for large sections like parameters and functions.
  */
 const SectionStatusSchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'completed', 'failed']),
+  status: z.enum(["pending", "in_progress", "completed", "failed"]),
   error: z.string().optional(),
   attempts: z.number().default(0),
   lastAttempt: z.string().datetime().optional(),
@@ -61,7 +61,7 @@ const SectionStatusSchema = z.object({
 });
 
 const ItemStatusSchema = z.object({
-  status: z.enum(['pending', 'in_progress', 'completed', 'failed']),
+  status: z.enum(["pending", "in_progress", "completed", "failed"]),
   filePath: z.string().optional(),
   error: z.string().optional(),
   attempts: z.number(),
@@ -100,8 +100,8 @@ export const CollectionStateSchema = z.object({
   version: z.string(),
   startedAt: z.string().datetime(),
   lastUpdatedAt: z.string().datetime(),
-  status: z.enum(['pending', 'in_progress', 'completed', 'failed']),
-  
+  status: z.enum(["pending", "in_progress", "completed", "failed"]),
+
   phases: z.object({
     discovery: PhaseStatusSchema,
     modules: ModulesPhaseSchema,
@@ -110,7 +110,7 @@ export const CollectionStateSchema = z.object({
     enhancement: PhaseStatusSchema,
     consolidation: PhaseStatusSchema,
   }),
-  
+
   errors: z.array(ErrorEntrySchema),
 });
 
