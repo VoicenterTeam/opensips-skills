@@ -1,13 +1,13 @@
 ---
 name: opensips-config
 description: |-
-  Authors, edits, reviews, and answers questions about OpenSIPs SIP server configuration files (opensips.cfg, route blocks, modules, parameters, pseudo-variables). Use whenever the user mentions OpenSIPs, opensips.cfg, route{}/branch_route/failure_route, $var/$avp/$pv pseudo-variables, asks to write/edit SIP routing logic for OpenSIPs, names a specific OpenSIPs module (tm, dialog, dispatcher, registrar, drouting, presence, sl, uac, db_mysql, mid_registrar, etc.), or asks what functions/parameters a module exports. Do NOT use for sibling SIP Express Router (SER)-lineage projects — those use different identifiers despite shared lineage. For security review of an OpenSIPs config defer to opensips-security-advisor.
+  Authors, edits, reviews, and answers questions about OpenSIPs SIP server configuration files (opensips.cfg, route blocks, modules, parameters, pseudo-variables). Use whenever the user mentions OpenSIPs, opensips.cfg, route{}/branch_route/failure_route, $var/$avp/$pv pseudo-variables, asks to write/edit SIP routing logic for OpenSIPs, names a specific OpenSIPs module (tm, dialog, dispatcher, registrar, drouting, presence, sl, uac, db_mysql, mid_registrar, etc.), or asks what functions/parameters a module exports. Do NOT use for sibling SIP Express Router (SER)-lineage projects — those use different identifiers despite shared lineage.
 allowed-tools: Read, Write, Edit, Glob, Grep
 ---
 
 ## Overview
 
-This skill is the single entry point for OpenSIPs configuration work — authoring opensips.cfg files, editing route blocks, looking up module exports, and answering questions about cfg syntax. The substantive content lives in version-scoped reference files; this SKILL.md routes Claude to the right reference for any given task. The companion skill `opensips-security-advisor` handles security review; this skill defers to it for explicit security-review requests.
+This skill is the single entry point for OpenSIPs configuration work — authoring opensips.cfg files, editing route blocks, looking up module exports, and answering questions about cfg syntax. The substantive content lives in version-scoped reference files; this SKILL.md routes Claude to the right reference for any given task. Security review prose can be answered conversationally inside this skill by quoting the per-module reference (e.g., `pike.md`, `ratelimit.md`, `permissions.md`) — a dedicated security-advisor skill is scaffolded for a follow-up release.
 
 ## Cross-project guardrail
 
@@ -54,15 +54,6 @@ This skill should be the active one when:
 - The user phrases the question as "what functions does X module export?", "show me the parameters for Y module", "what does function Z return?", "which module provides `t_relay`?", or "what pseudo-variables does the dialog module add?".
 - The user pastes a config snippet that names a module and asks what a particular `modparam(...)` line does, or asks whether a function is available in the module they have loaded.
 - The user wants the dependency graph for a module — which other modules must also be loaded for it to work.
-
-## When to defer to `opensips-security-advisor`
-
-This skill should defer to `opensips-security-advisor` when:
-
-- The user explicitly requests a security review, audit, or hardening check.
-- The user mentions specific risks: INVITE flooding, registration hijacking, toll fraud, SIP scanning, spoofed REGISTER, RTP relay exposure.
-- The user asks "is this config safe?" or "what could go wrong with this?".
-- The user asks whether a module's default settings are safe, whether a particular `modparam(...)` value introduces a vulnerability, or whether a configuration is exposed to a named risk. The advisor owns those judgments; this skill only states what the parameter does and what its default is.
 
 ## Routing decisions
 
@@ -326,6 +317,6 @@ This skill consults the following files. `{version}` is a literal placeholder Cl
 - `references/{version}/guides/installation.md`, `references/{version}/guides/configuration.md`, `references/{version}/guides/syntax.md` — when present (per ADR-009, some versions ship guides; absence is not an error).
 - `references/{version}/ser-lineage-notes.md` — anti-hallucination guardrails. Read on first use of this skill in any session that involves unfamiliar identifiers.
 
-## Working with the sibling skill
+## Security review
 
-`opensips-security-advisor` reviews OpenSIPs configurations for security issues. When the user asks for a security review, audit, or hardening check, the advisor activates and reads this skill's reference files (read-only, per Rule 8 in CLAUDE.md). This skill does not write to the advisor's directory and the advisor does not write to this skill's directory.
+A dedicated `opensips-security-advisor` skill is scaffolded but disabled in v1 (per ADR-013). When a user asks for a security review, audit, or hardening check, this skill answers conversationally by quoting the relevant per-module reference (`pike.md`, `ratelimit.md`, `permissions.md`, `auth.md`, `auth_db.md`, `nathelper.md`, `rtpengine.md`, etc.) and the relevant core references (`core/mi-commands.md`, `core/flags.md`). State findings as observations grounded in the reference text rather than as opinions.

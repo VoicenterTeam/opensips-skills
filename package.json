@@ -1,7 +1,7 @@
 {
   "name": "opensips-skills",
-  "version": "1.0.0",
-  "description": "Claude Code plugin: two coordinated Agent Skills for working with OpenSIPs (configuration + security review)",
+  "version": "1.0.1",
+  "description": "Claude Code plugin: one Agent Skill for working with OpenSIPs configuration",
   "type": "module",
   "private": true,
   "license": "GPL-3.0-or-later",

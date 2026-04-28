@@ -151,15 +151,27 @@ function discoverShippedVersions(): string[] {
 
 const shippedVersions = discoverShippedVersions();
 
+/**
+ * Active skills = those with a `SKILL.md` (not `SKILL.md.scaffold`) on disk.
+ * Per ADR-013, v1 disables the security advisor by renaming its SKILL.md to
+ * SKILL.md.scaffold; this test self-adjusts so it covers exactly the active
+ * skills, and re-engages the advisor automatically when the rename is reverted.
+ */
+const activeSkills = [
+  { skillName: "opensips-config", skillDir: CONFIG_SKILL_DIR },
+  { skillName: "opensips-security-advisor", skillDir: ADVISOR_SKILL_DIR },
+].filter(({ skillDir }) => existsSync(path.join(skillDir, "SKILL.md")));
+
 describe("SKILL.md cross-reference integrity", () => {
   it("discovers at least one shipped (non-broken) version", () => {
     expect(shippedVersions.length).toBeGreaterThan(0);
   });
 
-  describe.each([
-    { skillName: "opensips-config", skillDir: CONFIG_SKILL_DIR },
-    { skillName: "opensips-security-advisor", skillDir: ADVISOR_SKILL_DIR },
-  ])("$skillName/SKILL.md", ({ skillDir }) => {
+  it("discovers at least one active skill", () => {
+    expect(activeSkills.length).toBeGreaterThan(0);
+  });
+
+  describe.each(activeSkills)("$skillName/SKILL.md", ({ skillDir }) => {
     const body = readFileSync(path.join(skillDir, "SKILL.md"), "utf8");
     const references = extractReferences(body).filter((c) => !isPlaceholder(c));
 

@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-04-28
+
+### Added
+- **OpenSIPs 3.4 and 4.0 reference coverage.** The dynamic-discovery design from ADR-009 carries the build through unmodified: `data/3.4/` and `data/4.0/` each render a complete reference tree (179 and 195 modules respectively). 3.4's prior `.broken` marker is removed; the upstream JSON-parse defect was corrected upstream and the data re-mirrored. Total: 4 versions, 754 modules, all built deterministically. The "Supported OpenSIPs versions" table in the README now lists 3.4, 3.5, 3.6, and 4.0 as supported.
+
+### Changed
+- **v1 now ships one Agent Skill, `opensips-config`.** The `opensips-security-advisor` scaffold remains in the tree but its `SKILL.md` is renamed to `SKILL.md.scaffold` to take it out of Claude Code's auto-discovery path; substantive review patterns will land in a follow-up release that re-enables the file (one `git mv`). User-facing prose across `README.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `marketplace.json`, `plugin.json`, and `package.json` is collapsed from "two coordinated skills" to one. Internal historical documents (ADR-005, ADR-012, plan files, research reports, superpowers plans) are deliberately preserved unchanged — they record the project's evolution. **ADR-013** records the v1-ships-one-skill decision.
+- **Author contact email** standardized to `shlomi@voicenter.com` across `marketplace.json`, `plugin.json`, and `package.json`.
+- **Module counts in user-facing prose** refreshed against the current rendered output (3.4=179, 3.5=186, 3.6=194, 4.0=195).
+
 ### Fixed
 - **Rendering-time sanitization for upstream extraction artifacts.** Generated reference files no longer carry three classes of upstream `opensips-docs-collector` damage: `U+FFFD` replacement characters in DocBook-derived section anchors (487 occurrences), over-escaped `\_` underscores in identifiers (~14k occurrences), and `U+200B` zero-width spaces (4 occurrences). A new pure helper (`scripts/lib/sanitize.ts`) is wired into `renderModule`, `renderCoreDocument`, `renderGuide`, the `consolidated.json` description path (`build-consolidated/index.ts#firstSentence`), and the `SKILL.md` module-index `Purpose` column (`build-module-index/index.ts#extractPurpose`), so every place a description leaves the source JSON gets the same cleanup. The committed source under `data/` is untouched — only the *rendered* output is cleaned, preserving the upstream-resync workflow. Per ADR-010, this is a deliberate, narrow exception to CLAUDE.md Rule 3 with three explicit criteria gating any future additions to the rule set; the upstream fix in `opensips-docs-collector` will retire this layer. 12 new unit tests in `tests/unit/lib/sanitize.test.ts`; golden fixtures regenerated.
 - **Cross-platform schema-hash stability.** `computeSchemaHash` in `scripts/schemas/hash.ts` previously hashed raw file bytes via `readFileSync(abs)`, which produced different digests on Windows checkouts (CRLF, the Git-for-Windows `core.autocrlf=true` default) versus Linux/macOS (LF) — directly contradicting the function's stated "stable across operating systems" guarantee. The fix normalises `\r\n` → `\n` before hashing so the digest depends only on canonical content. The committed baseline `scripts/schemas/.schema-hash` was simultaneously stale (M1's `006ad281…` matched neither platform's computed hash); regenerated via `npm run schemas:hash` to the canonical `35ed9745…`. A new unit test asserts identical CRLF/LF inputs produce the same hash, codifying the invariant. Per ADR-011, the two defects compounded but share a single root cause; both are now fixed. Net effect: 31 previously-failing orchestrator/e2e tests now pass; full suite at **773/773 green**.
@@ -16,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Documentation
 - **ADR-010** — Rendering-time output sanitization for upstream extraction artifacts.
 - **ADR-011** — CRLF-tolerant schema hash for cross-platform stability.
+- **ADR-013** — v1 ships one Agent Skill; security advisor deferred to a follow-up release.
 
 ## [1.0.0] - 2026-04-25
 
@@ -40,5 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Known notes for users
 - When using `npm run build -- --json`, npm prepends a banner to stdout that breaks JSON consumers. Use `npm run --silent build -- --json` or invoke `npx tsx scripts/build-references.ts --json` directly. Documented because the JSON contract requires clean stdout.
 
-[Unreleased]: https://github.com/VoicenterTeam/opensips-skills/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/VoicenterTeam/opensips-skills/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/VoicenterTeam/opensips-skills/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/VoicenterTeam/opensips-skills/releases/tag/v1.0.0

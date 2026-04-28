@@ -15,10 +15,11 @@ is laid out, where to find what you need, and the hard rules that govern
 changes. Most of the answers you will look for are one short scroll away
 inside that file.
 
-The short version: this repository is a Claude Code plugin that ships three
-coordinated Agent Skills for working with OpenSIPs. The plugin grounds
+The short version: this repository is a Claude Code plugin that ships one
+Agent Skill (`opensips-config`) for working with OpenSIPs. The plugin grounds
 Claude in version-specific reference data so it stops hallucinating
-identifiers across versions.
+identifiers across versions. A second skill scaffold (`opensips-security-advisor`)
+is preserved on disk for a follow-up release; see ADR-013.
 
 ## Setting up locally
 
@@ -137,9 +138,12 @@ in place.
 
 ## How to update SKILL.md content
 
-The three `SKILL.md` files in `plugins/opensips/skills/*/` are the project's
-most consequential output — they run on every Claude Code session that
-activates a skill. Per CLAUDE.md Rule 6, they are precious.
+The active SKILL.md in v1 is `plugins/opensips/skills/opensips-config/SKILL.md`.
+It is the project's most consequential output — it runs on every Claude Code
+session that activates the skill. Per CLAUDE.md Rule 6, it is precious. The
+second SKILL.md lives at `plugins/opensips/skills/opensips-security-advisor/SKILL.md.scaffold`
+and is intentionally disabled per ADR-013; re-enabling it is a `git mv` plus
+substantive review-pattern authoring.
 
 Required reading before editing:
 

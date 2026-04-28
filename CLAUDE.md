@@ -9,14 +9,15 @@
 
 ## What this project is
 
-`opensips-skills` is a [Claude Code plugin](https://docs.claude.com/en/docs/claude-code/plugins) that makes Claude fluent in OpenSIPs configuration. It ships two coordinated Agent Skills:
+`opensips-skills` is a [Claude Code plugin](https://docs.claude.com/en/docs/claude-code/plugins) that makes Claude fluent in OpenSIPs configuration. It ships one Agent Skill:
 
 1. **`opensips-config`** — authors and edits `opensips.cfg` files; provides version-aware module reference data; teaches the cfg file structure and the loadmodule-scan workflow.
-2. **`opensips-security-advisor`** — scaffold for a security-review skill authored by a separate agent.
+
+A second skill (`opensips-security-advisor`) is scaffolded in the tree for a follow-up release that authors substantive review patterns; in v1 it is disabled by renaming its `SKILL.md` to `SKILL.md.scaffold` so Claude Code's auto-discovery does not pick it up. See ADR-013.
 
 The project exists because off-the-shelf LLMs hallucinate when writing OpenSIPs configs — mixing identifiers across versions and across projects in the SIP Express Router lineage. This plugin grounds Claude in version-specific, OpenSIPs-authoritative documentation.
 
-Target versions: **OpenSIPs 3.5 and 3.6**. One skill, version-aware references, no cross-version reasoning.
+Target versions: **OpenSIPs 3.4, 3.5, 3.6, and 4.0**. One skill, version-aware references, no cross-version reasoning.
 
 ---
 
@@ -59,12 +60,14 @@ opensips-skills/
 ├── package.json
 ├── tsconfig.json
 │
-├── source/                          # Input: copy of extraction output
+├── data/                            # Input: copy of extraction output (per ADR-009)
+│   ├── 3.4/
 │   ├── 3.5/
-│   │   ├── core/*.json              # async, events, flags, functions, etc.
-│   │   └── modules/*.json           # one file per module
-│   └── 3.6/
-│       └── (same structure)
+│   ├── 3.6/
+│   └── 4.0/
+│       ├── core/*.json              # async, events, flags, functions, etc.
+│       ├── modules/*.json           # one file per module
+│       └── guides/*.json            # optional, where upstream provides
 │
 ├── scripts/                         # Build tooling
 │   ├── build-references.ts          # Main build entry (orchestrator)
@@ -84,18 +87,19 @@ opensips-skills/
         ├── README.md
         └── skills/
             ├── opensips-config/
-            │   ├── SKILL.md         # Hand-authored
+            │   ├── SKILL.md         # Hand-authored (only active skill in v1)
             │   ├── references/
-            │   │   └── {3.5,3.6}/
+            │   │   └── {3.4,3.5,3.6,4.0}/
             │   │       ├── cfg-format.md        # Hand-authored
             │   │       ├── ser-lineage-notes.md # Hand-authored
             │   │       ├── modules-index.md     # Generated
             │   │       ├── core/*.md            # Generated
             │   │       ├── modules/*.md         # Generated
-            │   │       ├── guides/*.md          # Generated (3.6 only)
+            │   │       ├── guides/*.md          # Generated, where upstream provides
             │   │       └── consolidated.json    # Generated
             └── opensips-security-advisor/
-                └── SKILL.md         # Scaffold (separate agent populates)
+                ├── README.md            # Explains the disable + how to re-enable
+                └── SKILL.md.scaffold    # Disabled in v1 per ADR-013; rename back to SKILL.md to re-enable
 ```
 
 ---
@@ -112,7 +116,7 @@ Browse `docs/architecture/adr/`. Each ADR is dated, numbered, and answers one qu
 Read `docs/architecture/rendering-templates.md` first, then edit `scripts/render-module/`, `scripts/render-core/`, `scripts/render-guide/`, `scripts/build-consolidated/`, or `scripts/build-module-index/`. Regenerate with `npm run build`. Golden-file tests will fail if output changes unexpectedly — update them only if the change is intentional.
 
 ### "I need to update a SKILL.md"
-Read `docs/architecture/skill-authoring-guide.md`. There are two hand-authored SKILL.md files: `opensips-config/SKILL.md` and `opensips-security-advisor/SKILL.md`. The SKILL.md files are the only hand-authored Markdown in the skills themselves (along with `cfg-format.md` and `ser-lineage-notes.md`). Everything else in `references/` is generated.
+Read `docs/architecture/skill-authoring-guide.md`. The active SKILL.md in v1 is `opensips-config/SKILL.md`. A second SKILL.md (`opensips-security-advisor/SKILL.md.scaffold`) is preserved on disk but disabled per ADR-013 — re-enabling it is a single `git mv` plus an authoring pass on its body. The SKILL.md files are the only hand-authored Markdown in the skill trees (along with `cfg-format.md` and `ser-lineage-notes.md`). Everything else in `references/` is generated.
 
 ### "I need to know what to build next"
 `docs/plan/implementation-plan.md` is the milestone-by-milestone plan. Active work tracks as GitHub issues; the plan document tracks dependencies and sequencing.
@@ -133,12 +137,12 @@ Two projects, clean boundary:
 Extracts OpenSIPs documentation per version using an LLM agent. Validates against Zod schemas. Outputs to `data/processed/{version}/core/*.json` and `data/processed/{version}/modules/*.json`. Version-isolated. Not part of this project.
 
 **Downstream — `opensips-skills`** (this repository)
-Consumes the extraction output as input to `source/`. A Node/TypeScript build script renders Markdown reference files and a consolidated JSON index. The plugin ships both the source JSON (for traceability) and the generated artifacts (so users need no build step to install).
+Consumes the extraction output as input to `data/` (per ADR-009). A Node/TypeScript build script renders Markdown reference files and a consolidated JSON index. The plugin ships both the source JSON (for traceability) and the generated artifacts (so users need no build step to install).
 
 ```
 opensips-docs-collector           opensips-skills
 ────────────────────────         ─────────────────────────
-data/processed/{version}/  ──►   source/{version}/
+data/processed/{version}/  ──►   data/{version}/
   core/*.json                      ├─ validated by Zod
   modules/*.json                   ├─ rendered by build script
                                    ▼
@@ -146,7 +150,7 @@ data/processed/{version}/  ──►   source/{version}/
                                    opensips-config/references/
                                       ├─ modules/*.md (per-item)
                                       ├─ core/*.md (aggregated)
-                                      ├─ guides/*.md (aggregated, 3.6+)
+                                      ├─ guides/*.md (aggregated, where upstream provides)
                                       ├─ modules-index.md (generated)
                                       └─ consolidated.json (index)
 ```
@@ -156,8 +160,8 @@ data/processed/{version}/  ──►   source/{version}/
 - **Aggregated** for core types. All variables from `variables.json` become one `variables.md`; same for operators, statements, etc.
 
 **Hand-authored vs. generated:**
-- Hand-authored: two `SKILL.md` files, `cfg-format.md` (new), `ser-lineage-notes.md`, all documentation under `docs/`.
-- Generated: everything under `references/{version}/core/`, `references/{version}/modules/`, `references/{version}/guides/`, plus `modules-index.md` (new) and `consolidated.json`.
+- Hand-authored: `opensips-config/SKILL.md`, `cfg-format.md`, `ser-lineage-notes.md`, the disabled `opensips-security-advisor/SKILL.md.scaffold`, all documentation under `docs/`.
+- Generated: everything under `references/{version}/core/`, `references/{version}/modules/`, `references/{version}/guides/`, plus `modules-index.md` and `consolidated.json`.
 
 For the full pipeline specification, see `docs/architecture/data-pipeline.md`.
 
@@ -173,7 +177,7 @@ npm install
 ### Pull latest extraction output into source
 ```bash
 # Manual copy (until submodule decision is finalized)
-cp -r ../opensips-docs-collector/data/processed/* source/
+cp -r ../opensips-docs-collector/data/processed/* data/
 ```
 
 ### Validate source JSON against schemas
@@ -200,7 +204,7 @@ claude --plugin-dir ./plugins/opensips
 ```
 Then in the Claude Code session:
 ```
-/plugin list          # Confirm both skills loaded
+/skills               # Confirm opensips-config is listed (only one skill in v1)
 /reload-plugins       # Pick up mid-session edits without restart
 ```
 
@@ -230,7 +234,7 @@ Before changing how skills are structured, how the build works, how versions are
 This project does not correct OpenSIPs documentation. If a module reference is wrong, the fix belongs in `opensips-docs-collector`. This project's job is faithful transformation, not editing. The only exceptions are (a) the hand-authored SKILL.md content, which is procedural knowledge not present in upstream docs, and (b) a narrow, gated rendering-time sanitization layer for upstream **extraction artifacts** (not OpenSIPs content) — see ADR-010. Adding a new sanitize rule requires meeting all three criteria in ADR-010's "Threshold for adding new sanitize rules" section.
 
 ### Rule 4: Version isolation is sacred
-The project supports 3.5 and 3.6 as completely independent worlds. No code path should read from one version's references while operating on another. No "what changed between 3.5 and 3.6" logic. If the user asks, Claude answers from within the active version only.
+The project supports 3.4, 3.5, 3.6, and 4.0 as completely independent worlds. No code path should read from one version's references while operating on another. No cross-version diff logic. If the user asks, Claude answers from within the active version only.
 
 ### Rule 5: Commit source and generated output together
 Every PR that touches `source/` must include the regenerated output. CI enforces this with `git diff --exit-code` after `npm run build`. Reviewing both side-by-side catches bugs no one would catch reviewing source alone.
@@ -241,8 +245,8 @@ They carry the anti-hallucination load. Changes to SKILL.md require reading `doc
 ### Rule 7: Neutral framing on SER-lineage topics
 OpenSIPs is one of several projects descending from the SIP Express Router. When writing any documentation — including SKILL.md, `ser-lineage-notes.md`, ADRs, and error messages — stay strictly within OpenSIPs territory. Do not compare against other projects by name beyond the single lineage acknowledgment in `ser-lineage-notes.md`. Rationale in ADR-008.
 
-### Rule 8: The two skills do not write to each other's directories
-Each skill reads files (including from sibling skills' reference folders, which is allowed and expected). None writes to another skill's directory at build or runtime. This keeps the integration contract between `opensips-security-advisor` and `opensips-config` explicit and testable. The security advisor reads `opensips-config`'s reference files; it does not write to them.
+### Rule 8: Skill directories do not write to each other
+v1 ships one active skill (`opensips-config`) and one disabled scaffold (`opensips-security-advisor/SKILL.md.scaffold`). When the second skill is re-enabled in a future release, neither writes into the other's directory at build or runtime. The security advisor reads `opensips-config`'s reference files; it does not write to them. This keeps the integration contract between the two skills explicit and testable.
 
 ---
 
@@ -254,7 +258,7 @@ When a user opens this repository in Claude Code, the behavior should be:
 2. **When the user asks about the project,** point them to `docs/vision.md` and `docs/requirements.md`.
 3. **When the user wants to add a module,** they do not. Modules come from the upstream extraction project. The task is to refresh `source/`, rerun `npm run build`, and commit the result.
 4. **When the user wants to change how things render,** edit `scripts/render-*.ts`, run `npm run build`, and verify golden-path tests still pass (or update them intentionally).
-5. **When the user wants to change a SKILL.md,** read `docs/architecture/skill-authoring-guide.md` first, then edit the appropriate file (`opensips-config/SKILL.md` or `opensips-security-advisor/SKILL.md`), then verify golden-path demos.
+5. **When the user wants to change a SKILL.md,** read `docs/architecture/skill-authoring-guide.md` first, then edit `opensips-config/SKILL.md` (the only active SKILL.md in v1; the security-advisor scaffold lives at `opensips-security-advisor/SKILL.md.scaffold` and is re-enabled by renaming it back). Verify golden-path demos before merging.
 6. **When asked to make a decision that feels architectural,** propose an ADR before implementing.
 7. **When asked to add a feature not in the requirements doc,** check `docs/plan/implementation-plan.md` to see if it's planned for a later phase. If not, flag the scope expansion explicitly rather than silently implementing it.
 
@@ -281,8 +285,8 @@ Claude Code should treat the "Rules for changing things" section above as hard c
 
 ## Project status
 
-**Current phase:** Post-v1.0.0 public release. Two-skill architecture live (ADR-012).
-**Active target:** Ongoing maintenance, expanded version coverage, security advisor content.
+**Current phase:** v1.0.1 public release. One-skill architecture live (ADR-013); security-advisor scaffold preserved on disk for a follow-up release.
+**Active target:** Ongoing maintenance, additional OpenSIPs versions as upstream extracts them, security-advisor authoring + re-enable.
 **Repository state:** Fully functional. See `docs/plan/implementation-plan.md` for milestone history.
 
 ---

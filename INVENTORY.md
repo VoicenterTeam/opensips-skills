@@ -46,6 +46,8 @@ This file lists every document in the archive with a one-line description. Usefu
 | `009-data-folder-and-dynamic-version-discovery.md` | ~180 | `data/` is canonical source; build auto-discovers versions; 3.4/3.5/3.6 in scope; guides included |
 | `010-rendering-time-output-sanitization.md` | ~90 | Narrow exception to Rule 3: strip three classes of upstream extraction artifacts (`U+FFFD`, `U+200B`, `\_`) at the renderer boundary; gated by an explicit threshold |
 | `011-cross-platform-schema-hash.md` | ~80 | Schema hash normalises CRLF→LF before hashing so the digest is stable on Windows (autocrlf=true) and Linux/macOS; baseline regenerated to canonical LF value |
+| `012-merge-routing-and-modules-into-opensips-config.md` | ~80 | Collapses the routing + modules skills into the single `opensips-config` skill; supersedes ADR-005 in part |
+| `013-v1-ships-one-skill.md` | ~110 | v1 ships only `opensips-config`; the `opensips-security-advisor` scaffold is disabled (`SKILL.md` → `SKILL.md.scaffold`) and re-enabled in a follow-up release |
 
 ## docs/plan/
 
@@ -117,16 +119,16 @@ Human-readable JSON schema specifications (mirrored from `opensips-docs-collecto
 
 ## data/
 
-Per ADR-009, `data/{version}/` is the canonical source-data location (auto-discovered by the build). Currently populated for 3.4, 3.5, 3.6. Each version contains `core/*.json`, `modules/*.json`, optional `guides/*.json`, plus a `md/` raw-extraction tree (committed but ignored by build) and an optional combined `complete.json` (also ignored by build).
+Per ADR-009, `data/{version}/` is the canonical source-data location (auto-discovered by the build). Currently populated for 3.4, 3.5, 3.6, and 4.0. Each version contains `core/*.json`, `modules/*.json`, optional `guides/*.json`, plus a `md/` raw-extraction tree (committed but ignored by build) and an optional combined `complete.json` (also ignored by build).
 
 ## Counts
 
 - **Authored Markdown files (docs + root):** 57
-- **ADRs:** 12 (template + 11 substantive)
+- **ADRs:** 14 (template + 13 substantive)
 - **Milestones:** 11 (README + 10 numbered)
 - **Research reports:** 3 (plus README)
 - **Schema specs:** 18 (plus README)
-- **Versions in `data/`:** 3 (3.4, 3.5, 3.6) — auto-discovered, more added by dropping folders per ADR-009
+- **Versions in `data/`:** 4 (3.4, 3.5, 3.6, 4.0) — auto-discovered, more added by dropping folders per ADR-009
 
 ---
 
