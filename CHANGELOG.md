@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-04-29
+
+### Added
+- **`opensips-security-advisor` activated.** Reviews `opensips.cfg` files for security issues across 12 vulnerability families: authentication, injection, MI exposure, TLS posture, DoS defense, relay and routing, identity spoofing, STIR/SHAKEN, media, dispatcher and load-balancer, tracing and logging, configuration hygiene. **58 rules total**, each with frontmatter (severity, CVSS, CWE, version gates, profile gates) and four required body sections (Rationale, Default Value, Audit, Remediation). Read-only (`Read, Glob, Grep`). Produces a Markdown report with severity-ranked findings, cited remediations, and explicit abstention when confidence is insufficient. The skill activates on broad triggers: explicit security review, hardening for a specific category, CVE references in OpenSIPs context, INVITE flooding, registration hijacking, toll fraud, MI exposure, RTP relay misuse, SIP scanning.
+- **Cross-version skill design.** Unlike `opensips-config`, the security advisor is not partitioned per OpenSIPs version. Per-rule frontmatter (`applies_if_opensips_version: ">=3.4"` etc.) plus a `references/version-notes/{3.4,3.5,3.6,4.0}.md` tree carry version-specific concerns. Adding a new OpenSIPs version requires authoring one version-notes file, not duplicating the entire reference tree. Rationale in ADR-014.
+- **Integration contract with `opensips-config`.** The security advisor reads (does not write) `../opensips-config/references/{version}/consolidated.json`, `modules-index.md`, `modules/<module>.md`, `cfg-format.md`, and `core/*.md` for identifier sanity-checking against the active OpenSIPs version. Unrecognized identifiers surface as `review_required` findings rather than guessed-around. SER-lineage neutral framing per ADR-008 enforced — no specific sibling project names appear in any review output.
+- **Vulnerability reference, sanitizer registry, taint model.** Three knowledge docs ground the rules: `references/knowledge/vulnerability-reference.md` (17-section threat-model reference, CVE values verified during the consolidation pass), `references/knowledge/sanitizer-registry.md` (recognized OpenSIPs script sanitizers per sink class), `references/taint-model.md` (sources/sanitizers/sinks for injection-class rules; path-insensitivity made explicit).
+- **Manual smoke-test harness.** `docs/testing/security-advisor/fixtures/` carries 13 fixtures (1 clean, 1 vulnerable, 11 tricky) plus 3 golden Markdown reports. Validation procedure documented in `docs/testing/security-advisor/test-strategy.md` — there is no automated runner in v1.
+- **Research archive preserved.** `docs/research/security-advisor-consolidation/` carries the four upstream chat bundles (A, B, C, Thread 0) and reconciliation logs that fed the v1 consolidation. Outside the published skill tree; preserved for traceability.
+
+### Changed
+- Plugin manifest version bumped to `1.1.0`. Description updated to cover both skills.
+- Root `README.md` and skill-folder `README.md` updated to describe both active skills; the "scaffold/disabled" framing for the security advisor is removed.
+- CLAUDE.md "What this project is" section updated to list both skills; the v1.0.x file-tree diagram for the skill folder is updated to show the new structure.
+
+### Documentation
+- **ADR-014** — opensips-security-advisor v1: single skill, cross-version, semantic folders. Records the v1 scope, structural decisions, and v1-only stance (no TODOs about future capabilities). Supersedes ADR-013 in part.
+- **Spec & plan** — `docs/superpowers/specs/2026-04-29-opensips-security-advisor-v1-design.md` (the approved design) and `docs/superpowers/plans/2026-04-29-opensips-security-advisor-v1.md` (the 18-task implementation plan that produced this release).
+
+### Out of scope (deliberately, not as TODOs)
+- Hardening-index numerical score, SARIF output, L3 deployment profile, schema-versioning fields on output, automated fixture-replay test runner. These are not promised for v2 or any other release. If a future release wants any of them, it gets its own spec.
+
 ## [1.0.1] - 2026-04-28
 
 ### Added
