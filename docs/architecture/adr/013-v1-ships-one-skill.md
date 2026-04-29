@@ -2,7 +2,7 @@
 
 # ADR-013: v1 ships one Agent Skill; security advisor deferred to a follow-up release
 
-**Status:** Accepted
+**Status:** Accepted (superseded in part by [ADR-014](014-security-advisor-v1-single-skill.md) — security advisor activated in v1.1.0)
 **Date:** 2026-04-28
 **Deciders:** Shlomi Gutman (Voicenter)
 **Technical story:** Pre-community-release cleanup for v1.0.1.
