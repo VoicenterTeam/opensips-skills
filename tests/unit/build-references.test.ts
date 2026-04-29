@@ -50,6 +50,7 @@ describe("main() orchestrator", () => {
 
   it(
     "processes --only 3.5 — exit code reflects per-module render validation",
+    { timeout: 60_000 },
     async () => {
       // Same caveat as 3.6 above: the M3 renderer now runs against the
       // committed source, and some modules surface validator violations.
@@ -58,11 +59,11 @@ describe("main() orchestrator", () => {
       const code = await main(["--only", "3.5"]);
       expect([0, 3]).toContain(code);
     },
-    { timeout: 60_000 },
   );
 
   it(
     "returns 0 for --only 3.4 (full build, marker removed)",
+    { timeout: 60_000 },
     async () => {
       // 3.4 previously carried a .broken marker due to an upstream JSON
       // parse defect; the defect has been repaired inline and the marker
@@ -71,7 +72,6 @@ describe("main() orchestrator", () => {
       const code = await main(["--only", "3.4"]);
       expect([0, 3]).toContain(code);
     },
-    { timeout: 60_000 },
   );
 
   it("returns 2 for an unknown flag", async () => {

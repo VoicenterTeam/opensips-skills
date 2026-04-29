@@ -73,6 +73,7 @@ describe("version isolation E2E", () => {
 
   it(
     "no generated 3.6 file mentions references/3.5 and vice versa",
+    { timeout: 60_000 },
     async () => {
       // Build both versions into the same output root so the cross-version
       // check exercises sibling presence (the realistic shipping shape).
@@ -117,11 +118,11 @@ describe("version isolation E2E", () => {
         ).not.toContain("references/3.6");
       }
     },
-    { timeout: 60_000 },
   );
 
   it(
     "no generated 3.6 core file mentions references/3.5 and vice versa",
+    { timeout: 60_000 },
     async () => {
       const code35 = await main([
         "--only",
@@ -164,11 +165,11 @@ describe("version isolation E2E", () => {
         ).not.toContain("references/3.6");
       }
     },
-    { timeout: 60_000 },
   );
 
   it(
     "consolidated.json paths reference only the index's own version",
+    { timeout: 60_000 },
     async () => {
       const code35 = await main([
         "--only",
@@ -239,11 +240,11 @@ describe("version isolation E2E", () => {
         );
       }
     },
-    { timeout: 60_000 },
   );
 
   it(
     "consolidated.json `version` field matches its directory",
+    { timeout: 60_000 },
     async () => {
       const code35 = await main([
         "--only",
@@ -292,6 +293,5 @@ describe("version isolation E2E", () => {
       expect(idx35.version).toBe("3.5");
       expect(idx36.version).toBe("3.6");
     },
-    { timeout: 60_000 },
   );
 });

@@ -97,6 +97,7 @@ describe("determinism E2E", () => {
 
   it(
     "produces byte-identical 3.6 output across two builds",
+    { timeout: 60_000 },
     async () => {
       const codeA = await main([
         "--only",
@@ -136,11 +137,11 @@ describe("determinism E2E", () => {
         ).toBe(digestA);
       }
     },
-    { timeout: 60_000 },
   );
 
   it(
     "produces byte-identical 3.5 output across two builds",
+    { timeout: 60_000 },
     async () => {
       const codeA = await main([
         "--only",
@@ -178,6 +179,5 @@ describe("determinism E2E", () => {
         ).toBe(digestA);
       }
     },
-    { timeout: 60_000 },
   );
 });

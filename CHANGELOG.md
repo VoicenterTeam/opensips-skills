@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+- **Bumped `vitest` 2.1.9 → 4.1.5 (and `@vitest/coverage-v8` to match) to clear two GitHub Dependabot advisories.** Both vulnerabilities were in devDependencies only — the shipped plugin is Markdown + JSON files at runtime and was not affected. Resolves [GHSA-67mh-4wv8-2f99](https://github.com/advisories/GHSA-67mh-4wv8-2f99) (esbuild ≤0.24.2 — dev server allows arbitrary cross-origin requests, CWE-346, CVSS 5.3) and [GHSA-4w7w-66w2-5vf9](https://github.com/advisories/GHSA-4w7w-66w2-5vf9) (vite ≤6.4.1 — path traversal in optimized-deps `.map` handling, CWE-22 + CWE-200). Both reached the tree transitively via vitest 2.x → vite → esbuild; the vitest 4.x bump pulls patched versions of the entire chain. The semver-major upgrade required adapting four test files for vitest 4's removed `it(name, fn, options)` signature → the new `it(name, options, fn)` shape; all 784 tests verified passing locally and in CI.
+
 ## [1.1.0] - 2026-04-29
 
 ### Added

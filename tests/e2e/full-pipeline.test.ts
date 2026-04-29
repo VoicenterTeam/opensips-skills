@@ -68,6 +68,7 @@ describe("full pipeline E2E", () => {
 
   it(
     "builds the fixture corpus end-to-end with exit 0 for --only 3.6",
+    { timeout: 60_000 },
     async () => {
       const code = await main([
         "--only",
@@ -147,11 +148,11 @@ describe("full pipeline E2E", () => {
       expect(modulesIndexContent.length).toBeGreaterThan(1000);
       expect(modulesIndexContent).toContain("# OpenSIPs module index");
     },
-    { timeout: 60_000 },
   );
 
   it(
     "handles --only 3.5 correctly",
+    { timeout: 60_000 },
     async () => {
       const code = await main([
         "--only",
@@ -207,10 +208,9 @@ describe("full pipeline E2E", () => {
       );
       expect(existsSync(consolidatedPath)).toBe(true);
     },
-    { timeout: 60_000 },
   );
 
-  it("returns exit code 0 for --only 3.4 (full build)", async () => {
+  it("returns exit code 0 for --only 3.4 (full build)", { timeout: 60_000 }, async () => {
     // 3.4 was previously skipped via a .broken marker due to an upstream
     // JSON parse defect in core/variables.json. The defect has since been
     // repaired inline and the marker removed, so 3.4 now builds end-to-end
@@ -239,7 +239,7 @@ describe("full pipeline E2E", () => {
       f.endsWith(".md"),
     );
     expect(moduleFiles.length).toBeGreaterThan(0);
-  }, { timeout: 60_000 });
+  });
 
   it("returns exit code 2 on a usage error (--quiet --verbose mutex)", async () => {
     const code = await main(["--quiet", "--verbose"]);
