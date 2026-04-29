@@ -1,0 +1,52 @@
+{
+  "fixture": "clean-l1-enterprise-pbx.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [95, 100],
+  "expected_findings": [],
+  "expected_informationals": [
+    {
+      "rule_id": "OSIPS-SEC-MI-002",
+      "kind": "vulnerability",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "approximate_location": { "anchor": "modparam(\"mi_http\", \"ip\", \"127.0.0.1\"", "tolerance_lines": 3 },
+      "rationale_keyword": "trusted_clients"
+    },
+    {
+      "rule_id": "OSIPS-SEC-DOS-001",
+      "kind": "vulnerability",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "approximate_location": { "anchor": "pike_check_req", "tolerance_lines": 3 },
+      "rationale_keyword": "default_thresholds"
+    },
+    {
+      "rule_id": "OSIPS-SEC-TLS-004",
+      "kind": "vulnerability",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "approximate_location": { "anchor": "tls_ciphers_list", "tolerance_lines": 3 },
+      "rationale_keyword": "permissive_cipher_list"
+    }
+  ],
+  "must_not_fire": [
+    "OSIPS-SEC-AUTH-001",
+    "OSIPS-SEC-AUTH-002",
+    "OSIPS-SEC-AUTH-004",
+    "OSIPS-SEC-INJ-001",
+    "OSIPS-SEC-MI-001",
+    "OSIPS-SEC-TLS-001",
+    "OSIPS-SEC-RELAY-001",
+    "OSIPS-SEC-DOS-001",
+    "OSIPS-SEC-LOG-001",
+    "OSIPS-SEC-CFG-001"
+  ],
+  "validation_notes": [
+    "Anchor-based location matching: validator searches for the anchor string in the cfg and accepts the matched finding within +/- tolerance_lines of the anchor's line number. This decouples fixture validation from cosmetic line-number drift.",
+    "must_not_fire is the security contract. A regression that fires any of these rules on this cfg is a high-priority defect."
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "fixture": "vulnerable-mixed.cfg",
+  "expected_opensips_version": "3.6.2",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [18, 28],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-AUTH-004",
+      "severity": "critical",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "suppressible": false,
+      "approximate_location": { "anchor": "modparam(\"auth_jwt\", \"db_mode\"", "tolerance_lines": 2 },
+      "must_cite_cve": "CVE-2026-25554"
+    },
+    {
+      "id_anchor": "F2",
+      "rule_id": "OSIPS-SEC-MI-001",
+      "severity": "critical",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "modparam(\"mi_http\", \"ip\", \"0.0.0.0\"", "tolerance_lines": 2 }
+    },
+    {
+      "id_anchor": "F3",
+      "rule_id": "OSIPS-SEC-AUTH-002",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "route(relay);", "tolerance_lines": 5 }
+    },
+    {
+      "id_anchor": "F4",
+      "rule_id": "OSIPS-SEC-INJ-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "avp_db_query(\"SELECT route FROM dialplan WHERE prefix='$fU'", "tolerance_lines": 1 },
+      "must_identify_taint_source": "$fU",
+      "must_identify_sink": "avp_db_query"
+    },
+    {
+      "id_anchor": "F5",
+      "rule_id": "OSIPS-SEC-TLS-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "verify_cert\", \"[default]0\"", "tolerance_lines": 2 }
+    },
+    {
+      "id_anchor": "F6",
+      "rule_id": "OSIPS-SEC-RELAY-001",
+      "severity": "medium",
+      "confidence": "medium",
+      "verification_status": "judge_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "t_relay();", "tolerance_lines": 1 },
+      "validation_notes": "permissions module is loaded; semantic-pass judge must confirm no allow_routing() reaches this t_relay before promoting confidence."
+    },
+    {
+      "id_anchor": "F7",
+      "rule_id": "OSIPS-SEC-DOS-001",
+      "severity": "medium",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "module_load_section", "tolerance_lines": -1 }
+    },
+    {
+      "id_anchor": "F8",
+      "rule_id": "OSIPS-SEC-LOG-001",
+      "severity": "low",
+      "confidence": "medium",
+      "verification_status": "judge_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "$hdr(Authorization)", "tolerance_lines": 1 }
+    },
+    {
+      "id_anchor": "F9",
+      "rule_id": "OSIPS-SEC-CFG-001",
+      "severity": "low",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "opensipspw@db.internal", "tolerance_lines": 1 },
+      "expected_match_count_min": 3
+    },
+    {
+      "id_anchor": "F10",
+      "rule_id": "OSIPS-SEC-AUTH-001",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "calculate_ha1\", 1", "tolerance_lines": 1 }
+    }
+  ],
+  "expected_finding_counts_by_severity": {
+    "critical": 2, "high": 3, "medium": 2, "low": 2, "info": 1
+  },
+  "must_not_fire": [
+    "OSIPS-SEC-STIRSHAKEN-001",
+    "OSIPS-SEC-DISPATCHER-001"
+  ]
+}

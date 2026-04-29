@@ -1,0 +1,97 @@
+# 90_reference/sanitizer_registry.yaml
+#
+# Global registry classifying transformations the OpenSIPS Security
+# Advisor recognizes as known-good sanitizers. Rules in 30_rules/
+# reference this file via dataflow_query patterns whose
+# must_not_pass_through_any_of predicate names a sanitizer_class.
+#
+# Schema and usage are defined in 14_DETECTION_ENGINE.md
+# § "Sanitizer registry".
+#
+# Authored 2026-04-29 from the OpenSIPS pseudovariable transformations
+# documentation: https://opensips.org/docs/script-cookbooks/transformations.html
+#
+# Authoring discipline: this registry is conservative on additions.
+# A transformation is added only when its escaping behavior is
+# documented and consistent across the supported OpenSIPS version
+# range. Per-context sanitizers (e.g., URI-encoding for a specific
+# protocol) belong in this registry when a rule needs to reference
+# them; transformations whose security semantics are unclear belong
+# in opaque-function-handling territory (see abstain_on in
+# 14_DETECTION_ENGINE.md), not here.
+
+schema_version: "1.0"
+
+sanitizers:
+  - id: s_escape_common
+    classes: [string_escape]
+    invocation: pseudovar_transformation
+    invocation_syntax: "$(var{s.escape.common})"
+    description: |
+      OpenSIPS-native transformation. Escapes single quote (`'`),
+      double quote (`"`), backslash (`\`), NUL byte, CR, LF.
+      The standard choice for SQL string interpolation.
+    used_for:
+      - SQL string literal escaping (avp_db_query first arg)
+      - SIP message construction where the value lands inside a
+        quoted string
+
+  - id: s_escape_user
+    classes: [string_escape]
+    invocation: pseudovar_transformation
+    invocation_syntax: "$(var{s.escape.user})"
+    description: |
+      OpenSIPS-native transformation. Escapes the same set as
+      s.escape.common, plus SIP URI user-part special characters
+      (`@`, `:`, `;`, `,`, `?`, `=`, `&`, `+`, `$`).
+    used_for:
+      - Constructing a SIP URI user-part from cfg-controlled input
+      - Re-emitting a From or To URI with a sanitized user component
+
+  - id: s_escape_param
+    classes: [string_escape]
+    invocation: pseudovar_transformation
+    invocation_syntax: "$(var{s.escape.param})"
+    description: |
+      OpenSIPS-native transformation. Escapes URI-parameter delimiters
+      (`;`, `=`, `?`) plus the s.escape.common set.
+    used_for:
+      - Constructing URI parameters from cfg-controlled input
+      - Header parameter values that must survive parser round-trip
+
+  - id: s_escape_param_strict
+    classes: [string_escape, allowlist]
+    invocation: pseudovar_transformation
+    invocation_syntax: "$(var{s.escape.param_strict})"
+    description: |
+      OpenSIPS-native transformation. Allowlist mode — rejects on any
+      non-allowlisted character rather than escaping. The strictest
+      of the four built-in transforms.
+    used_for:
+      - Hard-allowlist scenarios where any unexpected character is
+        a fail-closed condition
+      - When the consuming code path cannot tolerate escape sequences
+
+# ---
+#
+# Notes for rule authors:
+#
+# The sanitizer_class taxonomy is intentionally small. Two classes
+# at v1.0:
+#
+#   - string_escape: transforms that escape SQL/SIP-special characters
+#     so they survive interpolation as literals. INJ-class rules reference
+#     this class.
+#
+#   - allowlist: transforms that fail closed on unexpected characters
+#     rather than passing them through escaped. Stricter contract; used
+#     by some operators in high-assurance deployments.
+#
+# A future extension could add classes for context-specific escaping
+# (e.g., URL-encoding, JSON-escaping) when rules in non-SQL/non-SIP
+# sinks need to reference them.
+#
+# DO NOT add transformations from the Kamailio dialect to this registry.
+# Kamailio's $(var{s.replace,...}) and similar transforms have
+# different semantics on OpenSIPS or do not exist on OpenSIPS at all.
+# See 01_master_vulnerability_reference.md § 1 anti-pattern note.

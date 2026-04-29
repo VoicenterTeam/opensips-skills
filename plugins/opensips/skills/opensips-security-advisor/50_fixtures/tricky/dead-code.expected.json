@@ -1,0 +1,58 @@
+{
+  "fixture": "dead-code.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [40, 70],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-TLS-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "verify_cert\", \"[legacy]0\"", "tolerance_lines": 2 },
+      "validation_notes": "TLS-001 fires on the [legacy] domain config even though no listener references it. v1.0 engine is not configuration-aware about which domains are bound; rule treats all domain configs equally."
+    },
+    {
+      "id_anchor": "F2",
+      "rule_id": "OSIPS-SEC-INJ-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "avp_db_query(\"SELECT route FROM legacy_dialplan", "tolerance_lines": 1 },
+      "must_identify_taint_source": "$fU",
+      "must_identify_sink": "avp_db_query",
+      "validation_notes": "Fires on the unreachable route[unused_legacy_relay] because v1.0 engine is not path-sensitive. Per 14_DETECTION_ENGINE.md § 'Open issues', unreachable code is treated as reachable."
+    },
+    {
+      "id_anchor": "F3",
+      "rule_id": "OSIPS-SEC-RELAY-001",
+      "severity": "medium",
+      "confidence": "high",
+      "verification_status": "judge_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "t_relay();", "tolerance_lines": 1 },
+      "expected_match_count_min": 1,
+      "validation_notes": "RELAY-001 should fire on the t_relay() in route[unused_legacy_relay] (no preceding guard in that route block). The semantic judge sees no permissions/allow_routing in the dead route's scope and confirms. The t_relay in request_route's main path is properly guarded by is_myself + has_totag and should not fire."
+    },
+    {
+      "id_anchor": "F4",
+      "rule_id": "OSIPS-SEC-LOG-001",
+      "severity": "low",
+      "confidence": "medium",
+      "verification_status": "judge_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "$hdr(Authorization)", "tolerance_lines": 1 },
+      "validation_notes": "Fires on route[debug_dump] which is never invoked. v1.0 contract: dead code still flagged."
+    }
+  ],
+  "must_not_fire": [],
+  "validation_notes": [
+    "v1.0 contract: this fixture exercises the deliberately-conservative 'no path sensitivity' choice in 14_DETECTION_ENGINE.md § 'Open issues'. Dead routes that would be vulnerable IF reached are flagged as findings.",
+    "If a future engine version adds path-sensitivity, this fixture's expected output will change — F2, F3, F4 should be moved to a diagnostic-only output (rules_skipped with 'unreachable' reason) rather than findings[]. Until then, keep them as findings.",
+    "TLS-001 on the [legacy] domain (F1) is NOT a path-sensitivity issue — TLS domain configs are global and apply whenever the domain is referenced. The v1.0 engine doesn't track which domains are bound to listeners, so it flags all weak-domain configs.",
+    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+  ]
+}

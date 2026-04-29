@@ -1,0 +1,33 @@
+{
+  "fixture": "nested-includes.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [70, 95],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-CFG-INCLUDE-UNRESOLVED",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "include_file \"/etc/opensips/secrets.cfg\"", "tolerance_lines": 1 },
+      "expected_match_count_min": 3,
+      "validation_notes": "Engine should emit one informational per include_file directive (or one consolidated informational naming all three paths). Per 14_DETECTION_ENGINE.md § 'Open issues', v1.0 does not resolve includes; the contract is that the user is told this so they can either (a) inline the includes for analysis or (b) provide the include allowlist when v2.0 supports include resolution."
+    }
+  ],
+  "expected_informationals": [],
+  "must_not_fire": [
+    "OSIPS-SEC-AUTH-001",
+    "OSIPS-SEC-INJ-001",
+    "OSIPS-SEC-MI-001",
+    "OSIPS-SEC-RELAY-001"
+  ],
+  "validation_notes": [
+    "Note: OSIPS-SEC-CFG-INCLUDE-UNRESOLVED is a synthetic rule_id used by this fixture as a stand-in. The actual rule_id may differ when the rule is authored — likely OSIPS-SEC-CFG-XXX in the config_hygiene family. Update this fixture once the rule is authored.",
+    "The engine must NOT silently pass on rules whose triggers might be in the included content. For example, TLS-001 must not fire (because we can't see tls.cfg), but the engine should report 'TLS-001 not evaluable: tls_mgm modparams may be in unresolved include' as a rules_skipped entry in diagnostics.",
+    "If the engine fires TLS-001 on this cfg as if the [default] domain has no verify_cert set (because the engine sees no verify_cert modparam in the parent file), that is a defect. The engine has incomplete information; firing on incomplete information is wrong.",
+    "Conversely, if the engine emits a clean report and lets the user believe the cfg is verified, that is also a defect. The user must know about the unresolved includes.",
+    "expected_hardening_index_range is wide pending consolidation of the formula dispute and pending the rule's authored severity."
+  ]
+}

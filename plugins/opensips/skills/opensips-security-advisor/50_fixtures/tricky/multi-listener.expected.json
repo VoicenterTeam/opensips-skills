@@ -1,0 +1,23 @@
+{
+  "fixture": "multi-listener.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [95, 100],
+  "expected_findings": [],
+  "expected_informationals": [],
+  "must_not_fire": [
+    "OSIPS-SEC-AUTH-001",
+    "OSIPS-SEC-AUTH-002",
+    "OSIPS-SEC-INJ-001",
+    "OSIPS-SEC-MI-001",
+    "OSIPS-SEC-TLS-001",
+    "OSIPS-SEC-RELAY-001"
+  ],
+  "validation_notes": [
+    "This is fundamentally a clean cfg — the listener diversity is the test, not a vulnerability.",
+    "Engine should record the listener inventory (udp:0.0.0.0:5060, tls:0.0.0.0:5061, udp:127.0.0.1:5062, tcp:10.0.0.10:5063) in AnalysisContext for future per-listener rules in v2.0.",
+    "Future rule families (when authored) should be able to express 'this rule fires only when at least one listener binds to a non-loopback interface'. v1.0 has no such per-listener rules; this fixture is a placeholder so v1.0 doesn't accidentally produce false positives on multi-listener configs.",
+    "If any rule fires on this cfg in v1.0, it's likely a false positive — investigate before pruning.",
+    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+  ]
+}

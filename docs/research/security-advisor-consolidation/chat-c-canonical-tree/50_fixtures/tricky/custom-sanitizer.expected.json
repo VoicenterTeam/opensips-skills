@@ -1,0 +1,70 @@
+{
+  "fixture": "custom-sanitizer.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [68, 75],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-TLS-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "verify_cert\", \"[default]0\"", "tolerance_lines": 2 }
+    },
+    {
+      "id_anchor": "F2",
+      "rule_id": "OSIPS-SEC-INJECTION-001",
+      "severity_would_be": "high",
+      "confidence": "low",
+      "verification_status": "unchecked",
+      "kind": "review_required",
+      "review_reason_keyword": "perl_sanitizer",
+      "approximate_location": { "anchor": "perl_exec_simple(\"My::Sanitize::clean_username\"", "tolerance_lines": 4 },
+      "must_identify_opaque_function": "My::Sanitize::clean_username",
+      "must_trace_dataflow_through": ["$fU", "perl_exec_simple", "$avp(safe_user)", "avp_db_query"]
+    },
+    {
+      "id_anchor": "F3",
+      "rule_id": "OSIPS-SEC-AUTH-002",
+      "severity_would_be": "high",
+      "confidence": "low",
+      "verification_status": "unchecked",
+      "kind": "review_required",
+      "review_reason_keyword": "perl_authz",
+      "approximate_location": { "anchor": "perl_exec_simple(\"My::Auth::check_caller\"", "tolerance_lines": 8 },
+      "must_identify_opaque_function": "My::Auth::check_caller"
+    },
+    {
+      "id_anchor": "F4",
+      "rule_id": "OSIPS-SEC-DOS-001",
+      "severity": "medium",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "module_load_section", "tolerance_lines": -1 }
+    },
+    {
+      "id_anchor": "F5",
+      "rule_id": "OSIPS-SEC-CFG-004",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "loadmodule \"perl.so\"", "tolerance_lines": 1 }
+    }
+  ],
+  "expected_finding_counts_by_severity": {
+    "critical": 0, "high": 1, "medium": 1, "low": 0, "info": 1
+  },
+  "expected_review_required_count": 2,
+  "must_not_fire_as_vulnerability": [
+    "OSIPS-SEC-INJECTION-001",
+    "OSIPS-SEC-AUTH-002"
+  ],
+  "validation_notes": [
+    "OSIPS-SEC-INJECTION-001 and OSIPS-SEC-AUTH-002 must NEVER fire as kind=vulnerability on this cfg — they must always emit as kind=review_required because the dataflow path traverses a Perl function the advisor cannot reason about. A regression that promotes either to confirmed vulnerability is a confidence-discipline defect.",
+    "Conversely, silently passing without emitting review_required is also a defect — the abstention itself is the contract."
+  ]
+}

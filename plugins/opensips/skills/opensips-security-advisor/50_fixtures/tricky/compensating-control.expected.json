@@ -1,0 +1,36 @@
+{
+  "fixture": "compensating-control.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [88, 96],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-MI-001",
+      "severity": "critical",
+      "confidence": "medium",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": {
+        "anchor": "modparam(\"mi_http\", \"ip\", \"10.0.10.5\")",
+        "tolerance_lines": 2
+      },
+      "validation_notes": "MI-001 fires because mi_http is bound to a non-loopback address (10.0.10.5). Severity remains critical (severity is set by rule definition, not demoted by compensating control). However, confidence is demoted from high to MEDIUM because mi_http_trusted_clients is set, narrowing the practical attack surface. Per the MI-001 rule body's 'compensating control' note: trusted-clients presence demotes confidence by one notch."
+    }
+  ],
+  "expected_informationals": [],
+  "must_not_fire": [
+    "OSIPS-SEC-AUTH-001",
+    "OSIPS-SEC-AUTH-002",
+    "OSIPS-SEC-INJ-001",
+    "OSIPS-SEC-TLS-001",
+    "OSIPS-SEC-RELAY-001"
+  ],
+  "validation_notes": [
+    "Severity stays at critical (rule-defined). Confidence drops from high to medium (compensating control). This split — severity vs confidence as orthogonal axes — is the load-bearing distinction in 15_CONFIDENCE_AND_VERIFICATION.md. If the engine demotes severity instead, that's a vocabulary error.",
+    "If MI-001 fires at confidence high (no demotion), the engine is not detecting the trusted-clients compensating control. Cross-check against MI-001's body which explicitly describes this case.",
+    "If MI-001 fires at severity medium or below, the engine is conflating severity and confidence. Report this as a confidence-discipline defect.",
+    "If MI-001 fires not at all, the engine is treating the compensating control as a full mitigation. That is incorrect — IP allowlists trust source-IP integrity, which is itself attackable on shared segments.",
+    "expected_hardening_index_range is wide pending consolidation."
+  ]
+}

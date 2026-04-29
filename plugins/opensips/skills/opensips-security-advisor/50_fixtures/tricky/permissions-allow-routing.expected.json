@@ -1,0 +1,25 @@
+{
+  "fixture": "permissions-allow-routing.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [95, 100],
+  "expected_findings": [],
+  "expected_informationals": [],
+  "must_not_fire": [
+    "OSIPS-SEC-AUTH-001",
+    "OSIPS-SEC-AUTH-002",
+    "OSIPS-SEC-INJ-001",
+    "OSIPS-SEC-MI-001",
+    "OSIPS-SEC-TLS-001",
+    "OSIPS-SEC-DOS-001"
+  ],
+  "must_not_fire_as_vulnerability": [
+    "OSIPS-SEC-RELAY-001"
+  ],
+  "validation_notes": [
+    "RELAY-001's structural matcher will fire on the t_relay() site at the bottom of request_route, because the same-block guard list does not include allow_routing() in this fixture's text near the t_relay. The semantic phase must run, the judge must identify the permissions_allow_routing_reachable FP class as applying, and the finding must move to judge_dissented (and out of findings[]). The audit record in diagnostics.dissented_findings is the contract.",
+    "If RELAY-001 fires as kind: vulnerability with verification_status: judge_confirmed, that is a calibration defect: the judge incorrectly answered 'no' to the FP class. The judge prompt should be reviewed.",
+    "If RELAY-001 fires as kind: vulnerability with verification_status: deterministic_confirmed, that is an engine defect: the semantic phase did not run despite the rule declaring detection_phase: semantic.",
+    "expected_hardening_index_range is wide because Chat C and the post-consolidation formula disagree on the floor and weights; tighten to the locked formula's exact range during consolidation."
+  ]
+}

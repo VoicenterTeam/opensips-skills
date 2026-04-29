@@ -1,0 +1,64 @@
+{
+  "fixture": "kamailio-dialect.cfg",
+  "expected_opensips_version": "3.5.4",
+  "expected_profile": "L1",
+  "expected_hardening_index_range": [10, 30],
+  "expected_findings": [
+    {
+      "id_anchor": "F1",
+      "rule_id": "OSIPS-SEC-CFG-PARSE-ERROR",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "loadmodule \"sanity.so\"", "tolerance_lines": 1 },
+      "validation_notes": "Engine should emit a synthetic parse-error or unrecognized-directive finding for at least one Kamailio-only module load (sanity.so, secfilter.so, kex.so). Per 14_DETECTION_ENGINE.md § 'Failure modes', the engine may either halt with OSIPS-SEC-CFG-PARSE-ERROR or continue with rules_skipped entries citing the unrecognized region. Either is acceptable; the contract is that the engine does NOT silently treat these as valid OpenSIPS modules."
+    },
+    {
+      "id_anchor": "F2",
+      "rule_id": "OSIPS-SEC-AUTH-001",
+      "severity": "info",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "calculate_ha1\", 1", "tolerance_lines": 1 }
+    },
+    {
+      "id_anchor": "F3",
+      "rule_id": "OSIPS-SEC-CFG-001",
+      "severity": "low",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "opensipspw@db.internal", "tolerance_lines": 1 }
+    },
+    {
+      "id_anchor": "F4",
+      "rule_id": "OSIPS-SEC-INJ-001",
+      "severity": "high",
+      "confidence": "high",
+      "verification_status": "deterministic_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "avp_db_query(\"SELECT route FROM dialplan WHERE prefix='$fU'", "tolerance_lines": 1 },
+      "must_identify_taint_source": "$fU",
+      "must_identify_sink": "avp_db_query"
+    },
+    {
+      "id_anchor": "F5",
+      "rule_id": "OSIPS-SEC-RELAY-001",
+      "severity": "medium",
+      "confidence": "medium",
+      "verification_status": "judge_confirmed",
+      "kind": "vulnerability",
+      "approximate_location": { "anchor": "t_relay();", "tolerance_lines": 1 },
+      "validation_notes": "permissions module is NOT loaded; the FP class permissions_allow_routing_reachable does not apply. Judge should confirm the structural match. allow_address() in the REGISTER branch does not gate the t_relay() at the bottom of request_route (different control flow path)."
+    }
+  ],
+  "must_not_fire_as_vulnerability": [],
+  "validation_notes": [
+    "This fixture has no must_not_fire list because the test contract is about engine behavior on a dialect-confused cfg, not about a specific rule's silence.",
+    "If the engine silently treats sanity.so / secfilter.so / kex.so as valid OpenSIPS modules and runs rules against the surrounding code as if it were standard OpenSIPS, that is a parser defect.",
+    "If the engine halts with OSIPS-SEC-CFG-PARSE-ERROR on the first Kamailio-only directive, F2-F5 may not be reached. That's acceptable — the parse error is the primary contract; the others are nice-to-have if the engine continues.",
+    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+  ]
+}
