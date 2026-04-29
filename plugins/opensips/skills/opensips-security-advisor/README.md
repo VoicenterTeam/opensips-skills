@@ -1,13 +1,16 @@
-# opensips-security-advisor (scaffold, disabled in v1)
+# opensips-security-advisor
 
-This directory holds a scaffold for a future Claude Code skill. The skill is **not active** in v1 — `SKILL.md` is renamed to `SKILL.md.scaffold` so Claude Code's skill discovery does not pick it up.
+Active skill in v1.1 of the `opensips-skills` plugin. Reviews OpenSIPs
+configurations for security issues across 12 vulnerability families:
+authentication, injection, MI exposure, TLS posture, DoS defense,
+relay and routing, identity spoofing, STIR/SHAKEN, media, dispatcher
+and load-balancer, tracing and logging, and configuration hygiene.
 
-The substantive review patterns (risk catalog, audit workflow, severity-tagging, remediation guidance) are owned by a separate authoring agent per ADR-012 and ADR-013, and will land in a follow-up release.
+Read-only. Produces a Markdown report. Reads sibling skill
+`opensips-config`'s reference data for identifier sanity-checking.
 
-To re-enable the skill:
+Entry point: `SKILL.md`. Procedural spine: `references/workflow.md`.
 
-```
-mv SKILL.md.scaffold SKILL.md
-```
-
-The `description:` frontmatter and integration contract are already in place; renaming the file back is the only step required to put the skill in front of Claude Code's auto-discovery.
+For the design rationale and v1 scope, see
+`docs/superpowers/specs/2026-04-29-opensips-security-advisor-v1-design.md`
+and `docs/architecture/adr/014-security-advisor-v1-single-skill.md`.

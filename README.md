@@ -2,7 +2,7 @@
 
 # opensips-skills
 
-> Claude Code plugin providing one Agent Skill for working with OpenSIPs.
+> Claude Code plugin providing two Agent Skills for working with OpenSIPs: configuration authoring and security review.
 
 [![CI](https://github.com/VoicenterTeam/opensips-skills/workflows/CI/badge.svg)](https://github.com/VoicenterTeam/opensips-skills/actions)
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
@@ -13,7 +13,10 @@ OpenSIPs is twenty years old and runs some of the world's most demanding real-ti
 
 This is a knowledge problem, not a model problem. Training data conflates OpenSIPs with other projects descending from the SIP Express Router (SER) lineage and conflates syntax across versions that have drifted over two decades. Without a grounded reference, the model has no way to tell the difference. `opensips-skills` solves this by grounding Claude in version-specific, OpenSIPs-authoritative documentation. Every function signature, parameter, pseudo-variable, MI command, and module dependency is mirrored from upstream extraction and rendered as Markdown reference files Claude reads on demand.
 
-The plugin ships a single skill, `opensips-config`. It is the entry point for all OpenSIPs configuration work — authoring and editing `opensips.cfg` route scripts, looking up module exports, and answering questions about cfg syntax. It owns the loadmodule-scan workflow: read `cfg-format.md`, scan `consolidated.json`, then read each loaded module's per-module reference before answering. A second skill (`opensips-security-advisor`) is scaffolded in the tree for a follow-up release that authors substantive review patterns; in v1 it is disabled (see [ADR-013](docs/architecture/adr/013-v1-ships-one-skill.md)) so the plugin presents one coherent activation surface.
+The plugin ships two skills:
+
+- **`opensips-config`** — entry point for all OpenSIPs configuration work: authoring and editing `opensips.cfg` route scripts, looking up module exports, and answering questions about cfg syntax. Owns the loadmodule-scan workflow: read `cfg-format.md`, scan `consolidated.json`, then read each loaded module's per-module reference before answering.
+- **`opensips-security-advisor`** — reviews `opensips.cfg` files for security issues across 12 vulnerability families (authentication, injection, MI exposure, TLS posture, DoS defense, relay and routing, identity spoofing, STIR/SHAKEN, media, dispatcher and load-balancer, tracing and logging, configuration hygiene). Read-only. Produces a Markdown report with severity-ranked findings, cited remediations, and explicit abstention when confidence is insufficient. Reads `opensips-config`'s reference data for identifier sanity-checking. See [ADR-014](docs/architecture/adr/014-security-advisor-v1-single-skill.md) for the design rationale.
 
 Version coverage is dynamic. As of this release the plugin covers OpenSIPs **3.4, 3.5, 3.6, and 4.0**. New versions arrive by dropping a folder under `data/` — no code change required.
 
@@ -32,7 +35,7 @@ The plugin runs inside Claude Code. The two install paths:
 claude --plugin-dir /path/to/opensips-skills/plugins/opensips
 ```
 
-After installation, run `/skills` inside Claude Code to confirm `opensips-config` is listed. The skill does not need to be invoked by name — it activates automatically when a prompt mentions OpenSIPs concerns. There is no per-version install step; the plugin ships every supported version's reference tree in one package (3.4, 3.5, 3.6, 4.0) and resolves the active version from the prompt at trigger time.
+After installation, run `/skills` inside Claude Code to confirm both `opensips-config` and `opensips-security-advisor` are listed. The skills do not need to be invoked by name — they activate automatically when a prompt mentions the concerns each one targets (configuration work for the first, security review for the second). There is no per-version install step; the plugin ships every supported version's reference tree in one package (3.4, 3.5, 3.6, 4.0) and resolves the active version from the prompt at trigger time.
 
 ## Quick example
 

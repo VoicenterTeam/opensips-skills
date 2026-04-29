@@ -1,7 +1,7 @@
 {
   "name": "opensips",
-  "version": "1.0.1",
-  "description": "OpenSIPs Skill: authoring and per-module reference for OpenSIPs SIP server configurations.",
+  "version": "1.1.0",
+  "description": "OpenSIPs Skills: authoring and per-module reference for OpenSIPs SIP server configurations, plus security review across 12 vulnerability families.",
   "author": {
     "name": "Voicenter",
     "email": "shlomi@voicenter.com"
