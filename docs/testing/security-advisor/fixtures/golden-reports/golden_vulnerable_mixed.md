@@ -12,8 +12,6 @@
 
 ## Executive Summary
 
-**Hardening Index: 12 / 100**
-
 | Severity | Count |
 |---|---|
 | Critical | 2 |
@@ -28,7 +26,7 @@
 2. **Critical — the `mi_http` management interface is bound to `0.0.0.0` with no `mi_trusted_clients` restriction.** Combined with the registrar and dialog modules being loaded, this exposes enable/disable, registration purges, and dialog teardown to any host that can reach port 8080. The rule chain mi-public-bind → registrar-loaded → no-trusted-clients fired together; they are correlated under one root cause.
 3. **High — auth applied after routing in `request_route`.** `route(relay)` is called unconditionally at the top of `request_route` and runs `forward()` before any digest challenge. Any UAC reaching the listener can place calls without authenticating.
 
-The remaining seven findings cover SQL injection in the dialplan lookup path, TLS certificate verification disabled, plaintext-HA1 storage, missing DoS protection, an Authorization-header leak in xlog, cleartext database credentials in the cfg, and a deferred-startup hardening note.
+The remaining seven findings cover SQL injection in the dialplan lookup path, TLS certificate verification disabled, plaintext-HA1 storage, missing DoS protection, an Authorization-header leak in xlog, cleartext database credentials in the cfg, and a deferred-startup configuration note.
 
 ---
 
@@ -574,7 +572,6 @@ Priority buckets per `22_REPORT_TEMPLATES.md`: this week / this sprint / this qu
         // ... 9 more results, same shape ...
       ],
       "properties": {
-        "opensips-advisor/hardening_index": 12,
         "opensips-advisor/profile": "L1",
         "opensips-advisor/opensips_version_detected": "3.6.2",
         "opensips-advisor/findings_by_severity": {

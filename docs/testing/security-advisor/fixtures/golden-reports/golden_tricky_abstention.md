@@ -12,8 +12,6 @@
 
 ## Executive Summary
 
-**Hardening Index: 71 / 100**
-
 | Severity | Count | of which `review_required` |
 |---|---|---|
 | Critical | 0 | 0 |
@@ -28,8 +26,6 @@
 1. **Two findings are surfaced as `review_required` rather than confirmed vulnerabilities.** The configuration loads the `perl` module and routes potentially-tainted input through `perl_exec_simple()` calls before reaching SQL and authorization sinks. The advisor cannot reason about the Perl source files; it therefore declines to assert either pass or fail and surfaces the cases for human review per the abstention protocol.
 2. **One confirmed High finding** — TLS certificate verification is disabled on the default domain, which is independent of the Perl-sanitization paths and matches deterministically.
 3. **One confirmed Medium finding** — pike and ratelimit modules are absent.
-
-The hardening-index calculation includes `review_required` items at half-weight relative to a confirmed finding of the same would-be severity. The index is therefore lower than the two confirmed findings alone would imply.
 
 ---
 
@@ -254,7 +250,7 @@ request_route {
 - Requires that the Perl source files be under the same change control, code review, and testing rigor as the cfg itself.
 - Couples OpenSIPS startup to Perl module availability and version compatibility.
 
-This observation is informational; it does not deduct from the hardening index. It exists so the operator can record an explicit decision about whether the trust-boundary placement is intentional and how it is governed.
+This observation is informational. It exists so the operator can record an explicit decision about whether the trust-boundary placement is intentional and how it is governed.
 
 ---
 
@@ -314,7 +310,6 @@ Note on `review_required` items: priority is set by their **would-be** severity.
         // F1, F3, F4, F5 follow with the same shape ...
       ],
       "properties": {
-        "opensips-advisor/hardening_index": 71,
         "opensips-advisor/profile": "L1",
         "opensips-advisor/opensips_version_detected": "3.5.4",
         "opensips-advisor/findings_by_severity": {
@@ -373,21 +368,6 @@ The advisor will honor the suppression but continue to surface the suppression r
 | **Total** | **47** | **3** | **2** | **14.9s** |
 
 **Verification status summary.** 3 `deterministic_confirmed`, 0 `judge_confirmed`, 0 `judge_dissented`, 2 `unchecked` (corresponding to the two `review_required` items).
-
-**Hardening index calculation (transparent).**
-Base 100 − sum of severity weights, with `review_required` items scored at 50% of their would-be severity weight.
-
-| Finding | Kind | Severity (effective) | Weight | Deduction |
-|---|---|---|---|---|
-| F1 | vulnerability | High | 10 | −10 |
-| F2 | review_required | High (×0.5) | 10 × 0.5 | −5 |
-| F3 | review_required | High (×0.5) | 10 × 0.5 | −5 |
-| F4 | vulnerability | Medium | 6 | −6 |
-| F5 | vulnerability | Info | 0 | 0 |
-| **Total deduction** | | | | **−26** |
-| **Hardening index** | | | | **74** |
-
-(The header reports 71 because the advisor adds a small flat penalty when review_required count > 1 on a public-facing deployment. This penalty is documented in the Hardening Index section of `22_REPORT_TEMPLATES.md` and is configurable via profile.)
 
 ---
 

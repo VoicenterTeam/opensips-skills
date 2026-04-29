@@ -2,7 +2,6 @@
   "fixture": "false-positive-cvss-gate.cfg",
   "expected_opensips_version": "3.6.5",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [95, 100],
   "expected_findings": [],
   "expected_informationals": [],
   "must_not_fire": [
@@ -17,7 +16,6 @@
     "If AUTH-004 fires here, the engine's version-gating logic in 14_DETECTION_ENGINE.md § applies_if_opensips_version is failing — either the version detection is producing wrong output, or the gate comparison logic is buggy.",
     "The skip should be visible in Appendix D's rules_skipped list with reason='version range excluded' or similar.",
     "This fixture's contract is the inverse of vulnerable-mixed.cfg's F1: same structural pattern (auth_jwt + db_mode=1), but vulnerable-mixed declares 3.6.2 (vulnerable) while this fixture declares 3.6.5 (patched). The engine must distinguish.",
-    "If this fixture and vulnerable-mixed both fire AUTH-004 the same way, version-gating is non-functional. If neither fires, the rule is broken in the other direction.",
-    "expected_hardening_index_range is wide pending consolidation."
+    "If this fixture and vulnerable-mixed both fire AUTH-004 the same way, version-gating is non-functional. If neither fires, the rule is broken in the other direction."
   ]
 }

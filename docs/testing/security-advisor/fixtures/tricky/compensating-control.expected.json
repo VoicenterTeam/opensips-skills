@@ -2,7 +2,6 @@
   "fixture": "compensating-control.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [88, 96],
   "expected_findings": [
     {
       "id_anchor": "F1",
@@ -30,7 +29,6 @@
     "Severity stays at critical (rule-defined). Confidence drops from high to medium (compensating control). This split — severity vs confidence as orthogonal axes — is the load-bearing distinction in 15_CONFIDENCE_AND_VERIFICATION.md. If the engine demotes severity instead, that's a vocabulary error.",
     "If MI-001 fires at confidence high (no demotion), the engine is not detecting the trusted-clients compensating control. Cross-check against MI-001's body which explicitly describes this case.",
     "If MI-001 fires at severity medium or below, the engine is conflating severity and confidence. Report this as a confidence-discipline defect.",
-    "If MI-001 fires not at all, the engine is treating the compensating control as a full mitigation. That is incorrect — IP allowlists trust source-IP integrity, which is itself attackable on shared segments.",
-    "expected_hardening_index_range is wide pending consolidation."
+    "If MI-001 fires not at all, the engine is treating the compensating control as a full mitigation. That is incorrect — IP allowlists trust source-IP integrity, which is itself attackable on shared segments."
   ]
 }

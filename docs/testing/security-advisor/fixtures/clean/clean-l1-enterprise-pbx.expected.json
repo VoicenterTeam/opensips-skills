@@ -2,7 +2,6 @@
   "fixture": "clean-l1-enterprise-pbx.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [95, 100],
   "expected_findings": [],
   "expected_informationals": [
     {

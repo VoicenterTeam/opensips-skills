@@ -2,7 +2,6 @@
   "fixture": "commented-bad.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [95, 100],
   "expected_findings": [],
   "expected_informationals": [],
   "must_not_fire": [
@@ -18,7 +17,6 @@
     "Each rule_id in must_not_fire corresponds to a textual mention of its trigger pattern inside a comment block in this cfg. The PARSER must respect comment boundaries; the rule engine must not match against tokens in commented-out lines.",
     "If MI-001 fires on the commented '0.0.0.0' modparam, that is a parser defect.",
     "If TLS-001 fires on the commented verify_cert=0 modparam, that is a parser defect.",
-    "If AUTH-001 fires on the commented calculate_ha1=1 modparam, that is a parser defect.",
-    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+    "If AUTH-001 fires on the commented calculate_ha1=1 modparam, that is a parser defect."
   ]
 }

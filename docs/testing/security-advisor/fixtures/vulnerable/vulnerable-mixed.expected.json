@@ -2,7 +2,6 @@
   "fixture": "vulnerable-mixed.cfg",
   "expected_opensips_version": "3.6.2",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [18, 28],
   "expected_findings": [
     {
       "id_anchor": "F1",

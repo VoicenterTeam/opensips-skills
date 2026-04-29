@@ -2,7 +2,6 @@
   "fixture": "dead-code.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [40, 70],
   "expected_findings": [
     {
       "id_anchor": "F1",
@@ -52,7 +51,6 @@
   "validation_notes": [
     "v1.0 contract: this fixture exercises the deliberately-conservative 'no path sensitivity' choice in 14_DETECTION_ENGINE.md § 'Open issues'. Dead routes that would be vulnerable IF reached are flagged as findings.",
     "If a future engine version adds path-sensitivity, this fixture's expected output will change — F2, F3, F4 should be moved to a diagnostic-only output (rules_skipped with 'unreachable' reason) rather than findings[]. Until then, keep them as findings.",
-    "TLS-001 on the [legacy] domain (F1) is NOT a path-sensitivity issue — TLS domain configs are global and apply whenever the domain is referenced. The v1.0 engine doesn't track which domains are bound to listeners, so it flags all weak-domain configs.",
-    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+    "TLS-001 on the [legacy] domain (F1) is NOT a path-sensitivity issue — TLS domain configs are global and apply whenever the domain is referenced. The v1.0 engine doesn't track which domains are bound to listeners, so it flags all weak-domain configs."
   ]
 }

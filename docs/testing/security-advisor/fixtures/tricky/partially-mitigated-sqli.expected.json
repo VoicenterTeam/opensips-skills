@@ -2,7 +2,6 @@
   "fixture": "partially-mitigated-sqli.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [85, 95],
   "expected_findings": [
     {
       "id_anchor": "F1",
@@ -26,7 +25,6 @@
     "INJ-001 must fire EXACTLY ONCE — on the $rU/avp_db_query site in the INVITE branch (lines ~84-86). It must NOT fire on the $fU/avp_db_query site in the REGISTER branch (lines ~70-72) because that site is properly sanitized via $(fU{s.escape.common}).",
     "If INJ-001 fires twice, the dataflow phase is failing to recognize $(fU{s.escape.common}) as a string_escape-class sanitizer. Cross-check: 90_reference/sanitizer_registry.yaml must list s.escape.common with classes including string_escape.",
     "If INJ-001 fires zero times, the dataflow phase is over-recognizing sanitizers — possibly accepting any pseudovariable transformation as a sanitizer. The $rU site has NO transformation; firing zero times is a false negative.",
-    "Same-rule findings on different cfg locations must NOT be deduplicated by fingerprint. The fingerprint recipe in 11_DATA_MODEL.md keys on (rule_id, evidence_text, artifact_path) — different evidence text means different fingerprints. If only one finding appears here despite multiple eligible sites, dedup logic is broken.",
-    "expected_hardening_index_range is wide pending consolidation."
+    "Same-rule findings on different cfg locations must NOT be deduplicated by fingerprint. The fingerprint recipe in 11_DATA_MODEL.md keys on (rule_id, evidence_text, artifact_path) — different evidence text means different fingerprints. If only one finding appears here despite multiple eligible sites, dedup logic is broken."
   ]
 }

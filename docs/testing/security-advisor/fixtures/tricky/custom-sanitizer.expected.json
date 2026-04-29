@@ -2,7 +2,6 @@
   "fixture": "custom-sanitizer.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [68, 75],
   "expected_findings": [
     {
       "id_anchor": "F1",

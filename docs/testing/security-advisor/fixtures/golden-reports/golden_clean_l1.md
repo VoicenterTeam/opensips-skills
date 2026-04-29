@@ -12,8 +12,6 @@
 
 ## Executive Summary
 
-**Hardening Index: 100 / 100**
-
 | Severity | Count |
 |---|---|
 | Critical | 0 |
@@ -25,7 +23,7 @@
 **Top observations.**
 
 1. The configuration is a well-formed L1 enterprise PBX deployment. All applicable rules in the auth, tls, injection, mi_exposure, dos_defense, and config_hygiene families pass on a deterministic match — there were no semantic-pass dissents and no review-required outcomes.
-2. Of 42 applicable rules, **0 produced findings**. Three rules emitted advisory observations rather than findings, surfaced in Appendix C as optional L2-alignment opportunities (none affect L1 conformance and none reduce the hardening index).
+2. Of 42 applicable rules, **0 produced findings**. Three rules emitted advisory observations rather than findings, surfaced in Appendix C as optional L2-alignment opportunities (none affect L1 conformance).
 3. No version-gated CVE rules matched. The auth_jwt CVE family (CVE-2026-25554 et al.) is not applicable: the configuration does not load `auth_jwt`. The deployed OpenSIPS 3.5.4 is at the latest LTS patch level on the declared release line.
 
 ---
@@ -70,7 +68,7 @@ _No findings._ The configuration passed every applicable rule at L1.
 
 ## Remediation Roadmap
 
-_No remediation required._ See Appendix C for optional hardening informationals.
+_No remediation required._ See Appendix C for optional informational observations.
 
 ---
 
@@ -106,7 +104,6 @@ _No remediation required._ See Appendix C for optional hardening informationals.
       ],
       "results": [],
       "properties": {
-        "opensips-advisor/hardening_index": 100,
         "opensips-advisor/profile": "L1",
         "opensips-advisor/opensips_version_detected": "3.5.4",
         "opensips-advisor/findings_by_severity": {
@@ -130,7 +127,7 @@ _No active suppressions._ No expired suppressions were carried forward from prio
 
 ## Appendix C — Informational Observations
 
-These are not findings under L1; they are surfaced as optional hardening items. Each carries `kind: vulnerability`, `severity: info`, `confidence: high`. None contribute to the hardening index deduction.
+These are not findings under L1; they are surfaced as optional hardening items. Each carries `kind: vulnerability`, `severity: info`, `confidence: high`.
 
 ### INFO-001 — Tighten `mi_http` to an explicit allowlist
 

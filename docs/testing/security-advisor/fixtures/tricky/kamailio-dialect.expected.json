@@ -2,7 +2,6 @@
   "fixture": "kamailio-dialect.cfg",
   "expected_opensips_version": "3.5.4",
   "expected_profile": "L1",
-  "expected_hardening_index_range": [10, 30],
   "expected_findings": [
     {
       "id_anchor": "F1",
@@ -58,7 +57,6 @@
   "validation_notes": [
     "This fixture has no must_not_fire list because the test contract is about engine behavior on a dialect-confused cfg, not about a specific rule's silence.",
     "If the engine silently treats sanity.so / secfilter.so / kex.so as valid OpenSIPS modules and runs rules against the surrounding code as if it were standard OpenSIPS, that is a parser defect.",
-    "If the engine halts with OSIPS-SEC-CFG-PARSE-ERROR on the first Kamailio-only directive, F2-F5 may not be reached. That's acceptable — the parse error is the primary contract; the others are nice-to-have if the engine continues.",
-    "expected_hardening_index_range is wide pending consolidation of the formula dispute."
+    "If the engine halts with OSIPS-SEC-CFG-PARSE-ERROR on the first Kamailio-only directive, F2-F5 may not be reached. That's acceptable — the parse error is the primary contract; the others are nice-to-have if the engine continues."
   ]
 }
