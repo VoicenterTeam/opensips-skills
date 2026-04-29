@@ -84,10 +84,6 @@ These are stable canonical references unlikely to disappear. Last verified: not 
 
 ---
 
-## Notes for consolidators
+## Citation discipline
 
-- **Ad-hoc verification dates.** Where this bundle's authors directly fetched a URL during authoring, the date and the verification result are recorded. Where a URL was cited but not directly fetched this session, that's noted explicitly — those URLs need a verification pass before publication.
-
-- **No mirroring yet.** The convention in `13_RULE_AUTHORING.md` § "References" suggests mirroring critical references when link rot is a concern. Nothing has been mirrored in this bundle. If a consolidation pass produces a published artifact (e.g., a Claude skill plugin distributed widely), critical URLs (the AISLE writeup, the Enable Security audit PDF, the OpenSIPS module docs) should be mirrored locally.
-
-- **Citation sweep status.** A future citation sweep would replace any `[§TBD — ...]` placeholders in spec docs with section references into the methodology research document. That methodology document is currently a stub and the relevant spec docs are not in this bundle's scope, so the sweep is N/A here. Future consolidation passes that locate the spec docs should run the sweep separately.
+When a rule cites an external CVE, advisory, or vendor documentation page, the URL goes here and the rule's `references:` frontmatter list points at the matching anchor. Citations are verified at the time of authoring; the date and verification result are recorded inline where applicable. Authoritative sources include OpenSIPs project documentation, NVD CVE records, VulnCheck advisories, AISLE Research and Enable Security publications, and the relevant CWE/OWASP entries.
