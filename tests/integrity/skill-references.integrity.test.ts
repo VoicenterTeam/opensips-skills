@@ -153,9 +153,10 @@ const shippedVersions = discoverShippedVersions();
 
 /**
  * Active skills = those with a `SKILL.md` (not `SKILL.md.scaffold`) on disk.
- * Per ADR-013, v1 disables the security advisor by renaming its SKILL.md to
- * SKILL.md.scaffold; this test self-adjusts so it covers exactly the active
- * skills, and re-engages the advisor automatically when the rename is reverted.
+ * Both skills are active as of v1.1.0 (per ADR-014 — the security advisor
+ * was activated, superseding the scaffold-disabled posture from ADR-013).
+ * The detection filter remains so the test self-adjusts if a skill is ever
+ * disabled by renaming SKILL.md → SKILL.md.scaffold for a release.
  */
 const activeSkills = [
   { skillName: "opensips-config", skillDir: CONFIG_SKILL_DIR },

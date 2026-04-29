@@ -105,7 +105,7 @@ The skill covers the bulk of day-to-day OpenSIPs work that previously required d
 - **Reviewing pasted configs.** Paste an `opensips.cfg` fragment and ask for a refactor, an extension, or a sanity check. The skill cross-references every named function, pseudo-variable, and module against the active version's reference set; identifiers that do not match are flagged with a request for clarification rather than silently accepted.
 - **Cross-version work.** State the version explicitly ("I'm on 3.4" or "I'm on 4.0") and the answer pulls from that version's reference tree. The plugin does not blend versions; if you ask about a function that exists in one version but not another, it tells you which.
 
-What the plugin does **not** do: it does not write configs for sibling SER-lineage projects, does not connect to a live OpenSIPs server, does not run a config in a sandbox, does not develop new C modules, and does not yet ship a dedicated security-review skill (a scaffold is in tree for a follow-up release per [ADR-013](docs/architecture/adr/013-v1-ships-one-skill.md)). Those are legitimate future capabilities that fall outside this project's v1 scope.
+What the plugin does **not** do: it does not write configs for sibling SER-lineage projects, does not connect to a live OpenSIPs server, does not run a config in a sandbox, and does not develop new C modules. Those are legitimate future capabilities that fall outside this project's v1 scope.
 
 ## How it works
 
@@ -126,13 +126,23 @@ opensips-docs-collector  ──────►   data/{version}/
                                          modules/*.md       (generated)
                                          guides/*.md        (generated, where upstream provides)
                                          consolidated.json  (lookup)
-                                     opensips-security-advisor/   (scaffold, disabled in v1)
-                                       SKILL.md.scaffold          (re-enabled in a future release)
+                                     opensips-security-advisor/   (security review, hand-authored)
+                                       SKILL.md
+                                       references/
+                                         workflow.md            (procedural spine)
+                                         output-format.md       (finding shape + Markdown report)
+                                         taxonomy.md            (severity ladder, L1/L2 profiles)
+                                         taint-model.md         (sources/sanitizers/sinks)
+                                         rules/<family>/        (58 rules in 12 families)
+                                         version-notes/         (per-version CVE inventory)
+                                         knowledge/             (vuln reference, sanitizer registry)
 ```
 
 Data flows in one direction. The upstream `opensips-docs-collector` project extracts OpenSIPs documentation per version and emits validated JSON. This project mirrors that JSON under `data/`, validates it against locally mirrored Zod schemas (with a SHA-256 hash check that fails fast on contract drift), and renders two Markdown families: per-item files for modules (one Markdown per module) and aggregated files for core types (variables, operators, statements, transformations, flags, parameters, async, events, MI commands, statistics, functions, route blocks). Where the upstream extraction provides them, installation/configuration/syntax guides are rendered alongside. A consolidated JSON index per version provides fast lookup keyed by function name, pseudo-variable, MI command, parameter-by-module, and a `moduleDependencies` graph.
 
-`opensips-config` is the single authoring and reference skill in v1: it owns route-block decisions, NAT and authentication patterns, dispatcher and dialog setup, the procedural shape of an `opensips.cfg`, and all per-module reference data. The loadmodule-scan workflow — read `cfg-format.md`, read `consolidated.json` for the module index, then read each loaded module's per-module reference file — grounds every signature, parameter, and pseudo-variable in version-correct content. The `opensips-security-advisor` directory holds a scaffold (`SKILL.md.scaffold`) that a future release re-enables once substantive review patterns are authored; per [ADR-013](docs/architecture/adr/013-v1-ships-one-skill.md), it is intentionally disabled in v1 so users get one coherent activation surface.
+`opensips-config` owns the authoring and reference surface: route-block decisions, NAT and authentication patterns, dispatcher and dialog setup, the procedural shape of an `opensips.cfg`, and all per-module reference data. The loadmodule-scan workflow — read `cfg-format.md`, read `consolidated.json` for the module index, then read each loaded module's per-module reference file — grounds every signature, parameter, and pseudo-variable in version-correct content. The skill is **version-isolated** per [ADR-003](docs/architecture/adr/003-version-isolated-folders.md) because OpenSIPs identifiers drift between releases and answers must be unambiguous about the active version.
+
+`opensips-security-advisor` is the security review surface, activated in v1.1.0 per [ADR-014](docs/architecture/adr/014-security-advisor-v1-single-skill.md). It carries 58 rules across 12 vulnerability families (authentication, injection, MI exposure, TLS posture, DoS defense, relay and routing, identity spoofing, STIR/SHAKEN, media, dispatcher and load-balancer, tracing and logging, configuration hygiene). Read-only — it produces a Markdown report with severity-ranked findings, cited remediations, and explicit abstention when confidence is insufficient. Unlike `opensips-config`, this skill is **cross-version** because most security knowledge does not vary by OpenSIPs version; per-rule frontmatter (`applies_if_opensips_version`) and a `version-notes/` tree carry the version-specific concerns. The advisor reads (does not write) `opensips-config`'s reference data to sanity-check identifiers in the configuration under review against the active OpenSIPs version.
 
 The cross-project guardrail runs through the skill. OpenSIPs is one of several projects descending from the SIP Express Router (SER), and identifiers from sibling projects look familiar enough to corrupt training-data priors. The SKILL.md instructs Claude to treat the active version's reference set as the only source of truth for valid identifiers. A function name, parameter, or pseudo-variable that is not in `references/{version}/` is flagged rather than fabricated. A `ser-lineage-notes.md` in each version's tree carries the operational rule with concrete confusion patterns drawn from real cases.
 
@@ -178,14 +188,14 @@ Contributions are welcome. The kinds of contributions that fit here:
 Some contributions belong elsewhere:
 
 - Module reference content goes upstream to `opensips-docs-collector`. This project is a faithful transformer of upstream JSON; if a module reference is wrong, the fix is upstream so every consumer benefits. The hand-authored `SKILL.md` files and `ser-lineage-notes.md` are the only authored Markdown in the skill trees — everything else is generated.
-- Substantive `opensips-security-advisor` review patterns are owned by a separate authoring agent per ADR-012, and the skill itself is disabled in v1 per ADR-013. The scaffold (`SKILL.md.scaffold`) defines the trigger surface; the body content and the rename back to `SKILL.md` land later through that agent's PRs.
+- `opensips-security-advisor` content is hand-authored (unlike `opensips-config`'s reference tree, which is generated from upstream JSON). Per [ADR-014](docs/architecture/adr/014-security-advisor-v1-single-skill.md), changes to rules, the workflow, output format, taxonomy, taint model, version notes, or knowledge docs go directly under `plugins/opensips/skills/opensips-security-advisor/references/`. Changes that affect rule counts, severity assignments, or the report template should be validated against the fixtures in `docs/testing/security-advisor/fixtures/` before merging.
 - Architectural changes — how the skill is structured, how the build works, how versions are resolved — need an ADR before code. See `docs/architecture/adr/000-template.md`.
 
 The local development loop is `npm install`, `npm run validate`, `npm run build`, `npm test`. The build is deterministic; every PR runs the build twice in CI and fails if the output differs. See [CONTRIBUTING.md](CONTRIBUTING.md) for the full contributor guide, including the local development loop, pull request expectations, and the schema mirroring contract.
 
 ## Project status
 
-This is the v1.0.1 public release. The pipeline, the skill, the reference content, and the CI gates are all in place; the project has been internally validated against a set of golden-path demos covering route authoring, module reference, and version isolation across OpenSIPs 3.4, 3.5, 3.6, and 4.0. Future work — additional OpenSIPs versions, the substantive security-advisor authoring + re-enable, additional skills for operations and module development — is post-v1 and is tracked through the project's issue tracker rather than the implementation plan.
+This is the v1.1.0 public release. Two active skills (`opensips-config` and `opensips-security-advisor`), reference content for OpenSIPs 3.4, 3.5, 3.6, and 4.0, and CI gates are all in place. The project has been internally validated against golden-path demos covering route authoring, module reference, version isolation, and security review with severity-ranked findings. Future work — additional OpenSIPs versions, additional skills for operations and module development — is post-v1.1 and is tracked through the project's issue tracker rather than the implementation plan.
 
 If you find a bug, a regression, or a place where the plugin produces a wrong answer, please open an issue with the prompt that triggered it and the version you were targeting. Wrong answers in the generated reference content are usually upstream extraction bugs and get filed in `opensips-docs-collector`; wrong answers from a SKILL.md decision are filed here.
 

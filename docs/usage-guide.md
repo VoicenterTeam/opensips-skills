@@ -104,21 +104,25 @@ Why: "everything" produces a large dump that can crowd the response. Narrow the 
 
 ## Phrasing prompts for the security advisor
 
-The `opensips-security-advisor` skill ships in v1.0.0 as a scaffold (per [ADR-012](architecture/adr/012-merge-routing-and-modules-into-opensips-config.md)). It activates correctly on security-review prompts and provides the integration contract with `opensips-config`, but the substantive review patterns — the risk catalog, severity tagging, remediation playbooks — are authored by a separate security-focused agent in a follow-on contribution.
+The `opensips-security-advisor` skill ships in v1.1.0 as a fully-active skill (per [ADR-014](architecture/adr/014-security-advisor-v1-single-skill.md)). It carries 58 rules across 12 vulnerability families and produces a Markdown report with severity-ranked findings, cited remediations, and explicit abstention when confidence is insufficient. It is read-only and reads `opensips-config`'s reference data to sanity-check identifiers in the configuration under review.
 
-**Works well today:**
+**Works well:**
 
 > "Audit my OpenSIPs config for INVITE flooding risks." (with a config snippet)
 
-Result today: the skill activates, acknowledges the trigger, and points at the relevant reference data. As the security-content authoring lands, this same prompt will return concrete findings.
+Result: the advisor activates, runs intake (asking for the OpenSIPs version and deployment profile if not stated), loads the relevant rules from `references/rules/dos-defense/`, and produces a structured Markdown report citing each finding by ID (`OSIPS-SEC-DOS-001` etc.) with severity, location, threat model, and remediation steps.
 
-**Works less well today:**
+> "Review this opensips.cfg for security issues. Target version 3.6, profile L2." (with a config snippet)
+
+Result: a comprehensive review across all 12 families with version-gated rule application — rules tagged for 3.6 fire, rules gated to other versions skip silently. Findings are ordered critical → high → medium → low → review_required → info.
+
+**Works less well:**
 
 > "Is my config safe?" (with no config and no specific risk named)
 
-Why: "safe" is unbounded. Even a fully-content version of the skill would ask which risk categories to focus on. Name the concern — toll fraud, RTP relay exposure, registration hijacking — and the answer narrows usefully.
+Why: "safe" is unbounded. The advisor will ask which risk categories to focus on. Name the concern — toll fraud, RTP relay exposure, registration hijacking — and the answer narrows usefully.
 
-If you need substantive security review against the v1.0.0 scaffold, the practical workaround is to use `opensips-config`: paste the config, ask the skill to review it for correctness, and ask it to confirm any unfamiliar identifiers are real OpenSIPs identifiers. That gives you a structural pass while the security advisor's content matures.
+If a finding involves an identifier not documented for the active OpenSIPs version, the advisor emits a `review_required` finding rather than guessing. This catches typos, version drift, and imports from sibling SER-lineage projects (per ADR-008, the advisor never names specific sibling projects in its output).
 
 ## Working across both skills in one prompt
 
@@ -126,7 +130,7 @@ A prompt that spans authoring, reference, and security can activate both skills 
 
 > "Write me a stateful proxy config using the `tm` and `registrar` modules in OpenSIPs 3.6, then audit it for missing rate limits and unauthenticated paths."
 
-The response includes the config (config skill, which follows the loadmodule-scan workflow to ground all signatures and parameters in 3.6 references) and a security review note (advisor skill, scaffold posture today). The skills coordinate; they do not duplicate work. The `opensips-config` skill produces the config and per-module reference data, and the advisor reviews the whole thing.
+The response includes the config (config skill, which follows the loadmodule-scan workflow to ground all signatures and parameters in 3.6 references) and a security review (advisor skill, which loads its workflow.md and applies rules across the relevant families). The skills coordinate; they do not duplicate work. The `opensips-config` skill produces the config and per-module reference data, and the advisor reviews the whole thing.
 
 You can also chain prompts. A common workflow:
 
@@ -138,7 +142,7 @@ Each prompt in the chain gets the reference loading appropriate to the skills it
 
 ## Tips for getting good results
 
-A few patterns consistently improve answer quality across all three skills:
+A few patterns consistently improve answer quality across both skills:
 
 - **State the version once, early.** "I'm on 3.6" at the top of a prompt or thread saves the skill from inferring it and reduces ambiguous answers.
 - **Name the route block, module, function, or pseudo-variable explicitly.** The skills' triggers are keyword-driven; a concrete identifier in the prompt lights up the right reference path. "How do I use `record_route()`?" works better than "how do I keep the proxy in the path?".
@@ -146,7 +150,8 @@ A few patterns consistently improve answer quality across all three skills:
 - **Ask for the structured surface you want.** The per-module reference files are structured (Overview, How It Works, Dependencies, Parameters, Functions, Pseudo-Variables, MI Commands, Statistics, Events, Configuration Examples). Asking for one of these surfaces by name lands a precise answer; asking for "everything" produces a long dump.
 - **State the goal, not the change.** "Make my proxy resilient to upstream gateway failures" is more useful than "add error handling here". The skill writes better when it knows the outcome you're aiming for.
 - **When an answer feels off, ask the skill to verify.** "Confirm `t_relay` exists in OpenSIPs 3.6 and show me its signature" forces a reference read. The skills are designed to defer to the reference set rather than to priors when explicitly asked.
-- **Name your concern when asking the security advisor.** Even with the v1 scaffold posture, "audit for INVITE flooding" produces more structure than "is this safe?". Specific risk categories engage the skill's trigger surface more cleanly.
+- **Name your concern when asking the security advisor.** "Audit for INVITE flooding" produces a focused report against the DoS-defense family rules; "is this safe?" produces an intake question instead. Specific risk categories engage the skill's trigger surface more cleanly and produce more actionable findings.
+- **State the deployment profile.** L1 (enterprise PBX, internal-facing) and L2 (carrier edge, public-facing) gate which rules fire. If you don't state it, the advisor will ask. State it inline ("profile L2") to skip the question.
 
 ## What the plugin won't do
 

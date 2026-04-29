@@ -15,11 +15,14 @@ is laid out, where to find what you need, and the hard rules that govern
 changes. Most of the answers you will look for are one short scroll away
 inside that file.
 
-The short version: this repository is a Claude Code plugin that ships one
-Agent Skill (`opensips-config`) for working with OpenSIPs. The plugin grounds
+The short version: this repository is a Claude Code plugin that ships two
+Agent Skills for working with OpenSIPs — `opensips-config` (configuration
+authoring + per-module reference, version-isolated) and
+`opensips-security-advisor` (security review across 12 vulnerability
+families, cross-version with per-rule version gates). The plugin grounds
 Claude in version-specific reference data so it stops hallucinating
-identifiers across versions. A second skill scaffold (`opensips-security-advisor`)
-is preserved on disk for a follow-up release; see ADR-013.
+identifiers across versions and across sibling SER-lineage projects.
+See ADR-014 for the security advisor's v1 design.
 
 ## Setting up locally
 
@@ -62,10 +65,13 @@ Naming the boundaries upfront sets expectations.
   project re-mirrors and rebuilds. See CLAUDE.md Rule 3.
 - **OpenSIPs source code bugs.** Fixes to OpenSIPs itself go to the OpenSIPS
   project. This plugin documents OpenSIPs; it does not ship its code.
-- **Substantive security-advisor patterns.** Per ADR-005, the security
-  review skill's content is owned by a separate authoring agent. The
-  scaffold here is intentional. Contributions to the security review prose
-  should coordinate with that agent's workflow.
+- **Security-advisor rule changes.** The 58 rules in
+  `plugins/opensips/skills/opensips-security-advisor/references/rules/`
+  are hand-authored. Contributions adding new rules, updating CVE
+  values, or revising remediation steps are welcome — pair them with a
+  fixture under `docs/testing/security-advisor/fixtures/` that
+  exercises the change, and validate against the existing golden
+  reports before merging. See ADR-014 for the v1 design constraints.
 - **Sibling SER-lineage project content.** Per ADR-008, this project stays
   strictly within OpenSIPs territory and does not name sibling projects.
   PRs that introduce sibling-project names will be asked to use the
@@ -138,12 +144,14 @@ in place.
 
 ## How to update SKILL.md content
 
-The active SKILL.md in v1 is `plugins/opensips/skills/opensips-config/SKILL.md`.
-It is the project's most consequential output — it runs on every Claude Code
-session that activates the skill. Per CLAUDE.md Rule 6, it is precious. The
-second SKILL.md lives at `plugins/opensips/skills/opensips-security-advisor/SKILL.md.scaffold`
-and is intentionally disabled per ADR-013; re-enabling it is a `git mv` plus
-substantive review-pattern authoring.
+Two active SKILL.md files exist as of v1.1.0:
+`plugins/opensips/skills/opensips-config/SKILL.md` (configuration authoring)
+and `plugins/opensips/skills/opensips-security-advisor/SKILL.md` (security
+review). They are the project's most consequential outputs — they run on
+every Claude Code session that activates the corresponding skill. Per
+CLAUDE.md Rule 6, both are precious. Edits to either should be paired with
+golden-path validation before merging; a SKILL.md change that regresses
+the demos is a release blocker.
 
 Required reading before editing:
 

@@ -47,7 +47,8 @@ This file lists every document in the archive with a one-line description. Usefu
 | `010-rendering-time-output-sanitization.md` | ~90 | Narrow exception to Rule 3: strip three classes of upstream extraction artifacts (`U+FFFD`, `U+200B`, `\_`) at the renderer boundary; gated by an explicit threshold |
 | `011-cross-platform-schema-hash.md` | ~80 | Schema hash normalises CRLF→LF before hashing so the digest is stable on Windows (autocrlf=true) and Linux/macOS; baseline regenerated to canonical LF value |
 | `012-merge-routing-and-modules-into-opensips-config.md` | ~80 | Collapses the routing + modules skills into the single `opensips-config` skill; supersedes ADR-005 in part |
-| `013-v1-ships-one-skill.md` | ~110 | v1 ships only `opensips-config`; the `opensips-security-advisor` scaffold is disabled (`SKILL.md` → `SKILL.md.scaffold`) and re-enabled in a follow-up release |
+| `013-v1-ships-one-skill.md` | ~110 | v1.0.x ships only `opensips-config`; security advisor disabled. Superseded in part by ADR-014. |
+| `014-security-advisor-v1-single-skill.md` | ~120 | v1.1.0 activates `opensips-security-advisor` as a cross-version skill with 58 rules across 12 families; supersedes ADR-013's scaffold posture. |
 
 ## docs/plan/
 

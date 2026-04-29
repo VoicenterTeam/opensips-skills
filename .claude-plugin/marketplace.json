@@ -1,8 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-marketplace",
   "name": "opensips-skills",
-  "version": "1.0.1",
-  "description": "OpenSIPs Agent Skill for Claude Code: route script authoring and per-module reference for SIP server configurations.",
+  "version": "1.1.0",
+  "description": "OpenSIPs Agent Skills for Claude Code: route script authoring, per-module reference, and security review across 12 vulnerability families.",
   "owner": {
     "name": "VoicenterTeam",
     "email": "shlomi@voicenter.com"
@@ -11,8 +11,8 @@
     {
       "name": "opensips",
       "source": "./plugins/opensips",
-      "version": "1.0.1",
-      "description": "One Agent Skill that authors and edits opensips.cfg, looks up module exports, and grounds Claude in version-specific OpenSIPs reference data. Covers OpenSIPs 3.4, 3.5, 3.6, and 4.0.",
+      "version": "1.1.0",
+      "description": "Two Agent Skills: (1) opensips-config authors and edits opensips.cfg, looks up module exports, and grounds Claude in version-specific OpenSIPs reference data; (2) opensips-security-advisor reviews opensips.cfg for security issues across 12 vulnerability families with severity-ranked findings and cited remediations. Covers OpenSIPs 3.4, 3.5, 3.6, and 4.0.",
       "author": {
         "name": "VoicenterTeam",
         "email": "shlomi@voicenter.com"
